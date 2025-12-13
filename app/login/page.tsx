@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
@@ -15,6 +15,17 @@ export default function LoginPage() {
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  
+  // Safe redirect if already logged in
+  useEffect(() => {
+     const checkUser = async () => {
+         const { data: { session } } = await supabase.auth.getSession()
+         if (session) {
+             router.replace('/')
+         }
+     }
+     checkUser()
+  }, [])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -30,8 +41,8 @@ export default function LoginPage() {
         setError(error.message)
         setLoading(false)
     } else {
-        router.push('/')
-        router.refresh()
+        // Force a hard navigation to ensure all server components and layouts update with the new session
+        window.location.href = '/'
     }
   }
 

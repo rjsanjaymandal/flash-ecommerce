@@ -3,10 +3,6 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { format } from 'date-fns' // Need to install date-fns or just use native Intl
-
-// I'll use native Intl to avoid installing another package for now, or just basic JS date
-// Actually the plan didn't specify date-fns, but it's good. I'll use native.
 
 export default function FeedbackPage() {
   const [feedback, setFeedback] = useState<any[]>([])

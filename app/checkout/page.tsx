@@ -45,7 +45,7 @@ export default function CheckoutPage() {
 
           // 2. Create Order Items
           const orderItems = items.map(item => ({
-              order_id: order.id,
+              order_id: (order as any).id,
               product_id: item.productId,
               quantity: item.quantity,
               price: item.price,

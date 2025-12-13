@@ -18,18 +18,42 @@ export const metadata: Metadata = {
   description: 'Bold, affirming fashion for everyone.',
 }
 
-export default function RootLayout({
+import { createClient } from '@/lib/supabase/server'
+
+// ... imports
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const supabase = await createClient()
+  
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+
+  let profile = null
+  if (user) {
+    const { data } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single()
+    profile = data
+  }
+
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
-        <Providers>
+        <Providers initialUser={user} initialSession={session} initialProfile={profile}>
           {children}
         </Providers>
       </body>

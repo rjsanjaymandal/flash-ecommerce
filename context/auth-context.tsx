@@ -18,11 +18,21 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [session, setSession] = useState<Session | null>(null)
-  const [profile, setProfile] = useState<Profile | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+export function AuthProvider({ 
+  children, 
+  initialUser = null, 
+  initialSession = null,
+  initialProfile = null
+}: { 
+  children: React.ReactNode
+  initialUser?: User | null
+  initialSession?: Session | null
+  initialProfile?: Profile | null
+}) {
+  const [user, setUser] = useState<User | null>(initialUser)
+  const [session, setSession] = useState<Session | null>(initialSession)
+  const [profile, setProfile] = useState<Profile | null>(initialProfile)
+  const [isLoading, setIsLoading] = useState(!initialUser) // If we have a user initially, we are not "loading"
   
   // Use a lazy initializer for the client to ensure it's created once per mount
   const [supabase] = useState(() => createClient())
@@ -30,15 +40,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        // 1. Get initial session
-        const { data: { session: currentSession } } = await supabase.auth.getSession()
-        setSession(currentSession)
-        setUser(currentSession?.user ?? null)
-
-        // 2. If user exists, fetch profile specifically for Role
-        if (currentSession?.user) {
-          await fetchProfile(currentSession.user.id)
+        // 1. Get initial session only if we didn't get it from server
+        // (But actually we should verify it match)
+        if (!initialSession) {
+             const { data: { session: currentSession } } = await supabase.auth.getSession()
+             console.log('[AuthContext] Initial Session:', currentSession ? 'Found' : 'Missing', currentSession?.user?.email)
+             setSession(currentSession)
+             setUser(currentSession?.user ?? null)
+             
+            if (currentSession?.user) {
+              await fetchProfile(currentSession.user.id)
+            }
+        } else {
+             console.log('[AuthContext] Hydrated from Server:', initialUser?.email)
         }
+
       } catch (error) {
         console.error('Auth initialization error:', error)
       } finally {

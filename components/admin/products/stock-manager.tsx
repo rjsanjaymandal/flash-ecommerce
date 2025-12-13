@@ -31,8 +31,8 @@ export default function StockManager({ productId }: { productId: string }) {
   const handleAddStock = async () => {
     if (!newStock.size || !newStock.color) return
 
-    const { error } = await supabase
-      .from('product_stock')
+    const { error } = await (supabase
+      .from('product_stock') as any)
       .insert([{
         product_id: productId,
         size: newStock.size,
@@ -49,8 +49,8 @@ export default function StockManager({ productId }: { productId: string }) {
   }
 
   const handleUpdateQuantity = async (id: string, qty: number) => {
-    const { error } = await supabase
-      .from('product_stock')
+    const { error } = await (supabase
+      .from('product_stock') as any)
       .update({ quantity: qty } as any)
       .eq('id', id)
     
@@ -61,8 +61,8 @@ export default function StockManager({ productId }: { productId: string }) {
 
   const handleDelete = async (id: string) => {
       if(!confirm("Remove this stock record?")) return
-      const { error } = await supabase
-      .from('product_stock')
+      const { error } = await (supabase
+      .from('product_stock') as any)
       .delete()
       .eq('id', id)
       

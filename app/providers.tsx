@@ -1,16 +1,36 @@
+'use client'
+
 import { AuthProvider } from '@/context/auth-context'
 import { CartProvider } from '@/context/cart-context'
 import { Navbar } from '@/components/storefront/navbar'
 import { CartDrawer } from '@/components/storefront/cart-drawer'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { useState } from 'react'
+import { Toaster } from 'sonner'
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export function Providers({ 
+  children,
+  initialUser,
+  initialSession,
+  initialProfile
+}: { 
+  children: React.ReactNode
+  initialUser?: any
+  initialSession?: any
+  initialProfile?: any
+}) {
+  const [queryClient] = useState(() => new QueryClient())
+
   return (
-    <AuthProvider>
-      <CartProvider>
-        <Navbar />
-        {children}
-        <CartDrawer />
-      </CartProvider>
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider initialUser={initialUser} initialSession={initialSession} initialProfile={initialProfile}>
+        <CartProvider>
+          <Navbar />
+          {children}
+          <Toaster position="top-center" richColors />
+          <CartDrawer />
+        </CartProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   )
 }

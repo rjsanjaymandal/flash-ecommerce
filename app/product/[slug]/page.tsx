@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { useCart } from '@/context/cart-context'
 import { Loader2, Check } from 'lucide-react'
+import { cn } from "@/lib/utils"
 
 export default function ProductPage() {
   const { slug } = useParams()
@@ -25,7 +26,7 @@ export default function ProductPage() {
         const { data: prod } = await supabase
             .from('products')
             .select('*')
-            .eq('slug', slug)
+            .eq('slug', slug as string)
             .single()
         
         if (prod) {
@@ -33,7 +34,7 @@ export default function ProductPage() {
             const { data: st } = await supabase
                 .from('product_stock')
                 .select('*')
-                .eq('product_id', prod.id)
+                .eq('product_id', (prod as any).id)
             setStock(st || [])
         }
         setLoading(false)

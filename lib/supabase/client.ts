@@ -6,7 +6,7 @@ export function createClient() {
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
   if (!supabaseUrl || !supabaseKey || supabaseUrl === 'YOUR_SUPABASE_URL_HERE') {
-    return null
+    throw new Error('Supabase environment variables are missing')
   }
 
   return createBrowserClient<Database>(supabaseUrl, supabaseKey)

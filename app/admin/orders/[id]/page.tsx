@@ -4,9 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card' // We need to create Card properly or use divs
 import { ChevronLeft } from 'lucide-react'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select" // Need Select component, or use native select for speed
 
 // Standard Select is better, but requires complex primitives from radix.
 // I'll use a native <select> for "Speed" unless I want to implement the full shadcn Select now.
@@ -46,8 +44,8 @@ export default function OrderDetailsPage() {
   const handleStatusChange = async (newStatus: string) => {
     if (!order) return
     setIsUpdating(true)
-    const { error } = await supabase
-        .from('orders')
+    const { error } = await (supabase
+        .from('orders') as any)
         .update({ status: newStatus })
         .eq('id', order.id)
     

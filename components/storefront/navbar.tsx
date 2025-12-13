@@ -16,6 +16,9 @@ export function Navbar() {
   const pathname = usePathname()
 
   if (pathname.startsWith('/admin')) return null // Don't show public nav on admin
+  
+  // Debug Admin Access
+  console.log('Navbar Auth State:', { email: user?.email, role: profile?.role, isAdmin })
 
   const navLinks = [
     { href: '/shop/new-arrivals', label: 'New Arrivals' },
@@ -78,7 +81,9 @@ export function Navbar() {
               <div className="flex items-center gap-4">
                 {isAdmin && (
                     <Link href="/admin">
-                        <Button variant="ghost" size="sm">Admin</Button>
+                        <Button variant="default" size="sm" className="bg-purple-600 hover:bg-purple-700 text-white shadow-lg shadow-purple-500/20">
+                            Admin Panel
+                        </Button>
                     </Link>
                 )}
                 <Link href="/account">
