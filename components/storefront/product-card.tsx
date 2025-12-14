@@ -4,11 +4,15 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { cn, formatCurrency } from '@/lib/utils'
 import { ShoppingBag, Star, Heart } from 'lucide-react'
+import { useWishlist } from '@/context/wishlist-context'
 import { useCart } from '@/context/cart-context'
-import { toast } from 'sonner'
 
 export function ProductCard({ product }: { product: any }) {
-  const { addItem } = useCart()
+  const { addItem: addToCart } = useCart()
+  const { addItem, removeItem, isInWishlist } = useWishlist()
+  
+  const isWishlisted = isInWishlist(product.id)
+  
   const stock = product.product_stock || []
   const hasMultipleOptions = (product.size_options?.length > 1 || product.color_options?.length > 1)
   
@@ -26,7 +30,7 @@ export function ProductCard({ product }: { product: any }) {
         return
     }
 
-    addItem({
+    addToCart({
         productId: product.id,
         name: product.name,
         price: product.price,
@@ -63,14 +67,31 @@ export function ProductCard({ product }: { product: any }) {
             <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
             {/* Top Right Actions */}
+            {/* Top Right Actions */}
             <button 
-                className="absolute top-3 right-3 p-2 rounded-full bg-white/20 backdrop-blur-md text-white border border-white/20 hover:bg-white hover:text-red-500 transition-all duration-300 opacity-0 group-hover:opacity-100 transform translate-y-[-10px] group-hover:translate-y-0"
+                className={cn(
+                    "absolute top-3 right-3 p-2 rounded-full backdrop-blur-md transition-all duration-300 opacity-0 group-hover:opacity-100 transform translate-y-[-10px] group-hover:translate-y-0 z-30",
+                    isWishlisted 
+                        ? "bg-primary text-primary-foreground border-primary" 
+                        : "bg-white/20 text-white border border-white/20 hover:bg-white hover:text-red-500"
+                )}
                 onClick={(e) => {
                     e.preventDefault()
-                    toast.success("Added to wishlist")
+                    e.stopPropagation() // Prevent link click
+                    if (isWishlisted) {
+                        removeItem(product.id)
+                    } else {
+                        addItem({
+                            productId: product.id,
+                            name: product.name,
+                            price: product.price,
+                            image: product.main_image_url,
+                            slug: product.slug
+                        })
+                    }
                 }}
             >
-                <Heart className="h-4 w-4" />
+                <Heart className={cn("h-4 w-4", isWishlisted && "fill-current")} />
             </button>
             
             {/* Badges */}

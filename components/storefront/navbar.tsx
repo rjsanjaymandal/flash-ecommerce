@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { ShoppingBag, Menu, X, Heart, ChevronDown } from 'lucide-react'
 import { useState } from 'react'
+import { useWishlist } from '@/context/wishlist-context'
 import { useCart } from '@/context/cart-context'
 import { useAuth } from '@/context/auth-context'
 import { Button } from '@/components/ui/button'
@@ -14,7 +15,9 @@ import { createClient } from '@/lib/supabase/client'
 export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const { cartCount, setIsCartOpen } = useCart()
+  const { wishlistCount } = useWishlist()
   const { user, profile, isAdmin, signOut } = useAuth()
+// ...
   const pathname = usePathname()
   const supabase = createClient()
 
@@ -37,18 +40,12 @@ export function Navbar() {
     }
   })
 
-  // Dynamic Nav Links (Fallback to static if DB empty)
-  const navLinks = categories.length > 0 
-    ? categories.map((cat: any) => ({
-        href: `/shop/${cat.slug}`,
-        label: cat.name,
-        children: cat.children
-      }))
-    : [
-        { href: '/shop/new-arrivals', label: 'New Arrivals' },
-        { href: '/shop/clothing', label: 'Clothing' },
-        { href: '/shop/accessories', label: 'Accessories' },
-    ]
+  // Dynamic Nav Links
+  const navLinks = categories.map((cat: any) => ({
+    href: `/shop?category=${cat.id}`,
+    label: cat.name,
+    children: cat.children
+  }))
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-background/80 backdrop-blur-md">
@@ -90,7 +87,7 @@ export function Navbar() {
                                 {link.children.map((child: any) => (
                                     <Link 
                                         key={child.id}
-                                        href={`/shop/${child.slug}`}
+                                        href={`/shop?category=${child.id}`}
                                         className="text-sm px-3 py-2 rounded-sm hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
                                     >
                                         {child.name}
@@ -105,8 +102,13 @@ export function Navbar() {
 
         {/* Actions */}
         <div className="flex items-center gap-2 sm:gap-4">
-            <Link href="/wishlist" className="hidden sm:flex text-muted-foreground hover:text-primary transition-colors">
+            <Link href="/wishlist" className="hidden sm:flex relative text-muted-foreground hover:text-primary transition-colors p-2">
                 <Heart className="h-5 w-5" />
+                {wishlistCount > 0 && (
+                    <span className="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-background">
+                        {wishlistCount}
+                    </span>
+                )}
             </Link>
             
             <button 
@@ -179,7 +181,7 @@ export function Navbar() {
                             {link.children.map((child: any) => (
                                 <Link 
                                     key={child.id}
-                                    href={`/shop/${child.slug}`}
+                                    href={`/shop?category=${child.id}`}
                                     className="block text-sm text-muted-foreground hover:text-foreground"
                                     onClick={() => setIsMobileMenuOpen(false)}
                                 >

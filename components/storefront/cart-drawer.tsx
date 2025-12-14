@@ -66,7 +66,8 @@ export function CartDrawer() {
                                     </button>
                                     <span className="w-8 text-center text-sm">{item.quantity}</span>
                                     <button 
-                                        className="p-1 hover:bg-muted"
+                                        className="p-1 hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
+                                        disabled={item.quantity >= item.maxQuantity}
                                         onClick={() => updateQuantity(item.productId, item.size, item.color, item.quantity + 1)}
                                     >
                                         <Plus className="h-3 w-3" />

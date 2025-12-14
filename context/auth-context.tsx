@@ -90,7 +90,7 @@ export function AuthProvider({
             .from('profiles')
             .select('*')
             .eq('id', userId)
-            .single()
+            .maybeSingle()
 
         if (error) {
             console.error('Error fetching profile:', JSON.stringify(error, null, 2))

@@ -76,10 +76,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     ))
   }
 
-  const updateQuantity = (productId: string, size: string, color: string, quantity: number) => {
+    const updateQuantity = (productId: string, size: string, color: string, quantity: number) => {
     setItems(current => current.map(i => 
       (i.productId === productId && i.size === size && i.color === color)
-        ? { ...i, quantity: Math.max(1, quantity) }
+        ? { ...i, quantity: Math.min(Math.max(1, quantity), i.maxQuantity) }
         : i
     ))
   }

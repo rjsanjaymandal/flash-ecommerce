@@ -11,6 +11,12 @@ export default async function ProductPage({ params }: { params: { slug: string }
   const { slug } = await params 
 
   const product = await getProductBySlug(slug)
+  console.log(`[ProductPage] Fetching: ${slug}`)
+  if (product) {
+      console.log(`[ProductPage] Found: ${product.name}, Stock:`, product.product_stock)
+  } else {
+      console.log(`[ProductPage] Not Found: ${slug}`)
+  }
 
   if (!product) {
     notFound()
