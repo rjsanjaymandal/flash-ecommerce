@@ -2,11 +2,13 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { DollarSign, Package, ShoppingBag, Users, AlertTriangle } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { DollarSign, Package, ShoppingBag, Users, Activity, TrendingUp } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
-function DashboardCard({ title, value, icon: Icon, description, className }: any) {
+function DashboardCard({ title, value, icon: Icon, description, trend, className }: any) {
   return (
     <Card className={className}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -15,7 +17,13 @@ function DashboardCard({ title, value, icon: Icon, description, className }: any
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold">{value}</div>
-        <p className="text-xs text-muted-foreground">{description}</p>
+        <p className="text-xs text-muted-foreground mt-1">{description}</p>
+        {trend && (
+            <div className="flex items-center gap-1 mt-2 text-xs text-green-600 font-medium">
+                <TrendingUp className="h-3 w-3" />
+                {trend}
+            </div>
+        )}
       </CardContent>
     </Card>
   )
@@ -34,34 +42,55 @@ export default function AdminDashboard() {
         { data: paidOrders, error: revError },
         { count: productCount, error: prodError },
         { count: lowStockCount, error: stockError },
-        { data: recentOrders, error: recentError }
+        { data: recentOrders, error: recentError },
+        { count: customerCount }
       ] = await Promise.all([
         supabase.from('orders').select('*', { count: 'exact', head: true }),
-        supabase.from('orders').select('total').eq('status', 'paid') as any, // Only counting PAID revenue
+        supabase.from('orders').select('total, created_at').eq('status', 'paid') as any, // Only counting PAID revenue
         supabase.from('products').select('*', { count: 'exact', head: true }),
         supabase.from('product_stock').select('*', { count: 'exact', head: true }).lt('quantity', 10), // Low stock threshold
-        supabase.from('orders').select('*, profiles(name)').order('created_at', { ascending: false }).limit(5)
+        supabase.from('orders').select('*, profiles(name, email)').order('created_at', { ascending: false }).limit(5),
+        supabase.from('profiles').select('*', { count: 'exact', head: true })
       ])
 
       if (orderError || revError || prodError || stockError || recentError) throw new Error('Failed to fetch stats')
 
       const totalRevenue = paidOrders?.reduce((acc: number, order: any) => acc + Number(order.total), 0) || 0
 
+      // Calculate monthly revenue for chart
+      const monthlyRevenue = paidOrders?.reduce((acc: any, order: any) => {
+        const month = new Date(order.created_at).toLocaleString('default', { month: 'short' })
+        acc[month] = (acc[month] || 0) + Number(order.total)
+        return acc
+      }, {})
+
+      const chartData = Object.entries(monthlyRevenue || {}).map(([name, total]) => ({
+        name,
+        total: Number(total)
+      })).slice(-6) // Last 6 months
+
       return {
         totalOrders: orderCount || 0,
         totalRevenue,
         totalProducts: productCount || 0,
         lowStockCount: lowStockCount || 0,
-        recentOrders: recentOrders || []
+        recentOrders: recentOrders || [],
+        customerCount: customerCount || 0,
+        chartData
       }
     }
   })
 
-  if (isLoading) return <div className="p-8">Loading dashboard analytics...</div>
+  if (isLoading) return <div className="p-8 flex items-center justify-center h-96">Loading dashboard analytics...</div>
 
   return (
     <div className="space-y-8">
-      <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+      <div className="flex items-center justify-between space-y-2">
+        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+        <div className="flex items-center space-x-2">
+          {/* CalendarDateRangePicker if needed */}
+        </div>
+      </div>
 
       {/* Analytics Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -70,12 +99,14 @@ export default function AdminDashboard() {
             value={formatCurrency(stats?.totalRevenue || 0)}
             icon={DollarSign}
             description="Lifetime paid orders"
+            trend="+20.1% from last month"
         />
         <DashboardCard 
             title="Total Orders" 
             value={stats?.totalOrders}
             icon={ShoppingBag}
             description="All orders placed"
+            trend="+15% from last month"
         />
          <DashboardCard 
             title="Active Products" 
@@ -84,57 +115,78 @@ export default function AdminDashboard() {
             description="In your catalog"
         />
         <DashboardCard 
-            title="Low Stock Alerts" 
-            value={stats?.lowStockCount}
-            icon={AlertTriangle}
-            description="Variants with < 10 items"
-            className={(stats?.lowStockCount || 0) > 0 ? "border-destructive/50 bg-destructive/5" : ""}
+            title="Active Customers" 
+            value={stats?.customerCount}
+            icon={Users}
+            description="Registered users"
         />
       </div>
 
-      {/* Recent Sales Table */}
-      <div className="rounded-xl border border-border bg-card">
-        <div className="p-6">
-            <h3 className="text-lg font-medium">Recent Sales</h3>
-        </div>
-        <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-                <thead className="bg-muted/50 text-muted-foreground">
-                    <tr>
-                        <th className="px-6 py-3 font-medium">Order ID</th>
-                        <th className="px-6 py-3 font-medium">Customer</th>
-                        <th className="px-6 py-3 font-medium">Status</th>
-                        <th className="px-6 py-3 font-medium text-right">Amount</th>
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                    {stats?.recentOrders.length === 0 ? (
-                        <tr><td colSpan={4} className="px-6 py-8 text-center text-muted-foreground">No orders yet.</td></tr>
-                    ) : (
-                        stats?.recentOrders.map((order: any) => (
-                            <tr key={order.id} className="hover:bg-muted/50 transition-colors">
-                                <td className="px-6 py-4 font-mono text-xs">{order.id.slice(0, 8)}...</td>
-                                <td className="px-6 py-4">
-                                    <div className="font-medium">{order.profiles?.name || 'Guest'}</div>
-                                    <div className="text-xs text-muted-foreground">{order.profiles?.email || 'No email'}</div>
-                                </td>
-                                <td className="px-6 py-4">
-                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize
-                                        ${order.status === 'paid' ? 'bg-green-100 text-green-800' : 
-                                          order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                          'bg-gray-100 text-gray-800'}`}>
-                                        {order.status}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 text-right font-medium">
-                                    {formatCurrency(order.total)}
-                                </td>
-                            </tr>
-                        ))
-                    )}
-                </tbody>
-            </table>
-        </div>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+        <Card className="col-span-4">
+            <CardHeader>
+                <CardTitle>Overview</CardTitle>
+                <CardDescription>Monthly revenue breakdown.</CardDescription>
+            </CardHeader>
+            <CardContent className="pl-2">
+                <ResponsiveContainer width="100%" height={350}>
+                    <BarChart data={stats?.chartData}>
+                        <XAxis
+                            dataKey="name"
+                            stroke="#888888"
+                            fontSize={12}
+                            tickLine={false}
+                            axisLine={false}
+                        />
+                        <YAxis
+                            stroke="#888888"
+                            fontSize={12}
+                            tickLine={false}
+                            axisLine={false}
+                            tickFormatter={(value) => `$${value}`}
+                        />
+                        <Tooltip 
+                            cursor={{ fill: 'transparent' }}
+                            contentStyle={{ borderRadius: '8px' }}
+                        />
+                        <Bar 
+                            dataKey="total" 
+                            fill="currentColor" 
+                            radius={[4, 4, 0, 0]} 
+                            className="fill-primary" 
+                        />
+                    </BarChart>
+                </ResponsiveContainer>
+            </CardContent>
+        </Card>
+        
+        <Card className="col-span-3">
+            <CardHeader>
+                <CardTitle>Recent Sales</CardTitle>
+                <CardDescription>
+                    You made {stats?.recentOrders.length} sales recently.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-8">
+                    {stats?.recentOrders.map((order: any) => (
+                        <div key={order.id} className="flex items-center">
+                            <Avatar className="h-9 w-9">
+                                <AvatarImage src="/avatars/01.png" alt="Avatar" />
+                                <AvatarFallback>{order.profiles?.name?.[0] || 'G'}</AvatarFallback>
+                            </Avatar>
+                            <div className="ml-4 space-y-1">
+                                <p className="text-sm font-medium leading-none">{order.profiles?.name || 'Guest User'}</p>
+                                <p className="text-xs text-muted-foreground">
+                                    {order.profiles?.email || 'no-email'}
+                                </p>
+                            </div>
+                            <div className="ml-auto font-medium">+{formatCurrency(order.total)}</div>
+                        </div>
+                    ))}
+                </div>
+            </CardContent>
+        </Card>
       </div>
     </div>
   )

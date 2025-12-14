@@ -2,30 +2,53 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ShoppingBag, Menu, X, Heart } from 'lucide-react'
+import { ShoppingBag, Menu, X, Heart, ChevronDown } from 'lucide-react'
 import { useState } from 'react'
 import { useCart } from '@/context/cart-context'
 import { useAuth } from '@/context/auth-context'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { useQuery } from '@tanstack/react-query'
+import { createClient } from '@/lib/supabase/client'
 
 export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const { cartCount, setIsCartOpen } = useCart()
   const { user, profile, isAdmin, signOut } = useAuth()
   const pathname = usePathname()
+  const supabase = createClient()
 
   if (pathname.startsWith('/admin')) return null // Don't show public nav on admin
   
   // Debug Admin Access
   console.log('Navbar Auth State:', { email: user?.email, role: profile?.role, isAdmin })
 
-  const navLinks = [
-    { href: '/shop/new-arrivals', label: 'New Arrivals' },
-    { href: '/shop/clothing', label: 'Clothing' },
-    { href: '/shop/accessories', label: 'Accessories' },
-    { href: '/about', label: 'About FLASH' },
-  ]
+  // Fetch Categories
+  const { data: categories = [] } = useQuery({
+    queryKey: ['nav-categories'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('categories')
+        .select('*, children:categories(id, name, slug)')
+        .eq('is_active', true)
+        .is('parent_id', null)
+        .order('name')
+      return data || []
+    }
+  })
+
+  // Dynamic Nav Links (Fallback to static if DB empty)
+  const navLinks = categories.length > 0 
+    ? categories.map((cat: any) => ({
+        href: `/shop/${cat.slug}`,
+        label: cat.name,
+        children: cat.children
+      }))
+    : [
+        { href: '/shop/new-arrivals', label: 'New Arrivals' },
+        { href: '/shop/clothing', label: 'Clothing' },
+        { href: '/shop/accessories', label: 'Accessories' },
+    ]
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-background/80 backdrop-blur-md">
@@ -48,14 +71,35 @@ export function Navbar() {
 
         {/* Desktop Nav */}
         <nav className="hidden lg:flex items-center gap-8">
-            {navLinks.map(link => (
-                <Link 
-                    key={link.href} 
-                    href={link.href}
-                    className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
-                >
-                    {link.label}
-                </Link>
+            {navLinks.map((link: any) => (
+                <div key={link.href} className="group relative">
+                    <Link 
+                        href={link.href}
+                        className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-primary transition-colors py-2"
+                    >
+                        {link.label}
+                        {link.children && link.children.length > 0 && (
+                            <ChevronDown className="h-4 w-4 opacity-50 group-hover:opacity-100 transition-opacity" />
+                        )}
+                    </Link>
+                    
+                    {/* Simplified Mega Menu / Dropdown */}
+                    {link.children && link.children.length > 0 && (
+                        <div className="absolute top-full left-0 w-48 pt-2 opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-200 ease-out">
+                            <div className="bg-background border border-border shadow-xl rounded-md overflow-hidden p-2 flex flex-col gap-1">
+                                {link.children.map((child: any) => (
+                                    <Link 
+                                        key={child.id}
+                                        href={`/shop/${child.slug}`}
+                                        className="text-sm px-3 py-2 rounded-sm hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                                    >
+                                        {child.name}
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
             ))}
         </nav>
 
@@ -119,16 +163,32 @@ export function Navbar() {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-          <div className="lg:hidden border-t border-border bg-background px-4 py-4 space-y-4 shadow-xl">
-              {navLinks.map(link => (
-                <Link 
-                    key={link.href} 
-                    href={link.href}
-                    className="block text-base font-medium text-foreground py-2 border-b border-border last:border-0"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                >
-                    {link.label}
-                </Link>
+          <div className="lg:hidden border-t border-border bg-background px-4 py-4 space-y-4 shadow-xl max-h-[80vh] overflow-y-auto">
+              {navLinks.map((link: any) => (
+                <div key={link.href} className="space-y-2">
+                    <Link 
+                        href={link.href}
+                        className="block text-base font-bold text-foreground"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                        {link.label}
+                    </Link>
+                    {/* Mobile Subcategories */}
+                    {link.children && link.children.length > 0 && (
+                        <div className="pl-4 border-l border-border space-y-2 mt-1">
+                            {link.children.map((child: any) => (
+                                <Link 
+                                    key={child.id}
+                                    href={`/shop/${child.slug}`}
+                                    className="block text-sm text-muted-foreground hover:text-foreground"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                    {child.name}
+                                </Link>
+                            ))}
+                        </div>
+                    )}
+                </div>
             ))}
           </div>
       )}

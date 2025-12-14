@@ -1,6 +1,6 @@
 'use client'
 
-import { AuthProvider } from '@/context/auth-context'
+import { AuthProvider } from '../context/auth-context'
 import { CartProvider } from '@/context/cart-context'
 import { Navbar } from '@/components/storefront/navbar'
 import { CartDrawer } from '@/components/storefront/cart-drawer'

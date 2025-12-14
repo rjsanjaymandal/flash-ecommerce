@@ -7,27 +7,29 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Modal } from '@/components/ui/modal'
-import { Plus, Pencil, Trash2, Power } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { slugify } from '@/lib/slugify'
+import { Plus, Pencil, Trash2, Image as ImageIcon, Search, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { Badge } from '@/components/ui/badge'
+import { CategoryForm, CategoryFormData } from '@/components/admin/categories/category-form'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 type Category = Database['public']['Tables']['categories']['Row']
 
 export default function CategoriesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
-  
-  // Form State
-  const [formData, setFormData] = useState({ 
-      name: '', 
-      slug: '', 
-      description: '', 
-      parent_id: '', 
-      image_url: '' 
-  })
-  const [isUploading, setIsUploading] = useState(false)
+  const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [search, setSearch] = useState('')
   
   const supabase = createClient()
   const queryClient = useQueryClient()
@@ -47,31 +49,21 @@ export default function CategoriesPage() {
 
   // 2. Mutations
   const mutation = useMutation({
-    mutationFn: async (values: typeof formData & { id?: string }) => {
-        // Validate slug uniqueness if new or changed
-        const { count } = await supabase
-            .from('categories')
-            .select('*', { count: 'exact', head: true })
-            .eq('slug', values.slug)
-            .neq('id', values.id || '') // Exclude self if editing
-        
-        if (count && count > 0) {
-            throw new Error('Category with this slug already exists.')
-        }
-
+    mutationFn: async (values: CategoryFormData & { id?: string }) => {
         const payload = {
             name: values.name,
             slug: values.slug,
             description: values.description,
-            parent_id: values.parent_id || null, // Handle empty string as null
-            image_url: values.image_url
+            parent_id: values.parent_id === 'none' ? null : values.parent_id, 
+            image_url: values.image_url,
+            is_active: values.is_active
         }
 
         if (values.id) {
-            const { error } = await (supabase.from('categories') as any).update(payload as any).eq('id', values.id)
+            const { error } = await (supabase.from('categories') as any).update(payload).eq('id', values.id)
             if (error) throw error
         } else {
-            const { error } = await supabase.from('categories').insert([payload] as any)
+            const { error } = await (supabase.from('categories') as any).insert([payload])
             if (error) throw error
         }
     },
@@ -80,139 +72,143 @@ export default function CategoriesPage() {
         setIsModalOpen(false)
         toast.success(editingCategory ? 'Category updated' : 'Category created')
     },
-    onError: (err) => {
-        toast.error(err.message)
+    onError: (err: any) => {
+        console.error('Mutation Failed:', err)
+        toast.error(err.message || 'Operation failed')
     }
   })
 
-  const toggleStatusMutation = useMutation({
-      mutationFn: async ({ id, isActive }: { id: string, isActive: boolean }) => {
-          const { error } = await (supabase
-            .from('categories') as any)
-            .update({ is_active: isActive })
-            .eq('id', id)
+  const deleteMutation = useMutation({
+      mutationFn: async (id: string) => {
+          const { error } = await (supabase.from('categories') as any).delete().eq('id', id)
           if (error) throw error
       },
       onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: ['categories'] })
-          toast.success('Status updated')
+          setDeleteId(null)
+          toast.success('Category deleted')
       },
-      onError: (err) => toast.error('Failed to update status')
+      onError: (err: any) => {
+          toast.error('Delete failed: ' + err.message)
+      }
   })
 
   // Handlers
-  const handleOpenModal = (category?: Category) => {
-    if (category) {
-      setEditingCategory(category)
-      setFormData({
-        name: category.name,
-        slug: category.slug,
-        description: category.description || '',
-        parent_id: category.parent_id || '',
-        image_url: category.image_url || ''
-      })
-    } else {
+  const handleOpenCreate = () => {
       setEditingCategory(null)
-      setFormData({ name: '', slug: '', description: '', parent_id: '', image_url: '' })
-    }
-    setIsModalOpen(true)
+      setIsModalOpen(true)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    mutation.mutate({ ...formData, id: editingCategory?.id })
+  const handleOpenEdit = (category: Category) => {
+      setEditingCategory(category)
+      setIsModalOpen(true)
   }
 
-  // Auto-slugify
-  const handleNameChange = (name: string) => {
-      setFormData(prev => ({
-          ...prev,
-          name,
-          slug: editingCategory ? prev.slug : slugify(name)
-      }))
+  const handleFormSubmit = (data: CategoryFormData) => {
+      mutation.mutate({ ...data, id: editingCategory?.id })
   }
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0]
-      if (!file) return
-
-      setIsUploading(true)
-      const fileName = `cat_${Date.now()}_${slugify(file.name)}`
-      
-      try {
-          const { error } = await supabase.storage.from('category-images').upload(fileName, file)
-          if (error) throw error
-          
-          const { data: { publicUrl } } = supabase.storage.from('category-images').getPublicUrl(fileName)
-          setFormData(prev => ({ ...prev, image_url: publicUrl }))
-      } catch (err: any) {
-          toast.error('Upload failed: ' + err.message)
-      } finally {
-          setIsUploading(false)
-      }
-  }
-
-  // Filter categories for valid parents (exclude self and nulls, prevent basic cycles)
+  // Filter
+  const filteredCategories = categories.filter(c => 
+      c.name.toLowerCase().includes(search.toLowerCase())
+  )
+  
+  // Valid parents for the form (exclude self if editing)
   const validParents = categories.filter(c => c.id !== editingCategory?.id)
+
+  // Map for form initial data
+  const initialData: CategoryFormData | undefined = editingCategory ? {
+      name: editingCategory.name,
+      slug: editingCategory.slug,
+      description: editingCategory.description || '',
+      parent_id: editingCategory.parent_id || 'none',
+      image_url: editingCategory.image_url || '',
+      is_active: editingCategory.is_active ?? true
+  } : undefined
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Categories</h1>
-        <Button onClick={() => handleOpenModal()}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Category
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+           <h1 className="text-3xl font-bold tracking-tight">Categories</h1>
+           <p className="text-muted-foreground">Organize your products into catalog sections.</p>
+        </div>
+        <Button onClick={handleOpenCreate} className="bg-primary text-primary-foreground hover:bg-primary/90">
+            <Plus className="mr-2 h-4 w-4" />
+            Add Category
         </Button>
       </div>
 
-      <div className="rounded-md border border-border">
+      <div className="flex items-center gap-4 rounded-lg bg-card p-4 border shadow-sm">
+         <div className="relative flex-1">
+             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+             <Input 
+                 placeholder="Search categories..." 
+                 className="pl-9 bg-background" 
+                 value={search} 
+                 onChange={(e) => setSearch(e.target.value)}
+             />
+         </div>
+      </div>
+
+      <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
+            <TableRow className="bg-muted/50 hover:bg-muted/50">
+              <TableHead>Display</TableHead>
               <TableHead>Slug</TableHead>
-              <TableHead>Parent</TableHead>
+              <TableHead>Parent Category</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
-                <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Loading...</TableCell>
-                </TableRow>
-            ) : categories.length === 0 ? (
-                <TableRow>
-                     <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No categories found.</TableCell>
-                </TableRow>
+                <TableRow><TableCell colSpan={5} className="text-center py-16 text-muted-foreground"><Loader2 className="animate-spin inline mr-2"/> Loading categories...</TableCell></TableRow>
+            ) : filteredCategories.length === 0 ? (
+                <TableRow><TableCell colSpan={5} className="text-center py-16 text-muted-foreground">No categories found.</TableCell></TableRow>
             ) : (
-                categories.map((category) => {
+                filteredCategories.map((category) => {
                     const parent = categories.find(c => c.id === category.parent_id)
                     return (
-                        <TableRow key={category.id} className={!category.is_active ? 'opacity-50' : ''}>
+                        <TableRow key={category.id} className="group hover:bg-muted/30 transition-colors">
                             <TableCell className="font-medium">
-                                <div className="flex items-center gap-2">
-                                    {category.image_url && <img src={category.image_url} className="w-8 h-8 rounded-full object-cover border" alt="" />}
-                                    {category.name}
+                                <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 rounded-lg overflow-hidden border bg-muted flex items-center justify-center">
+                                        {category.image_url ? (
+                                            <img src={category.image_url} className="w-full h-full object-cover" alt="" />
+                                        ) : (
+                                            <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                                        )}
+                                    </div>
+                                    <div>
+                                        <div className="font-semibold">{category.name}</div>
+                                        <div className="text-xs text-muted-foreground truncate max-w-[200px]">{category.description}</div>
+                                    </div>
                                 </div>
                             </TableCell>
-                            <TableCell className="font-mono text-xs">{category.slug}</TableCell>
-                            <TableCell className="text-muted-foreground text-sm">{parent?.name || '-'}</TableCell>
+                            <TableCell className="font-mono text-xs text-muted-foreground">/{category.slug}</TableCell>
                             <TableCell>
-                                <button 
-                                    onClick={() => toggleStatusMutation.mutate({ id: category.id, isActive: !category.is_active })}
-                                    className={cn("inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset transition-colors", 
-                                        category.is_active 
-                                        ? "bg-green-50 text-green-700 ring-green-600/20 hover:bg-green-100" 
-                                        : "bg-red-50 text-red-700 ring-red-600/20 hover:bg-red-100"
-                                    )}>
-                                    {category.is_active ? 'Active' : 'Inactive'}
-                                </button>
+                                {parent ? (
+                                    <Badge variant="outline" className="font-normal">{parent.name}</Badge>
+                                ) : (
+                                    <span className="text-muted-foreground text-sm italic">Top Level</span>
+                                )}
                             </TableCell>
-                            <TableCell className="text-right space-x-2">
-                                <Button variant="ghost" size="icon" onClick={() => handleOpenModal(category)}>
-                                    <Pencil className="h-4 w-4" />
-                                </Button>
+                            <TableCell>
+                                <Badge variant={category.is_active ? "default" : "secondary"}>
+                                    {category.is_active ? 'Active' : 'Inactive'}
+                                </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                                <div className="flex items-center justify-end gap-2">
+                                    <Button variant="ghost" size="icon" onClick={() => handleOpenEdit(category)}>
+                                        <Pencil className="h-4 w-4" />
+                                    </Button>
+                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => setDeleteId(category.id)}>
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </div>
                             </TableCell>
                         </TableRow>
                     )
@@ -227,73 +223,36 @@ export default function CategoriesPage() {
         onClose={() => setIsModalOpen(false)}
         title={editingCategory ? 'Edit Category' : 'New Category'}
       >
-        <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-                <label className="text-sm font-medium">Name</label>
-                <Input 
-                    value={formData.name} 
-                    onChange={e => handleNameChange(e.target.value)} 
-                    required 
-                    placeholder="e.g. Hoodies"
-                />
-            </div>
-            
-            <div className="space-y-2">
-                <label className="text-sm font-medium">Slug</label>
-                <Input 
-                    value={formData.slug} 
-                    onChange={e => setFormData(prev => ({ ...prev, slug: slugify(e.target.value) }))} 
-                    required 
-                    placeholder="hoodies"
-                />
-            </div>
-
-            <div className="space-y-2">
-                <label className="text-sm font-medium">Parent Category</label>
-                <select 
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    value={formData.parent_id}
-                    onChange={e => setFormData(prev => ({ ...prev, parent_id: e.target.value }))}
-                >
-                    <option value="">None (Top Level)</option>
-                    {validParents.map(c => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
-                    ))}
-                </select>
-            </div>
-
-            <div className="space-y-2">
-                <label className="text-sm font-medium">Image</label>
-                <div className="flex gap-4 items-center">
-                    {formData.image_url && <img src={formData.image_url} className="w-16 h-16 rounded object-cover border" alt="Preview" />}
-                    <Input 
-                        type="file" 
-                        accept="image/*" 
-                        onChange={handleImageUpload} 
-                        disabled={isUploading}
-                    />
-                </div>
-                {isUploading && <p className="text-xs text-muted-foreground">Uploading...</p>}
-            </div>
-
-            <div className="space-y-2">
-                <label className="text-sm font-medium">Description</label>
-                <Input 
-                    value={formData.description} 
-                    onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} 
-                    placeholder="Optional description"
-                />
-            </div>
-
-            <div className="flex justify-end pt-4">
-                <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)} className="mr-2">Cancel</Button>
-                <Button type="submit" disabled={mutation.isPending || isUploading}>
-                    {mutation.isPending && <span className="animate-spin mr-2">⏳</span>}
-                    {editingCategory ? 'Save Changes' : 'Create Category'}
-                </Button>
-            </div>
-        </form>
+         <CategoryForm 
+            initialData={initialData}
+            categories={validParents}
+            isEditing={!!editingCategory}
+            isLoading={mutation.isPending}
+            onSubmit={handleFormSubmit}
+            onCancel={() => setIsModalOpen(false)}
+         />
       </Modal>
+
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete the category and remove it from our servers.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction 
+                    onClick={() => deleteId && deleteMutation.mutate(deleteId)}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    disabled={deleteMutation.isPending}
+                >
+                    {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+                </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
