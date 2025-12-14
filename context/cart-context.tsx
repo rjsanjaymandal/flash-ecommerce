@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react'
 
 export interface CartItem {
   productId: string
@@ -60,7 +60,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, [items, isInitialized])
 
-  const addItem = (item: CartItem) => {
+  const addItem = useCallback((item: CartItem) => {
     setItems(current => {
       const existing = current.find(
         i => i.productId === item.productId && i.size === item.size && i.color === item.color
@@ -76,39 +76,41 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       return [...current, item]
     })
     setIsCartOpen(true)
-  }
+  }, [])
 
-  const removeItem = (productId: string, size: string, color: string) => {
+  const removeItem = useCallback((productId: string, size: string, color: string) => {
     setItems(current => current.filter(
       i => !(i.productId === productId && i.size === size && i.color === color)
     ))
-  }
+  }, [])
 
-    const updateQuantity = (productId: string, size: string, color: string, quantity: number) => {
+  const updateQuantity = useCallback((productId: string, size: string, color: string, quantity: number) => {
     setItems(current => current.map(i => 
       (i.productId === productId && i.size === size && i.color === color)
         ? { ...i, quantity: Math.min(Math.max(1, quantity), i.maxQuantity) }
         : i
     ))
-  }
+  }, [])
 
-  const clearCart = () => setItems([])
+  const clearCart = useCallback(() => setItems([]), [])
 
   const cartCount = items.reduce((acc, item) => acc + item.quantity, 0)
   const cartTotal = items.reduce((acc, item) => acc + (item.price * item.quantity), 0)
 
+  const value = useMemo(() => ({
+    items,
+    addItem,
+    removeItem,
+    updateQuantity,
+    clearCart,
+    cartCount,
+    cartTotal,
+    isCartOpen,
+    setIsCartOpen
+  }), [items, addItem, removeItem, updateQuantity, clearCart, cartCount, cartTotal, isCartOpen])
+
   return (
-    <CartContext.Provider value={{
-      items,
-      addItem,
-      removeItem,
-      updateQuantity,
-      clearCart,
-      cartCount,
-      cartTotal,
-      isCartOpen,
-      setIsCartOpen
-    }}>
+    <CartContext.Provider value={value}>
       {children}
     </CartContext.Provider>
   )

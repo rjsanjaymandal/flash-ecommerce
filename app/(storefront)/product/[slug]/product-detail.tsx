@@ -230,7 +230,7 @@ export function ProductDetailClient({ product }: ProductDetailProps) {
                                     return (
                                         <button
                                             key={color}
-                                            disabled={selectedSize && !available}
+                                            disabled={!!(selectedSize && !available)}
                                             onClick={() => { setSelectedColor(color); setQuantity(1) }}
                                             className={cn(
                                                 "h-10 px-6 rounded-full border transition-all duration-200 text-sm capitalize relative overflow-hidden",
@@ -285,7 +285,7 @@ export function ProductDetailClient({ product }: ProductDetailProps) {
                              <Button 
                                 size="lg" 
                                 className="flex-1 h-14 text-lg font-bold tracking-wider uppercase rounded-full shadow-lg hover:shadow-xl hover:scale-[1.01] transition-all duration-300"
-                                disabled={!selectedSize || !selectedColor || isOutOfStock}
+                                disabled={Boolean(!selectedSize || !selectedColor || isOutOfStock)}
                                 onClick={handleAddToCart}
                             >
                                 {isOutOfStock ? 'Out of Stock' : 'Add to Bag'}
@@ -294,7 +294,7 @@ export function ProductDetailClient({ product }: ProductDetailProps) {
                                 size="lg" 
                                 variant="secondary"
                                 className="flex-1 h-14 text-lg font-bold tracking-wider uppercase rounded-full shadow-lg hover:shadow-xl hover:scale-[1.01] transition-all duration-300"
-                                disabled={!selectedSize || !selectedColor || isOutOfStock}
+                                disabled={Boolean(!selectedSize || !selectedColor || isOutOfStock)}
                                 onClick={handleBuyNow}
                             >
                                 Buy Now
@@ -322,14 +322,7 @@ export function ProductDetailClient({ product }: ProductDetailProps) {
                                 }}
                             >
                                 <div className="flex items-center justify-center">
-                                    <Star className={cn("h-6 w-6", isWishlisted ? "fill-primary text-primary" : "text-foreground")} /> 
-                                    {/* Using Star instead of Heart to match the request or just personal preference? 
-                                        Wait, user asked for Wishlist. Standard is Heart. 
-                                        The imports showed Star, Truck etc. Let me check if Heart is imported. 
-                                        It is NOT imported. I need to adding Heart to imports first or reuse Star? 
-                                        Wishlist implies Heart usually. I should add Heart to imports. 
-                                     */}
-                                     <Heart className={cn("h-6 w-6", isWishlisted && "fill-current")} />
+                                    <Heart className={cn("h-6 w-6", isWishlisted ? "fill-primary text-primary" : "text-foreground")} />
                                 </div>
                             </Button>
                         </div>

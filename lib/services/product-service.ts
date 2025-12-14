@@ -171,3 +171,16 @@ export async function deleteProduct(id: string) {
     revalidatePath('/admin/products')
     revalidatePath('/shop')
 }
+
+export async function getProductsByIds(ids: string[]) {
+    if (!ids || ids.length === 0) return []
+    const supabase = await getDb()
+    
+    const { data, error } = await supabase
+      .from('products')
+      .select('*, categories(name), product_stock(*)')
+      .in('id', ids)
+    
+    if (error) throw error
+    return data
+}

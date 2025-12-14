@@ -57,7 +57,6 @@ export function ProductCard({ product }: { product: any }) {
     const variant = stock[0]
     if (variant) {
          addToCart({
-            id: variant.id, 
             productId: product.id,
             name: product.name,
             price: product.price,
@@ -86,7 +85,6 @@ export function ProductCard({ product }: { product: any }) {
      const variant = stock[0]
      if (variant) {
          addToCart({
-            id: variant.id, 
             productId: product.id,
             name: product.name,
             price: product.price,
@@ -129,7 +127,7 @@ export function ProductCard({ product }: { product: any }) {
             <img 
                 src={product.main_image_url || '/placeholder.jpg'} 
                 alt={product.name}
-                className="h-full w-full object-cover transition-transform duration-700 wille-change-transform group-hover:scale-105"
+                className="h-full w-full object-cover transition-transform duration-700 will-change-transform group-hover:scale-105"
             />
 
             {/* Action Bar Overlay */}
@@ -160,7 +158,7 @@ export function ProductCard({ product }: { product: any }) {
         <div className="space-y-1">
             <div className="flex items-start justify-between gap-2">
                  <Link href={`/product/${product.slug}`} className="hover:underline">
-                    <h3 className="font-medium text-base leading-tight truncate-2-lines text-foreground/90 group-hover:text-primary transition-colors">
+                    <h3 className="font-medium text-base leading-tight line-clamp-2 text-foreground/90 group-hover:text-primary transition-colors">
                         {product.name}
                     </h3>
                 </Link>

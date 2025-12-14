@@ -4,21 +4,50 @@ import { useWishlist } from "@/context/wishlist-context"
 import { ProductCard } from "@/components/storefront/product-card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { Heart } from "lucide-react"
+import { Heart, Loader2 } from "lucide-react"
+import { useQuery } from "@tanstack/react-query"
+import { getProductsByIds } from "@/lib/services/product-service"
+import { useEffect, useState } from "react"
 
 export default function WishlistPage() {
   const { items } = useWishlist()
+  
+  // Get IDs from context
+  const productIds = items.map(i => i.productId)
+
+  // Fetch live data
+  const { data: products, isLoading } = useQuery({
+      queryKey: ['wishlist-products', productIds],
+      queryFn: async () => {
+          if (productIds.length === 0) return []
+          return await getProductsByIds(productIds)
+      },
+      enabled: productIds.length > 0,
+      staleTime: 1000 * 60 // 1 minute
+  })
+
+  // Handle Loading
+  if (isLoading) {
+      return (
+          <div className="container mx-auto px-4 py-24 min-h-[60vh] flex items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+      )
+  }
+
+  // Determine what to show: products from DB or empty
+  const hasProducts = products && products.length > 0
 
   return (
     <div className="container mx-auto px-4 py-12 min-h-[60vh]">
       <div className="flex items-center gap-3 mb-8">
         <Heart className="h-8 w-8 text-primary fill-primary/20" />
         <h1 className="text-3xl font-bold tracking-tight">Your Wishlist</h1>
-        <span className="text-muted-foreground text-lg">({items.length})</span>
+        <span className="text-muted-foreground text-lg">({hasProducts ? products.length : 0})</span>
       </div>
 
-      {items.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center space-y-6 bg-muted/20 rounded-xl border border-dashed border-border">
+      {!hasProducts ? (
+        <div className="flex flex-col items-center justify-center py-20 text-center space-y-6 bg-muted/20 rounded-xl border border-dashed border-border animate-in fade-in zoom-in duration-500">
           <div className="h-20 w-20 bg-muted rounded-full flex items-center justify-center">
              <Heart className="h-10 w-10 text-muted-foreground" />
           </div>
@@ -33,31 +62,9 @@ export default function WishlistPage() {
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {items.map((item) => (
-             // @ts-ignore - ProductCard expects a full product object, but we only store partial data. 
-             // We need to ensure ProductCard can handle this or we fetch full data.
-             // For now, let's adapt ProductCard or render a simplified card.
-             // Actually, best to render a dedicated WishlistCard or ensure ProductCard is flexible.
-             // Let's check ProductCard props.
-             <ProductCard 
-                key={item.productId} 
-                product={{
-                    id: item.productId,
-                    name: item.name,
-                    price: item.price,
-                    main_image_url: item.image,
-                    slug: item.slug,
-                    // Mock missing props that ProductCard might need
-                    description: '', 
-                    size_options: [],
-                    color_options: [],
-                    category_id: '',
-                    is_active: true,
-                    created_at: '',
-                    updated_at: ''
-                }} 
-             />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
+          {products.map((product: any) => (
+             <ProductCard key={product.id} product={product} />
           ))}
         </div>
       )}

@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react'
 import { toast } from 'sonner'
 
 export interface WishlistItem {
@@ -45,7 +45,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     }
   }, [items, isInitialized])
 
-  const addItem = (item: WishlistItem) => {
+  const addItem = useCallback((item: WishlistItem) => {
     setItems(current => {
       if (current.some(i => i.productId === item.productId)) {
         toast.info("Already in wishlist")
@@ -54,25 +54,27 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
       toast.success("Added to Wishlist")
       return [...current, item]
     })
-  }
+  }, [])
 
-  const removeItem = (productId: string) => {
+  const removeItem = useCallback((productId: string) => {
     setItems(current => current.filter(i => i.productId !== productId))
     toast.info("Removed from Wishlist")
-  }
+  }, [])
 
-  const isInWishlist = (productId: string) => {
+  const isInWishlist = useCallback((productId: string) => {
     return items.some(i => i.productId === productId)
-  }
+  }, [items])
 
-  return (
-    <WishlistContext.Provider value={{
+  const value = useMemo(() => ({
       items,
       addItem,
       removeItem,
       isInWishlist,
       wishlistCount: items.length
-    }}>
+  }), [items, addItem, removeItem, isInWishlist])
+
+  return (
+    <WishlistContext.Provider value={value}>
       {children}
     </WishlistContext.Provider>
   )
