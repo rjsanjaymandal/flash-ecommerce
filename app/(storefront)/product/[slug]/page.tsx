@@ -10,7 +10,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
   // If this errors we will await it.
   const { slug } = await params 
 
-  const product = await getProductBySlug(slug)
+  const product = (await getProductBySlug(slug)) as any
   console.log(`[ProductPage] Fetching: ${slug}`)
   if (product) {
       console.log(`[ProductPage] Found: ${product.name}, Stock:`, product.product_stock)
