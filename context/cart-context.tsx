@@ -37,9 +37,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const saved = localStorage.getItem('flash-cart')
     if (saved) {
       try {
-        setItems(JSON.parse(saved))
+        const parsed = JSON.parse(saved)
+        // Sanitize
+        const sanitized = parsed.map((i: any) => ({
+            ...i,
+            quantity: Number.isFinite(i.quantity) ? i.quantity : 1,
+            price: Number.isFinite(i.price) ? i.price : 0
+        }))
+        setItems(sanitized)
       } catch (e) {
         console.error('Failed to parse cart', e)
+        localStorage.removeItem('flash-cart')
       }
     }
     setIsInitialized(true)
