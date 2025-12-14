@@ -4,93 +4,85 @@ import { ProductCard } from '@/components/storefront/product-card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
+import { ShopFilters } from '@/components/storefront/shop-filters'
 
 export const revalidate = 60
 
 export default async function ShopPage({
   searchParams,
 }: {
-  searchParams: { category?: string; sort?: string }
+  searchParams: Promise<{ 
+    category?: string; 
+    sort?: string; 
+    min_price?: string; 
+    max_price?: string;
+    size?: string;
+  }>
 }) {
-  // 1. Fetch Categories (Linear List for Sidebar)
+  const params = await searchParams
+  
+  // 1. Fetch Categories for Filters
   const categories = await getLinearCategories()
 
-  // 2. Fetch Products using Service
+  // 2. Fetch Products
   const filter: ProductFilter = {
       is_active: true,
-      category_id: searchParams.category,
-      sort: searchParams.sort as any
+      category_id: params.category,
+      sort: params.sort as any,
+      min_price: params.min_price ? Number(params.min_price) : undefined,
+      max_price: params.max_price ? Number(params.max_price) : undefined,
+      size: params.size
   }
   const products = await getProducts(filter)
 
   return (
     <div className="min-h-screen container mx-auto px-4 py-8">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-4 border-b pb-6">
         <div>
-            <h1 className="text-3xl font-bold tracking-tight">Shop Collection</h1>
-            <p className="text-muted-foreground mt-1">
-                {products?.length || 0} products found
+            <h1 className="text-4xl font-extrabold tracking-tight">Shop Collection</h1>
+            <p className="text-muted-foreground mt-2 text-lg">
+                Explore our latest styles and exclusive drops.
             </p>
         </div>
         
-        {/* Sort Options (Simple Links) */}
-        <div className="flex gap-2">
-            <Button variant={!searchParams.sort ? "secondary" : "ghost"} size="sm" asChild>
-                <Link href={{ query: { ...searchParams, sort: undefined } }}>Newest</Link>
+        {/* Sort Options */}
+        <div className="flex flex-wrap gap-2 items-center">
+            <span className="text-sm text-muted-foreground font-medium mr-2">Sort by:</span>
+            <Button variant={!params.sort ? "default" : "outline"} size="sm" className="rounded-full" asChild>
+                <Link href={{ query: { ...params, sort: undefined } }}>Newest</Link>
             </Button>
-            <Button variant={searchParams.sort === 'price_asc' ? "secondary" : "ghost"} size="sm" asChild>
-                <Link href={{ query: { ...searchParams, sort: 'price_asc' } }}>Price: Low to High</Link>
+            <Button variant={params.sort === 'price_asc' ? "default" : "outline"} size="sm" className="rounded-full" asChild>
+                <Link href={{ query: { ...params, sort: 'price_asc' } }}>Price: Low</Link>
             </Button>
-            <Button variant={searchParams.sort === 'price_desc' ? "secondary" : "ghost"} size="sm" asChild>
-                <Link href={{ query: { ...searchParams, sort: 'price_desc' } }}>Price: High to Low</Link>
+            <Button variant={params.sort === 'price_desc' ? "default" : "outline"} size="sm" className="rounded-full" asChild>
+                <Link href={{ query: { ...params, sort: 'price_desc' } }}>Price: High</Link>
             </Button>
         </div>
       </div>
 
       <div className="flex flex-col md:flex-row gap-8">
-        {/* Sidebar Filters */}
-        <aside className="w-full md:w-64 space-y-6">
-            <div>
-                <h3 className="font-semibold mb-4">Categories</h3>
-                <div className="space-y-2">
-                    <Button 
-                        variant={!searchParams.category ? "secondary" : "ghost"} 
-                        className={cn("w-full justify-start", !searchParams.category && "bg-primary/10 text-primary")}
-                        asChild
-                    >
-                        <Link href="/shop">All Products</Link>
-                    </Button>
-                    {categories?.map((cat: any) => (
-                        <Button 
-                            key={cat.id} 
-                            variant={searchParams.category === cat.id ? "secondary" : "ghost"} 
-                            className={cn("w-full justify-start", searchParams.category === cat.id && "bg-primary/10 text-primary")}
-                            asChild
-                        >
-                            <Link href={{ query: { ...searchParams, category: cat.id } }}>
-                                {cat.name}
-                            </Link>
-                        </Button>
-                    ))}
-                </div>
-            </div>
-        </aside>
+        
+        {/* Filters (Sidebar / Mobile Mock) */}
+        <ShopFilters categories={categories || []} />
 
         {/* Product Grid */}
         <div className="flex-1">
             {products && products.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {products.map((product: any) => (
-                        <ProductCard key={product.id} product={product} />
-                    ))}
-                </div>
+                <>
+                    <p className="mb-4 text-sm text-muted-foreground font-medium">{products.length} items found</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-x-6 gap-y-10">
+                        {products.map((product: any) => (
+                            <ProductCard key={product.id} product={product} />
+                        ))}
+                    </div>
+                </>
             ) : (
-                <div className="text-center py-24 border rounded-xl bg-muted/10">
-                    <p className="text-lg font-medium">No products found</p>
-                    <p className="text-muted-foreground">Try clearing the filters</p>
-                    <Button variant="link" asChild className="mt-2">
-                        <Link href="/shop">Clear Filters</Link>
+                <div className="text-center py-32 border-2 border-dashed rounded-xl bg-muted/5 flex flex-col items-center justify-center">
+                    <p className="text-xl font-bold mb-2">No products match your filters</p>
+                    <p className="text-muted-foreground mb-6">Try adjusting the price range or size</p>
+                    <Button asChild>
+                        <Link href="/shop">Clear All Filters</Link>
                     </Button>
                 </div>
             )}

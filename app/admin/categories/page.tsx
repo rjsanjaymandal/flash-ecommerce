@@ -1,20 +1,18 @@
 'use client'
-// Force recompile
+// Force recompile logic
 
 
 import { useState, useMemo } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import { Database } from '@/types/supabase'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Modal } from '@/components/ui/modal'
-import { Plus, Pencil, Trash2, Image as ImageIcon, Search, Loader2, ChevronRight, CornerDownRight } from 'lucide-react'
+import { Plus, Pencil, Trash2, Image as ImageIcon, Search, Loader2, CornerDownRight } from 'lucide-react'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Badge } from '@/components/ui/badge'
 import { CategoryForm, CategoryFormData } from '@/components/admin/categories/category-form'
-import { Category, updateCategory, createCategory, deleteCategory } from '@/lib/services/category-service'
+import { Category, updateCategory, createCategory, deleteCategory, getLinearCategories } from '@/lib/services/category-service'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,6 +23,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { cn } from '@/lib/utils'
 
 // Helper for DFS Flattening (O(n))
 function flattenCategoryTree(nodes: Category[], depth = 0, result: (Category & { depth: number })[] = []) {
@@ -43,76 +42,34 @@ export default function CategoriesPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   
-  const supabase = createClient()
   const queryClient = useQueryClient()
 
-  // 1. Fetch Categories via Service logic adapted for client
-  const { data: categories = [], isLoading } = useQuery<Category[]>({
+  // 1. Fetch Categories via Server Action (Robust & Secure)
+  const { data: flatCategories = [], isLoading } = useQuery<Category[]>({
     queryKey: ['categories'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .order('created_at', { ascending: false }) // Initial Sort
-      if (error) throw error
-      
-      // DSA: Client-Side Tree Construction O(n)
-      const map = new Map<string, Category & { children: Category[] }>()
-      const roots: (Category & { children: Category[] })[] = []
-      
-      data.forEach(c => map.set(c.id, { ...c, children: [] }))
-      data.forEach(c => {
-          const node = map.get(c.id)!
-          if (c.parent_id && map.has(c.parent_id)) {
-              map.get(c.parent_id)!.children.push(node)
-          } else {
-              roots.push(node)
-          }
-      })
-      
-      return roots as any
-    }
+    queryFn: async () => await getLinearCategories(),
+    staleTime: 1000 * 60 * 5 // Cache for 5 minutes
   })
 
-  // Memoize the Flattened Tree for Rendering (O(n))
-  const tableData = useMemo(() => {
-      if (!categories) return []
-      let roots = categories as (Category & { children: Category[] })[]
-      
-      if (search) {
-          return [] 
-      }
-      
-      return flattenCategoryTree(roots)
-  }, [categories, search])
-
-    const { data: flatCategories = [], isLoading: isFlatLoading } = useQuery<Category[]>({
-        queryKey: ['categories-flat'],
-        queryFn: async () => {
-            const { data, error } = await supabase.from('categories').select('*').order('name')
-            if (error) throw error
-            return data
-        }
-    })
-
-    const displayCategories = useMemo(() => {
+  // 2. Client-Side Sort, Filter & Tree Construction (Optimized)
+  const displayCategories = useMemo(() => {
         if (!flatCategories) return []
         
-        // 1. Filter
+        // A. Filter first (O(n))
         const filtered = flatCategories.filter(c => c.name.toLowerCase().includes(search.toLowerCase()))
         
-        // 2. If searching, return flat filtered list
+        // B. If searching active, return flat list (Tree structure is confusing during search)
         if (search) return filtered.map(c => ({...c, depth: 0}))
 
-        // 3. If not searching, Build Tree & Flatten (DSA)
+        // C. Build Tree (O(n))
         const map = new Map<string, Category & { children: any[] }>()
         const roots: any[] = []
         
         // Init Map
-        flatCategories.forEach(c => map.set(c.id, { ...c, children: [] }))
+        filtered.forEach(c => map.set(c.id, { ...c, children: [] }))
         
-        // Build Tree
-        flatCategories.forEach(c => {
+        // Link Children
+        filtered.forEach(c => {
              const node = map.get(c.id)!
              if (c.parent_id && map.has(c.parent_id)) {
                  map.get(c.parent_id)!.children.push(node)
@@ -121,17 +78,18 @@ export default function CategoriesPage() {
              }
         })
 
-        // Sort Roots & Children by name
+        // Sort Roots & Children by name (Alpha sort)
         const sortByName = (a: any, b: any) => a.name.localeCompare(b.name)
         roots.sort(sortByName)
         map.forEach(node => node.children.sort(sortByName))
 
+        // Flatten to renderable list with depth
         return flattenCategoryTree(roots)
 
-    }, [flatCategories, search])
+  }, [flatCategories, search])
 
 
-  // 2. Mutations
+  // 3. Mutations
   const mutation = useMutation({
     mutationFn: async (values: CategoryFormData & { id?: string }) => {
         const payload = {
@@ -150,14 +108,12 @@ export default function CategoriesPage() {
         }
     },
     onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ['categories-flat'] })
+        queryClient.invalidateQueries({ queryKey: ['categories'] })
         setIsModalOpen(false)
-        console.log('Success toast triggered')
         toast.success(editingCategory ? 'Category updated' : 'Category created')
     },
     onError: (err: any) => {
-        console.error('Mutation Failed:', err)
-        toast.error(err.message || 'Operation failed')
+        toast.error('Operation failed: ' + err.message)
     }
   })
 
@@ -166,7 +122,7 @@ export default function CategoriesPage() {
           await deleteCategory(id)
       },
       onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ['categories-flat'] })
+          queryClient.invalidateQueries({ queryKey: ['categories'] })
           setDeleteId(null)
           toast.success('Category deleted')
       },
@@ -190,15 +146,13 @@ export default function CategoriesPage() {
       mutation.mutate({ ...data, id: editingCategory?.id })
   }
 
-  // Filter valid parents (prevent cyclic dependency in form)
-  // For the form, we can just pass the flat list (minus self and children).
+  // Valid Parents for Form (No cycles)
   const validParents = useMemo(() => {
       if (!editingCategory) return flatCategories
-      // Simple prevent self-parenting
       return flatCategories.filter(c => c.id !== editingCategory.id)
   }, [flatCategories, editingCategory])
 
-  // Map for form initial data
+  // Form Initial Data
   const initialData: CategoryFormData | undefined = editingCategory ? {
       name: editingCategory.name,
       slug: editingCategory.slug,
@@ -209,24 +163,24 @@ export default function CategoriesPage() {
   } : undefined
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-           <h1 className="text-3xl font-bold tracking-tight">Categories</h1>
+           <h1 className="text-3xl font-black tracking-tight">Categories</h1>
            <p className="text-muted-foreground">Organize your products into catalog sections.</p>
         </div>
-        <Button onClick={handleOpenCreate} className="bg-primary text-primary-foreground hover:bg-primary/90">
+        <Button onClick={handleOpenCreate} className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20">
             <Plus className="mr-2 h-4 w-4" />
             Add Category
         </Button>
       </div>
 
-      <div className="flex items-center gap-4 rounded-lg bg-card p-4 border shadow-sm">
+      <div className="flex items-center gap-4 rounded-xl bg-card p-4 border shadow-sm">
          <div className="relative flex-1">
-             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+             <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
              <Input 
                  placeholder="Search categories..." 
-                 className="pl-9 bg-background" 
+                 className="pl-9 h-10 bg-background/50 focus-visible:ring-1 border-input/60" 
                  value={search} 
                  onChange={(e) => setSearch(e.target.value)}
              />
@@ -237,26 +191,26 @@ export default function CategoriesPage() {
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/50 hover:bg-muted/50">
-              <TableHead>Category Name (Hierarchy)</TableHead>
-              <TableHead>Slug</TableHead>
+              <TableHead>Category Name</TableHead>
+              <TableHead>Overview</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {isFlatLoading ? (
-                <TableRow><TableCell colSpan={4} className="text-center py-16 text-muted-foreground"><Loader2 className="animate-spin inline mr-2"/> Loading categories...</TableCell></TableRow>
+            {isLoading ? (
+                <TableRow><TableCell colSpan={4} className="text-center py-24 text-muted-foreground"><Loader2 className="animate-spin inline mr-2 mb-1"/> Loading categories...</TableCell></TableRow>
             ) : displayCategories.length === 0 ? (
-                <TableRow><TableCell colSpan={4} className="text-center py-16 text-muted-foreground">No categories found.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={4} className="text-center py-24 text-muted-foreground">No categories found.</TableCell></TableRow>
             ) : (
                 displayCategories.map((category) => {
                     return (
                         <TableRow key={category.id} className="group hover:bg-muted/30 transition-colors">
-                            <TableCell className="font-medium">
-                                <div className="flex items-center gap-3" style={{ paddingLeft: `${category.depth * 24}px` }}>
+                            <TableCell className="font-medium p-4">
+                                <div className="flex items-center gap-3" style={{ paddingLeft: `${(category.depth + 1) * 12}px` }}>
                                     {category.depth > 0 && <CornerDownRight className="h-4 w-4 text-muted-foreground/50 mr-[-8px]" />}
                                     
-                                    <div className="h-10 w-10 rounded-lg overflow-hidden border bg-muted flex items-center justify-center shrink-0">
+                                    <div className={cn("h-10 w-10 rounded-lg overflow-hidden border bg-muted flex items-center justify-center shrink-0 shadow-sm", category.depth === 0 ? "ring-2 ring-background shadow-md" : "")}>
                                         {category.image_url ? (
                                             <img src={category.image_url} className="w-full h-full object-cover" alt="" />
                                         ) : (
@@ -264,23 +218,24 @@ export default function CategoriesPage() {
                                         )}
                                     </div>
                                     <div>
-                                        <div className="font-semibold">{category.name}</div>
-                                        {category.description && <div className="text-xs text-muted-foreground truncate max-w-[200px]">{category.description}</div>}
+                                        <div className={cn("font-semibold", category.depth === 0 ? "text-base" : "text-sm text-muted-foreground")}>{category.name}</div>
                                     </div>
                                 </div>
                             </TableCell>
-                            <TableCell className="font-mono text-xs text-muted-foreground">/{category.slug}</TableCell>
+                            <TableCell className="font-mono text-xs text-muted-foreground">
+                                <span className="bg-muted px-2 py-1 rounded text-[10px] uppercase tracking-wider">{category.slug}</span>
+                            </TableCell>
                             <TableCell>
-                                <Badge variant={category.is_active ? "default" : "secondary"}>
+                                <Badge variant={category.is_active ? "outline" : "secondary"} className={cn("rounded-md", category.is_active ? "border-green-200 text-green-700 bg-green-500/10" : "")}>
                                     {category.is_active ? 'Active' : 'Inactive'}
                                 </Badge>
                             </TableCell>
                             <TableCell className="text-right">
-                                <div className="flex items-center justify-end gap-2">
+                                <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <Button variant="ghost" size="icon" onClick={() => handleOpenEdit(category)}>
-                                        <Pencil className="h-4 w-4" />
+                                        <Pencil className="h-4 w-4 text-muted-foreground hover:text-foreground" />
                                     </Button>
-                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => setDeleteId(category.id)}>
+                                    <Button variant="ghost" size="icon" className="text-destructive/70 hover:text-destructive hover:bg-destructive/10" onClick={() => setDeleteId(category.id)}>
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
                                 </div>

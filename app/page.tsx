@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Sparkles, Zap, Heart, Loader2 } from "lucide-react"
+import { ArrowRight, Sparkles, Zap, Heart } from "lucide-react"
 import { getProducts } from "@/lib/services/product-service"
 import { getLinearCategories } from "@/lib/services/category-service"
 import { ProductCard } from "@/components/storefront/product-card"
@@ -8,13 +8,9 @@ import { ProductCard } from "@/components/storefront/product-card"
 export const revalidate = 60 // Revalidate every minute
 
 export default async function Home() {
-  // 1. Fetch Categories (Top Level only)
-  // We can filter the linear list or add a filter to the service. 
-  // For now, fetching linear and filtering is fine for small N.
   const allCategories = await getLinearCategories() || []
   const categories = allCategories.filter((c: any) => !c.parent_id).slice(0, 3)
 
-  // 2. Fetch Featured Products (Newest 4)
   const featuredProducts = await getProducts({
       is_active: true,
       limit: 4,
@@ -24,116 +20,143 @@ export default async function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative h-[85vh] flex items-center justify-center overflow-hidden">
-        {/* ... (Background & Content kept same for premium feel) ... */}
-        <div className="absolute inset-0 bg-background">
-            <div className="absolute inset-0 bg-linear-to-tr from-primary/20 via-background to-accent/20 animate-pulse-slow" />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/10 rounded-full blur-[100px]" />
+      <section className="relative h-[90vh] flex items-center justify-center overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0">
+            <div 
+                className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105 animate-slow-zoom"
+                style={{ backgroundImage: `url('/hero-banner.png')` }}
+            />
+            {/* Overlay Gradient */}
+            <div className="absolute inset-0 bg-linear-to-t from-background/90 via-background/40 to-transparent" />
+            <div className="absolute inset-0 bg-black/40" /> 
         </div>
 
-        <div className="relative z-10 container mx-auto px-4 text-center space-y-6">
-            <div className="inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-sm font-medium text-primary backdrop-blur-xl">
-                 <Sparkles className="mr-2 h-4 w-4" /> New Collection Drop
+        <div className="relative z-10 container mx-auto px-4 text-center space-y-8 pt-20">
+            <div className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-md shadow-lg animate-in fade-in slide-in-from-bottom-5 duration-1000">
+                 <Sparkles className="mr-2 h-4 w-4 text-yellow-300" /> 
+                 <span className="text-shadow-sm">New Collection Drop</span>
             </div>
             
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter shadow-xl">
+            <h1 className="text-5xl md:text-7xl lg:text-9xl font-black tracking-tighter text-white drop-shadow-2xl animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-100">
                 WEAR YOUR <br />
-                <span className="bg-linear-to-r from-primary via-purple-500 to-accent bg-clip-text text-transparent">
+                <span className="text-transparent bg-clip-text bg-linear-to-r from-primary via-purple-400 to-accent animate-gradient-x">
                     TRUE COLORS
                 </span>
             </h1>
 
-            <p className="mx-auto max-w-2xl text-lg md:text-xl text-muted-foreground">
+            <p className="mx-auto max-w-2xl text-xl md:text-2xl text-gray-200 font-medium drop-shadow-md animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-200">
                 Bold, inclusive, and unapologetic fashion for everyone. 
-                Explore the latest gender-neutral streetwear collection designed to make you shine.
+                <span className="opacity-80 block mt-2 text-base font-normal">Explore the latest gender-neutral streetwear collection.</span>
             </p>
 
-            <div className="flex items-center justify-center gap-4 pt-4">
-                <Button size="lg" className="h-14 px-8 text-lg rounded-full bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/25" asChild>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8 animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-300">
+                <Button size="lg" className="h-16 px-10 text-xl rounded-full bg-white text-black hover:bg-gray-100 shadow-xl hover:scale-105 transition-all duration-300" asChild>
                     <Link href="/shop">
-                        Shop Now <ArrowRight className="ml-2 h-5 w-5" />
+                        Shop Collection <ArrowRight className="ml-2 h-5 w-5" />
+                    </Link>
+                </Button>
+                <Button size="lg" variant="outline" className="h-16 px-10 text-xl rounded-full border-2 border-white/30 text-white hover:bg-white/10 backdrop-blur-sm transition-all duration-300" asChild>
+                    <Link href="/about">
+                        Our Story
                     </Link>
                 </Button>
             </div>
         </div>
       </section>
 
-      {/* Featured Products (New Section) */}
-      <section className="py-16 container mx-auto px-4">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-bold tracking-tight">New Drops</h2>
-            <Link href="/shop" className="text-primary hover:underline underline-offset-4 font-medium flex items-center">
-                View All <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
+      {/* Featured Products */}
+      <section className="py-24 container mx-auto px-4">
+          <div className="flex items-end justify-between mb-12">
+            <div>
+                <h2 className="text-4xl font-black tracking-tighter mb-2">New Drops</h2>
+                <p className="text-muted-foreground text-lg">Fresh styles just landed in the store.</p>
+            </div>
+            <Button variant="ghost" asChild className="hidden sm:flex group">
+                <Link href="/shop" className="text-lg">
+                    View All <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+            </Button>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12">
               {featuredProducts?.map((product: any) => (
                   <ProductCard key={product.id} product={product} />
               ))}
-              {(!featuredProducts || featuredProducts.length === 0) && (
-                  <div className="col-span-4 text-center py-12 text-muted-foreground bg-muted/30 rounded-lg">
-                      No featured products yet. Check back soon!
-                  </div>
-              )}
+          </div>
+          
+          <div className="mt-12 text-center sm:hidden">
+            <Button size="lg" variant="outline" className="w-full" asChild>
+                <Link href="/shop">View All Products</Link>
+            </Button>
           </div>
       </section>
 
-      {/* Categories from DB */}
-      <section className="py-24 container mx-auto px-4 bg-muted/10">
-          <div className="flex items-center justify-between mb-12">
-            <h2 className="text-3xl font-bold tracking-tight">Shop by Category</h2>
-          </div>
+      {/* Categories Parallax/Grid */}
+      <section className="py-24 bg-zinc-950 text-white relative overflow-hidden">
+           {/* Decorative Blobs */}
+           <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[120px]" />
+           <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-accent/20 rounded-full blur-[120px]" />
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {categories?.length ? categories.map((cat: any) => (
-                <Link 
-                    key={cat.id} 
-                    href={`/shop?category=${cat.id}`} // Simple filter via query param
-                    className="group relative h-96 overflow-hidden rounded-2xl border border-border bg-card transition-all hover:scale-[1.02] hover:shadow-xl block"
-                >
-                     {/* Placeholder gradient since we don't have category images yet */}
-                    <div className="absolute inset-0 bg-linear-to-br from-primary/20 to-accent/20 opacity-50 transition-opacity group-hover:opacity-100" />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                        <h3 className="text-4xl font-black italic tracking-tighter text-foreground group-hover:scale-110 transition-transform duration-300">
-                            {cat.name.toUpperCase()}
-                        </h3>
-                    </div>
-                    <div className="absolute bottom-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-2 group-hover:translate-y-0">
-                        <div className="bg-background/80 backdrop-blur-md p-3 rounded-full">
-                            <ArrowRight className="h-6 w-6 text-foreground" />
+          <div className="container mx-auto px-4 relative z-10">
+              <div className="text-center mb-16 space-y-4">
+                <h2 className="text-4xl md:text-5xl font-black tracking-tighter">Shop by Category</h2>
+                <p className="text-xl text-gray-400">Find your perfect fit across our collections.</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {categories?.length ? categories.map((cat: any, i: number) => (
+                    <Link 
+                        key={cat.id} 
+                        href={`/shop?category=${cat.id}`} 
+                        className={`group relative h-[450px] overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/50 transition-all hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/10 ${i === 1 ? 'md:-translate-y-12' : ''}`}
+                    >
+                        <div className="absolute inset-0 bg-linear-to-b from-transparent to-black/80 z-10" />
+                        
+                        {/* Placeholder gradient/image for category */}
+                        <div className={`absolute inset-0 opacity-60 transition-transform duration-700 group-hover:scale-110 bg-linear-to-br ${i === 0 ? 'from-purple-600 to-blue-600' : i === 1 ? 'from-pink-600 to-rose-600' : 'from-yellow-500 to-orange-600'}`} />
+                        
+                        <div className="absolute inset-0 z-20 flex flex-col items-center justify-end pb-12 p-6 text-center">
+                            <h3 className="text-5xl font-black italic tracking-tighter mb-4 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                                {cat.name.toUpperCase()}
+                            </h3>
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-4 group-hover:translate-y-0 delay-75">
+                                <span className="inline-flex items-center text-sm font-bold uppercase tracking-widest border border-white/30 px-4 py-2 rounded-full hover:bg-white hover:text-black transition-colors">
+                                    Explore <ArrowRight className="ml-2 h-4 w-4" />
+                                </span>
+                            </div>
                         </div>
-                    </div>
-                </Link>
-            )) : (
-                <div className="col-span-3 text-center text-muted-foreground">Loading categories...</div>
-            )}
+                    </Link>
+                )) : null}
+              </div>
           </div>
       </section>
 
        {/* Values Banner */}
-       <section className="py-24 bg-muted/30 border-y border-border">
-            <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-                <div className="space-y-4 p-6 rounded-2xl bg-background/50 backdrop-blur-sm border border-border/50">
-                    <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                        <Sparkles className="h-6 w-6" />
+       <section className="py-24 border-t border-border">
+            <div className="container mx-auto px-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center divide-y md:divide-y-0 md:divide-x divide-border">
+                    <div className="space-y-4 px-4">
+                        <div className="mx-auto w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-6 rotate-3 hover:rotate-6 transition-transform">
+                            <Sparkles className="h-8 w-8" />
+                        </div>
+                        <h3 className="text-2xl font-bold">Inclusive Design</h3>
+                        <p className="text-muted-foreground leading-relaxed">Fashion that breaks boundaries. Gender-neutral sizing and cuts designed to celebrate every body type.</p>
                     </div>
-                    <h3 className="text-xl font-bold">Inclusive Design</h3>
-                    <p className="text-muted-foreground">Fits for every body type. Gender-neutral sizing and cuts that celebrate you.</p>
-                </div>
-                <div className="space-y-4 p-6 rounded-2xl bg-background/50 backdrop-blur-sm border border-border/50">
-                    <div className="mx-auto w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center text-accent">
-                         <Zap className="h-6 w-6" />
+                    <div className="space-y-4 px-4 pt-12 md:pt-0">
+                        <div className="mx-auto w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center text-accent mb-6 -rotate-3 hover:-rotate-6 transition-transform">
+                             <Zap className="h-8 w-8" />
+                        </div>
+                        <h3 className="text-2xl font-bold">Premium Quality</h3>
+                        <p className="text-muted-foreground leading-relaxed">Built to last. We use high-gsm fabrics, durable prints, and ensure attention to detail in every stitch.</p>
                     </div>
-                    <h3 className="text-xl font-bold">Premium Quality</h3>
-                    <p className="text-muted-foreground">High-gsm fabrics, durable prints, and attention to detail in every stitch.</p>
-                </div>
-                <div className="space-y-4 p-6 rounded-2xl bg-background/50 backdrop-blur-sm border border-border/50">
-                    <div className="mx-auto w-12 h-12 rounded-full bg-secondary/30 flex items-center justify-center text-secondary-foreground">
-                        <Heart className="h-6 w-6" />
+                    <div className="space-y-4 px-4 pt-12 md:pt-0">
+                        <div className="mx-auto w-16 h-16 rounded-2xl bg-secondary/30 flex items-center justify-center text-secondary-foreground mb-6 rotate-3 hover:rotate-6 transition-transform">
+                            <Heart className="h-8 w-8" />
+                        </div>
+                        <h3 className="text-2xl font-bold">Community First</h3>
+                        <p className="text-muted-foreground leading-relaxed">More than a brand. A portion of every sale goes directly to supporting LGBTQ+ youth charities.</p>
                     </div>
-                    <h3 className="text-xl font-bold">Community First</h3>
-                    <p className="text-muted-foreground">Proceeds support LGBTQ+ charities. Fashion that gives back.</p>
                 </div>
             </div>
        </section>

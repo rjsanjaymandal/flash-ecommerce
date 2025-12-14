@@ -16,11 +16,29 @@ async function getDb() {
     return await createClient()
 }
 
+export type ProductFilter = {
+  category_id?: string
+  is_active?: boolean
+  search?: string
+  sort?: 'price_asc' | 'price_desc' | 'newest'
+  limit?: number
+  min_price?: number
+  max_price?: number
+  size?: string
+}
+
 export async function getProducts(filter: ProductFilter = {}) {
     const supabase = await getDb()
+    
+    // If filtering by size, we need an inner join on stock
+    let selectString = '*, categories(name), product_stock(*)'
+    if (filter.size) {
+        selectString = '*, categories(name), product_stock!inner(*)'
+    }
+
     let query = supabase
       .from('products')
-      .select('*, categories(name), product_stock(*)')
+      .select(selectString)
     
     if (filter.is_active !== undefined) {
       query = query.eq('is_active', filter.is_active)
@@ -28,6 +46,19 @@ export async function getProducts(filter: ProductFilter = {}) {
 
     if (filter.category_id) {
       query = query.eq('category_id', filter.category_id)
+    }
+
+    if (filter.min_price !== undefined) {
+      query = query.gte('price', filter.min_price)
+    }
+
+    if (filter.max_price !== undefined) {
+      query = query.lte('price', filter.max_price)
+    }
+
+    // Size filter (applied to the joined table via !inner)
+    if (filter.size) {
+        query = query.eq('product_stock.size', filter.size)
     }
 
     if (filter.search) {

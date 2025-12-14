@@ -93,7 +93,7 @@ export function CartDrawer() {
             <div className="p-5 border-t border-border bg-muted/20 space-y-4">
                 <div className="flex items-center justify-between text-lg font-bold">
                     <span>Total</span>
-                    <span>${cartTotal.toFixed(2)}</span>
+                    <span>{formatCurrency(cartTotal)}</span>
                 </div>
                 <p className="text-xs text-muted-foreground text-center">Shipping & taxes calculated at checkout.</p>
                 <Button className="w-full text-lg h-12 bg-linear-to-r from-primary to-accent hover:opacity-90 transition-opacity" asChild>
