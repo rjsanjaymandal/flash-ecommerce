@@ -1,13 +1,31 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Sparkles, Zap, Heart } from "lucide-react"
+import { ArrowRight, Sparkles, Zap, Heart, Loader2 } from "lucide-react"
+import { getProducts } from "@/lib/services/product-service"
+import { getLinearCategories } from "@/lib/services/category-service"
+import { ProductCard } from "@/components/storefront/product-card"
 
-export default function Home() {
+export const revalidate = 60 // Revalidate every minute
+
+export default async function Home() {
+  // 1. Fetch Categories (Top Level only)
+  // We can filter the linear list or add a filter to the service. 
+  // For now, fetching linear and filtering is fine for small N.
+  const allCategories = await getLinearCategories() || []
+  const categories = allCategories.filter((c: any) => !c.parent_id).slice(0, 3)
+
+  // 2. Fetch Featured Products (Newest 4)
+  const featuredProducts = await getProducts({
+      is_active: true,
+      limit: 4,
+      sort: 'newest'
+  })
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative h-[85vh] flex items-center justify-center overflow-hidden">
-        {/* Background Gradient */}
+        {/* ... (Background & Content kept same for premium feel) ... */}
         <div className="absolute inset-0 bg-background">
             <div className="absolute inset-0 bg-linear-to-tr from-primary/20 via-background to-accent/20 animate-pulse-slow" />
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/10 rounded-full blur-[100px]" />
@@ -32,38 +50,50 @@ export default function Home() {
 
             <div className="flex items-center justify-center gap-4 pt-4">
                 <Button size="lg" className="h-14 px-8 text-lg rounded-full bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/25" asChild>
-                    <Link href="/shop/all">
+                    <Link href="/shop">
                         Shop Now <ArrowRight className="ml-2 h-5 w-5" />
                     </Link>
-                </Button>
-                <Button size="lg" variant="outline" className="h-14 px-8 text-lg rounded-full border-2" asChild>
-                    <Link href="/about">Our Story</Link>
                 </Button>
             </div>
         </div>
       </section>
 
-      {/* Featured Categories (Mock Data for now, could fetch from DB) */}
-      <section className="py-24 container mx-auto px-4">
-          <div className="flex items-center justify-between mb-12">
-            <h2 className="text-3xl font-bold tracking-tight">Shop by Category</h2>
-            <Link href="/shop/all" className="text-primary hover:underline underline-offset-4 font-medium flex items-center">
+      {/* Featured Products (New Section) */}
+      <section className="py-16 container mx-auto px-4">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-3xl font-bold tracking-tight">New Drops</h2>
+            <Link href="/shop" className="text-primary hover:underline underline-offset-4 font-medium flex items-center">
                 View All <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {featuredProducts?.map((product: any) => (
+                  <ProductCard key={product.id} product={product} />
+              ))}
+              {(!featuredProducts || featuredProducts.length === 0) && (
+                  <div className="col-span-4 text-center py-12 text-muted-foreground bg-muted/30 rounded-lg">
+                      No featured products yet. Check back soon!
+                  </div>
+              )}
+          </div>
+      </section>
+
+      {/* Categories from DB */}
+      <section className="py-24 container mx-auto px-4 bg-muted/10">
+          <div className="flex items-center justify-between mb-12">
+            <h2 className="text-3xl font-bold tracking-tight">Shop by Category</h2>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-                { name: 'Hoodies', slug: 'hoodies', color: 'from-pink-500/20 to-purple-500/20' },
-                { name: 'T-Shirts', slug: 't-shirts', color: 'from-cyan-500/20 to-blue-500/20' },
-                { name: 'Accessories', slug: 'accessories', color: 'from-yellow-500/20 to-orange-500/20' },
-            ].map((cat) => (
+            {categories?.length ? categories.map((cat: any) => (
                 <Link 
-                    key={cat.slug} 
-                    href={`/shop/${cat.slug}`}
-                    className="group relative h-96 overflow-hidden rounded-2xl border border-border bg-card transition-all hover:scale-[1.02] hover:shadow-xl"
+                    key={cat.id} 
+                    href={`/shop?category=${cat.id}`} // Simple filter via query param
+                    className="group relative h-96 overflow-hidden rounded-2xl border border-border bg-card transition-all hover:scale-[1.02] hover:shadow-xl block"
                 >
-                    <div className={`absolute inset-0 bg-linear-to-br ${cat.color} opacity-50 transition-opacity group-hover:opacity-100`} />
+                     {/* Placeholder gradient since we don't have category images yet */}
+                    <div className="absolute inset-0 bg-linear-to-br from-primary/20 to-accent/20 opacity-50 transition-opacity group-hover:opacity-100" />
                     <div className="absolute inset-0 flex items-center justify-center">
                         <h3 className="text-4xl font-black italic tracking-tighter text-foreground group-hover:scale-110 transition-transform duration-300">
                             {cat.name.toUpperCase()}
@@ -75,7 +105,9 @@ export default function Home() {
                         </div>
                     </div>
                 </Link>
-            ))}
+            )) : (
+                <div className="col-span-3 text-center text-muted-foreground">Loading categories...</div>
+            )}
           </div>
       </section>
 

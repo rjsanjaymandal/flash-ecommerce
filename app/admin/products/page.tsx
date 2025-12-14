@@ -21,6 +21,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { deleteProduct } from '@/lib/services/product-service'
 
 export default function ProductsPage() {
   const [search, setSearch] = useState('')
@@ -49,10 +50,12 @@ export default function ProductsPage() {
     staleTime: 1000 * 60 // Cache for 1 minute
   })
 
+
+
+// ... inside the component
   const deleteMutation = useMutation({
       mutationFn: async (id: string) => {
-          const { error } = await supabase.from('products').delete().eq('id', id)
-          if (error) throw error
+          await deleteProduct(id)
       },
       onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: ['admin-products'] })
