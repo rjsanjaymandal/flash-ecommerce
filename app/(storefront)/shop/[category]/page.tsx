@@ -36,7 +36,7 @@ export default async function ShopPage(props: { params: Promise<{ category: stri
       products = data || []
   } else {
       // Find the specific category
-      const cat = allCategories.find((c: any) => c.slug === slug)
+      const cat = allCategories.find((c: any) => c.slug === slug) as any
       
       if (!cat) notFound()
       categoryData = cat

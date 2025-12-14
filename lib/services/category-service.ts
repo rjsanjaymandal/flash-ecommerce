@@ -7,6 +7,7 @@ export type Category = {
   id: string
   name: string
   slug: string
+  description?: string
   parent_id: string | null
   image_url?: string
   is_active: boolean
@@ -65,7 +66,7 @@ export async function getLinearCategories() {
 
 export async function createCategory(data: any) {
     const supabase = await createClient()
-    const { error } = await supabase.from('categories').insert([data])
+    const { error } = await (supabase.from('categories') as any).insert([data])
     if (error) throw error
     revalidatePath('/admin/categories')
     revalidatePath('/shop')
@@ -73,7 +74,7 @@ export async function createCategory(data: any) {
 
 export async function updateCategory(id: string, data: any) {
     const supabase = await createClient()
-    const { error } = await supabase.from('categories').update(data).eq('id', id)
+    const { error } = await (supabase.from('categories') as any).update(data).eq('id', id)
     if (error) throw error
     revalidatePath('/admin/categories')
     revalidatePath('/shop')
@@ -81,7 +82,7 @@ export async function updateCategory(id: string, data: any) {
 
 export async function deleteCategory(id: string) {
     const supabase = await createClient()
-    const { error } = await supabase.from('categories').delete().eq('id', id)
+    const { error } = await (supabase.from('categories') as any).delete().eq('id', id)
     if (error) throw error
     revalidatePath('/admin/categories')
     revalidatePath('/shop')

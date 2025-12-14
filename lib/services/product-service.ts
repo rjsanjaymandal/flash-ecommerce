@@ -3,13 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-export type ProductFilter = {
-  category_id?: string
-  is_active?: boolean
-  search?: string
-  sort?: 'price_asc' | 'price_desc' | 'newest'
-  limit?: number
-}
+
 
 // Helper to get DB client
 async function getDb() {
@@ -103,8 +97,7 @@ export async function createProduct(productData: any) {
     const supabase = await getDb()
     const { variants, ...prod } = productData
     
-    const { data, error } = await supabase
-      .from('products')
+    const { data, error } = await (supabase.from('products') as any)
       .insert(prod)
       .select()
       .single()
@@ -119,8 +112,7 @@ export async function createProduct(productData: any) {
         quantity: v.quantity
       }))
 
-      const { error: stockError } = await supabase
-        .from('product_stock')
+      const { error: stockError } = await (supabase.from('product_stock') as any)
         .insert(stockData)
       
       if (stockError) throw stockError
@@ -135,8 +127,7 @@ export async function updateProduct(id: string, productData: any) {
     const supabase = await getDb()
     const { variants, ...prod } = productData
 
-    const { error } = await supabase
-        .from('products')
+    const { error } = await (supabase.from('products') as any)
         .update(prod)
         .eq('id', id)
     
@@ -145,7 +136,7 @@ export async function updateProduct(id: string, productData: any) {
     // Update Stock if variants provided (Full Replace Strategy)
     if (variants) {
         // Delete old
-        await supabase.from('product_stock').delete().eq('product_id', id)
+        await (supabase.from('product_stock') as any).delete().eq('product_id', id)
         
         // Insert new
         if (variants.length > 0) {
@@ -155,7 +146,7 @@ export async function updateProduct(id: string, productData: any) {
                 color: v.color,
                 quantity: v.quantity
               }))
-              const { error: stockError } = await supabase.from('product_stock').insert(stockData)
+              const { error: stockError } = await (supabase.from('product_stock') as any).insert(stockData)
               if (stockError) throw stockError
         }
     }
@@ -166,7 +157,7 @@ export async function updateProduct(id: string, productData: any) {
 
 export async function deleteProduct(id: string) {
     const supabase = await getDb()
-    const { error } = await supabase.from('products').delete().eq('id', id)
+    const { error } = await (supabase.from('products') as any).delete().eq('id', id)
     if (error) throw error
     revalidatePath('/admin/products')
     revalidatePath('/shop')
