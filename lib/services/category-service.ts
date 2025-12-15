@@ -61,7 +61,18 @@ export async function getLinearCategories() {
         .select('*')
         .order('name')
     if (error) throw error
-    return data
+    
+    // Map to ensure types match Category definition (null vs undefined mismatch)
+    return (data || []).map((d: any) => ({
+        id: d.id,
+        name: d.name,
+        slug: d.slug,
+        description: d.description || undefined,
+        parent_id: d.parent_id,
+        image_url: d.image_url || undefined,
+        is_active: d.is_active ?? false, // Handle null
+        children: []
+    })) as Category[]
 }
 
 export async function getRootCategories(limit?: number) {

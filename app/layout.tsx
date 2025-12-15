@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
+import { Analytics } from "@vercel/analytics/next"
 import './globals.css'
 import { Providers } from './providers'
 
@@ -59,6 +60,7 @@ export default async function RootLayout({
       >
         <Providers initialUser={user} initialSession={session} initialProfile={profile}>
           {children}
+          <Analytics />
         </Providers>
       </body>
     </html>

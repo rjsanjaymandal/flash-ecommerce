@@ -1,12 +1,19 @@
 import { NextResponse } from 'next/server'
 import Razorpay from 'razorpay'
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
-})
-
+// Initialize inside handler or use a safe check if global
+// But simpler to just initialize it inside to avoid build errors if env vars missing
 export async function POST(req: Request) {
+  if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+      console.error('Razorpay keys missing')
+      return NextResponse.json({ error: 'Razorpay not configured' }, { status: 500 })
+  }
+
+  const razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET,
+  })
+
   try {
     const { amount, currency = 'INR' } = await req.json()
 

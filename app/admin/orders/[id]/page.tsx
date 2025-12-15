@@ -32,13 +32,13 @@ export default function OrderDetailsPage() {
       const { data: orderData } = await supabase
         .from('orders')
         .select('*, profiles:user_id(*)')
-        .eq('id', id)
+        .eq('id', id as string)
         .single()
       
       const { data: itemsData } = await supabase
         .from('order_items')
         .select('*')
-        .eq('order_id', id)
+        .eq('order_id', id as string)
       
       if (orderData) setOrder(orderData)
       if (itemsData) setItems(itemsData)

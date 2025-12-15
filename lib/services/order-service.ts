@@ -19,7 +19,7 @@ export async function getOrders(filter: OrderFilter = {}) {
     .order('created_at', { ascending: false })
 
   if (filter.status) {
-    query = query.eq('status', filter.status)
+    query = query.eq('status', filter.status as any)
   }
 
   if (filter.limit) {
