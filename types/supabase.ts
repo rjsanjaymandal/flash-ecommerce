@@ -187,6 +187,26 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Update: {
+          id?: string
+          user_id?: string | null
+          status?: 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled'
+          subtotal?: number
+          shipping_fee?: number
+          total?: number
+          payment_provider?: string | null
+          payment_reference?: string | null
+          shipping_name?: string | null
+          phone?: string | null
+          address_line1?: string | null
+          address_line2?: string | null
+          city?: string | null
+          state?: string | null
+          pincode?: string | null
+          country?: string | null
+          created_at?: string
+          updated_at?: string
+        }
       }
     }
   }

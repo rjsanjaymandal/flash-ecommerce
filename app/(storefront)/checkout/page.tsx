@@ -8,6 +8,14 @@ import { createClient } from "@/lib/supabase/client"
 import { useState } from "react"
 import { Loader2 } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
+import Script from 'next/script'
+import { createOrder } from "./actions"
+
+declare global {
+    interface Window {
+        Razorpay: any;
+    }
+}
 
 export default function CheckoutPage() {
   const { items, cartTotal, clearCart } = useCart()
@@ -37,54 +45,101 @@ export default function CheckoutPage() {
       setIsProcessing(true)
 
       try {
-          // 1. Create Order
-          const { data: order, error: orderError } = await supabase
-              .from('orders')
-              .insert({
-                  user_id: user?.id || null, 
-                  status: 'pending',
-                  subtotal: cartTotal,
-                  total: cartTotal, // Add tax logic if needed later
-                  shipping_name: `${formData.firstName} ${formData.lastName}`,
-                  phone: formData.phone,
-                  address_line1: formData.address,
-                  city: formData.city,
-                  state: formData.state,
-                  pincode: formData.zip,
-                  country: formData.country,
-                  payment_provider: 'demo',
-                  payment_reference: `ref_${Date.now()}`
-              } as any)
-              .select()
-              .single()
+          // 1. Create Order & Items (using Server Action)
+          const order = await createOrder({
+              user_id: user?.id || null, 
+              subtotal: cartTotal,
+              total: cartTotal,
+              shipping_name: `${formData.firstName} ${formData.lastName}`,
+              phone: formData.phone,
+              address_line1: formData.address,
+              city: formData.city,
+              state: formData.state,
+              pincode: formData.zip,
+              country: formData.country,
+              payment_provider: 'razorpay',
+              payment_reference: '',
+              items: items
+          })
 
-          if (orderError) throw orderError
-
-          // 2. Create Order Items
-          const orderItems = items.map(item => ({
-              order_id: (order as any).id,
-              product_id: item.productId,
-              quantity: item.quantity,
-              price: item.price,
-              size: item.size,
-              color: item.color 
-          }))
-
-          const { error: itemsError } = await supabase
-              .from('order_items')
-              .insert(orderItems as any)
+          // 3. Create Razorpay Order
+          const response = await fetch('/api/razorpay/order', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ amount: cartTotal, currency: 'INR' })
+          })
+          const rzpOrder = await response.json()
           
-          if (itemsError) throw itemsError
+          if (!response.ok) throw new Error(rzpOrder.error || 'Failed to create Razorpay order')
 
-          setIsSuccess(true)
-          clearCart()
+          // 4. Open Razorpay Checkout
+          const options = {
+              key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, 
+              amount: rzpOrder.amount, 
+              currency: rzpOrder.currency,
+              name: "Flash Ecommerce",
+              description: "Order Payment",
+              order_id: rzpOrder.id,
+              handler: async function (paymentResponse: any) {
+                  // 5. Verify Payment
+                  const verifyRes = await fetch('/api/razorpay/verify', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                          razorpay_order_id: paymentResponse.razorpay_order_id,
+                          razorpay_payment_id: paymentResponse.razorpay_payment_id,
+                          razorpay_signature: paymentResponse.razorpay_signature
+                      })
+                  })
+                  const verifyData = await verifyRes.json()
 
-      } catch (err) {
-          console.error('Checkout failed:', err)
-          alert('Checkout failed. Please try again.')
-      } finally {
+                  if (verifyData.verified) {
+                      // 6. Update Order Status
+                      await supabase
+                          .from('orders')
+                          .update({ 
+                              status: 'paid',
+                              payment_provider: 'razorpay',
+                              payment_reference: paymentResponse.razorpay_payment_id
+                          })
+                          .eq('id', (order as any).id)
+
+                      setIsSuccess(true)
+                      clearCart()
+                  } else {
+                      alert('Payment verification failed. Please contact support.')
+                  }
+              },
+              prefill: {
+                  name: `${formData.firstName} ${formData.lastName}`,
+                  email: user?.email || 'guest@example.com',
+                  contact: formData.phone
+              },
+              theme: {
+                  color: "#000000"
+              },
+              modal: {
+                  ondismiss: function() {
+                      setIsProcessing(false)
+                  }
+              }
+          };
+
+          const rzp1 = new window.Razorpay(options);
+          rzp1.open();
+
+      } catch (err: any) {
+          console.error('Checkout failed detailed:', {
+              message: err?.message,
+              details: err?.details,
+              hint: err?.hint,
+              code: err?.code,
+              fullError: err
+          })
+          alert(`Checkout failed: ${err?.message || 'Unknown error'}`)
           setIsProcessing(false)
       }
+      // Note: setIsProcessing(false) is handled in modal dismiss or catch to prevent early button enable
   }
 
   if (isSuccess) {
@@ -170,6 +225,7 @@ export default function CheckoutPage() {
                 </div>
             </div>
         </div>
-    </div>
+    <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
+  </div>
   )
 }
