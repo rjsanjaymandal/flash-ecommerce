@@ -61,9 +61,10 @@ export function Navbar() {
 
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-            <span className="text-2xl font-black tracking-tighter bg-linear-to-r from-primary via-purple-500 to-accent bg-clip-text text-transparent transform hover:scale-105 transition-transform duration-200">
-                FLASH
-            </span>
+            <div className="relative h-10 w-auto overflow-hidden rounded-lg hover:scale-105 transition-transform">
+                <img src="/flash-logo.jpg" alt="Flash Logo" className="h-full w-auto object-contain" />
+            </div>
+            {/* Optional Text fallback or side-text if needed, but logo has text */}
         </Link>
 
         {/* Desktop Nav */}

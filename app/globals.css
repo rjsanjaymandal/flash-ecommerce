@@ -18,21 +18,21 @@
 }
 
 :root {
-  /* Light Mode (Clean, High-end) */
+  /* Light Mode (Flash Theme) */
   --background: #ffffff;
   --foreground: #09090b;
 
-  /* Primary: Bold Pink/Magenta */
-  --primary: #d946ef;
+  /* Primary: Vibrant Blue (from Logo) */
+  --primary: #3b82f6;
   --primary-foreground: #ffffff;
 
-  /* Secondary: Soft Gray/Purple tint */
-  --secondary: #f3e8ff;
-  --secondary-foreground: #2e1065;
+  /* Secondary: Soft Neutral */
+  --secondary: #f3f4f6;
+  --secondary-foreground: #1f2937;
 
-  /* Accent: Cyan for vibrancy */
-  --accent: #22d3ee;
-  --accent-foreground: #083344;
+  /* Accent: Vibrant Orange (from Logo) */
+  --accent: #f97316;
+  --accent-foreground: #ffffff;
 
   --card: #ffffff;
   --card-foreground: #09090b;
@@ -40,12 +40,12 @@
   --popover-foreground: #09090b;
   --muted: #f4f4f5;
   --muted-foreground: #71717a;
-  --destructive: #ef4444;
+  --destructive: #ef4444; /* Red from Logo */
   --destructive-foreground: #fafafa;
   --border: #e4e4e7;
   --input: #e4e4e7;
-  --ring: #d946ef;
-  --radius: 0.75rem;
+  --ring: #3b82f6;
+  --radius: 1rem; /* Rounder UI matching pills */
 }
 
 @media (prefers-color-scheme: dark) {
