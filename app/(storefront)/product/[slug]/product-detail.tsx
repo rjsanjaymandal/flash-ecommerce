@@ -132,7 +132,7 @@ export function ProductDetailClient({ product }: ProductDetailProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background pt-24 pb-20">
+    <div className="min-h-screen bg-background pt-24 pb-32">
         <div className="container mx-auto px-4 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 xl:gap-24">
                 
@@ -281,7 +281,8 @@ export function ProductDetailClient({ product }: ProductDetailProps) {
                             </div>
                         )}
 
-                        <div className="flex gap-4">
+                        {/* Desktop Actions (Hidden on Mobile) */}
+                        <div className="hidden lg:flex gap-4">
                              <Button 
                                 size="lg" 
                                 className="flex-1 h-14 text-lg font-bold tracking-wider uppercase rounded-full shadow-lg hover:shadow-xl hover:scale-[1.01] transition-all duration-300"
