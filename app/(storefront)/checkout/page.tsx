@@ -95,8 +95,9 @@ export default function CheckoutPage() {
 
                   if (verifyData.verified) {
                       // 6. Update Order Status
-                      await supabase
-                          .from('orders')
+                      // Cast to any to bypass type mismatch where update expects 'never'
+                      await (supabase
+                          .from('orders') as any)
                           .update({ 
                               status: 'paid',
                               payment_provider: 'razorpay',

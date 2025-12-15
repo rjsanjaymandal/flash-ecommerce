@@ -25,8 +25,8 @@ export async function createOrder(data: {
     )
 
     // 1. Create Order
-    const { data: order, error: orderError } = await supabase
-        .from('orders')
+    const { data: order, error: orderError } = await (supabase
+        .from('orders') as any)
         .insert({
             user_id: data.user_id,
             status: 'pending',
@@ -41,7 +41,7 @@ export async function createOrder(data: {
             country: data.country,
             payment_provider: data.payment_provider,
             payment_reference: data.payment_reference
-        })
+        } as any)
         .select()
         .single()
 
@@ -57,8 +57,8 @@ export async function createOrder(data: {
         color: item.color
     }))
 
-    const { error: itemsError } = await supabase
-        .from('order_items')
+    const { error: itemsError } = await (supabase
+        .from('order_items') as any)
         .insert(orderItems)
     
     if (itemsError) {
