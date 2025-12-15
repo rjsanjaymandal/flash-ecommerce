@@ -27,15 +27,22 @@ export function Navbar() {
   console.log('Navbar Auth State:', { email: user?.email, role: profile?.role, isAdmin })
 
   // Fetch Categories
+  // Fetch Categories
   const { data: categories = [] } = useQuery({
-    queryKey: ['nav-categories'],
+    queryKey: ['nav-categories-v2'], // Bump version to clear cache
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('categories')
         .select('*, children:categories(id, name, slug)')
         .eq('is_active', true)
         .is('parent_id', null)
         .order('name')
+
+      if (error) {
+        console.error('Navbar category fetch error:', error)
+      } else {
+        console.log('Navbar fetched categories (v2):', data?.length, data)
+      }
       return data || []
     }
   })
