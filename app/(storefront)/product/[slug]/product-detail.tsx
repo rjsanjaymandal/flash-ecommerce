@@ -132,7 +132,7 @@ export function ProductDetailClient({ product }: ProductDetailProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background pt-24 pb-32">
+    <div className="min-h-screen bg-background pt-24 pb-20">
         <div className="container mx-auto px-4 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 xl:gap-24">
                 
@@ -281,11 +281,11 @@ export function ProductDetailClient({ product }: ProductDetailProps) {
                             </div>
                         )}
 
-                        {/* Desktop Actions (Hidden on Mobile) */}
-                        <div className="hidden lg:flex gap-4">
+                        {/* Actions (Visible on all screens, Stacked on Mobile) */}
+                        <div className="flex flex-col lg:flex-row gap-4 w-full">
                              <Button 
                                 size="lg" 
-                                className="flex-1 h-14 text-lg font-bold tracking-wider uppercase rounded-full shadow-lg hover:shadow-xl hover:scale-[1.01] transition-all duration-300"
+                                className="w-full lg:flex-1 h-14 shrink-0 text-lg font-bold tracking-wider uppercase rounded-full shadow-lg hover:shadow-xl hover:scale-[1.01] transition-all duration-300"
                                 disabled={Boolean(!selectedSize || !selectedColor || isOutOfStock)}
                                 onClick={handleAddToCart}
                             >
@@ -294,7 +294,7 @@ export function ProductDetailClient({ product }: ProductDetailProps) {
                             <Button 
                                 size="lg" 
                                 variant="secondary"
-                                className="flex-1 h-14 text-lg font-bold tracking-wider uppercase rounded-full shadow-lg hover:shadow-xl hover:scale-[1.01] transition-all duration-300"
+                                className="w-full lg:flex-1 h-14 shrink-0 text-lg font-bold tracking-wider uppercase rounded-full shadow-lg hover:shadow-xl hover:scale-[1.01] transition-all duration-300"
                                 disabled={Boolean(!selectedSize || !selectedColor || isOutOfStock)}
                                 onClick={handleBuyNow}
                             >
@@ -305,7 +305,7 @@ export function ProductDetailClient({ product }: ProductDetailProps) {
                                 size="lg"
                                 variant="outline"
                                 className={cn(
-                                    "h-14 w-14 rounded-full border-2 hover:bg-muted transition-colors",
+                                    "h-14 shrink-0 w-full lg:w-14 rounded-full border-2 hover:bg-muted transition-colors",
                                     isWishlisted && "border-primary bg-primary/10 text-primary hover:bg-primary/20"
                                 )}
                                 onClick={() => {
@@ -322,11 +322,13 @@ export function ProductDetailClient({ product }: ProductDetailProps) {
                                     }
                                 }}
                             >
-                                <div className="flex items-center justify-center">
+                                <div className="flex items-center justify-center gap-2 lg:gap-0">
                                     <Heart className={cn("h-6 w-6", isWishlisted ? "fill-primary text-primary" : "text-foreground")} />
+                                    <span className="lg:hidden font-medium">Add to Wishlist</span>
                                 </div>
                             </Button>
                         </div>
+
 
                          {/* Trust Badges */}
                         <div className="grid grid-cols-3 gap-2 py-6 border-b border-border/60">
@@ -376,6 +378,8 @@ export function ProductDetailClient({ product }: ProductDetailProps) {
         </div>
     
 
+
     </div>
   )
 }
+
