@@ -2,8 +2,11 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react'
 import { toast } from 'sonner'
+import { createClient } from '@/lib/supabase/client'
+import { useAuth } from './auth-context'
 
 export interface WishlistItem {
+  id?: string
   productId: string
   name: string
   price: number
@@ -13,8 +16,8 @@ export interface WishlistItem {
 
 interface WishlistContextType {
   items: WishlistItem[]
-  addItem: (item: WishlistItem) => void
-  removeItem: (productId: string) => void
+  addItem: (item: WishlistItem) => Promise<void>
+  removeItem: (productId: string) => Promise<void>
   isInWishlist: (productId: string) => boolean
   wishlistCount: number
 }
@@ -22,44 +25,101 @@ interface WishlistContextType {
 const WishlistContext = createContext<WishlistContextType | undefined>(undefined)
 
 export function WishlistProvider({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth()
+  const supabase = createClient()
   const [items, setItems] = useState<WishlistItem[]>([])
   const [isInitialized, setIsInitialized] = useState(false)
 
-  // Load from local storage on mount
+  // Load items
   useEffect(() => {
-    const saved = localStorage.getItem('flash-wishlist')
-    if (saved) {
-      try {
-        setItems(JSON.parse(saved))
-      } catch (e) {
-        console.error('Failed to parse wishlist', e)
-      }
-    }
-    setIsInitialized(true)
-  }, [])
+    async function loadWishlist() {
+      if (user) {
+        const { data } = await supabase
+          .from('wishlist_items')
+          .select(`
+            *,
+            product:products (
+              name,
+              price,
+              slug,
+              main_image_url
+            )
+          `)
+          .eq('user_id', user.id)
 
-  // Save to local storage on change
+        if (data) {
+          const mapped: WishlistItem[] = data.map((d: any) => ({
+             id: d.id,
+             productId: d.product_id,
+             name: d.product.name,
+             price: d.product.price,
+             image: d.product.main_image_url,
+             slug: d.product.slug
+          }))
+          setItems(mapped)
+        }
+      } else {
+        const saved = localStorage.getItem('flash-wishlist')
+        if (saved) {
+          try {
+            setItems(JSON.parse(saved))
+          } catch (e) {
+            console.error('Failed to parse wishlist', e)
+          }
+        }
+      }
+      setIsInitialized(true)
+    }
+    loadWishlist()
+  }, [user])
+
+  // Save to local storage on change (guests)
   useEffect(() => {
-    if (isInitialized) {
+    if (isInitialized && !user) {
       localStorage.setItem('flash-wishlist', JSON.stringify(items))
     }
-  }, [items, isInitialized])
+  }, [items, isInitialized, user])
 
-  const addItem = useCallback((item: WishlistItem) => {
+  const addItem = useCallback(async (item: WishlistItem) => {
+    // Optimistic
+    let exists = false;
     setItems(current => {
       if (current.some(i => i.productId === item.productId)) {
-        toast.info("Already in wishlist")
-        return current
+        exists = true;
+        return current;
       }
-      toast.success("Added to Wishlist")
       return [...current, item]
     })
-  }, [])
 
-  const removeItem = useCallback((productId: string) => {
+    if (exists) {
+        toast.info("Already in wishlist")
+        return
+    }
+
+    toast.success("Added to Wishlist")
+
+    if (user) {
+        const { error } = await supabase
+            .from('wishlist_items')
+            .upsert(
+                { user_id: user.id, product_id: item.productId }, 
+                { onConflict: 'user_id, product_id' }
+            )
+        if (error) console.error("Error adding to remote wishlist", error)
+    }
+  }, [user])
+
+  const removeItem = useCallback(async (productId: string) => {
     setItems(current => current.filter(i => i.productId !== productId))
     toast.info("Removed from Wishlist")
-  }, [])
+
+    if (user) {
+        await supabase
+            .from('wishlist_items')
+            .delete()
+            .match({ user_id: user.id, product_id: productId })
+    }
+  }, [user])
 
   const isInWishlist = useCallback((productId: string) => {
     return items.some(i => i.productId === productId)

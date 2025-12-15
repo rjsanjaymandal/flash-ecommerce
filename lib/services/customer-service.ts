@@ -8,7 +8,7 @@ export async function getCustomers(search: string = '') {
   // Fetch profiles and link their orders to calculate stats
   let query = supabase
     .from('profiles')
-    .select('*, orders(id, total, status, created_at)')
+    .select('*, orders(id, total, status, created_at), cart_items(count), wishlist_items(count)')
     .order('created_at', { ascending: false })
 
   if (search) {
@@ -32,7 +32,9 @@ export async function getCustomers(search: string = '') {
           stats: {
               totalOrders: orders.length,
               totalSpent,
-              lastOrderDate: lastOrder?.created_at
+              lastOrderDate: lastOrder?.created_at,
+              cartCount: profile.cart_items?.[0]?.count || 0,
+              wishlistCount: profile.wishlist_items?.[0]?.count || 0
           }
       }
   })

@@ -58,6 +58,8 @@ export default function CustomersPage() {
               <TableHead className="w-[250px]">Customer</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Orders</TableHead>
+              <TableHead>Cart</TableHead>
+              <TableHead>Wishlist</TableHead>
               <TableHead>Total Spent</TableHead>
               <TableHead>Joined</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -95,6 +97,16 @@ export default function CustomersPage() {
                                 {customer.stats.totalOrders}
                             </div>
                         </TableCell>
+                        <TableCell>
+                            <span className={cn("inline-flex items-center px-2 py-1 rounded-md text-xs font-medium", customer.stats.cartCount > 0 ? "bg-blue-50 text-blue-700" : "text-muted-foreground")}>
+                                {customer.stats.cartCount} items
+                            </span>
+                        </TableCell>
+                        <TableCell>
+                             <span className={cn("inline-flex items-center px-2 py-1 rounded-md text-xs font-medium", customer.stats.wishlistCount > 0 ? "bg-pink-50 text-pink-700" : "text-muted-foreground")}>
+                                {customer.stats.wishlistCount} items
+                            </span>
+                        </TableCell>
                         <TableCell className="font-bold text-base">
                             {formatCurrency(customer.stats.totalSpent)}
                         </TableCell>
@@ -110,8 +122,10 @@ export default function CustomersPage() {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                    <DropdownMenuItem className="cursor-pointer">
-                                         <User className="mr-2 h-4 w-4" /> View Profile
+                                    <DropdownMenuItem className="cursor-pointer" asChild>
+                                        <Link href={`/admin/customers/${customer.id}`}>
+                                            <User className="mr-2 h-4 w-4" /> View Profile
+                                        </Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem className="cursor-pointer">
                                          <Mail className="mr-2 h-4 w-4" /> Send Email

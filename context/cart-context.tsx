@@ -1,8 +1,13 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { useAuth } from './auth-context'
+import { toast } from 'sonner'
+import { useQueryClient } from '@tanstack/react-query'
 
 export interface CartItem {
+  id?: string // UUID for DB items
   productId: string
   name: string
   price: number
@@ -15,84 +20,241 @@ export interface CartItem {
 
 interface CartContextType {
   items: CartItem[]
-  addItem: (item: CartItem) => void
-  removeItem: (productId: string, size: string, color: string) => void
-  updateQuantity: (productId: string, size: string, color: string, quantity: number) => void
+  addItem: (item: CartItem) => Promise<void>
+  removeItem: (productId: string, size: string, color: string) => Promise<void>
+  updateQuantity: (productId: string, size: string, color: string, quantity: number) => Promise<void>
   clearCart: () => void
   cartCount: number
   cartTotal: number
-  isCartOpen: boolean // For drawer
+  isCartOpen: boolean
   setIsCartOpen: (open: boolean) => void
+  isLoading: boolean
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth()
+  const supabase = createClient()
   const [items, setItems] = useState<CartItem[]>([])
   const [isCartOpen, setIsCartOpen] = useState(false)
-  const [isInitialized, setIsInitialized] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
-  // Load from local storage on mount
+  // Load initial cart
   useEffect(() => {
-    const saved = localStorage.getItem('flash-cart')
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved)
-        // Sanitize
-        const sanitized = parsed.map((i: any) => ({
-            ...i,
-            quantity: Number.isFinite(i.quantity) ? i.quantity : 1,
-            price: Number.isFinite(i.price) ? i.price : 0
-        }))
-        setItems(sanitized)
-      } catch (e) {
-        console.error('Failed to parse cart', e)
-        localStorage.removeItem('flash-cart')
+    async function loadCart() {
+      setIsLoading(true)
+      if (user) {
+        // Load from DB
+        const { data, error } = await supabase
+          .from('cart_items')
+          .select(`
+            *,
+            product:products (
+              name,
+              price,
+              main_image_url
+            )
+          `)
+          .eq('user_id', user.id)
+
+        if (data && !error) {
+          const mappedItems: CartItem[] = data.map((d: any) => ({
+            id: d.id,
+            productId: d.product_id,
+            name: d.product.name,
+            price: d.product.price,
+            image: d.product.main_image_url,
+            size: d.size,
+            color: d.color,
+            quantity: d.quantity,
+            maxQuantity: 10 // This should ideally come from stock, checked later
+          }))
+          setItems(mappedItems)
+          
+          // Validate stock after loading
+          validateStock(mappedItems)
+        }
+      } else {
+        // Load from LocalStorage
+        const saved = localStorage.getItem('flash-cart')
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved)
+            setItems(parsed)
+          } catch (e) {
+            console.error('Failed to parse cart', e)
+          }
+        }
       }
+      setIsLoading(false)
     }
-    setIsInitialized(true)
-  }, [])
 
-  // Save to local storage on change
+    loadCart()
+  }, [user])
+
+  // Save to LocalStorage (only for guests)
   useEffect(() => {
-    if (isInitialized) {
+    if (!user && !isLoading) {
       localStorage.setItem('flash-cart', JSON.stringify(items))
     }
-  }, [items, isInitialized])
+  }, [items, user, isLoading])
 
-  const addItem = useCallback((item: CartItem) => {
-    setItems(current => {
-      const existing = current.find(
-        i => i.productId === item.productId && i.size === item.size && i.color === item.color
-      )
+  // Real-time Stock Check & Listener
+  const validateStock = useCallback(async (currentItems: CartItem[]) => {
+      if (currentItems.length === 0) return
+
+      // Fetch latest stock for all items in cart
+      const { data: stocks } = await supabase
+          .from('product_stock')
+          .select('product_id, size, color, quantity')
+          .in('product_id', currentItems.map(i => i.productId))
       
-      if (existing) {
-        return current.map(i => 
-          (i.productId === item.productId && i.size === item.size && i.color === item.color)
-            ? { ...i, quantity: Math.min(i.quantity + item.quantity, i.maxQuantity) } // Simple cap
-            : i
-        )
+      if (!stocks) return
+
+      let stockChanged = false
+      const newItems = currentItems.map(item => {
+          const stockEntry = stocks.find(s => 
+              s.product_id === item.productId && s.size === item.size && s.color === item.color
+          )
+          
+          // If stock doesn't exist or is 0, remove item (or set to 0?)
+          // If stock < quantity, cap it
+          const available = stockEntry?.quantity ?? 0
+          
+          if (item.quantity > available) {
+              stockChanged = true
+              return { ...item, quantity: available, maxQuantity: available }
+          }
+           return { ...item, maxQuantity: available }
+      }).filter(item => item.quantity > 0) // Remove OOS items
+
+      if (stockChanged) {
+          toast.warning("Some items in your cart were updated due to stock changes.")
+          setItems(newItems)
+          // If user logged in, should sync this back to DB ideally, but for now just UI
       }
-      return [...current, item]
-    })
-    setIsCartOpen(true)
   }, [])
 
-  const removeItem = useCallback((productId: string, size: string, color: string) => {
+  // Subscribe to real-time stock changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('stock-changes')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'product_stock' },
+        (payload) => {
+            // Check if this stock update affects our cart
+            const { product_id, size, color, quantity } = payload.new as any
+            
+            setItems(current => {
+                 const needsUpdate = current.some(i => 
+                     i.productId === product_id && i.size === size && i.color === color && i.quantity > quantity
+                 )
+
+                 if (needsUpdate) {
+                     toast.error("An item in your cart has sold out or reduced stock!")
+                     return current.map(i => 
+                        (i.productId === product_id && i.size === size && i.color === color && i.quantity > quantity)
+                            ? { ...i, quantity: Math.max(0, quantity), maxQuantity: quantity }
+                            : i
+                     ).filter(i => i.quantity > 0)
+                 }
+                 return current
+            })
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [])
+
+
+  const addItem = useCallback(async (item: CartItem) => {
+    // Optimistic Update
+    let newItems = [...items]
+    const existingIndex = newItems.findIndex(i => 
+        i.productId === item.productId && i.size === item.size && i.color === item.color
+    )
+
+    if (existingIndex > -1) {
+        newItems[existingIndex].quantity = Math.min(
+            newItems[existingIndex].quantity + item.quantity, 
+            newItems[existingIndex].maxQuantity || 10
+        )
+    } else {
+        newItems.push(item)
+    }
+    setItems(newItems)
+    setIsCartOpen(true)
+    toast.success("Added to cart")
+
+    if (user) {
+        // Sync to DB
+        // Check if exists in DB first to update or insert
+        // Actually best to try upsert logic or separate generic sync
+        const dbItem = {
+            user_id: user.id,
+            product_id: item.productId,
+            size: item.size,
+            color: item.color,
+            quantity: newItems[existingIndex > -1 ? existingIndex : newItems.length - 1].quantity
+        }
+
+        // We use upsert based on the unique constraint we added (user_id, product_id, size, color)
+        const { error } = await supabase
+            .from('cart_items')
+            .upsert(dbItem, { onConflict: 'user_id, product_id, size, color' })
+        
+        if (error) {
+            console.error("Failed to sync cart item", error)
+            toast.error("Failed to save cart remotely")
+        }
+    }
+  }, [items, user])
+
+  const removeItem = useCallback(async (productId: string, size: string, color: string) => {
     setItems(current => current.filter(
       i => !(i.productId === productId && i.size === size && i.color === color)
     ))
-  }, [])
+    
+    if (user) {
+        const { error } = await supabase
+            .from('cart_items')
+            .delete()
+            .match({ user_id: user.id, product_id: productId, size, color })
+        
+        if (error) console.error("Error deleting remote item", error)
+    }
+  }, [user])
 
-  const updateQuantity = useCallback((productId: string, size: string, color: string, quantity: number) => {
+  const updateQuantity = useCallback(async (productId: string, size: string, color: string, quantity: number) => {
     setItems(current => current.map(i => 
       (i.productId === productId && i.size === size && i.color === color)
-        ? { ...i, quantity: Math.min(Math.max(1, quantity), i.maxQuantity) }
+        ? { ...i, quantity }
         : i
     ))
-  }, [])
 
-  const clearCart = useCallback(() => setItems([]), [])
+    if (user) {
+        const { error } = await supabase
+            .from('cart_items')
+            .update({ quantity })
+            .match({ user_id: user.id, product_id: productId, size, color })
+            
+       if (error) console.error("Error updating remote quantity", error)
+    }
+  }, [user])
+
+  const clearCart = useCallback(async () => {
+      setItems([])
+      if (user) {
+          await supabase.from('cart_items').delete().eq('user_id', user.id)
+      } else {
+          localStorage.removeItem('flash-cart')
+      }
+  }, [user])
 
   const cartCount = items.reduce((acc, item) => acc + item.quantity, 0)
   const cartTotal = items.reduce((acc, item) => acc + (item.price * item.quantity), 0)
@@ -106,8 +268,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     cartCount,
     cartTotal,
     isCartOpen,
-    setIsCartOpen
-  }), [items, addItem, removeItem, updateQuantity, clearCart, cartCount, cartTotal, isCartOpen])
+    setIsCartOpen,
+    isLoading
+  }), [items, addItem, removeItem, updateQuantity, clearCart, cartCount, cartTotal, isCartOpen, isLoading])
 
   return (
     <CartContext.Provider value={value}>
