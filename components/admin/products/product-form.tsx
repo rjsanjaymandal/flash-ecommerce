@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Loader2, Save, X, Plus, Image as ImageIcon, Trash2 } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { uploadImage } from '@/lib/services/upload-service'
+import { slugify } from '@/lib/slugify'
 import { toast } from 'sonner'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
@@ -45,7 +46,6 @@ interface ProductFormProps {
 }
 
 export function ProductForm({ initialData, categories, isLoading, onSubmit, onCancel }: ProductFormProps) {
-    const supabase = createClient()
     const [activeTab, setActiveTab] = useState("details")
     const [formData, setFormData] = useState<ProductFormData>(initialData || {
         name: '', slug: '', description: '', price: '', category_id: '',
@@ -68,12 +68,10 @@ export function ProductForm({ initialData, categories, isLoading, onSubmit, onCa
 
         setIsUploading(true)
         try {
-            const fileExt = file.name.split('.').pop()
-            const fileName = `prod_${Date.now()}_${Math.random()}.${fileExt}`
-            const { error } = await supabase.storage.from('products').upload(fileName, file)
-            if (error) throw error
+            const formData = new FormData()
+            formData.append('file', file)
             
-            const { data: { publicUrl } } = supabase.storage.from('products').getPublicUrl(fileName)
+            const publicUrl = await uploadImage(formData)
             
             if (type === 'main') {
                 setFormData(prev => ({ ...prev, main_image_url: publicUrl }))
@@ -121,6 +119,7 @@ export function ProductForm({ initialData, categories, isLoading, onSubmit, onCa
     const validateAndSubmit = () => {
         const newErrors = []
         if (!formData.name) newErrors.push("Product Name is required")
+        if (!formData.slug) newErrors.push("Product Slug is required")
         if (!formData.price || Number(formData.price) <= 0) newErrors.push("Valid Price is required")
         if (!formData.category_id) newErrors.push("Category is required")
 
@@ -159,9 +158,36 @@ export function ProductForm({ initialData, categories, isLoading, onSubmit, onCa
                                 <Label>Product Name <span className="text-destructive">*</span></Label>
                                 <Input 
                                     value={formData.name} 
-                                    onChange={e => setFormData({ ...formData, name: e.target.value })} 
+                                    onChange={e => {
+                                        const name = e.target.value
+                                        // Auto-generate slug if it's empty or matches the old likely-slug
+                                        const currentSlugFromOldName = slugify(formData.name)
+                                        const isAutoSlug = formData.slug === '' || formData.slug === currentSlugFromOldName
+                                        
+                                        setFormData(prev => ({ 
+                                            ...prev, 
+                                            name, 
+                                            slug: isAutoSlug ? slugify(name) : prev.slug 
+                                        })) 
+                                    }} 
                                     placeholder="e.g. Essential Tee"
                                 />
+                            </div>
+                            
+                            <div className="grid gap-2">
+                                <Label>Slug (URL) <span className="text-destructive">*</span></Label>
+                                <div className="flex">
+                                    <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-input bg-muted text-muted-foreground text-sm">
+                                        /product/
+                                    </span>
+                                    <Input 
+                                        value={formData.slug} 
+                                        onChange={e => setFormData({ ...formData, slug: slugify(e.target.value) })} 
+                                        placeholder="essential-tee"
+                                        className="rounded-l-none font-mono text-sm"
+                                    />
+                                </div>
+                                <p className="text-[10px] text-muted-foreground">Unique ID for the product URL.</p>
                             </div>
                             
                             <div className="grid grid-cols-2 gap-4">
@@ -305,12 +331,53 @@ export function ProductForm({ initialData, categories, isLoading, onSubmit, onCa
                                                 </Select>
                                             </div>
                                             <div className="col-span-4">
-                                                <Select value={v.color} onValueChange={val => updateVariant(idx, 'color', val)}>
-                                                    <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
-                                                    <SelectContent>
-                                                        {COLOR_OPTIONS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                                                    </SelectContent>
-                                                </Select>
+                                            <div className="col-span-4">
+                                                {/* Color Logic: Toggle between Select and Custom Input to save space */}
+                                                {(() => {
+                                                    const isCustom = !COLOR_OPTIONS.includes(v.color)
+                                                    
+                                                    if (isCustom) {
+                                                        // Render Input Mode
+                                                        return (
+                                                            <div className="flex gap-1 items-center animate-in fade-in zoom-in-95 duration-200">
+                                                                <Input 
+                                                                    className="h-8 px-2 text-xs" 
+                                                                    placeholder="Type color..."
+                                                                    value={v.color}
+                                                                    onChange={(e) => updateVariant(idx, 'color', e.target.value)}
+                                                                />
+                                                                <Button 
+                                                                    size="icon" variant="ghost" className="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground"
+                                                                    onClick={() => updateVariant(idx, 'color', 'Black')} // Reset to default on switch back
+                                                                    title="Choose from list"
+                                                                >
+                                                                    <X className="h-3 w-3" />
+                                                                </Button>
+                                                            </div>
+                                                        )
+                                                    }
+
+                                                    // Render Select Mode
+                                                    return (
+                                                        <Select 
+                                                            value={v.color} 
+                                                            onValueChange={val => {
+                                                                if (val === 'Custom') {
+                                                                    updateVariant(idx, 'color', '') // Clear to enter custom
+                                                                } else {
+                                                                    updateVariant(idx, 'color', val)
+                                                                }
+                                                            }}
+                                                        >
+                                                            <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="Custom" className="font-semibold text-primary focus:text-primary">✨ Custom Color</SelectItem>
+                                                                {COLOR_OPTIONS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    )
+                                                })()}
+                                            </div>
                                             </div>
                                             <div className="col-span-3">
                                                 <Input 
