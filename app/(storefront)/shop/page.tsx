@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { ShopFilters } from '@/components/storefront/shop-filters'
 import { SlidersHorizontal } from 'lucide-react'
+import { Badge } from "@/components/ui/badge"
 
 // Force dynamic to ensure stock status is always fresh for the user
 export const dynamic = 'force-dynamic'
@@ -23,19 +24,18 @@ export default async function ShopPage({
 }) {
   const params = await searchParams
   
-  // 1. Fetch Categories for Filters
-  const categories = await getLinearCategories()
-
-  // 2. Fetch Products
-  const filter: ProductFilter = {
+  // Parallel Fetching
+  const [categories, products] = await Promise.all([
+    getLinearCategories(),
+    getProducts({
       is_active: true,
       category_id: params.category,
       sort: params.sort as any,
       min_price: params.min_price ? Number(params.min_price) : undefined,
       max_price: params.max_price ? Number(params.max_price) : undefined,
       size: params.size
-  }
-  const products = await getProducts(filter)
+    })
+  ])
 
   return (
     <div className="min-h-screen bg-background pt-20 pb-20">

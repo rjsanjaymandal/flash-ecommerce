@@ -2,21 +2,21 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Sparkles, Zap, Heart, TrendingUp, Star } from "lucide-react"
 import { getProducts } from "@/lib/services/product-service"
-import { getLinearCategories } from "@/lib/services/category-service"
+import { getRootCategories } from "@/lib/services/category-service"
 import { ProductCard } from "@/components/storefront/product-card"
 import { HeroCarousel } from "@/components/storefront/hero-carousel"
 
 export const revalidate = 60 // Revalidate every minute
 
 export default async function Home() {
-  const allCategories = await getLinearCategories() || []
-  const categories = allCategories.filter((c: any) => !c.parent_id).slice(0, 4)
-
-  const featuredProducts = await getProducts({
+  const [categories, featuredProducts] = await Promise.all([
+    getRootCategories(4),
+    getProducts({
       is_active: true,
       limit: 4,
       sort: 'newest'
-  })
+    })
+  ])
 
   return (
     <div className="min-h-screen bg-white text-zinc-900 selection:bg-black selection:text-white">

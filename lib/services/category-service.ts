@@ -64,6 +64,24 @@ export async function getLinearCategories() {
     return data
 }
 
+export async function getRootCategories(limit?: number) {
+  const supabase = await createClient()
+  let query = supabase
+    .from('categories')
+    .select('*')
+    .is('parent_id', null)
+    .eq('is_active', true)
+    .order('name')
+
+  if (limit) {
+    query = query.limit(limit)
+  }
+
+  const { data, error } = await query
+  if (error) throw error
+  return data || []
+}
+
 export async function createCategory(data: any) {
     const supabase = await createClient()
     const { error } = await (supabase.from('categories') as any).insert([data])
