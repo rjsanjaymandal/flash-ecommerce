@@ -85,21 +85,21 @@ export function ShopFilters({ categories }: ShopFiltersProps) {
             {hasActiveFilters && (
                 <div className="flex flex-wrap gap-2 mb-4">
                      {selectedCategory && (
-                        <Badge variant="secondary" className="px-2 py-1 gap-1 cursor-pointer" onClick={() => applyFilters({ category: null })}>
+                        <Badge variant="secondary" className="px-3 py-1 rounded-full gap-1 cursor-pointer hover:bg-zinc-200" onClick={() => applyFilters({ category: null })}>
                             Category <X className="h-3 w-3" />
                         </Badge>
                      )}
                      {selectedSize && (
-                        <Badge variant="secondary" className="px-2 py-1 gap-1 cursor-pointer" onClick={() => applyFilters({ size: null })}>
+                        <Badge variant="secondary" className="px-3 py-1 rounded-full gap-1 cursor-pointer hover:bg-zinc-200" onClick={() => applyFilters({ size: null })}>
                             Size: {selectedSize} <X className="h-3 w-3" />
                         </Badge>
                      )}
                      {(priceRange[0] > 0 || priceRange[1] < 500) && (
-                        <Badge variant="secondary" className="px-2 py-1 gap-1 cursor-pointer" onClick={() => { setPriceRange([0, 500]); applyFilters({ price: [0, 500] }) }}>
+                        <Badge variant="secondary" className="px-3 py-1 rounded-full gap-1 cursor-pointer hover:bg-zinc-200" onClick={() => { setPriceRange([0, 500]); applyFilters({ price: [0, 500] }) }}>
                             Price: {priceRange[0]}-{priceRange[1]} <X className="h-3 w-3" />
                         </Badge>
                      )}
-                     <Button variant="ghost" size="sm" onClick={clearFilters} className="text-xs h-6 px-2 text-muted-foreground hover:text-foreground">
+                     <Button variant="ghost" size="sm" onClick={clearFilters} className="text-xs h-6 px-2 rounded-full text-muted-foreground hover:text-red-500 hover:bg-red-50">
                         Clear All
                      </Button>
                 </div>
@@ -116,7 +116,7 @@ export function ShopFilters({ categories }: ShopFiltersProps) {
                         <div className="grid gap-1">
                             <Button 
                                 variant={!selectedCategory ? "secondary" : "ghost"} 
-                                className={cn("justify-start h-8 px-2 text-sm font-normal", !selectedCategory && "bg-primary/10 text-primary font-bold")}
+                                className={cn("justify-start h-9 px-4 rounded-full text-sm font-normal", !selectedCategory && "bg-black text-white font-bold hover:bg-zinc-800")}
                                 onClick={() => {
                                     setSelectedCategory(null)
                                     applyFilters({ category: null })
@@ -128,7 +128,7 @@ export function ShopFilters({ categories }: ShopFiltersProps) {
                                 <Button
                                     key={c.id}
                                     variant={selectedCategory === c.id ? "secondary" : "ghost"}
-                                    className={cn("justify-start h-8 px-2 text-sm font-normal", selectedCategory === c.id && "bg-primary/10 text-primary font-bold")}
+                                    className={cn("justify-start h-9 px-4 rounded-full text-sm font-normal", selectedCategory === c.id && "bg-black text-white font-bold hover:bg-zinc-800")}
                                     onClick={() => {
                                         setSelectedCategory(c.id)
                                         applyFilters({ category: c.id })
@@ -181,10 +181,10 @@ export function ShopFilters({ categories }: ShopFiltersProps) {
                                         applyFilters({ size: newVal })
                                     }}
                                     className={cn(
-                                        "px-3 py-1.5 rounded-md text-xs font-medium border transition-all duration-200",
+                                        "px-4 py-2 rounded-full text-xs font-bold border transition-all duration-200",
                                         selectedSize === s 
-                                            ? "bg-foreground text-background border-foreground shadow-sm" 
-                                            : "bg-background border-input hover:border-foreground/50 hover:bg-muted/50"
+                                            ? "bg-black text-white border-black shadow-md scale-105" 
+                                            : "bg-white border-zinc-200 text-zinc-600 hover:border-black hover:text-black"
                                     )}
                                 >
                                     {s}

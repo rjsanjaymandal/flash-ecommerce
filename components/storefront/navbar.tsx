@@ -106,6 +106,12 @@ export function Navbar() {
                     )}
                 </div>
             ))}
+            <Link 
+                href="/contact"
+                className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-primary transition-colors py-2"
+            >
+                Contact
+            </Link>
         </nav>
 
         {/* Actions */}
@@ -200,6 +206,13 @@ export function Navbar() {
                     )}
                 </div>
             ))}
+            <Link 
+                href="/contact"
+                className="block text-base font-bold text-foreground pt-2 border-t border-border"
+                onClick={() => setIsMobileMenuOpen(false)}
+            >
+                Contact
+            </Link>
           </div>
       )}
     </header>

@@ -136,7 +136,7 @@ export function ProductCard({ product }: { product: any }) {
                     <Button 
                         size="sm" 
                         variant="secondary"
-                        className="h-9 w-full rounded-lg bg-background/90 hover:bg-background text-foreground backdrop-blur-md shadow-lg font-medium text-xs transition-transform active:scale-95"
+                        className="h-9 w-full rounded-full bg-white/90 hover:bg-white text-black backdrop-blur-md shadow-lg font-bold text-xs transition-transform active:scale-95"
                         onClick={handleQuickAdd}
                     >
                         {hasMultipleOptions ? <Eye className="h-3.5 w-3.5 mr-1.5"/> : <ShoppingBag className="h-3.5 w-3.5 mr-1.5"/>}
@@ -144,7 +144,7 @@ export function ProductCard({ product }: { product: any }) {
                     </Button>
                     <Button 
                         size="sm" 
-                        className="h-9 w-full rounded-lg shadow-lg font-medium text-xs transition-transform active:scale-95"
+                        className="h-9 w-full rounded-full shadow-lg font-bold text-xs bg-black hover:bg-zinc-800 text-white transition-transform active:scale-95"
                         onClick={handleBuyNow}
                     >
                          <Zap className="h-3.5 w-3.5 mr-1.5 fill-current" />
