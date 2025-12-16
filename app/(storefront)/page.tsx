@@ -24,10 +24,7 @@ export default async function Home() {
       {/* 1. NEW HERO SECTION */}
       <Hero />
 
-      {/* 2. FEATURED GRID */}
-      <FeaturedGrid products={products || []} />
-
-      {/* 3. SHOP BY CATEGORY (Restored) */}
+      {/* 2. SHOP BY CATEGORY (Pick Your Vibe) */}
       <section className="py-24 bg-zinc-50 relative overflow-hidden text-zinc-900">
            {/* Blob Backgrounds */}
            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-200/50 rounded-full blur-[100px] -z-10" />
@@ -80,6 +77,9 @@ export default async function Home() {
               </div>
           </div>
       </section>
+
+      {/* 3. FEATURED GRID */}
+      <FeaturedGrid products={products || []} />
 
       {/* 4. NEWSLETTER */}
       <section className="py-24 container mx-auto px-4 text-center border-t border-border">
