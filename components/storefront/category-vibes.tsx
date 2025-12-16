@@ -42,7 +42,7 @@ export function CategoryVibes({ categories }: CategoryVibesProps) {
           - Hide scrollbar
           - Bolder Cards
         */}
-        <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 overflow-x-auto snap-x snap-mandatory pb-8 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
+        <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 overflow-x-auto snap-x snap-mandatory pt-4 pb-8 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
           {categories.map((cat, i) => {
             const gradients = [
                 "from-blue-600 to-violet-600",

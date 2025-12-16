@@ -22,7 +22,7 @@ export function FeaturedGrid({ products }: { products: any[] }) {
         </div>
 
         {/* Mobile: Horizontal Scroll | Desktop: Grid */}
-        <div className="flex overflow-x-auto snap-x snap-mandatory lg:grid lg:grid-cols-4 gap-6 pb-8 lg:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
+        <div className="flex overflow-x-auto snap-x snap-mandatory lg:grid lg:grid-cols-4 gap-6 pt-4 pb-8 lg:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
             {products.map((product, index) => (
                 <motion.div
                     key={product.id}
