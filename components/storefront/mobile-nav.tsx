@@ -16,6 +16,7 @@ export function MobileNav() {
   const links = [
     { href: '/', label: 'Home', icon: Home },
     { href: '/shop', label: 'Shop', icon: Grid },
+    { href: '/wishlist', label: 'Wishlist', icon: Heart, count: wishlistCount },
     { href: '/account', label: 'You', icon: User },
   ]
 
