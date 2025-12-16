@@ -20,13 +20,13 @@ export function CategoryVibes({ categories }: CategoryVibesProps) {
   if (!categories?.length) return null
 
   return (
-    <section className="py-12 md:py-24 bg-zinc-50 relative overflow-hidden text-zinc-900">
+    <section className="py-8 md:py-12 bg-zinc-50 relative overflow-hidden text-zinc-900">
       {/* Blob Backgrounds */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-200/50 rounded-full blur-[100px] -z-10" />
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-red-200/50 rounded-full blur-[100px] -z-10" />
 
       <div className="container mx-auto px-4 md:px-6">
-        <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-12">
+        <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-6 md:mb-10">
            <div className="space-y-2">
               <span className="text-primary font-bold tracking-widest uppercase text-sm">Collections {new Date().getFullYear()}</span>
               <h2 className="text-4xl md:text-7xl font-black tracking-tighter uppercase italic">

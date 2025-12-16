@@ -6,7 +6,7 @@ import { ProductCard } from './product-card'
 
 export function FeaturedGrid({ products }: { products: any[] }) {
   return (
-    <section className="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-12">
+    <section className="py-8 md:py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-8 md:space-y-12">
         <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-12">
             <div className="space-y-2">
                 <span className="text-primary font-bold tracking-widest uppercase text-sm">New Arrivals</span>
