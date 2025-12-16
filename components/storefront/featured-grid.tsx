@@ -21,10 +21,12 @@ export function FeaturedGrid({ products }: { products: any[] }) {
             </Link>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-8 lg:gap-x-6 lg:gap-y-12">
+        {/* Mobile: Horizontal Scroll | Desktop: Grid */}
+        <div className="flex overflow-x-auto snap-x snap-mandatory lg:grid lg:grid-cols-4 gap-6 pb-8 lg:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
             {products.map((product, index) => (
                 <motion.div
                     key={product.id}
+                    className="min-w-[280px] w-[75vw] sm:w-[350px] lg:w-auto flex-shrink-0 snap-center"
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: "-50px" }}
