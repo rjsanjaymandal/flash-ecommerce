@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Loader2, ArrowRight, Mail, Lock, Clock } from "lucide-react"
+import { Loader2, ArrowRight, Mail, Lock, Clock, User } from "lucide-react"
 import { toast } from "sonner"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
@@ -18,15 +18,27 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 // Zod Schemas
-const emailSchema = z.object({
+const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
+})
+
+const signupSchema = z.object({
+  email: z.string().email({ message: "Please enter a valid email address" }),
+  name: z.string().min(2, { message: "Name must be at least 2 characters" }),
 })
 
 const otpSchema = z.object({
   otp: z.string().min(6, { message: "OTP must be 6 digits" }).max(6),
 })
 
-type EmailFormValues = z.infer<typeof emailSchema>
+// Unified Form Values
+type AuthFormValues = {
+  email: string
+  name?: string
+}
+
+type LoginFormValues = z.infer<typeof loginSchema>
+type SignupFormValues = z.infer<typeof signupSchema>
 type OtpFormValues = z.infer<typeof otpSchema>
 
 export default function LoginPage() {
@@ -43,15 +55,22 @@ export default function LoginPage() {
   const isSignup = view === 'signup'
 
   // Forms
-  const emailForm = useForm<EmailFormValues>({
-    resolver: zodResolver(emailSchema),
-    defaultValues: { email: "" }
+  // We use AuthFormValues to handle both login (no name) and signup (name) scenarios
+  const emailForm = useForm<AuthFormValues>({
+    resolver: zodResolver(isSignup ? signupSchema : loginSchema),
+    defaultValues: { email: "", name: "" },
+    mode: "onChange",
   })
   
   const otpForm = useForm<OtpFormValues>({
     resolver: zodResolver(otpSchema),
     defaultValues: { otp: "" }
   })
+
+  // Reset form validation when switching modes
+  useEffect(() => {
+    emailForm.clearErrors()
+  }, [isSignup, emailForm])
 
   // Timer Effect
   useEffect(() => {
@@ -82,9 +101,9 @@ export default function LoginPage() {
       }
   }, [otpValue])
 
-  const onSendOtp = async (data: EmailFormValues) => {
+  const onSendOtp = async (data: AuthFormValues) => {
     setLoading(true)
-    const { email } = data
+    const { email, name } = data
     
     // Debug environment variables
     if (!SUPABASE_URL || !SUPABASE_KEY) {
@@ -99,7 +118,8 @@ export default function LoginPage() {
             email,
             options: {
                 shouldCreateUser: true,
-                emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`
+                emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+                data: isSignup ? { full_name: name, name: name } : undefined
             }
         })
 
@@ -123,10 +143,10 @@ export default function LoginPage() {
   const onVerifyOtp = async (data: OtpFormValues) => {
       setLoading(true)
       const { otp } = data
-      const email = emailForm.getValues("email")
+      const { email, name } = emailForm.getValues()
 
       try {
-        const { error } = await supabase.auth.verifyOtp({
+        const { data: authData, error } = await supabase.auth.verifyOtp({
             email,
             token: otp,
             type: 'email'
@@ -134,8 +154,25 @@ export default function LoginPage() {
 
         if (error) {
             toast.error(error.message)
-            setLoading(false) // Only stop loading on error, otherwise we redirect
+            setLoading(false)
         } else {
+            // If signup, enforce name save to profiles
+            if (isSignup && name && authData.user) {
+                 try {
+                     const { error: profileError } = await supabase
+                        .from('profiles')
+                        .update({ name: name })
+                        .eq('id', authData.user.id)
+                     
+                     if (profileError) {
+                         console.error("Profile Update Error:", profileError)
+                         // Don't block login, but maybe warn?
+                     }
+                 } catch(e) {
+                     console.error("Profile update exception", e)
+                 }
+            }
+
             toast.success(isSignup ? "Account created! Welcome." : "Welcome back!")
             router.refresh() 
             window.location.href = next
@@ -163,7 +200,7 @@ export default function LoginPage() {
   // Dynamic Text
   const title = isSignup ? "Create an Account" : "Welcome Back"
   const subtitle = isSignup 
-      ? "Enter your email to get started" 
+      ? "Enter your details to get started" 
       : "Enter your email to access your account"
   const buttonText = isSignup ? "Sign Up with Email" : "Continue with Email"
   const switchModeText = isSignup ? "Already have an account?" : "Don't have an account?"
@@ -203,7 +240,7 @@ export default function LoginPage() {
            <div className="w-full max-w-md space-y-8">
                 <div className="text-center space-y-2">
                     <Link href="/" className="inline-block mb-8 hover:opacity-80 transition-opacity">
-                         <span className="text-3xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-500 to-pink-500">
+                         <span className="text-3xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-500 to-pink-500 hover:scale-105 transition-transform">
                              FLASH
                          </span>
                     </Link>
@@ -228,6 +265,26 @@ export default function LoginPage() {
                             className="space-y-6"
                         >
                             <form onSubmit={emailForm.handleSubmit(onSendOtp)} className="space-y-4">
+                                {isSignup && (
+                                    <div className="space-y-2">
+                                        <div className="relative group">
+                                             <User className="absolute left-3 top-3 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                                             <Input 
+                                                {...emailForm.register("name")}
+                                                type="text" 
+                                                placeholder="Your Name"
+                                                className="pl-10 h-12 text-base bg-muted/30 border-muted focus:border-primary/50 transition-all font-medium"
+                                                disabled={loading}
+                                             />
+                                        </div>
+                                        {emailForm.formState.errors.name && (
+                                            <p className="text-sm text-red-500 font-medium pl-1">
+                                                {emailForm.formState.errors.name.message}
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
+                                
                                 <div className="space-y-2">
                                     <div className="relative group">
                                          <Mail className="absolute left-3 top-3 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
