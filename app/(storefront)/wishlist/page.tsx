@@ -1,6 +1,6 @@
 'use client'
 
-import { useWishlist } from "@/context/wishlist-context"
+import { useWishlistStore } from "@/store/use-wishlist-store"
 import { ProductCard } from "@/components/storefront/product-card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
@@ -10,7 +10,7 @@ import { getProductsByIds } from "@/lib/services/product-service"
 import { useEffect, useState } from "react"
 
 export default function WishlistPage() {
-  const { items } = useWishlist()
+  const items = useWishlistStore((state) => state.items)
   
   // Get IDs from context
   const productIds = items.map(i => i.productId)
