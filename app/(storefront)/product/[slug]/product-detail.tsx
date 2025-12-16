@@ -140,7 +140,7 @@ export function ProductDetailClient({ product }: ProductDetailProps) {
                 {/* LEFT: Gallery (Sticky on Desktop) */}
                 <div className="relative">
                     <div className="lg:sticky lg:top-24 space-y-4">
-                        <div className="aspect-[4/5] w-full overflow-hidden rounded-md bg-muted/20 border border-border/50 shadow-sm">
+                        <div className="aspect-[3/4] lg:aspect-[4/5] w-full overflow-hidden rounded-md bg-muted/20 border border-border/50 shadow-sm">
                             {product.main_image_url ? (
                                 <img 
                                     src={product.main_image_url} 
@@ -284,50 +284,51 @@ export function ProductDetailClient({ product }: ProductDetailProps) {
 
                         {/* Actions (Visible on all screens, Stacked on Mobile) */}
                         <div className="flex flex-col lg:flex-row gap-4 w-full">
-                             <Button 
-                                size="lg" 
-                                className="w-full lg:flex-1 h-14 shrink-0 text-lg font-bold tracking-wider uppercase rounded-full shadow-lg hover:shadow-xl hover:scale-[1.01] transition-all duration-300"
-                                disabled={Boolean(!selectedSize || !selectedColor || isOutOfStock)}
-                                onClick={handleAddToCart}
-                            >
-                                {isOutOfStock ? 'Out of Stock' : 'Add to Bag'}
-                            </Button>
-                            <Button 
-                                size="lg" 
-                                variant="secondary"
-                                className="w-full lg:flex-1 h-14 shrink-0 text-lg font-bold tracking-wider uppercase rounded-full shadow-lg hover:shadow-xl hover:scale-[1.01] transition-all duration-300"
-                                disabled={Boolean(!selectedSize || !selectedColor || isOutOfStock)}
-                                onClick={handleBuyNow}
-                            >
-                                Buy Now
-                            </Button>
-                            
-                            <Button
-                                size="lg"
-                                variant="outline"
-                                className={cn(
-                                    "h-14 shrink-0 w-full lg:w-14 rounded-full border-2 hover:bg-muted transition-colors",
-                                    isWishlisted && "border-primary bg-primary/10 text-primary hover:bg-primary/20"
-                                )}
-                                onClick={() => {
-                                    if (isWishlisted) {
-                                        removeItem(product.id)
-                                    } else {
-                                        addItem({
-                                            productId: product.id,
-                                            name: product.name,
-                                            price: product.price,
-                                            image: product.main_image_url,
-                                            slug: (product as any).slug || '' // Ensure slug exists
-                                        })
-                                    }
-                                }}
-                            >
-                                <div className="flex items-center justify-center gap-2 lg:gap-0">
-                                    <Heart className={cn("h-6 w-6", isWishlisted ? "fill-primary text-primary" : "text-foreground")} />
-                                    <span className="lg:hidden font-medium">Add to Wishlist</span>
+                            <div className="fixed bottom-16 left-0 right-0 z-40 bg-background/95 backdrop-blur-md p-4 border-t border-border lg:static lg:bg-transparent lg:p-0 lg:border-none">
+                                <div className="flex gap-3 container mx-auto px-0">
+                                    <Button 
+                                        size="lg" 
+                                        className="flex-1 h-12 lg:h-14 lg:flex-1 text-base lg:text-lg font-bold tracking-wider uppercase rounded-full shadow-lg hover:shadow-xl hover:scale-[1.01] transition-all duration-300"
+                                        disabled={Boolean(!selectedSize || !selectedColor || isOutOfStock)}
+                                        onClick={handleAddToCart}
+                                    >
+                                        {isOutOfStock ? 'Out of Stock' : 'Add to Bag'}
+                                    </Button>
+                                    <Button 
+                                        size="lg" 
+                                        variant="secondary"
+                                        className="flex-1 h-12 lg:h-14 lg:flex-1 text-base lg:text-lg font-bold tracking-wider uppercase rounded-full shadow-lg hover:shadow-xl hover:scale-[1.01] transition-all duration-300 hidden sm:flex"
+                                        disabled={Boolean(!selectedSize || !selectedColor || isOutOfStock)}
+                                        onClick={handleBuyNow}
+                                    >
+                                        Buy Now
+                                    </Button>
+                                    
+                                     <Button
+                                        size="lg"
+                                        variant="outline"
+                                        className={cn(
+                                            "h-12 w-12 lg:h-14 lg:w-14 rounded-full border-2 hover:bg-muted transition-colors px-0 shrink-0",
+                                            isWishlisted && "border-primary bg-primary/10 text-primary hover:bg-primary/20"
+                                        )}
+                                        onClick={() => {
+                                            if (isWishlisted) {
+                                                removeItem(product.id)
+                                            } else {
+                                                addItem({
+                                                    productId: product.id,
+                                                    name: product.name,
+                                                    price: product.price,
+                                                    image: product.main_image_url,
+                                                    slug: (product as any).slug || '' 
+                                                })
+                                            }
+                                        }}
+                                    >
+                                        <Heart className={cn("h-5 w-5 lg:h-6 lg:w-6", isWishlisted ? "fill-primary text-primary" : "text-foreground")} />
+                                    </Button>
                                 </div>
-                            </Button>
+                            </div>
                         </div>
 
 

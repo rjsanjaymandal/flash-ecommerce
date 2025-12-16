@@ -1,87 +1,34 @@
-import Link from "next/link"
+import { Hero } from "@/components/storefront/hero"
+import { FeaturedGrid } from "@/components/storefront/featured-grid"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Sparkles, Zap, Heart, TrendingUp, Star } from "lucide-react"
+import { Star, ArrowRight } from "lucide-react"
+import Link from "next/link"
 import { getProducts } from "@/lib/services/product-service"
 import { getRootCategories } from "@/lib/services/category-service"
-import { ProductCard } from "@/components/storefront/product-card"
-import { HeroCarousel } from "@/components/storefront/hero-carousel"
 
-export const revalidate = 60 // Revalidate every minute
+export const revalidate = 60
 
 export default async function Home() {
-  const [categories, featuredProducts] = await Promise.all([
-    getRootCategories(4),
+  const [products, categories] = await Promise.all([
     getProducts({
-      is_active: true,
-      limit: 4,
-      sort: 'newest'
-    })
+        is_active: true,
+        limit: 4,
+        sort: 'newest'
+    }),
+    getRootCategories(4)
   ])
 
   return (
-    <div className="min-h-screen bg-white text-zinc-900 selection:bg-black selection:text-white">
+    <div className="min-h-screen bg-background text-foreground selection:bg-black selection:text-white">
       
-      {/* 1. HERO CAROUSEL */}
-      <HeroCarousel />
+      {/* 1. NEW HERO SECTION */}
+      <Hero />
 
-      {/* 2. VALUES BANNER (Reimagined as 'Pills') */}
-      <section className="py-20 container mx-auto px-4 relative z-10 -mt-20">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white/90 backdrop-blur-xl border border-white/20 shadow-xl rounded-3xl p-8 flex items-center gap-6 hover:translate-y-[-5px] transition-transform duration-300">
-                <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-red-400 to-rose-500 flex items-center justify-center text-white shadow-lg shadow-red-500/30">
-                    <Sparkles className="h-8 w-8" />
-                </div>
-                <div>
-                   <h3 className="text-xl font-black italic tracking-tighter">INCLUSIVE</h3>
-                   <p className="text-sm text-zinc-500 font-medium">For every body type.</p>
-                </div>
-            </div>
-            <div className="bg-white/90 backdrop-blur-xl border border-white/20 shadow-xl rounded-3xl p-8 flex items-center gap-6 hover:translate-y-[-5px] transition-transform duration-300">
-                <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center text-white shadow-lg shadow-orange-500/30">
-                    <Zap className="h-8 w-8" />
-                </div>
-                <div>
-                   <h3 className="text-xl font-black italic tracking-tighter">PREMIUM</h3>
-                   <p className="text-sm text-zinc-500 font-medium">Quality that lasts.</p>
-                </div>
-            </div>
-            <div className="bg-white/90 backdrop-blur-xl border border-white/20 shadow-xl rounded-3xl p-8 flex items-center gap-6 hover:translate-y-[-5px] transition-transform duration-300">
-                <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
-                    <Heart className="h-8 w-8" />
-                </div>
-                <div>
-                   <h3 className="text-xl font-black italic tracking-tighter">COMMUNITY</h3>
-                   <p className="text-sm text-zinc-500 font-medium">Giving back always.</p>
-                </div>
-            </div>
-        </div>
-      </section>
+      {/* 2. FEATURED GRID */}
+      <FeaturedGrid products={products || []} />
 
-      {/* 3. NEW DROPS */}
-      <section className="py-12 container mx-auto px-4">
-          <div className="flex items-center justify-between mb-12">
-            <div className="relative">
-                <h2 className="text-5xl md:text-7xl font-black tracking-tighter text-zinc-900">
-                    NEW <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500">DROPS</span>
-                </h2>
-                <div className="h-2 w-24 bg-black mt-2 rounded-full" />
-            </div>
-            <Button variant="outline" asChild className="hidden sm:flex rounded-full border-2 border-black hover:bg-black hover:text-white font-bold px-8 h-12">
-                <Link href="/shop">
-                    View All <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-            </Button>
-          </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {featuredProducts?.map((product: any) => (
-                  <ProductCard key={product.id} product={product} />
-              ))}
-          </div>
-      </section>
-
-      {/* 4. SHOP BY CATEGORY */}
-      <section className="py-24 bg-zinc-50 relative overflow-hidden">
+      {/* 3. SHOP BY CATEGORY (Restored) */}
+      <section className="py-24 bg-zinc-50 relative overflow-hidden text-zinc-900">
            {/* Blob Backgrounds */}
            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-200/50 rounded-full blur-[100px] -z-10" />
            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-red-200/50 rounded-full blur-[100px] -z-10" />
@@ -125,28 +72,32 @@ export default async function Home() {
                             </div>
                         </div>
                     </Link>
-                )}) : null}
+                )}) : (
+                    <div className="col-span-4 text-center text-muted-foreground p-12">
+                        No categories found.
+                    </div>
+                )}
               </div>
           </div>
       </section>
 
-      {/* 5. NEWSLETTER / SUPERPOWER */}
-      <section className="py-32 container mx-auto px-4 text-center">
+      {/* 4. NEWSLETTER */}
+      <section className="py-24 container mx-auto px-4 text-center border-t border-border">
         <div className="max-w-4xl mx-auto space-y-8">
             <div className="inline-flex items-center justify-center p-3 rounded-full bg-linear-to-r from-red-100 via-orange-100 to-blue-100 mb-4 animate-pulse">
                <Star className="h-6 w-6 text-orange-500 fill-orange-500" />
             </div>
-            <h2 className="text-5xl md:text-8xl font-black tracking-tighter leading-[0.9]">
+            <h2 className="text-5xl md:text-7xl font-black tracking-tighter leading-[0.9]">
                 STYLING IS <br/> 
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-500 to-blue-600">
                     MY SUPERPOWER
                 </span>
             </h2>
-            <p className="text-xl text-zinc-500 font-medium max-w-2xl mx-auto">
+            <p className="text-xl text-muted-foreground font-medium max-w-2xl mx-auto">
                 Join our community and get exclusive access to new drops, events, and styling tips.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto pt-8">
-                <Button size="lg" className="h-14 px-8 text-lg rounded-full w-full bg-black text-white hover:bg-zinc-800">
+                <Button size="lg" className="h-14 px-8 text-lg rounded-full w-full bg-foreground text-background hover:bg-foreground/90">
                     Get Started
                 </Button>
             </div>

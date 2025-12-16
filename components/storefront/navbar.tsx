@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ShoppingBag, Menu, X, Heart, ChevronDown } from 'lucide-react'
+import { ShoppingBag, Menu, X, Heart, ChevronDown, Search } from 'lucide-react'
 import { useState } from 'react'
 import { useWishlistStore } from '@/store/use-wishlist-store'
 import { useCartStore, selectCartCount } from '@/store/use-cart-store'
@@ -68,11 +68,11 @@ export function Navbar() {
         </button>
 
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2" title="Home">
             <div className="relative h-10 w-auto overflow-hidden rounded-lg hover:scale-105 transition-transform">
                 <img src="/flash-logo.jpg" alt="Flash Logo" className="h-full w-auto object-contain" />
             </div>
-            {/* Optional Text fallback or side-text if needed, but logo has text */}
+            <span className="text-xl font-black tracking-tighter">FLASH</span>
         </Link>
 
         {/* Desktop Nav */}
@@ -117,6 +117,9 @@ export function Navbar() {
 
         {/* Actions */}
         <div className="flex items-center gap-2 sm:gap-4">
+            <Link href="/shop" className="p-2 text-muted-foreground hover:text-primary transition-colors">
+                <Search className="h-5 w-5" />
+            </Link>
             <Link href="/wishlist" className="hidden sm:flex relative text-muted-foreground hover:text-primary transition-colors p-2">
                 <Heart className="h-5 w-5" />
                 {wishlistCount > 0 && (

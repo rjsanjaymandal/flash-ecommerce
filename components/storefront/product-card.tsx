@@ -103,7 +103,7 @@ export function ProductCard({ product }: { product: any }) {
   return (
     <div className="group relative flex flex-col gap-3">
         {/* Image Container */}
-        <Link href={`/product/${product.slug}`} className="block relative aspect-[3/4] overflow-hidden rounded-xl bg-muted/20">
+        <Link href={`/product/${product.slug}`} className="block relative aspect-3/4 overflow-hidden rounded-xl bg-muted/20">
             {/* Badges */}
             <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
                  {isOutOfStock && <Badge variant="destructive" className="uppercase tracking-wider text-[10px] font-bold">Out of Stock</Badge>}
@@ -154,27 +154,29 @@ export function ProductCard({ product }: { product: any }) {
             )}
         </Link>
         
-        {/* Details */}
+        {/* Details */ }
         <div className="space-y-1">
-            <div className="flex items-start justify-between gap-2">
-                 <Link href={`/product/${product.slug}`} className="hover:underline">
-                    <h3 className="font-medium text-base leading-tight line-clamp-2 text-foreground/90 group-hover:text-primary transition-colors">
-                        {product.name}
-                    </h3>
+             <div className="flex justify-between items-start gap-2">
+                <Link href={`/product/${product.slug}`} className="group-hover:text-primary transition-colors">
+                    <h3 className="font-semibold text-sm lg:text-base leading-tight line-clamp-2">{product.name}</h3>
                 </Link>
-            </div>
-            
-            <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold text-foreground">
-                    {displayPrice}
-                </p>
-                {/* Simulated Rating for aesthetic */}
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                    <span>4.8</span>
-                </div>
-            </div>
+                {/* Wishlist Button - Desktop Only hover, currently visible always for simplicity or use CSS to hide on mobile if card is too small */}
+                 {/* <button className="opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Heart className="h-4 w-4" />
+                </button> */}
+             </div>
+             <p className="font-medium text-xs lg:text-sm text-muted-foreground">{formatCurrency(product.price)}</p>
         </div>
-    </div>
+
+         {/* Quick Add (Hidden on mobile to keep clean, or keep?) keeping simple for now */}
+        < div className="pt-2 opacity-0 group-hover:opacity-100 transition-opacity hidden lg:block" >
+            <button 
+                onClick={handleQuickAdd}
+                className="w-full rounded-full bg-foreground text-background py-2 text-xs font-bold uppercase tracking-wider hover:scale-[1.02] transition-transform"
+            >
+                Quick Add
+            </button>
+        </div >
+    </div >
   )
 }
