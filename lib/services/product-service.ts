@@ -175,3 +175,22 @@ export async function getProductsByIds(ids: string[]) {
     if (error) throw error
     return data
 }
+
+export async function getRelatedProducts(currentProductId: string, categoryId: string) {
+    const supabase = await getDb()
+    
+    // Simple logic: Same category, not current product, limit 4
+    let query = supabase
+      .from('products')
+      .select('id, name, price, main_image_url') // minimal fields
+      .eq('is_active', true)
+      .neq('id', currentProductId)
+      .limit(4)
+
+    if (categoryId) {
+        query = query.eq('category_id', categoryId)
+    }
+    
+    const { data } = await query
+    return data || []
+}

@@ -1,10 +1,12 @@
 import { Navbar } from '@/components/storefront/navbar'
 import { Footer } from '@/components/storefront/footer'
 import { MobileNav } from '@/components/storefront/mobile-nav'
+import { CommandMenu } from '@/components/search/command-menu'
 
 export default function StorefrontLayout({
   children,
 }: {
+  // Layout for storefront
   children: React.ReactNode
 }) {
   return (
@@ -15,6 +17,7 @@ export default function StorefrontLayout({
       </main>
       <Footer />
       <MobileNav />
+      <CommandMenu />
     </div>
   )
 }

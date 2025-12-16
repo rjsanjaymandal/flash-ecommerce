@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
+import { useSearchStore } from '@/store/use-search-store'
 
 export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -124,9 +125,9 @@ export function Navbar() {
 
         {/* Actions */}
         <div className="flex items-center gap-2 sm:gap-4">
-            <Link href="/shop" className="p-2 text-muted-foreground hover:text-primary transition-colors">
+            <button onClick={() => useSearchStore.getState().setOpen(true)} className="p-2 text-muted-foreground hover:text-primary transition-colors">
                 <Search className="h-5 w-5" />
-            </Link>
+            </button>
             <Link href="/wishlist" className="relative text-muted-foreground hover:text-primary transition-colors p-2">
                 <Heart className="h-5 w-5" />
                 {wishlistCount > 0 && (
