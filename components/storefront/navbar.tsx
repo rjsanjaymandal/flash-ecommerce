@@ -75,8 +75,8 @@ export function Navbar() {
                 className="flex items-center gap-2" 
                 title="Home"
             >
-                <div className="relative h-10 w-auto overflow-hidden rounded-lg hover:scale-105 transition-transform">
-                    <img src="/flash-logo.jpg" alt="Flash Logo" className="h-full w-auto object-contain" />
+                <div className="relative h-10 w-10 overflow-hidden rounded-full hover:scale-105 transition-transform">
+                    <img src="/flash-logo.jpg" alt="Flash Logo" className="h-full w-full object-cover" />
                 </div>
                 <span className="hidden lg:block text-xl font-black tracking-tighter">FLASH</span>
             </Link>
