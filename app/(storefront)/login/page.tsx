@@ -37,8 +37,10 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [resendTimer, setResendTimer] = useState(0)
   
-  // Get redirect URL
+  // Get redirect URL & View Mode
   const next = searchParams.get('next') || '/'
+  const view = searchParams.get('view') // 'login' or 'signup'
+  const isSignup = view === 'signup'
 
   // Forms
   const emailForm = useForm<EmailFormValues>({
@@ -105,7 +107,8 @@ export default function LoginPage() {
             console.error('Supabase Error:', error)
             toast.error(error.message)
         } else {
-            toast.success("Login code sent!", { description: "Check your email inbox." })
+            const action = isSignup ? "Creating account" : "Logging in"
+            toast.success("Code sent!", { description: `Check your email to finish ${action.toLowerCase()}.` })
             setStep('otp')
             setResendTimer(60) // Start 60s cooldown
         }
@@ -133,7 +136,7 @@ export default function LoginPage() {
             toast.error(error.message)
             setLoading(false) // Only stop loading on error, otherwise we redirect
         } else {
-            toast.success("Success! logging you in...")
+            toast.success(isSignup ? "Account created! Welcome." : "Welcome back!")
             router.refresh() 
             window.location.href = next
         }
@@ -157,6 +160,16 @@ export default function LoginPage() {
       }
   }
 
+  // Dynamic Text
+  const title = isSignup ? "Create an Account" : "Welcome Back"
+  const subtitle = isSignup 
+      ? "Enter your email to get started" 
+      : "Enter your email to access your account"
+  const buttonText = isSignup ? "Sign Up with Email" : "Continue with Email"
+  const switchModeText = isSignup ? "Already have an account?" : "Don't have an account?"
+  const switchModeLinkText = isSignup ? "Log in" : "Sign up"
+  const switchModeUrl = isSignup ? "/login" : "/login?view=signup"
+
   return (
     <div className="min-h-screen flex w-full">
       {/* Left Side - Image (Desktop Only) */}
@@ -169,11 +182,13 @@ export default function LoginPage() {
          />
          <div className="absolute bottom-20 left-12 z-20 max-w-lg">
             <h1 className="text-5xl font-black text-white mb-4 tracking-tighter loading-none">
-                DEFINE YOUR <br/> STYLE.
+                {isSignup ? "JOIN THE\nREVOLUTION." : "DEFINE YOUR\nSTYLE."}
             </h1>
             <p className="text-white/80 text-lg font-light leading-relaxed">
-                Join the exclusive community of trendsetters. 
-                Early access to drops, curated collections, and personalized styling.
+                {isSignup 
+                    ? "Identify as you. Shop as you. Be you. Join the most inclusive fashion community."
+                    : "Join the exclusive community of trendsetters. Early access to drops, curated collections, and personalized styling."
+                }
             </p>
          </div>
       </div>
@@ -193,11 +208,11 @@ export default function LoginPage() {
                          </span>
                     </Link>
                     <h2 className="text-3xl font-bold tracking-tight">
-                        {step === 'email' ? 'Welcome Back' : 'Check Your Inbox'}
+                        {step === 'email' ? title : 'Check Your Inbox'}
                     </h2>
                     <p className="text-muted-foreground">
                         {step === 'email' 
-                            ? 'Enter your email to access your account' 
+                            ? subtitle
                             : `We've sent a 6-digit code to ${emailForm.getValues("email")}`
                         }
                     </p>
@@ -244,7 +259,7 @@ export default function LoginPage() {
                                         </span>
                                     ) : (
                                         <span className="flex items-center">
-                                            Continue with Email
+                                            {buttonText}
                                             <ArrowRight className="ml-2 h-5 w-5" />
                                         </span>
                                     )}
@@ -289,6 +304,13 @@ export default function LoginPage() {
                                 </svg>
                                 Google
                             </Button>
+
+                            <div className="text-center text-sm">
+                                <span className="text-muted-foreground">{switchModeText} </span>
+                                <Link href={switchModeUrl} className="font-bold text-primary hover:underline">
+                                    {switchModeLinkText}
+                                </Link>
+                            </div>
                         </motion.div>
                     ) : (
                         <motion.div

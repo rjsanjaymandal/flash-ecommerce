@@ -8,14 +8,14 @@ export default function SignupPage() {
   const router = useRouter()
 
   useEffect(() => {
-    router.replace('/login')
+    router.replace('/login?view=signup')
   }, [])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/20">
         <div className="flex flex-col items-center gap-4">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="text-muted-foreground">Redirecting to secure login...</p>
+            <p className="text-muted-foreground">Redirecting to secure signup...</p>
         </div>
     </div>
   )
