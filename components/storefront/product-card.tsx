@@ -4,18 +4,18 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { cn, formatCurrency } from '@/lib/utils'
 import { ShoppingBag, Star, Heart, Zap, Eye } from 'lucide-react'
-import { useWishlist } from '@/context/wishlist-context'
-import { useCart } from '@/context/cart-context'
+import { useWishlistStore, selectIsInWishlist } from '@/store/use-wishlist-store'
+import { useCartStore } from '@/store/use-cart-store'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 
 export function ProductCard({ product }: { product: any }) {
   const router = useRouter()
-  const { addItem: addToCart } = useCart()
-  const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlist()
-  
-  const isWishlisted = isInWishlist(product.id)
+  const addToCart = useCartStore((state) => state.addItem)
+  const addToWishlist = useWishlistStore((state) => state.addItem)
+  const removeFromWishlist = useWishlistStore((state) => state.removeItem)
+  const isWishlisted = useWishlistStore((state) => selectIsInWishlist(state, product.id))
   
   const stock = product.product_stock || []
   const hasMultipleOptions = (product.size_options?.length > 0 || product.color_options?.length > 0)

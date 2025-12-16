@@ -1,6 +1,6 @@
 'use client'
 
-import { useCart } from "@/context/cart-context"
+import { useCartStore, selectCartTotal } from "@/store/use-cart-store"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/context/auth-context"
@@ -18,7 +18,9 @@ declare global {
 }
 
 export default function CheckoutPage() {
-  const { items, cartTotal, clearCart } = useCart()
+  const items = useCartStore((state) => state.items)
+  const cartTotal = useCartStore(selectCartTotal)
+  const clearCart = useCartStore((state) => state.clearCart)
   const { user } = useAuth()
   const [isProcessing, setIsProcessing] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)

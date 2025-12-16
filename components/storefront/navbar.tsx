@@ -4,8 +4,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { ShoppingBag, Menu, X, Heart, ChevronDown } from 'lucide-react'
 import { useState } from 'react'
-import { useWishlist } from '@/context/wishlist-context'
-import { useCart } from '@/context/cart-context'
+import { useWishlistStore } from '@/store/use-wishlist-store'
+import { useCartStore, selectCartCount } from '@/store/use-cart-store'
 import { useAuth } from '@/context/auth-context'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -14,8 +14,9 @@ import { createClient } from '@/lib/supabase/client'
 
 export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const { cartCount, setIsCartOpen } = useCart()
-  const { wishlistCount } = useWishlist()
+  const cartCount = useCartStore(selectCartCount)
+  const setIsCartOpen = useCartStore((state) => state.setIsCartOpen)
+  const wishlistCount = useWishlistStore((state) => state.items.length)
   const { user, profile, isAdmin, signOut } = useAuth()
 // ...
   const pathname = usePathname()

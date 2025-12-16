@@ -2,8 +2,8 @@
 
 import { useState, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
-import { useCart } from '@/context/cart-context'
-import { useWishlist } from '@/context/wishlist-context'
+import { useCartStore } from '@/store/use-cart-store'
+import { useWishlistStore, selectIsInWishlist } from '@/store/use-wishlist-store'
 import { cn, formatCurrency } from "@/lib/utils"
 import { Star, Truck, RefreshCcw, ShieldCheck, ChevronDown, Plus, Minus, Heart } from 'lucide-react'
 import { toast } from 'sonner'
@@ -36,9 +36,10 @@ type ProductDetailProps = {
 }
 
 export function ProductDetailClient({ product }: ProductDetailProps) {
-  const { addItem: addToCart } = useCart() // Rename to avoid conflict
-  const { addItem, removeItem, isInWishlist } = useWishlist()
-  const isWishlisted = isInWishlist(product.id)
+  const addToCart = useCartStore((state) => state.addItem)
+  const addItem = useWishlistStore((state) => state.addItem)
+  const removeItem = useWishlistStore((state) => state.removeItem)
+  const isWishlisted = useWishlistStore((state) => selectIsInWishlist(state, product.id))
   
   const [selectedSize, setSelectedSize] = useState<string>('')
   const [selectedColor, setSelectedColor] = useState<string>('')
