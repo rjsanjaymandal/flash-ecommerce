@@ -3,16 +3,21 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { cn, formatCurrency } from '@/lib/utils'
-import { ShoppingBag, Star, Heart, Zap, Eye } from 'lucide-react'
+import { ShoppingBag, Heart, Eye } from 'lucide-react'
+import Image from 'next/image'
 import { useWishlistStore, selectIsInWishlist } from '@/store/use-wishlist-store'
 import { useCartStore } from '@/store/use-cart-store'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
+import { useState } from 'react'
+import { motion } from 'framer-motion'
 
 export function ProductCard({ product }: { product: any }) {
+  const [imageSrc, setImageSrc] = useState(product.main_image_url || '/placeholder.svg')
   const router = useRouter()
   const addToCart = useCartStore((state) => state.addItem)
+  const setIsCartOpen = useCartStore((state) => state.setIsCartOpen)
   const addToWishlist = useWishlistStore((state) => state.addItem)
   const removeFromWishlist = useWishlistStore((state) => state.removeItem)
   const isWishlisted = useWishlistStore((state) => selectIsInWishlist(state, product.id))
@@ -23,9 +28,6 @@ export function ProductCard({ product }: { product: any }) {
   // Calculate total stock
   const totalStock = stock.reduce((acc: number, item: any) => acc + item.quantity, 0)
   const isOutOfStock = totalStock === 0
-
-  // Get simple price display
-  const displayPrice = formatCurrency(product.price)
 
   const handleWishlistClick = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -40,20 +42,19 @@ export function ProductCard({ product }: { product: any }) {
             image: product.main_image_url,
             slug: product.slug || ''
         })
+        toast.success("Added to Wishlist")
     }
   }
 
-  const handleQuickAdd = (e: React.MouseEvent) => {
+  const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
 
     if (hasMultipleOptions) {
-        router.push(`/shop/${product.slug}`)
+        router.push(`/product/${product.slug}`)
         return
     }
 
-    // Single variant logic (if any) or simplified add
-    // For now, if no options properly defined but stock exists, find first Item
     const variant = stock[0]
     if (variant) {
          addToCart({
@@ -66,9 +67,9 @@ export function ProductCard({ product }: { product: any }) {
             maxQuantity: variant.quantity,
             quantity: 1
         })
-        toast.success("Added to bag")
+        toast.success("Added to Bag")
+        setIsCartOpen(true)
     } else {
-         // Fallback to PDP if data is weird
          router.push(`/product/${product.slug}`)
     }
   }
@@ -100,55 +101,62 @@ export function ProductCard({ product }: { product: any }) {
     }
   }
   
+  const isNew = product.created_at && new Date(product.created_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+
   return (
-    <div className="group relative flex flex-col gap-3">
+    <motion.div 
+        whileHover={{ y: -5 }}
+        className="group relative flex flex-col gap-3"
+    >
         {/* Image Container */}
-        <Link href={`/product/${product.slug}`} className="block relative aspect-3/4 overflow-hidden rounded-xl bg-muted/20">
+        <Link href={`/product/${product.slug}`} className="block relative aspect-3/4 overflow-hidden rounded-lg bg-muted/20">
             {/* Badges */}
             <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
-                 {isOutOfStock && <Badge variant="destructive" className="uppercase tracking-wider text-[10px] font-bold">Out of Stock</Badge>}
-                 {!isOutOfStock && product.created_at && new Date(product.created_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) && (
-                     <Badge className="bg-primary text-primary-foreground uppercase tracking-wider text-[10px] font-bold">New</Badge>
-                 )}
+                 {isOutOfStock ? (
+                     <Badge variant="destructive" className="uppercase tracking-wider text-[10px] font-bold shadow-sm">Out of Stock</Badge>
+                 ) : isNew ? (
+                     <Badge className="bg-white text-black hover:bg-white/90 uppercase tracking-wider text-[10px] font-bold shadow-sm backdrop-blur-md">New</Badge>
+                 ) : null}
             </div>
 
             {/* Wishlist Button */}
              <button
                 onClick={handleWishlistClick}
                 className={cn(
-                    "absolute top-3 right-3 z-10 h-8 w-8 flex items-center justify-center rounded-full bg-background/80 backdrop-blur-sm transition-all duration-300 hover:scale-110 shadow-sm",
-                    isWishlisted ? "text-red-500 bg-red-50/90" : "text-muted-foreground hover:text-foreground"
+                    "absolute top-3 right-3 z-10 h-8 w-8 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-md transition-all duration-300 hover:scale-110 shadow-sm opacity-0 group-hover:opacity-100",
+                    isWishlisted ? "text-red-500 bg-red-50/90 opacity-100" : "text-black hover:bg-white"
                 )}
             >
                 <Heart className={cn("h-4 w-4", isWishlisted && "fill-current")} />
             </button>
 
             {/* Main Image */}
-            <img 
-                src={product.main_image_url || '/placeholder.jpg'} 
-                alt={product.name}
-                className="h-full w-full object-cover transition-transform duration-700 will-change-transform group-hover:scale-105"
-            />
+            <motion.div
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.4 }}
+                className="h-full w-full bg-muted/20"
+            >
+                <Image 
+                    src={imageSrc} 
+                    alt={product.name}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    onError={() => setImageSrc('/placeholder.svg')}
+                    unoptimized
+                />
+            </motion.div>
 
-            {/* Action Bar Overlay */}
+            {/* Desktop Action Overlay */}
             {!isOutOfStock && (
-                <div className="absolute inset-x-4 bottom-4 grid grid-cols-2 gap-2 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 ease-out z-20">
+                <div className="hidden lg:flex absolute inset-x-4 bottom-4 gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out z-20">
                     <Button 
                         size="sm" 
-                        variant="secondary"
-                        className="h-9 w-full rounded-full bg-white/90 hover:bg-white text-black backdrop-blur-md shadow-lg font-bold text-xs transition-transform active:scale-95"
-                        onClick={handleQuickAdd}
+                        className="flex-1 bg-white text-black hover:bg-white/90 shadow-lg font-medium h-10 rounded-full"
+                        onClick={handleAddToCart}
                     >
-                        {hasMultipleOptions ? <Eye className="h-3.5 w-3.5 mr-1.5"/> : <ShoppingBag className="h-3.5 w-3.5 mr-1.5"/>}
-                        {hasMultipleOptions ? "View" : "Add"}
-                    </Button>
-                    <Button 
-                        size="sm" 
-                        className="h-9 w-full rounded-full shadow-lg font-bold text-xs bg-black hover:bg-zinc-800 text-white transition-transform active:scale-95"
-                        onClick={handleBuyNow}
-                    >
-                         <Zap className="h-3.5 w-3.5 mr-1.5 fill-current" />
-                         Buy
+                         <ShoppingBag className="h-4 w-4 mr-2" />
+                         Add to Cart
                     </Button>
                 </div>
             )}
@@ -157,26 +165,33 @@ export function ProductCard({ product }: { product: any }) {
         {/* Details */ }
         <div className="space-y-1">
              <div className="flex justify-between items-start gap-2">
-                <Link href={`/product/${product.slug}`} className="group-hover:text-primary transition-colors">
-                    <h3 className="font-semibold text-sm lg:text-base leading-tight line-clamp-2">{product.name}</h3>
+                <Link href={`/product/${product.slug}`} className="group-hover:text-primary transition-colors flex-1">
+                    <h3 className="font-medium text-sm lg:text-base leading-tight truncate">{product.name}</h3>
                 </Link>
-                {/* Wishlist Button - Desktop Only hover, currently visible always for simplicity or use CSS to hide on mobile if card is too small */}
-                 {/* <button className="opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Heart className="h-4 w-4" />
-                </button> */}
              </div>
-             <p className="font-medium text-xs lg:text-sm text-muted-foreground">{formatCurrency(product.price)}</p>
+             <p className="font-bold text-sm lg:text-base">{formatCurrency(product.price)}</p>
         </div>
 
-         {/* Quick Add (Hidden on mobile to keep clean, or keep?) keeping simple for now */}
-        < div className="pt-2 opacity-0 group-hover:opacity-100 transition-opacity hidden lg:block" >
-            <button 
-                onClick={handleQuickAdd}
-                className="w-full rounded-full bg-foreground text-background py-2 text-xs font-bold uppercase tracking-wider hover:scale-[1.02] transition-transform"
+         {/* Mobile Actions (Visible below card) */}
+        <div className="lg:hidden grid grid-cols-2 gap-2 mt-1">
+             <Button 
+                variant="outline" 
+                size="sm" 
+                className="rounded-full h-9 text-xs font-semibold"
+                onClick={handleAddToCart}
+                disabled={isOutOfStock}
             >
-                Quick Add
-            </button>
-        </div >
-    </div >
+                Add
+            </Button>
+            <Button 
+                size="sm" 
+                className="rounded-full h-9 text-xs font-semibold"
+                onClick={handleBuyNow}
+                disabled={isOutOfStock}
+            >
+                Buy Now
+            </Button>
+        </div>
+    </motion.div>
   )
 }
