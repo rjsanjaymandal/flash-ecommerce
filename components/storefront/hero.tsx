@@ -80,7 +80,7 @@ export function Hero() {
       {/* IMAGE SECTION (Order 1 on Mobile, Order 2 on Desktop) */}
       <div className="w-full lg:w-3/5 order-1 lg:order-2 relative lg:h-full">
         {/* Mobile: Aspect Ratio Wrapper. Desktop: Fill Height */}
-        <div className="relative w-full aspect-[4/5] lg:aspect-auto lg:h-full">
+        <div className="relative w-full aspect-4/5 lg:aspect-auto lg:h-full">
             <div className="absolute inset-0 bg-muted/20 animate-pulse" />
             <img 
                 src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=2520&auto=format&fit=crop" 

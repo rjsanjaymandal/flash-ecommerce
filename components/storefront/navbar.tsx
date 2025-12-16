@@ -57,7 +57,7 @@ export function Navbar() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-background/80 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div className="relative mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         
         {/* Mobile Menu Button */}
         <button 
@@ -68,11 +68,15 @@ export function Navbar() {
         </button>
 
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2" title="Home">
+        <Link 
+            href="/" 
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 lg:static lg:translate-x-0 lg:translate-y-0 flex items-center gap-2" 
+            title="Home"
+        >
             <div className="relative h-10 w-auto overflow-hidden rounded-lg hover:scale-105 transition-transform">
                 <img src="/flash-logo.jpg" alt="Flash Logo" className="h-full w-auto object-contain" />
             </div>
-            <span className="text-xl font-black tracking-tighter">FLASH</span>
+            <span className="hidden lg:block text-xl font-black tracking-tighter">FLASH</span>
         </Link>
 
         {/* Desktop Nav */}
@@ -120,7 +124,7 @@ export function Navbar() {
             <Link href="/shop" className="p-2 text-muted-foreground hover:text-primary transition-colors">
                 <Search className="h-5 w-5" />
             </Link>
-            <Link href="/wishlist" className="hidden sm:flex relative text-muted-foreground hover:text-primary transition-colors p-2">
+            <Link href="/wishlist" className="relative text-muted-foreground hover:text-primary transition-colors p-2">
                 <Heart className="h-5 w-5" />
                 {wishlistCount > 0 && (
                     <span className="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-background">
