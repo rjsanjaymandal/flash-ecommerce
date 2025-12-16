@@ -33,9 +33,6 @@ export function CategoryVibes({ categories }: CategoryVibesProps) {
                 Pick Your <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-accent">Vibe</span>
               </h2>
            </div>
-           <p className="text-muted-foreground font-medium max-w-sm text-right hidden md:block">
-              Curated styles for every mood. Find what speaks to you.
-           </p>
         </div>
 
         {/* 
