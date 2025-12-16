@@ -60,24 +60,27 @@ export function Navbar() {
       <div className="relative mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         
         {/* Mobile Menu Button */}
-        <button 
-            className="lg:hidden p-2 -ml-2 text-foreground"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        >
-            {isMobileMenuOpen ? <X /> : <Menu />}
-        </button>
+        <div className="flex items-center gap-2">
+            {/* Mobile Menu Button */}
+            <button 
+                className="lg:hidden p-2 -ml-2 text-foreground"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+                {isMobileMenuOpen ? <X /> : <Menu />}
+            </button>
 
-        {/* Logo */}
-        <Link 
-            href="/" 
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 lg:static lg:translate-x-0 lg:translate-y-0 flex items-center gap-2" 
-            title="Home"
-        >
-            <div className="relative h-10 w-auto overflow-hidden rounded-lg hover:scale-105 transition-transform">
-                <img src="/flash-logo.jpg" alt="Flash Logo" className="h-full w-auto object-contain" />
-            </div>
-            <span className="hidden lg:block text-xl font-black tracking-tighter">FLASH</span>
-        </Link>
+            {/* Logo */}
+            <Link 
+                href="/" 
+                className="flex items-center gap-2" 
+                title="Home"
+            >
+                <div className="relative h-10 w-auto overflow-hidden rounded-lg hover:scale-105 transition-transform">
+                    <img src="/flash-logo.jpg" alt="Flash Logo" className="h-full w-auto object-contain" />
+                </div>
+                <span className="hidden lg:block text-xl font-black tracking-tighter">FLASH</span>
+            </Link>
+        </div>
 
         {/* Desktop Nav */}
         <nav className="hidden lg:flex items-center gap-8">
