@@ -16,13 +16,28 @@ export type ProductFilter = {
   search?: string
   sort?: 'price_asc' | 'price_desc' | 'newest'
   limit?: number
+  page?: number
   min_price?: number
   max_price?: number
   size?: string
 }
 
-export async function getProducts(filter: ProductFilter = {}) {
+export type PaginatedResult<T> = {
+  data: T[]
+  meta: {
+    total: number
+    page: number
+    limit: number
+    totalPages: number
+  }
+}
+
+export async function getProducts(filter: ProductFilter = {}): Promise<PaginatedResult<any>> {
     const supabase = await getDb()
+    const page = filter.page || 1
+    const limit = filter.limit || 10
+    const from = (page - 1) * limit
+    const to = from + limit - 1
     
     // If filtering by size, we need an inner join on stock
     let selectString = '*, categories(name), product_stock(*)'
@@ -30,9 +45,10 @@ export async function getProducts(filter: ProductFilter = {}) {
         selectString = '*, categories(name), product_stock!inner(*)'
     }
 
+    // We use count: 'exact' to get total rows matching filters
     let query = supabase
       .from('products')
-      .select(selectString)
+      .select(selectString, { count: 'exact' })
     
     if (filter.is_active !== undefined) {
       query = query.eq('is_active', filter.is_active)
@@ -59,10 +75,6 @@ export async function getProducts(filter: ProductFilter = {}) {
       query = query.ilike('name', `%${filter.search}%`)
     }
 
-    if (filter.limit) {
-      query = query.limit(filter.limit)
-    }
-
     // Sorting
     switch (filter.sort) {
       case 'price_asc':
@@ -76,9 +88,22 @@ export async function getProducts(filter: ProductFilter = {}) {
         query = query.order('created_at', { ascending: false })
     }
 
-    const { data, error } = await query
+    // Apply Pagination
+    query = query.range(from, to)
+
+    const { data, error, count } = await query
+    
     if (error) throw error
-    return data
+
+    return {
+        data: data || [],
+        meta: {
+            total: count || 0,
+            page,
+            limit,
+            totalPages: Math.ceil((count || 0) / limit)
+        }
+    }
 }
 
 export async function getProductBySlug(slug: string) {

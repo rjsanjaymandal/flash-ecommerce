@@ -25,7 +25,7 @@ export default async function ShopPage({
   const params = await searchParams
   
   // Parallel Fetching
-  const [categories, products] = await Promise.all([
+  const [categories, { data: products }] = await Promise.all([
     getLinearCategories(),
     getProducts({
       is_active: true,

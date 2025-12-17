@@ -11,7 +11,7 @@ import { NewsletterSection } from "@/components/marketing/newsletter-section"
 export const revalidate = 60
 
 export default async function Home() {
-  const [products, categories] = await Promise.all([
+  const [{ data: products }, categories] = await Promise.all([
     getProducts({
         is_active: true,
         limit: 4,

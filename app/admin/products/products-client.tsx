@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Plus, Pencil, Search, Filter, MoreHorizontal, ArrowUpDown, Loader2, Package } from 'lucide-react'
@@ -24,13 +25,30 @@ import { deleteProduct } from '@/lib/services/product-service'
 import { formatCurrency, cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 
-export function ProductsClient({ initialProducts }: { initialProducts: any[] }) {
-  const [search, setSearch] = useState('')
-  const [deleteId, setDeleteId] = useState<string | null>(null)
+import { Pagination } from '@/components/shared/pagination'
+import { useSearchParams } from 'next/navigation'
+
+
+export function ProductsClient({ initialProducts, meta }: { initialProducts: any[], meta: { total: number, page: number, limit: number, totalPages: number } }) {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const [search, setSearch] = useState(searchParams.get('q') || '') 
+  const [deleteId, setDeleteId] = useState<string | null>(null)
   
-  // Filter locally for now effectively
-  const products = initialProducts.filter(p => p.name.toLowerCase().includes(search.toLowerCase()))
+  // Debounce Search
+  useEffect(() => {
+    const handler = setTimeout(() => {
+        const params = new URLSearchParams(searchParams.toString())
+        if (search) {
+            params.set('q', search)
+            params.set('page', '1') // Reset to page 1 on search
+        } else {
+            params.delete('q')
+        }
+        router.replace(`?${params.toString()}`)
+    }, 500)
+    return () => clearTimeout(handler)
+  }, [search, router, searchParams])
 
   const deleteMutation = useMutation({
       mutationFn: async (id: string) => {
@@ -103,10 +121,10 @@ export function ProductsClient({ initialProducts }: { initialProducts: any[] }) 
             </TableRow>
           </TableHeader>
           <TableBody>
-            {products.length === 0 ? (
+            {initialProducts.length === 0 ? (
                 <TableRow><TableCell colSpan={7} className="text-center py-24 text-muted-foreground">No products found.</TableCell></TableRow>
             ) : (
-                products.map((product: any) => {
+                initialProducts.map((product: any) => {
                     const stockStatus = getStockStatus(product.product_stock)
                     return (
                     <TableRow key={product.id} className="group hover:bg-muted/30 transition-colors">
@@ -124,12 +142,12 @@ export function ProductsClient({ initialProducts }: { initialProducts: any[] }) 
                             <Badge variant="secondary" className="font-normal rounded-md">{product.categories?.name || 'Uncategorized'}</Badge>
                         </TableCell>
                         <TableCell>
-                             <div className="flex flex-col gap-1">
+                            <div className="flex flex-col gap-1">
                                 <Badge variant={stockStatus.variant} className={cn("w-fit font-medium rounded-md", stockStatus.className)}>
                                     {stockStatus.label}
                                 </Badge>
                                 <span className="text-xs text-muted-foreground ml-1">{stockStatus.count} units</span>
-                             </div>
+                            </div>
                         </TableCell>
                         <TableCell className="font-bold text-base">{formatCurrency(product.price)}</TableCell>
                         <TableCell>
@@ -167,6 +185,11 @@ export function ProductsClient({ initialProducts }: { initialProducts: any[] }) 
             )}
           </TableBody>
         </Table>
+        
+        {/* Pagination Controls */}
+        <div className="border-t p-4 bg-gray-50/50">
+            <Pagination currentPage={meta.page} totalPages={meta.totalPages} />
+        </div>
       </div>
 
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
@@ -174,7 +197,7 @@ export function ProductsClient({ initialProducts }: { initialProducts: any[] }) 
             <AlertDialogHeader>
                 <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                    This will permanently delete "{products.find((p: any) => p.id === deleteId)?.name}".
+                    This will permanently delete "{initialProducts.find((p: any) => p.id === deleteId)?.name}".
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
