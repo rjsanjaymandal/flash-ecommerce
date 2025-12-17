@@ -32,7 +32,7 @@ export function Hero() {
                     transition={{ delay: 0.2 }}
                     className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-black uppercase tracking-[0.3em]"
                 >
-                    Summer Drop 2024
+                    Summer Drop 2025
                 </motion.span>
                 <div className="overflow-hidden">
                     <motion.h1 
@@ -106,7 +106,7 @@ export function Hero() {
           <div className="absolute bottom-8 right-8 z-20 flex gap-4">
                <div className="p-4 glass rounded-xl backdrop-blur-md">
                    <p className="text-xs font-black uppercase tracking-widest mb-1 opacity-60">Featured Artist</p>
-                   <p className="text-sm font-bold">Alex Rivera • 2024</p>
+                   <p className="text-sm font-bold">Alex Rivera • 2025</p>
                </div>
           </div>
       </div>

@@ -40,7 +40,7 @@ export default async function ShopPage({
   ])
 
   return (
-    <div className="min-h-screen bg-background pt-20 pb-20">
+    <div className="min-h-screen bg-background pt-8 pb-20">
       <div className="container mx-auto px-4 lg:px-8">
         
         {/* Header Section */}

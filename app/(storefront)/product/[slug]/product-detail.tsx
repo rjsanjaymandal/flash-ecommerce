@@ -146,7 +146,7 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
   if (galleryImages.length === 0) galleryImages.push('/placeholder.svg')
 
   return (
-    <div className="min-h-screen bg-background pt-24 pb-20">
+    <div className="min-h-screen bg-background pt-12 pb-20">
         <div className="container mx-auto px-4 lg:px-8">
             
             {/* Breadcrumbs */}
@@ -300,49 +300,55 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
                     {/* Quantity & Add to Cart */}
                     <div className="space-y-8">
                         {/* Actions (Visible on all screens, Stacked on Mobile) */}
-                        <div className="space-y-4 w-full">
-                            <div className="flex flex-col sm:flex-row gap-4">
-                                <Button 
-                                    size="lg" 
-                                    className="flex-1 h-14 lg:h-16 text-sm font-black uppercase tracking-[0.3em] rounded-2xl gradient-primary shadow-2xl shadow-primary/30 hover:scale-[1.02] active:scale-95 transition-all duration-300"
-                                    disabled={Boolean(!selectedSize || !selectedColor || isOutOfStock)}
-                                    onClick={handleAddToCart}
-                                >
-                                    {isOutOfStock ? 'Sold Out' : 'Add to Bag'}
-                                </Button>
+                        <div className="space-y-6 w-full pt-4">
+                            <div className="flex flex-col gap-4">
+                                <div className="flex gap-3">
+                                    <Button 
+                                        size="lg" 
+                                        className="flex-[3] h-16 text-xs sm:text-sm font-black uppercase tracking-[0.2em] rounded-2xl gradient-primary shadow-2xl shadow-primary/30 hover:scale-[1.02] active:scale-95 transition-all duration-300"
+                                        disabled={Boolean(!selectedSize || !selectedColor || isOutOfStock)}
+                                        onClick={handleAddToCart}
+                                    >
+                                        {isOutOfStock ? 'Sold Out' : (
+                                            <span className="flex items-center gap-2">
+                                                <Plus className="h-4 w-4" />
+                                                Add to Bag
+                                            </span>
+                                        )}
+                                    </Button>
+
+                                    <Button
+                                        size="lg"
+                                        variant="outline"
+                                        className={cn(
+                                            "h-16 w-16 rounded-2xl border-2 transition-all duration-300 px-0 shrink-0",
+                                            isWishlisted ? "border-red-500/50 bg-red-500/10 text-red-500 shadow-lg shadow-red-500/20" : "hover:border-primary/50 hover:bg-primary/5"
+                                        )}
+                                        onClick={() => {
+                                            if (isWishlisted) {
+                                                removeItem(product.id)
+                                            } else {
+                                                addItem({
+                                                    productId: product.id,
+                                                    name: product.name,
+                                                    price: product.price,
+                                                    image: product.main_image_url,
+                                                    slug: (product as any).slug || '' 
+                                                })
+                                            }
+                                        }}
+                                    >
+                                        <Heart className={cn("h-6 w-6 transition-colors", isWishlisted ? "fill-red-500 stroke-red-500" : "text-foreground")} />
+                                    </Button>
+                                </div>
                                 
                                 <Button 
                                     size="lg" 
-                                    variant="outline"
-                                    className="flex-1 h-14 lg:h-16 text-sm font-black uppercase tracking-[0.3em] rounded-2xl border-2 hover:bg-secondary transition-all duration-300"
+                                    className="w-full h-16 text-xs sm:text-sm font-black uppercase tracking-[0.2em] rounded-2xl bg-foreground text-background hover:bg-foreground/90 transition-all duration-300 shadow-xl"
                                     disabled={Boolean(!selectedSize || !selectedColor || isOutOfStock)}
                                     onClick={handleBuyNow}
                                 >
-                                    Buy Now
-                                </Button>
-
-                                <Button
-                                    size="lg"
-                                    variant="outline"
-                                    className={cn(
-                                        "h-14 w-14 lg:h-16 lg:w-16 rounded-2xl border transition-all duration-300 px-0 shrink-0",
-                                        isWishlisted ? "border-red-500/50 bg-red-500/10 text-red-500" : "hover:border-primary/50 hover:bg-primary/5"
-                                    )}
-                                    onClick={() => {
-                                        if (isWishlisted) {
-                                            removeItem(product.id)
-                                        } else {
-                                            addItem({
-                                                productId: product.id,
-                                                name: product.name,
-                                                price: product.price,
-                                                image: product.main_image_url,
-                                                slug: (product as any).slug || '' 
-                                            })
-                                        }
-                                    }}
-                                >
-                                    <Heart className={cn("h-6 w-6 transition-colors", isWishlisted ? "fill-red-500 stroke-red-500" : "text-foreground")} />
+                                    Instantly Checkout
                                 </Button>
                             </div>
                         </div>
