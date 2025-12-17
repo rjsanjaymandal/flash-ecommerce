@@ -10,7 +10,7 @@ export async function subscribeToNewsletter(formData: FormData) {
     return { error: 'Invalid email address' }
   }
 
-  const { error } = await (supabase.from('newsletter_subscribers') as any).insert({ email })
+  const { error } = await (supabase as any).from('newsletter_subscribers').insert({ email })
 
   if (error) {
     if (error.code === '23505') { // Unique violation

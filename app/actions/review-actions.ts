@@ -35,7 +35,7 @@ export async function submitReview(formData: FormData) {
       finalName = user.email.split('@')[0]
   }
 
-  const { error } = await (supabase.from('reviews') as any).insert({
+  const { error } = await (supabase as any).from('reviews').insert({
     product_id: productId,
     user_id: user.id,
     rating,
@@ -55,8 +55,8 @@ export async function submitReview(formData: FormData) {
 export async function getReviews(productId: string) {
   const supabase = await createClient()
 
-  const { data: reviews } = await (supabase
-    .from('reviews') as any)
+  const { data: reviews } = await (supabase as any)
+    .from('reviews')
     .select('*')
     .eq('product_id', productId)
     .order('created_at', { ascending: false })
