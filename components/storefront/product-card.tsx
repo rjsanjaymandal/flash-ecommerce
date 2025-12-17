@@ -109,7 +109,7 @@ export function ProductCard({ product }: { product: any }) {
         className="group relative flex flex-col gap-3"
     >
         {/* Image Container */}
-        <Link href={`/product/${product.slug}`} className="block relative aspect-3/4 overflow-hidden rounded-lg bg-muted/20">
+        <Link href={`/product/${product.slug || product.id}`} className="block relative aspect-3/4 overflow-hidden rounded-lg bg-muted/20">
             {/* Badges */}
             <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
                  {isOutOfStock ? (
@@ -165,7 +165,7 @@ export function ProductCard({ product }: { product: any }) {
         {/* Details */ }
         <div className="space-y-1">
              <div className="flex justify-between items-start gap-2">
-                <Link href={`/product/${product.slug}`} className="group-hover:text-primary transition-colors flex-1">
+                <Link href={`/product/${product.slug || product.id}`} className="group-hover:text-primary transition-colors flex-1">
                     <h3 className="font-medium text-sm lg:text-base leading-tight truncate">{product.name}</h3>
                 </Link>
              </div>

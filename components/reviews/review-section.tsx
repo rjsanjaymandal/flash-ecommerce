@@ -71,7 +71,7 @@ export function ReviewSection({ productId, reviews }: { productId: string, revie
                         </div>
                         <div>
                             <p className="font-semibold text-gray-900">{review.user_name}</p>
-                            <p className="text-xs text-gray-500">{new Date(review.created_at).toLocaleDateString()}</p>
+                            <p className="text-xs text-gray-500" suppressHydrationWarning>{new Date(review.created_at).toLocaleDateString('en-US')}</p>
                         </div>
                       </div>
 

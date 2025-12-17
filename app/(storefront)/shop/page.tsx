@@ -20,6 +20,7 @@ export default async function ShopPage({
     min_price?: string; 
     max_price?: string;
     size?: string;
+    color?: string;
   }>
 }) {
   const params = await searchParams
@@ -33,7 +34,8 @@ export default async function ShopPage({
       sort: params.sort as any,
       min_price: params.min_price ? Number(params.min_price) : undefined,
       max_price: params.max_price ? Number(params.max_price) : undefined,
-      size: params.size
+      size: params.size,
+      color: params.color
     })
   ])
 

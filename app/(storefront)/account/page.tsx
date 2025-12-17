@@ -1,102 +1,79 @@
-'use client'
-
-import { useAuth } from "@/context/auth-context"
-import { createClient } from "@/lib/supabase/client"
-import { useEffect, useState } from "react"
-import { Loader2, Package } from "lucide-react"
-import Link from "next/link"
+import { createClient } from "@/lib/supabase/server"
+import { redirect } from "next/navigation"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ProfileTab } from "@/components/account/profile-tab"
+import { OrdersTab } from "@/components/account/orders-tab"
+import { WishlistTab } from "@/components/account/wishlist-tab"
 import { Button } from "@/components/ui/button"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { LogOut } from "lucide-react"
+import { SignOutButton } from "@/components/account/sign-out-button"
 
-export default function AccountPage() {
-  const { user, isLoading: authLoading } = useAuth()
-  const [orders, setOrders] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const supabase = createClient()!
+export default async function AccountPage() {
+  const supabase = await createClient()
 
-  useEffect(() => {
-    if (!user) return
-
-    const fetchOrders = async () => {
-        const { data } = await supabase
-            .from('orders')
-            .select('*')
-            .eq('user_id', user.id)
-            .order('created_at', { ascending: false })
-        
-        setOrders(data || [])
-        setLoading(false)
-    }
-
-    fetchOrders()
-  }, [user])
-
-  if (authLoading) return <div className="h-screen flex items-center justify-center"><Loader2 className="animate-spin" /></div>
+  const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-      return (
-          <div className="h-screen flex flex-col items-center justify-center gap-4">
-              <h1 className="text-2xl font-bold">Please Login</h1>
-              <Button asChild><Link href="/login">Login</Link></Button>
-          </div>
-      )
+      redirect('/login')
   }
 
+  // Parallel data fetching
+  const [profileData, ordersData] = await Promise.all([
+      supabase.from('profiles').select('*').eq('id', user.id).single(),
+      supabase.from('orders').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
+  ])
+
+  const profile = profileData.data
+  const orders = ordersData.data || []
+
   return (
-    <div className="container mx-auto px-4 py-24 min-h-screen">
-        <div className="flex items-center gap-4 mb-8">
-            <div className="h-16 w-16 rounded-full bg-primary/20 flex items-center justify-center text-primary text-2xl font-bold">
-                {user.email?.[0].toUpperCase()}
-            </div>
+    <div className="container mx-auto px-4 py-24 min-h-screen max-w-6xl">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 animate-in slide-in-from-top-4 duration-500">
             <div>
-                <h1 className="text-3xl font-bold">My Account</h1>
-                <p className="text-muted-foreground">{user.email}</p>
+                <h1 className="text-4xl font-black tracking-tight mb-2">My Dashboard</h1>
+                <p className="text-muted-foreground text-lg">
+                    Welcome back, <span className="font-bold text-foreground">{profile?.name || user.email?.split('@')[0]}</span>
+                </p>
             </div>
+            <SignOutButton />
         </div>
 
-        <div className="space-y-6">
-            <div className="flex items-center gap-2">
-                <Package className="h-5 w-5" />
-                <h2 className="text-xl font-bold">Order History</h2>
-            </div>
-            
-            {loading ? (
-                <div>Loading orders...</div>
-            ) : orders.length === 0 ? (
-                <div className="text-muted-foreground">No orders found.</div>
-            ) : (
-                <div className="border rounded-md">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Order ID</TableHead>
-                                <TableHead>Date</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead className="text-right">Total</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {orders.map((order) => (
-                                <TableRow key={order.id}>
-                                    <TableCell className="font-mono text-xs">{order.id.slice(0, 8)}...</TableCell>
-                                    <TableCell>{new Date(order.created_at).toLocaleDateString()}</TableCell>
-                                    <TableCell>
-                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                            order.status === 'Delivered' ? 'bg-green-500/10 text-green-500' :
-                                            order.status === 'Shipped' ? 'bg-blue-500/10 text-blue-500' :
-                                            'bg-yellow-500/10 text-yellow-500'
-                                        }`}>
-                                            {order.status}
-                                        </span>
-                                    </TableCell>
-                                    <TableCell className="text-right font-bold">${order.total_amount}</TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+        {/* Tabs */}
+        <Tabs defaultValue="overview" className="space-y-8 animate-in fade-in duration-700">
+            <TabsList className="bg-muted/50 p-1 rounded-full inline-flex h-auto">
+                <TabsTrigger value="overview" className="rounded-full px-6 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
+                    Overview & Orders
+                </TabsTrigger>
+                <TabsTrigger value="profile" className="rounded-full px-6 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
+                    Profile Settings
+                </TabsTrigger>
+                <TabsTrigger value="wishlist" className="rounded-full px-6 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
+                   Saved Items
+                </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="overview" className="space-y-6">
+                <div>
+                    <h2 className="text-2xl font-bold mb-6">Recent Orders</h2>
+                    <OrdersTab orders={orders} />
                 </div>
-            )}
-        </div>
+            </TabsContent>
+
+            <TabsContent value="profile">
+                <div className="max-w-2xl">
+                     <h2 className="text-2xl font-bold mb-6">Edit Profile</h2>
+                     <ProfileTab user={user} profile={profile} />
+                </div>
+            </TabsContent>
+            
+            <TabsContent value="wishlist">
+                 <div>
+                    <h2 className="text-2xl font-bold mb-6">Your Wishlist</h2>
+                    <WishlistTab />
+                </div>
+            </TabsContent>
+        </Tabs>
     </div>
   )
 }

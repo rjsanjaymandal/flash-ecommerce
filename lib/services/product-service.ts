@@ -20,6 +20,7 @@ export type ProductFilter = {
   min_price?: number
   max_price?: number
   size?: string
+  color?: string
 }
 
 export type PaginatedResult<T> = {
@@ -39,9 +40,9 @@ export async function getProducts(filter: ProductFilter = {}): Promise<Paginated
     const from = (page - 1) * limit
     const to = from + limit - 1
     
-    // If filtering by size, we need an inner join on stock
+    // If filtering by size or color, we need an inner join on stock
     let selectString = '*, categories(name), product_stock(*)'
-    if (filter.size) {
+    if (filter.size || filter.color) {
         selectString = '*, categories(name), product_stock!inner(*)'
     }
 
@@ -66,9 +67,13 @@ export async function getProducts(filter: ProductFilter = {}): Promise<Paginated
       query = query.lte('price', filter.max_price)
     }
 
-    // Size filter (applied to the joined table via !inner)
+    // Size and Color filters (applied to the joined table via !inner)
     if (filter.size) {
         query = query.eq('product_stock.size', filter.size)
+    }
+
+    if (filter.color) {
+        query = query.eq('product_stock.color', filter.color)
     }
 
     if (filter.search) {
