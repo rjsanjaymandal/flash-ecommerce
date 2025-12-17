@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils'
-import { Search, Loader2 } from 'lucide-react'
+import { Search, Loader2, FileSpreadsheet } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -54,12 +54,44 @@ export function OrdersClient({ initialOrders, meta, status }: { initialOrders: a
         return <Badge variant={variant} className={className}>{status.charAt(0).toUpperCase() + status.slice(1)}</Badge>
     }
 
+    // Export to CSV
+    const handleExport = async () => {
+        // Dynamic import to avoid server-side issues if any, or just standard window usage
+        const headers = ['Order ID', 'Customer', 'Status', 'Total', 'Date']
+        const csvContent = [
+            headers.join(','),
+            ...initialOrders.map(order => [
+                order.id,
+                `"${order.profiles?.name || order.shipping_name || 'Guest'}"`,
+                order.status,
+                order.total,
+                new Date(order.created_at).toLocaleDateString('en-US')
+            ].join(','))
+        ].join('\n')
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+        const link = document.createElement('a')
+        const url = URL.createObjectURL(blob)
+        link.setAttribute('href', url)
+        link.setAttribute('download', 'orders_export.csv')
+        link.style.visibility = 'hidden'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+    }
+
     return (
-        <div className="space-y-6 animate-in fade-in">
+        <div className="space-y-8 animate-in fade-in duration-500">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Orders</h1>
-                    <p className="text-muted-foreground">Manage and track customer orders.</p>
+                    <h2 className="text-3xl font-black tracking-tight">Orders</h2>
+                    <p className="text-muted-foreground">Manage your store orders.</p>
+                </div>
+                <div className="flex gap-2">
+                    <Button variant="outline" className="gap-2" onClick={handleExport}>
+                        <FileSpreadsheet className="h-4 w-4" />
+                        Export CSV
+                    </Button>
                 </div>
             </div>
 

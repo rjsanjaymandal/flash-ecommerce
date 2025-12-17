@@ -47,8 +47,16 @@ export async function updateSession(request: NextRequest) {
   )
 
   // 3. Refresh the session
-  // This call will trigger the 'setAll' function above if the token is refreshed/needs setting
-  await supabase.auth.getUser()
+  const { data: { user }, error } = await supabase.auth.getUser()
+
+  // 4. Protected Routes
+  if (request.nextUrl.pathname.startsWith('/admin')) {
+      if (!user) {
+          console.log('[Middleware] Unauthorized access to admin, redirecting to login')
+          return NextResponse.redirect(new URL('/login', request.url))
+      }
+      // Note: Ideally check for admin role here too, but basic auth is step 1.
+  }
 
   return response
 }
