@@ -31,15 +31,22 @@ export function ReviewSection({ productId, reviews }: { productId: string, revie
     <div className="py-12 lg:py-16">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">Customer Reviews</h2>
+          <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl mb-4">Customer Reviews</h2>
 
-          <div className="mt-2 flex items-center gap-4">
-             <div className="flex items-center gap-0.5">
-                 {[1, 2, 3, 4, 5].map((s) => (
-                    <Star key={s} className={cn("h-5 w-5", s <= Number(averageRating) ? "text-yellow-400 fill-yellow-400" : "text-gray-200 fill-gray-200")} />
-                 ))}
+          <div className="flex items-center gap-6 bg-slate-50 p-6 rounded-2xl border border-slate-100">
+             <div className="flex flex-col">
+                 <span className="text-5xl font-black text-slate-900 leading-none tracking-tighter">{averageRating}</span>
+                 <div className="flex items-center gap-1 mt-2 text-yellow-400">
+                     {[1, 2, 3, 4, 5].map((s) => (
+                        <Star key={s} className={cn("h-4 w-4", s <= Math.round(Number(averageRating)) ? "fill-current" : "text-slate-200 fill-slate-200")} />
+                     ))}
+                 </div>
+                 <p className="text-xs font-medium text-slate-500 mt-1 uppercase tracking-wider">{reviews.length} Verified Reviews</p>
              </div>
-             <p className="text-gray-600">Based on {reviews.length} reviews</p>
+             <div className="hidden sm:block h-12 w-px bg-slate-200"></div>
+             <div className="hidden sm:block text-sm text-slate-500 max-w-[200px]">
+                 All reviews are from verified purchasers. We value authentic feedback.
+             </div>
           </div>
         </div>
         

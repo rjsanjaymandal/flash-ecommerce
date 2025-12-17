@@ -31,6 +31,12 @@ export default async function ProductPage({ params }: { params: { slug: string }
       getRelatedProducts(product.id, product.category_id)
   ])
 
+  // Calculate Review Stats
+  const reviewCount = reviews.length
+  const averageRating = reviewCount > 0
+      ? (reviews.reduce((acc: number, r: any) => acc + r.rating, 0) / reviewCount).toFixed(1)
+      : '0.0'
+
   // JSON-LD Structured Data
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -43,6 +49,11 @@ export default async function ProductPage({ params }: { params: { slug: string }
       '@type': 'Brand',
       name: 'Flash',
     },
+    aggregateRating: reviewCount > 0 ? {
+        '@type': 'AggregateRating',
+        ratingValue: averageRating,
+        reviewCount: reviewCount
+    } : undefined,
     offers: {
       '@type': 'Offer',
       url: `https://flash-ecommerce.vercel.app/product/${slug}`,
@@ -60,7 +71,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <ProductDetailClient product={product} />
+        <ProductDetailClient product={product} initialReviews={{ count: reviewCount, average: averageRating }} />
         
         <div className="container mx-auto px-4 lg:px-8 space-y-20 pb-20">
             {/* Reviews */}
