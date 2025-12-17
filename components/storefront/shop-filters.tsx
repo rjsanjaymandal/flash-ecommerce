@@ -24,28 +24,31 @@ const COLORS = [
 export function ShopFilters({ categories }: { categories: any[] }) {
     return (
         <>
-            {/* Mobile Trigger */}
-            <div className="md:hidden w-full mb-6">
+            {/* Mobile: Floating Filter Action Button */}
+            <div className="md:hidden fixed bottom-24 right-6 z-40">
                 <Sheet>
                     <SheetTrigger asChild>
-                        <Button variant="outline" className="w-full rounded-full border-dashed">
-                             <Filter className="mr-2 h-4 w-4" />
-                             Filters & Sort
+                        <Button className="h-14 w-14 rounded-full gradient-primary shadow-2xl shadow-primary/40 flex items-center justify-center p-0 group overflow-hidden">
+                             <Filter className="h-6 w-6 text-white group-hover:scale-110 transition-transform" />
                         </Button>
                     </SheetTrigger>
-                    <SheetContent side="left" className="w-[300px] overflow-y-auto">
-                        <SheetHeader className="mb-6 text-left">
-                            <SheetTitle>Filters</SheetTitle>
+                    <SheetContent side="bottom" className="h-[80vh] rounded-t-[3rem] border-white/5 glass-dark overflow-y-auto px-8 pb-12">
+                        <SheetHeader className="mb-8 pt-4">
+                            <div className="flex flex-col gap-2">
+                                <span className="text-primary font-black tracking-[0.4em] uppercase text-[10px]">Selections</span>
+                                <SheetTitle className="text-4xl font-black italic tracking-tighter uppercase text-white">RE<span className="text-gradient">FINE</span> VIBE</SheetTitle>
+                            </div>
                         </SheetHeader>
-                        <FilterContent categories={categories} />
+                        <FilterContent categories={categories} isDark />
                     </SheetContent>
                 </Sheet>
             </div>
 
             {/* Desktop Sidebar */}
-            <aside className="hidden md:block w-64 flex-none space-y-8 animate-in sticky top-24 h-[calc(100vh-100px)] overflow-y-auto pr-4 scrollbar-thin">
-                <div className="flex items-center justify-between pb-2 border-b">
-                    <h3 className="font-bold text-lg">Filters</h3>
+            <aside className="hidden md:block w-72 shrink-0 animate-in sticky top-24 h-[calc(100vh-120px)] overflow-y-auto pr-6 scrollbar-hide">
+                <div className="flex flex-col gap-2 mb-10 pl-2">
+                    <span className="text-primary font-black tracking-[0.4em] uppercase text-[10px]">Filter By</span>
+                    <h3 className="font-black text-3xl italic tracking-tighter uppercase">Category</h3>
                 </div>
                 <FilterContent categories={categories} />
             </aside>
@@ -53,7 +56,7 @@ export function ShopFilters({ categories }: { categories: any[] }) {
     )
 }
 
-function FilterContent({ categories }: { categories: any[] }) {
+function FilterContent({ categories, isDark = false }: { categories: any[], isDark?: boolean }) {
     // State
     const [minPrice, setMinPrice] = useQueryState('min_price', parseAsInteger)
     const [maxPrice, setMaxPrice] = useQueryState('max_price', parseAsInteger)
@@ -88,36 +91,53 @@ function FilterContent({ categories }: { categories: any[] }) {
 
     const hasFilters = minPrice || maxPrice || size || color || category
 
+    const textClass = isDark ? "text-white" : "text-foreground"
+    const mutedClass = isDark ? "text-white/60" : "text-muted-foreground"
+
     return (
-        <div className="space-y-6">
+        <div className="space-y-8 pb-12">
             {hasFilters && (
-                 <Button variant="ghost" size="sm" onClick={clearFilters} className="w-full h-auto py-2 text-muted-foreground hover:text-red-500 text-xs uppercase tracking-wider font-bold border border-dashed hover:border-red-500 hover:bg-red-50">
-                    Clear All Filters
+                 <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={clearFilters} 
+                    className={cn(
+                        "w-full h-12 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all",
+                        isDark ? "bg-white/10 text-white hover:bg-red-500/20 hover:text-red-400" : "bg-primary/5 text-primary hover:bg-red-500/5 hover:text-red-500 border border-dashed border-primary/20"
+                    )}
+                >
+                    Reset Selections
                 </Button>
             )}
             
-            <Accordion type="multiple" defaultValue={["categories", "price", "size", "color"]} className="w-full">
+            <Accordion type="multiple" defaultValue={["categories", "price", "size", "color"]} className="w-full space-y-4">
                 {/* Categories */}
                 <AccordionItem value="categories" className="border-none">
-                    <AccordionTrigger className="py-3 text-sm font-bold hover:no-underline">Category</AccordionTrigger>
+                    <AccordionTrigger className={cn("py-4 text-[10px] uppercase font-black tracking-[0.3em] hover:no-underline", textClass)}>
+                        Drop Collection
+                    </AccordionTrigger>
                     <AccordionContent>
-                         <div className="flex flex-col gap-2">
+                         <div className="flex flex-col gap-3 pt-2">
                             <button 
                                 onClick={() => setCategory(null)}
                                 className={cn(
-                                    "text-left text-sm py-1 transition-colors hover:text-primary pl-2 border-l-2",
-                                    !category ? "font-bold text-primary border-primary" : "text-muted-foreground border-transparent"
+                                    "text-left text-sm py-2 px-4 rounded-xl transition-all font-black uppercase tracking-tighter italic",
+                                    !category 
+                                        ? "bg-primary text-white shadow-lg shadow-primary/20 scale-105" 
+                                        : cn("hover:bg-primary/10", mutedClass)
                                 )}
                             >
-                                All Products
+                                All Drops
                             </button>
                             {categories.map((c) => (
                                 <button
                                     key={c.id}
                                     onClick={() => setCategory(c.id)}
                                     className={cn(
-                                        "text-left text-sm py-1 transition-colors hover:text-primary pl-2 border-l-2",
-                                        category === c.id ? "font-bold text-primary border-primary" : "text-muted-foreground border-transparent"
+                                        "text-left text-sm py-2 px-4 rounded-xl transition-all font-black uppercase tracking-tighter italic",
+                                        category === c.id 
+                                            ? "bg-primary text-white shadow-lg shadow-primary/20 scale-105" 
+                                            : cn("hover:bg-primary/10", mutedClass)
                                     )}
                                 >
                                     {c.name}
@@ -129,21 +149,23 @@ function FilterContent({ categories }: { categories: any[] }) {
 
                  {/* Price */}
                  <AccordionItem value="price" className="border-none">
-                    <AccordionTrigger className="py-3 text-sm font-bold hover:no-underline">Price Range</AccordionTrigger>
+                    <AccordionTrigger className={cn("py-4 text-[10px] uppercase font-black tracking-[0.3em] hover:no-underline", textClass)}>
+                        Price Range
+                    </AccordionTrigger>
                     <AccordionContent>
-                        <div className="pt-4 px-2 space-y-4">
+                        <div className="pt-6 px-2 space-y-6">
                             <Slider
                                 defaultValue={[0, 20000]}
                                 max={20000}
-                                step={100}
+                                step={500}
                                 value={priceRange}
                                 onValueChange={handlePriceChange}
                                 onValueCommit={handlePriceCommit}
                                 className="my-4"
                             />
-                            <div className="flex items-center justify-between text-xs font-medium text-muted-foreground">
-                                <span>₹{priceRange[0]}</span>
-                                <span>₹{priceRange[1]}+</span>
+                            <div className={cn("flex items-center justify-between text-[10px] font-black uppercase tracking-widest", mutedClass)}>
+                                <span className="bg-primary/10 px-3 py-1 rounded-full">₹{priceRange[0]}</span>
+                                <span className="bg-primary/10 px-3 py-1 rounded-full">₹{priceRange[1]}+</span>
                             </div>
                         </div>
                     </AccordionContent>
@@ -151,9 +173,11 @@ function FilterContent({ categories }: { categories: any[] }) {
 
                 {/* Size */}
                 <AccordionItem value="size" className="border-none">
-                    <AccordionTrigger className="py-3 text-sm font-bold hover:no-underline">Size</AccordionTrigger>
+                    <AccordionTrigger className={cn("py-4 text-[10px] uppercase font-black tracking-[0.3em] hover:no-underline", textClass)}>
+                        Select Size
+                    </AccordionTrigger>
                     <AccordionContent>
-                        <div className="grid grid-cols-3 gap-2">
+                        <div className="grid grid-cols-3 gap-3 pt-2">
                             {SIZES.map((s) => (
                                 <Button
                                     key={s}
@@ -161,8 +185,10 @@ function FilterContent({ categories }: { categories: any[] }) {
                                     size="sm"
                                     onClick={() => setSize(size === s ? null : s)}
                                     className={cn(
-                                        "h-9 w-full rounded-md text-xs", 
-                                        size === s && "font-bold shadow-md"
+                                        "h-12 w-full rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all", 
+                                        size === s 
+                                            ? "bg-primary text-white shadow-xl shadow-primary/20 scale-105 border-primary" 
+                                            : cn("border-border hover:border-primary/50 hover:bg-primary/5", mutedClass)
                                     )}
                                 >
                                     {s}
@@ -174,20 +200,26 @@ function FilterContent({ categories }: { categories: any[] }) {
 
                 {/* Color */}
                 <AccordionItem value="color" className="border-none">
-                    <AccordionTrigger className="py-3 text-sm font-bold hover:no-underline">Color</AccordionTrigger>
+                    <AccordionTrigger className={cn("py-4 text-[10px] uppercase font-black tracking-[0.3em] hover:no-underline", textClass)}>
+                        Select Hue
+                    </AccordionTrigger>
                     <AccordionContent>
-                         <div className="flex flex-wrap gap-3">
+                         <div className="flex flex-wrap gap-4 pt-4">
                             {COLORS.map((c) => (
                                 <button
                                     key={c.value}
                                     onClick={() => setColor(color === c.value ? null : c.value)}
                                     className={cn(
-                                        "h-8 w-8 rounded-full transition-all ring-offset-2 ring-offset-background",
+                                        "h-10 w-10 rounded-2xl transition-all ring-offset-2 ring-offset-background relative overflow-hidden",
                                         c.class,
-                                        color === c.value ? "ring-2 ring-primary scale-110 shadow-md" : "hover:scale-110 border"
+                                        color === c.value 
+                                            ? "ring-2 ring-primary scale-125 shadow-2xl z-10" 
+                                            : "hover:scale-110 border-white/5 shadow-lg"
                                     )}
                                     title={c.name}
-                                />
+                                >
+                                     {color === c.value && <div className="absolute inset-0 flex items-center justify-center bg-black/20"><div className="h-1 w-1 rounded-full bg-white shadow-[0_0_10px_white]" /></div>}
+                                </button>
                             ))}
                         </div>
                     </AccordionContent>

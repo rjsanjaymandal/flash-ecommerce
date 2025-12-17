@@ -213,20 +213,21 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
                     
                     {/* Title & Price */}
                     <div className="border-b border-border/60 pb-8 mb-8">
-                         <h1 className="text-4xl lg:text-5xl font-light tracking-tight text-foreground capitalize mb-4 leading-tight">
-                            {product.name}
+                         <h1 className="text-5xl lg:text-7xl font-black tracking-tighter text-foreground uppercase mb-6 leading-[0.85]">
+                            <span className="text-gradient">{product.name}</span>
                         </h1>
                         <div className="flex items-center justify-between">
-                            <p className="text-3xl font-medium tracking-tight">{formatCurrency(product.price)}</p>
+                            <p className="text-4xl font-black tracking-tighter italic">{formatCurrency(product.price)}</p>
                             
                             {/* Integrated Reviews */}
                             {initialReviews.count > 0 && (
-                                <div className="flex items-center gap-2 bg-secondary/50 px-3 py-1.5 rounded-full">
-                                    <div className="flex text-yellow-500">
+                                <div className="flex items-center gap-2 glass px-4 py-2 rounded-2xl border-white/5 shadow-xl">
+                                    <div className="flex text-amber-400">
                                         <Star className="h-4 w-4 fill-current" />
                                     </div>
-                                    <span className="font-bold text-sm">{initialReviews.average}</span>
-                                    <span className="text-xs text-muted-foreground border-l border-border pl-2 ml-1">
+                                    <span className="font-black text-xs uppercase tracking-widest">{initialReviews.average}</span>
+                                    <div className="h-3 w-px bg-white/10 mx-1" />
+                                    <span className="text-[10px] uppercase font-black tracking-[0.2em] opacity-60">
                                         {initialReviews.count} Reviews
                                     </span>
                                 </div>
@@ -235,16 +236,15 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
                     </div>
 
                     {/* Selectors */}
-                    <div className="space-y-8 mb-8">
+                    <div className="space-y-10 mb-10">
                         {/* Size Selector */}
-                        <div className="space-y-4">
-                            <div className="flex justify-between items-center text-sm">
-                                <span className="font-semibold uppercase tracking-wider text-muted-foreground">Size</span>
-                                <button className="underline hover:text-primary transition-colors text-xs text-muted-foreground">Size Guide</button>
+                        <div className="space-y-6">
+                            <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-[0.3em]">
+                                <span className="text-primary italic">Select Size</span>
+                                <button className="underline hover:text-primary transition-colors opacity-60">Size Guide</button>
                             </div>
                             <div className="grid grid-cols-4 sm:grid-cols-6 gap-3">
                                 {sizeOptions.map((size) => {
-                                    // Check if this size has ANY valid stock in any color
                                     const available = isSizeAvailable(size)
                                     
                                     return (
@@ -252,19 +252,15 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
                                             key={size}
                                             onClick={() => { setSelectedSize(size); setQuantity(1); setSelectedColor('') }}
                                             className={cn(
-                                                "h-12 w-full rounded-md border transition-all duration-200 text-sm font-medium relative overflow-hidden",
+                                                "h-14 w-full rounded-2xl border transition-all duration-300 text-sm font-black uppercase relative overflow-hidden",
                                                 selectedSize === size 
-                                                    ? "border-foreground bg-foreground text-background shadow-lg" 
-                                                    : "border-input hover:border-foreground/50 hover:bg-muted/30",
-                                                !available && "opacity-50 text-muted-foreground bg-muted/20 cursor-not-allowed"
+                                                    ? "border-primary bg-primary text-white shadow-xl shadow-primary/20 scale-105" 
+                                                    : "border-border hover:border-primary/50 hover:bg-primary/5",
+                                                !available && "opacity-30 cursor-not-allowed grayscale"
                                             )}
                                         >
                                             {size}
-                                            {!available && (
-                                                <div className="absolute inset-0 flex items-center justify-center">
-                                                    <div className="w-full h-px bg-red-500/50 transform rotate-45"></div>
-                                                </div>
-                                            )}
+                                            {!available && <div className="absolute inset-0 flex items-center justify-center opacity-20"><div className="w-full h-px bg-current rotate-45" /></div>}
                                         </button>
                                     )
                                 })}
@@ -272,12 +268,10 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
                         </div>
 
                         {/* Color Selector */}
-                        <div className="space-y-4">
-                            <span className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Color</span>
+                        <div className="space-y-6">
+                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary italic">Select Color</span>
                             <div className="flex flex-wrap gap-3">
                                 {colorOptions.map((color) => {
-                                    // If size is selected, check specific availability
-                                    // If no size, check general availability
                                     const available = selectedSize 
                                         ? isAvailable(selectedSize, color)
                                         : product.product_stock?.some(s => s.color === color && s.quantity > 0)
@@ -288,123 +282,90 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
                                             disabled={!!(selectedSize && !available)}
                                             onClick={() => { setSelectedColor(color); setQuantity(1) }}
                                             className={cn(
-                                                "h-10 px-6 rounded-full border transition-all duration-200 text-sm capitalize relative overflow-hidden",
+                                                "h-12 px-8 rounded-2xl border transition-all duration-300 text-[10px] font-black uppercase tracking-widest relative overflow-hidden",
                                                 selectedColor === color 
-                                                    ? "border-foreground bg-foreground text-background shadow-md transform scale-105" 
-                                                    : "border-input hover:border-foreground/50",
-                                                (selectedSize && !available) && "opacity-40 cursor-not-allowed bg-muted"
+                                                    ? "border-primary bg-primary text-white shadow-xl shadow-primary/20 scale-105" 
+                                                    : "border-border hover:border-primary/50 hover:bg-primary/5",
+                                                (selectedSize && !available) && "opacity-30 cursor-not-allowed grayscale"
                                             )}
                                         >
                                             {color}
-                                            {(selectedSize && !available) && (
-                                                <div className="absolute inset-0 flex items-center justify-center">
-                                                    <div className="w-[120%] h-px bg-red-500/80 transform -rotate-12"></div>
-                                                </div>
-                                            )}
                                         </button>
                                     )
                                 })}
                             </div>
-                            {!selectedSize && <p className="text-xs text-muted-foreground animate-pulse flex items-center gap-1"><ChevronDown className="h-3 w-3"/> Select a size to see available colors</p>}
                         </div>
                     </div>
 
                     {/* Quantity & Add to Cart */}
-                    <div className="space-y-6">
-                        {/* Quantity Counter (Only if maxQty > 1) */}
-                         {maxQty > 1 && (
-                            <div className="flex items-center gap-4">
-                                <span className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Quantity</span>
-                                <div className="flex items-center border rounded-full h-10 w-fit">
-                                    <button 
-                                        onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                                        className="w-10 h-full flex items-center justify-center hover:bg-muted/50 rounded-l-full transition-colors"
-                                        disabled={quantity <= 1}
-                                    >
-                                        <Minus className="h-3 w-3" />
-                                    </button>
-                                    <span className="w-10 text-center text-sm font-medium">{quantity}</span>
-                                    <button 
-                                        onClick={() => setQuantity(q => Math.min(maxQty, q + 1))}
-                                        className="w-10 h-full flex items-center justify-center hover:bg-muted/50 rounded-r-full transition-colors"
-                                        disabled={quantity >= maxQty}
-                                    >
-                                        <Plus className="h-3 w-3" />
-                                    </button>
-                                </div>
-                                <span className="text-xs text-muted-foreground font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">{maxQty} available</span>
-                            </div>
-                        )}
-
+                    <div className="space-y-8">
                         {/* Actions (Visible on all screens, Stacked on Mobile) */}
-                        <div className="flex flex-col lg:flex-row gap-4 w-full">
-                            <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md p-4 border-t border-border lg:static lg:bg-transparent lg:p-0 lg:border-none pb-8 lg:pb-0">
-                                <div className="flex gap-3 container mx-auto px-0 lg:px-0 max-w-none">
-                                    <Button 
-                                        size="lg" 
-                                        className="flex-1 h-12 lg:h-14 lg:flex-1 text-base lg:text-lg font-bold tracking-wider uppercase rounded-full shadow-xl shadow-primary/20 hover:shadow-2xl hover:scale-[1.01] transition-all duration-300"
-                                        disabled={Boolean(!selectedSize || !selectedColor || isOutOfStock)}
-                                        onClick={handleAddToCart}
-                                    >
-                                        {isOutOfStock ? 'Out of Stock' : 'Add to Bag'}
-                                    </Button>
-                                    <Button 
-                                        size="lg" 
-                                        variant="secondary"
-                                        className="flex-1 h-12 lg:h-14 lg:flex-1 text-base lg:text-lg font-bold tracking-wider uppercase rounded-full shadow-lg hover:shadow-xl hover:scale-[1.01] transition-all duration-300 hidden sm:flex bg-secondary hover:bg-secondary/80"
-                                        disabled={Boolean(!selectedSize || !selectedColor || isOutOfStock)}
-                                        onClick={handleBuyNow}
-                                    >
-                                        Buy Now
-                                    </Button>
-                                    
-                                     <Button
-                                        size="lg"
-                                        variant="outline"
-                                        className={cn(
-                                            "h-12 w-12 lg:h-14 lg:w-14 rounded-full border-2 hover:bg-muted transition-colors px-0 shrink-0",
-                                            isWishlisted && "border-red-200 bg-red-50 text-red-500 hover:bg-red-100"
-                                        )}
-                                        onClick={() => {
-                                            if (isWishlisted) {
-                                                removeItem(product.id)
-                                            } else {
-                                                addItem({
-                                                    productId: product.id,
-                                                    name: product.name,
-                                                    price: product.price,
-                                                    image: product.main_image_url,
-                                                    slug: (product as any).slug || '' 
-                                                })
-                                            }
-                                        }}
-                                    >
-                                        <Heart className={cn("h-5 w-5 lg:h-6 lg:w-6 transition-colors", isWishlisted ? "fill-red-500 stroke-red-500" : "text-foreground")} />
-                                    </Button>
-                                </div>
+                        <div className="space-y-4 w-full">
+                            <div className="flex flex-col sm:flex-row gap-4">
+                                <Button 
+                                    size="lg" 
+                                    className="flex-1 h-14 lg:h-16 text-sm font-black uppercase tracking-[0.3em] rounded-2xl gradient-primary shadow-2xl shadow-primary/30 hover:scale-[1.02] active:scale-95 transition-all duration-300"
+                                    disabled={Boolean(!selectedSize || !selectedColor || isOutOfStock)}
+                                    onClick={handleAddToCart}
+                                >
+                                    {isOutOfStock ? 'Sold Out' : 'Add to Bag'}
+                                </Button>
+                                
+                                <Button 
+                                    size="lg" 
+                                    variant="outline"
+                                    className="flex-1 h-14 lg:h-16 text-sm font-black uppercase tracking-[0.3em] rounded-2xl border-2 hover:bg-secondary transition-all duration-300"
+                                    disabled={Boolean(!selectedSize || !selectedColor || isOutOfStock)}
+                                    onClick={handleBuyNow}
+                                >
+                                    Buy Now
+                                </Button>
+
+                                <Button
+                                    size="lg"
+                                    variant="outline"
+                                    className={cn(
+                                        "h-14 w-14 lg:h-16 lg:w-16 rounded-2xl border transition-all duration-300 px-0 shrink-0",
+                                        isWishlisted ? "border-red-500/50 bg-red-500/10 text-red-500" : "hover:border-primary/50 hover:bg-primary/5"
+                                    )}
+                                    onClick={() => {
+                                        if (isWishlisted) {
+                                            removeItem(product.id)
+                                        } else {
+                                            addItem({
+                                                productId: product.id,
+                                                name: product.name,
+                                                price: product.price,
+                                                image: product.main_image_url,
+                                                slug: (product as any).slug || '' 
+                                            })
+                                        }
+                                    }}
+                                >
+                                    <Heart className={cn("h-6 w-6 transition-colors", isWishlisted ? "fill-red-500 stroke-red-500" : "text-foreground")} />
+                                </Button>
                             </div>
                         </div>
 
-
                          {/* Trust Badges */}
-                        <div className="grid grid-cols-3 gap-2 py-6 border-b border-border/60">
-                             <div className="flex flex-col items-center gap-2 text-center group">
-                                 <div className="p-3 bg-muted/30 rounded-full group-hover:bg-primary/10 transition-colors">
-                                     <Truck className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                        <div className="grid grid-cols-3 gap-2 py-8 border-b border-border/60">
+                             <div className="flex flex-col items-center gap-3 text-center group">
+                                 <div className="h-10 w-10 flex items-center justify-center bg-primary/5 rounded-2xl group-hover:bg-primary/10 transition-colors">
+                                     <Truck className="h-5 w-5 text-primary" />
                                  </div>
-                                 <span className="text-[10px] uppercase font-bold tracking-wide">Fast Delivery</span>
+                                 <span className="text-[10px] uppercase font-black tracking-widest opacity-60">Express Shipping</span>
                              </div>
-                             <div className="flex flex-col items-center gap-2 text-center group">
-                                 <div className="p-3 bg-muted/30 rounded-full group-hover:bg-primary/10 transition-colors">
-                                     <RefreshCcw className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                             <div className="flex flex-col items-center gap-3 text-center group">
+                                 <div className="h-10 w-10 flex items-center justify-center bg-accent/5 rounded-2xl group-hover:bg-accent/10 transition-colors">
+                                     <RefreshCcw className="h-5 w-5 text-accent" />
                                  </div>
-                                 <span className="text-[10px] uppercase font-bold tracking-wide">Free Returns</span>
+                                 <span className="text-[10px] uppercase font-black tracking-widest opacity-60">No-Sync Returns</span>
                              </div>
-                             <div className="flex flex-col items-center gap-2 text-center group">
-                                 <div className="p-3 bg-muted/30 rounded-full group-hover:bg-primary/10 transition-colors">
-                                    <ShieldCheck className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                             <div className="flex flex-col items-center gap-3 text-center group">
+                                 <div className="h-10 w-10 flex items-center justify-center bg-emerald-500/5 rounded-2xl group-hover:bg-emerald-500/10 transition-colors">
+                                    <ShieldCheck className="h-5 w-5 text-emerald-500" />
                                  </div>
-                                 <span className="text-[10px] uppercase font-bold tracking-wide">Secure Checkout</span>
+                                 <span className="text-[10px] uppercase font-black tracking-widest opacity-60">Secure Checkout</span>
                              </div>
                         </div>
 

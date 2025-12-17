@@ -20,73 +20,78 @@ export function CategoryVibes({ categories }: CategoryVibesProps) {
   if (!categories?.length) return null
 
   return (
-    <section className="py-8 md:py-12 bg-zinc-50 relative overflow-hidden text-zinc-900">
-      {/* Blob Backgrounds */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-200/50 rounded-full blur-[100px] -z-10" />
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-red-200/50 rounded-full blur-[100px] -z-10" />
+    <section className="py-16 md:py-24 bg-background relative overflow-hidden">
+      {/* Dynamic Blobs */}
+      <div className="absolute top-0 right-[-10%] w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] -z-10" />
+      <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-accent/5 rounded-full blur-[120px] -z-10" />
 
-      <div className="container mx-auto px-4 md:px-6">
-        <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-6 md:mb-10">
-           <div className="space-y-2">
-              <span className="text-primary font-bold tracking-widest uppercase text-sm">Collections {new Date().getFullYear()}</span>
-              <h2 className="text-4xl md:text-7xl font-black tracking-tighter uppercase italic">
-                Pick Your <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-accent">Vibe</span>
+      <div className="container mx-auto px-4 lg:px-8">
+        <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-12">
+           <div className="space-y-3">
+              <span className="text-primary font-black tracking-[0.4em] uppercase text-[10px] pl-1">The Collections</span>
+              <h2 className="text-5xl md:text-8xl font-black tracking-tighter leading-none">
+                PICK YOUR <span className="text-gradient italic">VIBE</span>
               </h2>
+              <p className="text-muted-foreground text-sm font-medium tracking-wide max-w-sm">
+                  Curated drops designed to affirm your identity and express your authentic self.
+              </p>
            </div>
         </div>
 
-        {/* 
-          MOBILE: Horizontal Scroll / Carousel 
-          - Snap to center
-          - Peek next slide
-          - Hide scrollbar
-          - Bolder Cards
-        */}
-        <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 overflow-x-auto snap-x snap-mandatory pt-4 pb-8 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
+        <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-6 overflow-x-auto snap-x snap-mandatory pt-4 pb-12 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
           {categories.map((cat, i) => {
             const gradients = [
-                "from-blue-600 to-violet-600",
-                "from-emerald-500 to-teal-600",
-                "from-orange-500 to-red-600",
-                "from-pink-500 to-rose-600"
+                "from-indigo-600/40 to-violet-600/40",
+                "from-emerald-500/40 to-teal-400/40",
+                "from-amber-400/40 to-orange-600/40",
+                "from-rose-500/40 to-pink-500/40"
+            ]
+            const borderGlow = [
+                "group-hover:shadow-indigo-500/20",
+                "group-hover:shadow-emerald-500/20",
+                "group-hover:shadow-amber-500/20",
+                "group-hover:shadow-rose-500/20"
             ]
             const gradient = gradients[i % gradients.length]
+            const shadow = borderGlow[i % borderGlow.length]
 
             return (
               <Link 
                 key={cat.id}
                 href={`/shop?category=${cat.id}`}
                 className={cn(
-                  "group relative min-w-[300px] w-[85vw] md:min-w-0 md:w-auto h-[400px] md:h-[500px] overflow-hidden rounded-[2rem] bg-zinc-900 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 snap-center",
-                  "flex-shrink-0" 
+                  "group relative min-w-[280px] w-[80vw] md:min-w-0 md:w-auto h-[450px] md:h-[550px] overflow-hidden rounded-[2.5rem] bg-zinc-900 transition-all duration-700 snap-center",
+                  "flex-shrink-0 border border-white/5",
+                  shadow 
                 )}
               >
-                {/* Image / Gradient Background */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-80 transition-transform duration-700 group-hover:scale-110`} />
+                {/* Background Image / Gradient */}
+                <div className={`absolute inset-0 bg-linear-to-br ${gradient} z-10 opacity-60 group-hover:opacity-100 transition-opacity duration-700`} />
                 {cat.image_url && (
                     <img 
                         src={cat.image_url} 
-                        className="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-50 transition-all duration-700 mix-blend-overlay" 
+                        className="absolute inset-0 w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000 ease-out" 
                         alt={cat.name} 
                     />
                 )}
                 
                 {/* Content Overlay */}
-                <div className="absolute inset-0 p-8 md:p-10 flex flex-col justify-end">
-                    <div className="space-y-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                        <h3 className="text-4xl md:text-5xl font-black italic tracking-tighter text-white drop-shadow-lg leading-none">
+                <div className="absolute inset-0 p-8 md:p-12 flex flex-col justify-end z-20">
+                    <div className="space-y-4 transform translate-y-6 group-hover:translate-y-0 transition-transform duration-700 ease-out">
+                        <div className="h-0.5 w-12 bg-white/40 group-hover:w-20 transition-all duration-700" />
+                        <h3 className="text-4xl md:text-5xl font-black tracking-tighter text-white leading-none capitalize italic">
                             {cat.name}
                         </h3>
-                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
-                           <div className="h-[2px] w-8 bg-white" />
-                           <span className="text-white font-bold tracking-widest text-xs uppercase">Explore</span>
+                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500 delay-100">
+                           <span className="text-white text-[10px] uppercase font-black tracking-widest">Shop Collection</span>
+                           <ArrowRight className="h-4 w-4 text-white" />
                         </div>
                     </div>
                 </div>
 
-                {/* Top Right Icon */}
-                <div className="absolute top-6 right-6 h-12 w-12 rounded-full border border-white/20 bg-black/20 backdrop-blur-md flex items-center justify-center text-white group-hover:bg-white group-hover:text-black transition-all duration-300">
-                    <ArrowRight className="h-5 w-5 -rotate-45 group-hover:rotate-0 transition-transform duration-300" />
+                {/* Glassy badge */}
+                <div className="absolute top-6 left-6 px-4 py-2 glass rounded-full z-20 border-white/20">
+                    <span className="text-white text-[10px] font-black uppercase tracking-[0.2em]">{`Drop 0${i + 1}`}</span>
                 </div>
               </Link>
             )

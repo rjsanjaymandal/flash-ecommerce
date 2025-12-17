@@ -4,6 +4,9 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 import { Database } from '@/types/supabase'
+import { useCartStore } from '@/store/use-cart-store'
+import { useWishlistStore } from '@/store/use-wishlist-store'
+import { toast } from 'sonner'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 
@@ -106,10 +109,24 @@ export function AuthProvider({
   }
 
   const signOut = async () => {
-    await supabase.auth.signOut()
-    setUser(null)
-    setSession(null)
-    setProfile(null)
+    try {
+        await supabase.auth.signOut()
+        setUser(null)
+        setSession(null)
+        setProfile(null)
+        // Clear stores immediately
+        useCartStore.getState().setItems([])
+        useWishlistStore.getState().setItems([])
+        
+        localStorage.removeItem('flash-cart-storage')
+        localStorage.removeItem('flash-wishlist-storage')
+        
+        toast.success("Signed out successfully")
+        window.location.href = '/' // Fresh start
+    } catch (error) {
+        console.error('Sign out error:', error)
+        toast.error("Failed to sign out")
+    }
   }
 
   const value = {

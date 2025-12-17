@@ -17,9 +17,10 @@ import { QuickView } from '@/components/products/quick-view'
 interface ProductCardProps {
     product: any
     showRating?: boolean
+    priority?: boolean
 }
 
-export function ProductCard({ product, showRating = true }: ProductCardProps) {
+export function ProductCard({ product, showRating = true, priority = false }: ProductCardProps) {
   const [imageSrc, setImageSrc] = useState(product.main_image_url || '/placeholder.svg')
   const router = useRouter()
   const addToCart = useCartStore((state) => state.addItem)
@@ -144,7 +145,7 @@ export function ProductCard({ product, showRating = true }: ProductCardProps) {
             <motion.div
                 whileHover={{ scale: 1.08 }}
                 transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                className="h-full w-full bg-zinc-100"
+                className="relative h-full w-full bg-zinc-100"
             >
                 <Image 
                     src={imageSrc} 
@@ -153,6 +154,7 @@ export function ProductCard({ product, showRating = true }: ProductCardProps) {
                     className="object-cover"
                     sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                     onError={() => setImageSrc('/placeholder.svg')}
+                    priority={priority}
                     unoptimized
                 />
             </motion.div>

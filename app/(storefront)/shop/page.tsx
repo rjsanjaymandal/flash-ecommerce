@@ -44,15 +44,13 @@ export default async function ShopPage({
       <div className="container mx-auto px-4 lg:px-8">
         
         {/* Header Section */}
-        <div className="flex flex-col items-center text-center gap-4 mb-16 max-w-2xl mx-auto animate-in slide-in-from-top-4 duration-700">
-             <Badge className="px-4 py-1.5 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors uppercase tracking-widest text-xs font-bold border-none">
-                New Arrivals
-            </Badge>
-            <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-foreground">
-                THE <span className="text-transparent bg-clip-text bg-linear-to-r from-red-500 via-orange-500 to-primary">COLLECTION</span>
+        <div className="flex flex-col items-center text-center gap-6 mb-16 max-w-3xl mx-auto py-12">
+             <span className="text-primary font-black tracking-[0.4em] uppercase text-[10px]">The Collections</span>
+            <h1 className="text-6xl md:text-[7rem] font-black tracking-tighter text-foreground leading-[0.85] uppercase italic">
+                THE <span className="text-gradient">DROPS</span>
             </h1>
-            <p className="text-muted-foreground text-lg leading-relaxed max-w-lg">
-                Explore our latest gender-neutral drops. Designed for comfort, styled for impact.
+            <p className="text-muted-foreground text-sm font-medium tracking-wide max-w-sm">
+                Curated essentials for the modern aesthetic. Designed to affirms your identity.
             </p>
         </div>
 
