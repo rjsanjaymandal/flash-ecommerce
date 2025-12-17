@@ -106,3 +106,14 @@ export async function getMonthlyRevenue() {
 
     return Object.entries(monthlyRevenue).map(([name, total]) => ({ name, total }))
 }
+
+export async function updateOrderStatus(orderId: string, newStatus: string) {
+    const supabase = await createClient()
+    const { error } = await supabase
+        .from('orders')
+        .update({ status: newStatus as any })
+        .eq('id', orderId)
+    
+    if (error) throw error
+    return { success: true }
+}

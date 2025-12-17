@@ -24,7 +24,7 @@ export function AdminSidebar() {
   const { signOut, user } = useAuth()
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-20 hidden w-72 flex-col bg-[#0f172a] text-slate-300 transition-all duration-300 sm:flex shadow-xl">
+    <aside className="fixed inset-y-0 left-0 z-20 hidden w-72 flex-col bg-[#0f172a] text-slate-300 transition-all duration-300 sm:flex shadow-xl print:hidden">
       <div className="flex h-full flex-col">
         {/* Brand */}
         <div className="flex h-20 items-center px-8 border-b border-slate-800/50">

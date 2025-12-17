@@ -76,18 +76,22 @@ export default function OrderDetailsPage() {
       }
   }
 
+  const handlePrint = () => {
+      window.print()
+  }
+
   return (
-    <div className="space-y-6 max-w-6xl mx-auto pb-20">
+    <div className="space-y-6 max-w-6xl mx-auto pb-20 print:p-0 print:pb-0 print:max-w-none">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between print:hidden">
         <div className="flex items-center gap-4">
-            <Button variant="outline" size="icon" onClick={() => router.back()} className="h-8 w-8">
+            <Button variant="outline" size="icon" onClick={() => router.back()} className="h-9 w-9 border-slate-200">
                 <ChevronLeft className="h-4 w-4" />
             </Button>
             <div>
-                <h1 className="text-2xl font-bold tracking-tight flex items-center gap-3">
+                <h1 className="text-2xl font-bold tracking-tight flex items-center gap-3 text-slate-900">
                     Order #{order.id.slice(0, 8)}
-                    <Badge variant={getStatusColor(order.status) as any} className="uppercase text-xs tracking-wider">
+                    <Badge variant={getStatusColor(order.status) as any} className="uppercase text-[10px] tracking-wider font-semibold rounded-md px-2 py-0.5">
                         {order.status}
                     </Badge>
                 </h1>
@@ -103,7 +107,7 @@ export default function OrderDetailsPage() {
                 onValueChange={(val) => statusMutation.mutate(val)}
                 disabled={statusMutation.isPending}
             >
-                <SelectTrigger className="w-[160px]">
+                <SelectTrigger className="w-[160px] h-9 bg-white">
                     <SelectValue placeholder="Update Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -112,8 +116,26 @@ export default function OrderDetailsPage() {
                     ))}
                 </SelectContent>
             </Select>
-            {/* <Button variant="outline" size="icon"><Printer className="h-4 w-4" /></Button> */}
+            <Button variant="outline" size="sm" onClick={handlePrint} className="h-9 gap-2 bg-white text-slate-700 border-slate-200 hover:bg-slate-50">
+                <Printer className="h-4 w-4" />
+                Print Invoice
+            </Button>
         </div>
+      </div>
+
+      {/* Print Header (Visible only on print) */}
+      <div className="hidden print:block mb-8 border-b pb-6">
+          <div className="flex justify-between items-start">
+              <div>
+                  <h1 className="text-3xl font-bold text-slate-900">INVOICE</h1>
+                  <p className="text-slate-500 mt-1">Order #{order.id}</p>
+              </div>
+              <div className="text-right">
+                  <div className="font-bold text-xl text-indigo-600">Flash</div>
+                  <p className="text-sm text-slate-500">123 Commerce St, Tech City</p>
+                  <p className="text-sm text-slate-500">support@flash.com</p>
+              </div>
+          </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
