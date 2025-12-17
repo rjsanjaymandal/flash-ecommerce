@@ -2,34 +2,57 @@
 
 import { createClient } from '@/lib/supabase/server'
 
+import { PaginatedResult } from './product-service'
+
 export type OrderFilter = {
   status?: string
   limit?: number
   page?: number
+  search?: string
 }
 
-// Converted to standalone async functions (Server Actions)
-// This allows Client Components to import and call them directly without "fs/headers" errors.
-
-export async function getOrders(filter: OrderFilter = {}) {
+export async function getOrders(filter: OrderFilter = {}): Promise<PaginatedResult<any>> {
   const supabase = await createClient()
+  const page = filter.page || 1
+  const limit = filter.limit || 10
+  const from = (page - 1) * limit
+  const to = from + limit - 1
+
   let query = supabase
     .from('orders')
-    .select('*, profiles(name, email)')
+    .select('*, profiles(name)', { count: 'exact' })
     .order('created_at', { ascending: false })
 
-  if (filter.status) {
+  if (filter.status && filter.status !== 'all') {
     query = query.eq('status', filter.status as any)
   }
 
-  if (filter.limit) {
-    query = query.limit(filter.limit)
+  // NOTE: Supabase doesn't support ILIKE across foreign keys easily in one query without complex RPC or embedding.
+  // We will filter by Order ID first. For Profile Name/Email, it's safer to rely on ID search or proper relation filter if enabled.
+  if (filter.search) {
+      if (filter.search.includes('-')) {
+          // Likely UUID
+          query = query.eq('id', filter.search)
+      } else {
+         // Fallback to searching order string or partial ID
+         query = query.ilike('id', `%${filter.search}%`)
+      }
   }
+
+  query = query.range(from, to)
 
   const { data, error, count } = await query
   if (error) throw error
-  // Serialize Supabase response (it's already JSON, but just to be safe with Dates if needed)
-  return { data, count }
+
+  return { 
+      data: data || [], 
+      meta: {
+          total: count || 0,
+          page,
+          limit,
+          totalPages: Math.ceil((count || 0) / limit)
+      }
+  }
 }
 
 export async function getStats() {

@@ -7,8 +7,13 @@ const supabaseUrl = "https://gyizmixhmrfwywvafdbi.supabase.co";
 const supabase = createClient(supabaseUrl, serviceKey);
 
 async function check() {
-  console.log("Checking profiles table...");
-  const { data, error } = await supabase.from("profiles").select("id").limit(1);
+  console.log("Checking orders table schema...");
+  const { data, error } = await supabase.from("orders").select("*").limit(1);
+  if (data && data.length > 0) {
+    console.log("Columns found:", Object.keys(data[0]));
+  } else {
+    console.log("No data found or empty table.");
+  }
 
   if (error) {
     console.log("Error: " + error.message);

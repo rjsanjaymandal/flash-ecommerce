@@ -2,25 +2,54 @@
 
 import { createClient } from '@/lib/supabase/server'
 
-export async function getCustomers(search: string = '') {
+// Reuse paginated result type
+import { PaginatedResult } from './product-service'
+
+export async function getCustomers(search: string = '', page: number = 1, limit: number = 10): Promise<PaginatedResult<any>> {
   const supabase = await createClient()
+  const from = (page - 1) * limit
+  const to = from + limit - 1
   
-  // Fetch profiles and link their orders to calculate stats
+  // 1. Fetch profiles with pagination first
   let query = supabase
     .from('profiles')
-    .select('*, orders(id, total, status, created_at), cart_items(count), wishlist_items(count)')
+    .select('*', { count: 'exact' })
     .order('created_at', { ascending: false })
 
   if (search) {
-    query = query.ilike('email', `%${search}%`) // Search by email for now, or name if preferred
+     const cleanSearch = search.trim()
+     // Search by name only as email/first_name/last_name don't exist in public profiles yet
+     query = query.ilike('name', `%${cleanSearch}%`)
   }
 
-  const { data, error } = await query
+  query = query.range(from, to)
+
+  const { data: profiles, error, count } = await query
   if (error) throw error
 
-  // Enhance data with computed stats
-  const customers = data.map((profile: any) => {
-      const orders = profile.orders || []
+  if (!profiles || profiles.length === 0) {
+      return {
+          data: [],
+          meta: { total: 0, page, limit, totalPages: 0 }
+      }
+  }
+
+  // 2. Fetch stats ONLY for these profiles to avoid massive join on all users
+  const profileIds = profiles.map(p => p.id)
+  
+  // We can't easily do a "join" here for aggregation efficiently without a view or RPC.
+  // Instead, we'll run parallel queries for these users.
+  // Or, since we have the profiles, we can fetch their orders and cart items.
+  
+  const { data: interactions } = await supabase
+    .from('profiles')
+    .select('id, orders(id, total, status, created_at), cart_items(count), wishlist_items(count)')
+    .in('id', profileIds)
+
+  // 3. Merge data
+  const enrichedCustomers = profiles.map(profile => {
+      const interaction = interactions?.find(i => i.id === profile.id)
+      const orders = interaction?.orders || []
       const totalSpent = orders
         .filter((o: any) => o.status === 'paid')
         .reduce((acc: number, curr: any) => acc + Number(curr.total), 0)
@@ -33,11 +62,19 @@ export async function getCustomers(search: string = '') {
               totalOrders: orders.length,
               totalSpent,
               lastOrderDate: lastOrder?.created_at,
-              cartCount: profile.cart_items?.[0]?.count || 0,
-              wishlistCount: profile.wishlist_items?.[0]?.count || 0
+              cartCount: interaction?.cart_items?.[0]?.count || 0,
+              wishlistCount: interaction?.wishlist_items?.[0]?.count || 0
           }
       }
   })
 
-  return customers
+  return {
+      data: enrichedCustomers,
+      meta: {
+          total: count || 0,
+          page,
+          limit,
+          totalPages: Math.ceil((count || 0) / limit)
+      }
+  }
 }
