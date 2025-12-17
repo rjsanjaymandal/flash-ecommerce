@@ -35,7 +35,7 @@ export async function getOrders(filter: OrderFilter = {}): Promise<PaginatedResu
           query = query.eq('id', filter.search)
       } else {
          // Fallback to searching order string or partial ID
-         query = query.ilike('id', `%${filter.search}%`)
+         query = query.ilike('id::text', `%${filter.search}%`)
       }
   }
 

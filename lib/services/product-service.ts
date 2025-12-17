@@ -72,7 +72,8 @@ export async function getProducts(filter: ProductFilter = {}): Promise<Paginated
     }
 
     if (filter.search) {
-      query = query.ilike('name', `%${filter.search}%`)
+      // Search name OR id
+      query = query.or(`name.ilike.%${filter.search}%,id::text.ilike.%${filter.search}%`)
     }
 
     // Sorting

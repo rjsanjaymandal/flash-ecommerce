@@ -437,6 +437,69 @@ export type Database = {
           },
         ]
       }
+      reviews: {
+          Row: {
+            id: string
+            created_at: string
+            product_id: string
+            user_id: string | null
+            rating: number
+            comment: string | null
+            user_name: string | null
+          }
+          Insert: {
+            id?: string
+            created_at?: string
+            product_id: string
+            user_id?: string | null
+            rating: number
+            comment?: string | null
+            user_name?: string | null
+          }
+          Update: {
+            id?: string
+            created_at?: string
+            product_id?: string
+            user_id?: string | null
+            rating?: number
+            comment?: string | null
+            user_name?: string | null
+          }
+          Relationships: [
+            {
+              foreignKeyName: "reviews_product_id_fkey"
+              columns: ["product_id"]
+              isOneToOne: false
+              referencedRelation: "products"
+              referencedColumns: ["id"]
+            },
+            {
+              foreignKeyName: "reviews_user_id_fkey"
+              columns: ["user_id"]
+              isOneToOne: false
+              referencedRelation: "profiles"
+              referencedColumns: ["id"]
+            }
+          ]
+      }
+      newsletter_subscribers: {
+          Row: {
+            id: string
+            created_at: string
+            email: string
+          }
+          Insert: {
+            id?: string
+            created_at?: string
+            email: string
+          }
+          Update: {
+            id?: string
+            created_at?: string
+            email?: string
+          }
+          Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

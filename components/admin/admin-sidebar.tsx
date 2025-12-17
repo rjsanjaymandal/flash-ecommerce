@@ -12,6 +12,7 @@ const navItems = [
   { href: '/admin/products', label: 'Products', icon: ShoppingBag },
   { href: '/admin/categories', label: 'Categories', icon: Layers },
   { href: '/admin/customers', label: 'Customers', icon: User },
+  { href: '/admin/reviews', label: 'Reviews', icon: MessageSquare },
 ]
 
 const secondaryItems = [
@@ -96,7 +97,7 @@ export function AdminSidebar() {
         {/* Footer Actions */}
         <div className="p-4 border-t border-slate-800/50 bg-[#0b1120]">
              <div className="flex items-center gap-3 mb-4 px-2">
-                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-inner border-2 border-[#0f172a]">
+                <div className="h-10 w-10 rounded-full bg-linear-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-inner border-2 border-[#0f172a]">
                     {user?.email?.[0].toUpperCase() || 'A'}
                 </div>
                 <div className="overflow-hidden">
