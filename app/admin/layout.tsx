@@ -1,5 +1,6 @@
 import AdminGuard from '@/components/admin/admin-guard'
 import { AdminSidebar } from '@/components/admin/admin-sidebar'
+import { AdminBodyClass } from '@/components/admin/admin-body-class'
 import './admin-theme.css'
 
 export default function AdminLayout({
@@ -9,6 +10,7 @@ export default function AdminLayout({
 }) {
   return (
     <AdminGuard>
+      <AdminBodyClass />
       <div className="flex min-h-screen w-full admin-theme bg-background text-foreground">
         <AdminSidebar />
         <div className="flex flex-col sm:gap-4 sm:pl-72 w-full transition-all duration-300">

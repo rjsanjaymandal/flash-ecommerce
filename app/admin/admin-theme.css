@@ -1,8 +1,9 @@
 @layer utilities {
-  .admin-theme {
+  .admin-theme,
+  .admin-mode {
     /* Enterprise Admin Theme - Slate & Indigo */
     
-    /* Light Mode Overrides */
+    /* Light Mode Overrides - Enforce solid backgrounds */
     --background: #f8fafc; /* Slate 50 */
     --foreground: #0f172a; /* Slate 900 */
     --card: #ffffff;
@@ -35,5 +36,30 @@
       --muted-foreground: #94a3b8; /* Slate 400 */
       /* Accent for sidebar items */
       --primary: #6366f1; /* Indigo 500 */
+  }
+
+  /* Admin Dropdown Polish */
+  .admin-mode [data-radix-popper-content-wrapper] [role="menu"] {
+      background-color: var(--popover) !important;
+      border: 1px solid var(--border);
+      box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+      border-radius: var(--radius);
+      padding: 0.25rem;
+      min-width: 12rem;
+  }
+  
+  .admin-mode [data-radix-popper-content-wrapper] [role="menuitem"] {
+      border-radius: calc(var(--radius) - 2px);
+      padding: 0.375rem 0.5rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--foreground);
+      cursor: pointer;
+  }
+
+  .admin-mode [data-radix-popper-content-wrapper] [role="menuitem"]:hover,
+  .admin-mode [data-radix-popper-content-wrapper] [role="menuitem"]:focus {
+      background-color: var(--muted);
+      color: var(--primary);
   }
 }
