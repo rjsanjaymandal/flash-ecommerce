@@ -163,38 +163,38 @@ export default function CategoriesPage() {
   } : undefined
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between px-1">
         <div>
-           <h1 className="text-3xl font-black tracking-tight">Categories</h1>
-           <p className="text-muted-foreground">Organize your products into catalog sections.</p>
+           <h1 className="text-2xl font-bold tracking-tight text-foreground">Categories</h1>
+           <p className="text-sm text-muted-foreground">Organize your products into catalog sections.</p>
         </div>
-        <Button onClick={handleOpenCreate} className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20">
+        <Button onClick={handleOpenCreate} className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg h-9 text-sm font-medium shadow-sm">
             <Plus className="mr-2 h-4 w-4" />
             Add Category
         </Button>
       </div>
 
-      <div className="flex items-center gap-4 rounded-xl bg-card p-4 border shadow-sm">
-         <div className="relative flex-1">
-             <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+      <div className="flex items-center gap-4 p-1">
+         <div className="relative flex-1 max-w-sm">
+             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
              <Input 
                  placeholder="Search categories..." 
-                 className="pl-9 h-10 bg-background/50 focus-visible:ring-1 border-input/60" 
+                 className="pl-9 h-9 bg-background focus-visible:ring-offset-0 focus-visible:ring-1 border-input" 
                  value={search} 
                  onChange={(e) => setSearch(e.target.value)}
              />
          </div>
       </div>
 
-      <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+      <div className="rounded-lg border bg-card shadow-sm overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="bg-muted/50 hover:bg-muted/50">
-              <TableHead>Category Name</TableHead>
-              <TableHead>Overview</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+            <TableRow className="bg-muted/5 hover:bg-muted/5 border-b">
+              <TableHead className="py-3 pl-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground w-[400px]">Category Name</TableHead>
+              <TableHead className="py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Slug</TableHead>
+              <TableHead className="py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Status</TableHead>
+              <TableHead className="text-right py-3 pr-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -205,38 +205,38 @@ export default function CategoriesPage() {
             ) : (
                 displayCategories.map((category) => {
                     return (
-                        <TableRow key={category.id} className="group hover:bg-muted/30 transition-colors">
-                            <TableCell className="font-medium p-4">
-                                <div className="flex items-center gap-3" style={{ paddingLeft: `${(category.depth + 1) * 12}px` }}>
-                                    {category.depth > 0 && <CornerDownRight className="h-4 w-4 text-muted-foreground/50 mr-[-8px]" />}
+                        <TableRow key={category.id} className="group hover:bg-muted/50 transition-colors border-b last:border-0 text-sm">
+                            <TableCell className="font-medium p-3 pl-4">
+                                <div className="flex items-center gap-3" style={{ paddingLeft: `${(category.depth) * 20}px` }}>
+                                    {category.depth > 0 && <CornerDownRight className="h-4 w-4 text-muted-foreground/40 mr-[-8px]" />}
                                     
-                                    <div className={cn("h-10 w-10 rounded-lg overflow-hidden border bg-muted flex items-center justify-center shrink-0 shadow-sm", category.depth === 0 ? "ring-2 ring-background shadow-md" : "")}>
+                                    <div className={cn("h-9 w-9 rounded-md overflow-hidden border bg-muted flex items-center justify-center shrink-0 shadow-sm", category.depth === 0 ? "ring-1 ring-border" : "")}>
                                         {category.image_url ? (
                                             <img src={category.image_url} className="w-full h-full object-cover" alt="" />
                                         ) : (
-                                            <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                                            <ImageIcon className="h-4 w-4 text-muted-foreground/50" />
                                         )}
                                     </div>
-                                    <div>
-                                        <div className={cn("font-semibold", category.depth === 0 ? "text-base" : "text-sm text-muted-foreground")}>{category.name}</div>
+                                    <div className="flex flex-col">
+                                        <span className={cn("text-sm", category.depth === 0 ? "font-semibold text-foreground" : "text-muted-foreground")}>{category.name}</span>
                                     </div>
                                 </div>
                             </TableCell>
                             <TableCell className="font-mono text-xs text-muted-foreground">
-                                <span className="bg-muted px-2 py-1 rounded text-[10px] uppercase tracking-wider">{category.slug}</span>
+                                <span className="bg-muted px-2 py-0.5 rounded text-[10px] text-muted-foreground border">{category.slug}</span>
                             </TableCell>
                             <TableCell>
-                                <Badge variant={category.is_active ? "outline" : "secondary"} className={cn("rounded-md", category.is_active ? "border-green-200 text-green-700 bg-green-500/10" : "")}>
-                                    {category.is_active ? 'Active' : 'Inactive'}
+                                <Badge variant={category.is_active ? "outline" : "secondary"} className={cn("rounded-md px-2 py-0.5 font-normal text-xs", category.is_active ? "border-emerald-200 text-emerald-700 bg-emerald-50" : "bg-slate-100 text-slate-500")}>
+                                    {category.is_active ? 'Active' : 'Hidden'}
                                 </Badge>
                             </TableCell>
-                            <TableCell className="text-right">
-                                <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <Button variant="ghost" size="icon" onClick={() => handleOpenEdit(category)}>
-                                        <Pencil className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                            <TableCell className="text-right pr-4">
+                                <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={() => handleOpenEdit(category)}>
+                                        <Pencil className="h-3.5 w-3.5" />
                                     </Button>
-                                    <Button variant="ghost" size="icon" className="text-destructive/70 hover:text-destructive hover:bg-destructive/10" onClick={() => setDeleteId(category.id)}>
-                                        <Trash2 className="h-4 w-4" />
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground/70 hover:text-destructive hover:bg-destructive/10" onClick={() => setDeleteId(category.id)}>
+                                        <Trash2 className="h-3.5 w-3.5" />
                                     </Button>
                                 </div>
                             </TableCell>
@@ -266,9 +266,9 @@ export default function CategoriesPage() {
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent>
             <AlertDialogHeader>
-                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                <AlertDialogTitle>Delete Category?</AlertDialogTitle>
                 <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the category and remove it from our servers.
+                    This action cannot be undone. This will permanently delete the category.
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
