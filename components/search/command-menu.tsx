@@ -1,24 +1,34 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-// BUT since we manually installed cmdk, we might not have the shadcn wrapper. 
-// I will assume the user MIGHT NOT have the shadcn 'command' component.
-// Safer to implement a raw CMDK wrapper or check if I can use the standard one. 
-// The user already has `radix-ui/react-dialog` etc, so likely has shadcn.
-// I will use a simplified version to avoid dependency issues if 'components/ui/command' is missing.
-
-// Re-implementing simplified Command Menu using raw cmdk to be safe
-import { Command } from 'cmdk'
-import { Dialog, DialogContent } from '@/components/ui/dialog' 
-import { Search, Package, ArrowRight } from 'lucide-react'
+import { 
+    CommandDialog, 
+    CommandInput, 
+    CommandList, 
+    CommandEmpty, 
+    CommandGroup, 
+    CommandItem, 
+    CommandSeparator, 
+    CommandShortcut 
+} from '@/components/ui/command'
+import { 
+    LayoutDashboard, 
+    ShoppingBag, 
+    Home, 
+    Settings, 
+    User, 
+    LogOut,
+    Package,
+    ArrowRight
+} from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { getSearchIndex } from '@/app/actions/search-actions'
-
 import { useSearchStore } from '@/store/use-search-store'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { formatCurrency } from '@/lib/utils'
 
 export function CommandMenu() {
   const { isOpen, setOpen, toggle } = useSearchStore()
-  const [query, setQuery] = useState('')
   const [items, setItems] = useState<any[]>([])
   const router = useRouter()
 
@@ -33,53 +43,75 @@ export function CommandMenu() {
     return () => document.removeEventListener('keydown', down)
   }, [toggle])
   
-  // Fetch items once on mount (or could fetch on open)
   useEffect(() => {
       if(isOpen && items.length === 0) {
           getSearchIndex().then(setItems)
       }
   }, [isOpen, items.length])
 
-  // Simple client-side filtering
-  const filtered = items.filter(item => 
-      item.name.toLowerCase().includes(query.toLowerCase())
-  ).slice(0, 5)
+  const runCommand = (command: () => void) => {
+    setOpen(false)
+    command()
+  }
 
   return (
-    <Dialog open={isOpen} onOpenChange={setOpen}>
-        <DialogContent className="p-0 overflow-hidden shadow-2xl max-w-2xl bg-popover text-popover-foreground">
-            <div className="flex items-center border-b px-3">
-              <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-              <input 
-                className="flex h-12 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
-                placeholder="Search products..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-              />
-            </div>
-            <div className="max-h-[300px] overflow-y-auto p-2">
-                {!query && items.length === 0 && <p className="text-center py-6 text-sm text-muted-foreground">Loading...</p>}
-                {query && filtered.length === 0 && <p className="text-center py-6 text-sm text-muted-foreground">No results found.</p>}
-                {filtered.map((item) => (
-                    <div 
-                        key={item.id}
-                        className="relative flex cursor-default select-none items-center rounded-sm px-2 py-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground aria-selected:bg-accent aria-selected:text-accent-foreground cursor-pointer group"
-                        onClick={() => {
-                            setOpen(false)
-                            router.push(`/product/${item.id}`) // Assuming the slug is available or just use ID navigation if setup
-                        }}
-                    >
-                        <Package className="mr-2 h-4 w-4 opacity-70" />
-                        <span className="flex-1">{item.name}</span>
-                        <ArrowRight className="h-4 w-4 opacity-0 -translate-x-2 transition-all group-hover:opacity-100 group-hover:translate-x-0 text-muted-foreground" />
+    <CommandDialog open={isOpen} onOpenChange={setOpen}>
+      <CommandInput placeholder="Type a command or search products..." />
+      <CommandList>
+        <CommandEmpty>No results found.</CommandEmpty>
+        
+        <CommandGroup heading="Suggestions">
+          <CommandItem onSelect={() => runCommand(() => router.push('/shop'))}>
+            <ShoppingBag className="mr-2 h-4 w-4" />
+            <span>Shop All</span>
+          </CommandItem>
+          <CommandItem onSelect={() => runCommand(() => router.push('/account'))}>
+            <User className="mr-2 h-4 w-4" />
+            <span>My Account</span>
+          </CommandItem>
+           <CommandItem onSelect={() => runCommand(() => router.push('/admin'))}>
+            <LayoutDashboard className="mr-2 h-4 w-4" />
+            <span>Admin Dashboard</span>
+            <CommandShortcut>⌘A</CommandShortcut>
+          </CommandItem>
+        </CommandGroup>
+        
+        <CommandSeparator />
+        
+        <CommandGroup heading="Products">
+            {items.slice(0, 10).map((item) => (
+                <CommandItem 
+                    key={item.id} 
+                    onSelect={() => runCommand(() => router.push(`/product/${item.id}`))} // Or slug if you have it
+                    className="group"
+                >
+                    <Avatar className="mr-2 h-8 w-8 rounded-md border">
+                        <AvatarImage src={item.main_image_url} className="object-cover" />
+                        <AvatarFallback><Package className="h-4 w-4" /></AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col flex-1">
+                        <span className="font-medium">{item.name}</span>
+                        {item.price && <span className="text-xs text-muted-foreground">{formatCurrency(item.price)}</span>}
                     </div>
-                ))}
-            </div>
-            <div className="py-2 px-4 border-t text-[10px] text-muted-foreground flex justify-between">
-                <span>Product Search</span>
-                <span>ESC to close</span>
-            </div>
-        </DialogContent>
-    </Dialog>
+                    <ArrowRight className="ml-auto h-4 w-4 opacity-0 -translate-x-2 transition-all group-aria-selected:opacity-100 group-aria-selected:translate-x-0" />
+                </CommandItem>
+            ))}
+        </CommandGroup>
+
+        <CommandSeparator />
+
+        <CommandGroup heading="Settings">
+          <CommandItem onSelect={() => runCommand(() => router.push('/account'))}>
+            <Settings className="mr-2 h-4 w-4" />
+            <span>Settings</span>
+            <CommandShortcut>⌘S</CommandShortcut>
+          </CommandItem>
+           <CommandItem onSelect={() => runCommand(() => router.push('/'))}>
+            <Home className="mr-2 h-4 w-4" />
+            <span>Home</span>
+          </CommandItem>
+        </CommandGroup>
+      </CommandList>
+    </CommandDialog>
   )
 }

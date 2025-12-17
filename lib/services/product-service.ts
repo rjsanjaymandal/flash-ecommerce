@@ -219,3 +219,23 @@ export async function getRelatedProducts(currentProductId: string, categoryId: s
     const { data } = await query
     return data || []
 }
+
+export async function bulkDeleteProducts(ids: string[]) {
+    if (!ids || ids.length === 0) return
+    const supabase = await getDb()
+    const { error } = await (supabase.from('products') as any).delete().in('id', ids)
+    if (error) throw error
+    revalidatePath('/admin/products')
+    revalidatePath('/shop')
+}
+
+export async function bulkUpdateProductStatus(ids: string[], isActive: boolean) {
+    if (!ids || ids.length === 0) return
+    const supabase = await getDb()
+    const { error } = await (supabase.from('products') as any)
+        .update({ is_active: isActive })
+        .in('id', ids)
+    if (error) throw error
+    revalidatePath('/admin/products')
+    revalidatePath('/shop')
+}

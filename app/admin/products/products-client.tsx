@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
-import { Plus, Pencil, Search, Filter, MoreHorizontal, ArrowUpDown, Loader2, Package } from 'lucide-react'
+import { Plus, Pencil, Search, Filter, MoreHorizontal, ArrowUpDown, Loader2, Package, Trash2, CheckCircle, XCircle } from 'lucide-react'
 import Link from 'next/link'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -21,12 +21,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { deleteProduct } from '@/lib/services/product-service'
+import { deleteProduct, bulkDeleteProducts, bulkUpdateProductStatus } from '@/lib/services/product-service'
 import { formatCurrency, cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 
 import { DataTablePagination } from '@/components/ui/data-table-pagination'
 import { useSearchParams } from 'next/navigation'
+import { Checkbox } from '@/components/ui/checkbox'
 
 
 export function ProductsClient({ initialProducts, meta }: { initialProducts: any[], meta: { total: number, page: number, limit: number, totalPages: number } }) {
@@ -34,6 +35,15 @@ export function ProductsClient({ initialProducts, meta }: { initialProducts: any
   const searchParams = useSearchParams()
   const [search, setSearch] = useState(searchParams.get('q') || '') 
   const [deleteId, setDeleteId] = useState<string | null>(null)
+  
+  // Bulk Selection State
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false)
+
+  // Clear selection on page change or search
+  useEffect(() => {
+    setSelectedIds(new Set())
+  }, [meta.page, search])
   
   // Debounce Search
   useEffect(() => {
@@ -57,12 +67,57 @@ export function ProductsClient({ initialProducts, meta }: { initialProducts: any
       onSuccess: () => {
           setDeleteId(null)
           toast.success('Product deleted')
-          router.refresh() // Refresh Server Component data
+          router.refresh()
       },
       onError: (err: any) => {
           toast.error('Deletion failed: ' + err.message)
       }
   })
+
+  // Bulk Actions
+  const handleSelectAll = (checked: boolean) => {
+      if (checked) {
+          const allIds = initialProducts.map((p: any) => p.id)
+          setSelectedIds(new Set(allIds))
+      } else {
+          setSelectedIds(new Set())
+      }
+  }
+
+  const handleSelectOne = (id: string, checked: boolean) => {
+      const newSelected = new Set(selectedIds)
+      if (checked) {
+          newSelected.add(id)
+      } else {
+          newSelected.delete(id)
+      }
+      setSelectedIds(newSelected)
+  }
+
+  const handleBulkDelete = async () => {
+      setIsBulkDeleting(true)
+      try {
+          await bulkDeleteProducts(Array.from(selectedIds))
+          toast.success(`${selectedIds.size} products deleted`)
+          setSelectedIds(new Set())
+          router.refresh()
+      } catch (err: any) {
+          toast.error('Bulk deletion failed')
+      } finally {
+          setIsBulkDeleting(false)
+      }
+  }
+
+  const handleBulkStatus = async (isActive: boolean) => {
+      try {
+          await bulkUpdateProductStatus(Array.from(selectedIds), isActive)
+          toast.success(`${selectedIds.size} products updated`)
+          setSelectedIds(new Set())
+          router.refresh()
+      } catch (err: any) {
+          toast.error('Bulk update failed')
+      }
+  }
 
   // Helper to calculate total stock
   const getStockStatus = (stock: any[]) => {
@@ -73,7 +128,7 @@ export function ProductsClient({ initialProducts, meta }: { initialProducts: any
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between px-1">
         <div>
             <h2 className="text-2xl font-bold tracking-tight text-foreground">Products</h2>
@@ -103,11 +158,43 @@ export function ProductsClient({ initialProducts, meta }: { initialProducts: any
         </Button>
       </div>
 
+      {/* Floating Action Bar */}
+      {selectedIds.size > 0 && (
+          <div className="absolute top-14 left-0 right-0 z-10 flex items-center justify-between bg-primary text-primary-foreground p-2 px-4 rounded-lg shadow-lg animate-in fade-in slide-in-from-top-2 mx-1">
+              <div className="text-sm font-medium flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4" />
+                  {selectedIds.size} Selected
+              </div>
+              <div className="flex items-center gap-2">
+                  <Button size="sm" variant="secondary" className="h-7 text-xs border-none" onClick={() => handleBulkStatus(true)}>
+                      Mark Active
+                  </Button>
+                  <Button size="sm" variant="secondary" className="h-7 text-xs border-none" onClick={() => handleBulkStatus(false)}>
+                      Mark Draft
+                  </Button>
+                  <Button size="sm" variant="destructive" className="h-7 text-xs" onClick={handleBulkDelete} disabled={isBulkDeleting}>
+                      {isBulkDeleting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3 mr-1" />}
+                      Delete
+                  </Button>
+                  <Button size="icon" variant="ghost" className="h-7 w-7 text-primary-foreground/80 hover:text-primary-foreground hover:bg-white/10" onClick={() => setSelectedIds(new Set())}>
+                      <XCircle className="h-4 w-4" />
+                  </Button>
+              </div>
+          </div>
+      )}
+
       <div className="rounded-lg border bg-card shadow-sm overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/5 hover:bg-muted/5 border-b">
-              <TableHead className="w-[80px] py-3 pl-4">Image</TableHead>
+              <TableHead className="w-[40px] px-4">
+                  <Checkbox 
+                    checked={initialProducts.length > 0 && selectedIds.size === initialProducts.length}
+                    onCheckedChange={(checked) => handleSelectAll(checked as boolean)}
+                    aria-label="Select all"
+                  />
+              </TableHead>
+              <TableHead className="w-[80px] py-3 pl-0">Image</TableHead>
               <TableHead className="py-3">
                   <div className="flex items-center gap-2 cursor-pointer hover:text-primary transition-colors text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Name <ArrowUpDown className="h-3 w-3" />
@@ -122,13 +209,21 @@ export function ProductsClient({ initialProducts, meta }: { initialProducts: any
           </TableHeader>
           <TableBody>
             {initialProducts.length === 0 ? (
-                <TableRow><TableCell colSpan={7} className="text-center py-24 text-muted-foreground">No products found.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={8} className="text-center py-24 text-muted-foreground">No products found.</TableCell></TableRow>
             ) : (
                 initialProducts.map((product: any) => {
                     const stockStatus = getStockStatus(product.product_stock)
+                    const isSelected = selectedIds.has(product.id)
                     return (
-                    <TableRow key={product.id} className="group hover:bg-muted/50 transition-colors border-b last:border-0 text-sm">
-                        <TableCell className="p-4 align-middle">
+                    <TableRow key={product.id} className={cn("group transition-colors border-b last:border-0 text-sm", isSelected ? "bg-primary/5 hover:bg-primary/5" : "hover:bg-muted/50")}>
+                        <TableCell className="px-4 align-middle">
+                            <Checkbox 
+                                checked={isSelected}
+                                onCheckedChange={(checked) => handleSelectOne(product.id, checked as boolean)}
+                                aria-label="Select row"
+                            />
+                        </TableCell>
+                        <TableCell className="p-4 pl-0 align-middle">
                             {product.main_image_url ? (
                                 <img src={product.main_image_url} alt="" className="h-10 w-10 rounded-md object-cover border shadow-sm" />
                             ) : (

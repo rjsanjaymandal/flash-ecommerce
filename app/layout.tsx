@@ -28,6 +28,8 @@ import { createClient } from '@/lib/supabase/server'
 
 // ... imports
 
+import { CommandMenu } from '@/components/search/command-menu'
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -61,6 +63,7 @@ export default async function RootLayout({
       >
         <Providers initialUser={user} initialSession={session} initialProfile={profile}>
           <NuqsAdapter>
+            <CommandMenu />
             {children}
             <Analytics />
           </NuqsAdapter>

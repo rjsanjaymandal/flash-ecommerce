@@ -166,7 +166,7 @@ export function OrdersClient({ initialOrders, meta, status }: { initialOrders: a
                                             {/* <span className="text-xs text-muted-foreground">{order.profiles?.email || 'No email'}</span> */}
                                         </div>
                                     </TableCell>
-                                    <TableCell className="text-muted-foreground">{new Date(order.created_at).toLocaleDateString()}</TableCell>
+                                    <TableCell className="text-muted-foreground" suppressHydrationWarning>{new Date(order.created_at).toLocaleDateString('en-US')}</TableCell>
                                     <TableCell className="font-medium">{formatCurrency(order.total)}</TableCell>
                                     <TableCell>
                                         <DropdownMenu>
