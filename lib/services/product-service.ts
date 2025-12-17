@@ -208,7 +208,7 @@ export async function getRelatedProducts(currentProductId: string, categoryId: s
     // Simple logic: Same category, not current product, limit 4
     let query = supabase
       .from('products')
-      .select('id, name, price, main_image_url') // minimal fields
+      .select('id, name, price, main_image_url, slug') // minimal fields
       .eq('is_active', true)
       .neq('id', currentProductId)
       .limit(4)

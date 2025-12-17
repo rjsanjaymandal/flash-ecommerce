@@ -41,7 +41,7 @@ export function RecentlyViewed({ currentProduct }: { currentProduct?: any }) {
                 {displayItems.map((item) => (
                     <Link 
                         key={item.id} 
-                        href={`/product/${item.slug}`} 
+                        href={`/product/${item.slug || item.id}`} 
                         className="min-w-[160px] w-[160px] snap-start group"
                     >
                         <div className="aspect-[3/4] bg-muted mb-3 rounded-md overflow-hidden relative">
