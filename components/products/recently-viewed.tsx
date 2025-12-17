@@ -4,58 +4,56 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { formatCurrency } from "@/lib/utils"
+import { useRecentStore } from '@/lib/store/use-recent-store'
 
 export function RecentlyViewed({ currentProduct }: { currentProduct?: any }) {
-    const [history, setHistory] = useState<any[]>([])
-    const pathname = usePathname()
+    const { items, addItem } = useRecentStore()
+    const [mounted, setMounted] = useState(false)
+
+    // Hydration fix
+    useEffect(() => {
+        setMounted(true)
+    }, [])
 
     useEffect(() => {
-        // Load history
-        const stored = localStorage.getItem('recently-viewed')
-        let items = stored ? JSON.parse(stored) : []
-
-        // Add current if exists
         if (currentProduct) {
-            // Remove duplicates
-            items = items.filter((i: any) => i.id !== currentProduct.id)
-            // Add to front
-            items.unshift({
+            addItem({
                 id: currentProduct.id,
                 name: currentProduct.name,
                 price: currentProduct.price,
-                image: currentProduct.main_image_url
+                image: currentProduct.main_image_url,
+                slug: currentProduct.slug || currentProduct.id
             })
-            // Limit to 10
-            items = items.slice(0, 10)
-            localStorage.setItem('recently-viewed', JSON.stringify(items))
         }
+    }, [currentProduct, addItem])
 
-        setHistory(items)
-    }, [currentProduct?.id]) // Run when product ID changes
-
-    if (history.length === 0) return null
+    if (!mounted || items.length === 0) return null
     
-    // Don't show if only the current product is in history
-    if (currentProduct && history.length === 1 && history[0].id === currentProduct.id) return null
+    // Filter out current product from display list
+    const displayItems = items.filter(i => i.id !== currentProduct?.id)
+
+    if (displayItems.length === 0) return null
 
     return (
         <div className="space-y-6 py-12 border-t border-border/60">
             <h2 className="text-2xl font-light tracking-tight">Recently Viewed</h2>
-            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
-                {history.map((item) => (
-                    item.id !== currentProduct?.id && (
-                        <Link 
-                            key={item.id} 
-                            href={`/product/${item.id}`} // Adjust if slug used but storing ID for simplicity
-                            className="min-w-[160px] w-[160px] snap-start group"
-                        >
-                            <div className="aspect-[3/4] bg-muted mb-3 rounded-md overflow-hidden relative">
-                                {item.image && <img src={item.image} alt={item.name} className="h-full w-full object-cover transition-transform group-hover:scale-105" />}
-                            </div>
-                            <h3 className="font-medium text-sm truncate">{item.name}</h3>
-                            <p className="text-xs text-muted-foreground">{formatCurrency(item.price)}</p>
-                        </Link>
-                    )
+             <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 snap-x snap-mandatory scrollbar-hide">
+                {displayItems.map((item) => (
+                    <Link 
+                        key={item.id} 
+                        href={`/product/${item.slug}`} 
+                        className="min-w-[160px] w-[160px] snap-start group"
+                    >
+                        <div className="aspect-[3/4] bg-muted mb-3 rounded-md overflow-hidden relative">
+                            {item.image ? (
+                                <img src={item.image} alt={item.name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                            ) : (
+                                <div className="h-full w-full flex items-center justify-center text-muted-foreground bg-secondary">No Image</div>
+                            )}
+                        </div>
+                        <h3 className="font-medium text-sm truncate pr-2">{item.name}</h3>
+                        <p className="text-xs text-muted-foreground">{formatCurrency(item.price)}</p>
+                    </Link>
                 ))}
             </div>
         </div>
