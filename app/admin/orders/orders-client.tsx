@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { updateOrderStatus } from '@/lib/services/order-service'
 // import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs' // Unused
-import { Pagination } from '@/components/shared/pagination'
+import { DataTablePagination } from '@/components/ui/data-table-pagination'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 
@@ -215,7 +215,7 @@ export function OrdersClient({ initialOrders, meta, status }: { initialOrders: a
 
                 {/* Pagination Controls */}
                 <div className="border-t p-3 bg-muted/5">
-                    <Pagination currentPage={meta.page} totalPages={meta.totalPages} />
+                    <DataTablePagination totalItems={meta.total} itemsPerPage={meta.limit} />
                 </div>
             </div>
         </div>

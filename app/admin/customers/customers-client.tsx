@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { formatCurrency, cn } from '@/lib/utils'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Pagination } from '@/components/shared/pagination'
+import { DataTablePagination } from '@/components/ui/data-table-pagination'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 export function CustomersClient({ initialCustomers, meta }: { initialCustomers: any[], meta: any }) {
@@ -153,7 +153,7 @@ export function CustomersClient({ initialCustomers, meta }: { initialCustomers: 
                 </Table>
 
                  <div className="border-t p-4 bg-gray-50/50">
-                     <Pagination currentPage={meta.page} totalPages={meta.totalPages} />
+                     <DataTablePagination totalItems={meta.total} itemsPerPage={meta.limit} />
                 </div>
             </div>
         </div>

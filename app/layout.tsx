@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from "@vercel/analytics/next"
 import './globals.css'
 import { Providers } from './providers'
+import { NuqsAdapter } from 'nuqs/adapters/next/app'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -59,8 +60,10 @@ export default async function RootLayout({
         suppressHydrationWarning
       >
         <Providers initialUser={user} initialSession={session} initialProfile={profile}>
-          {children}
-          <Analytics />
+          <NuqsAdapter>
+            {children}
+            <Analytics />
+          </NuqsAdapter>
         </Providers>
       </body>
     </html>

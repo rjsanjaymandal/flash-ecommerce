@@ -25,7 +25,7 @@ import { deleteProduct } from '@/lib/services/product-service'
 import { formatCurrency, cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 
-import { Pagination } from '@/components/shared/pagination'
+import { DataTablePagination } from '@/components/ui/data-table-pagination'
 import { useSearchParams } from 'next/navigation'
 
 
@@ -188,7 +188,7 @@ export function ProductsClient({ initialProducts, meta }: { initialProducts: any
         
         {/* Pagination Controls */}
         <div className="border-t p-3 bg-muted/5">
-            <Pagination currentPage={meta.page} totalPages={meta.totalPages} />
+            <DataTablePagination totalItems={meta.total} itemsPerPage={meta.limit} />
         </div>
       </div>
 
