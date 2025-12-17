@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command' // Default shadcn
 // BUT since we manually installed cmdk, we might not have the shadcn wrapper. 
 // I will assume the user MIGHT NOT have the shadcn 'command' component.
 // Safer to implement a raw CMDK wrapper or check if I can use the standard one. 
