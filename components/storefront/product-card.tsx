@@ -12,6 +12,7 @@ import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import { QuickView } from '@/components/products/quick-view'
 
 export function ProductCard({ product }: { product: any }) {
   const [imageSrc, setImageSrc] = useState(product.main_image_url || '/placeholder.svg')
@@ -158,6 +159,9 @@ export function ProductCard({ product }: { product: any }) {
                          <ShoppingBag className="h-4 w-4 mr-2" />
                          Add to Cart
                     </Button>
+                    <div onClick={(e) => e.preventDefault()}>
+                        <QuickView product={product} /> 
+                    </div>
                 </div>
             )}
         </Link>

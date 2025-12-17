@@ -41,7 +41,8 @@ export default async function AccountPage() {
 
         {/* Tabs */}
         <Tabs defaultValue="overview" className="space-y-8 animate-in fade-in duration-700">
-            <TabsList className="bg-muted/50 p-1 rounded-full inline-flex h-auto">
+            <div className="overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:pb-0 scrollbar-hide">
+                <TabsList className="bg-muted/50 p-1 rounded-full inline-flex h-auto w-full md:w-auto justify-start md:justify-center">
                 <TabsTrigger value="overview" className="rounded-full px-6 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
                     Overview & Orders
                 </TabsTrigger>
@@ -52,6 +53,7 @@ export default async function AccountPage() {
                    Saved Items
                 </TabsTrigger>
             </TabsList>
+            </div>
 
             <TabsContent value="overview" className="space-y-6">
                 <div>

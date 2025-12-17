@@ -21,7 +21,7 @@ export function OrdersTab({ orders }: { orders: any[] }) {
     }
 
     return (
-        <div className="border rounded-xl overflow-hidden animate-in slide-in-from-bottom-2 duration-500">
+        <div className="border rounded-xl overflow-hidden animate-in slide-in-from-bottom-2 duration-500 overflow-x-auto">
             <Table>
                 <TableHeader className="bg-muted/50">
                     <TableRow>

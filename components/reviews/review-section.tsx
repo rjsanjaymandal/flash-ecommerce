@@ -66,7 +66,7 @@ export function ReviewSection({ productId, reviews }: { productId: string, revie
               reviews.map((review) => (
                   <article key={review.id} className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
                       <div className="flex items-center gap-4">
-                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center text-indigo-700 font-bold uppercase shadow-inner">
+                        <div className="h-10 w-10 text-white rounded-full bg-linear-to-br from-indigo-500 to-purple-500 flex items-center justify-center font-bold uppercase shadow-inner">
                              {review.user_name.charAt(0)}
                         </div>
                         <div>

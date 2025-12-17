@@ -39,6 +39,59 @@ export type Database = {
   }
   public: {
     Tables: {
+      addresses: {
+        Row: {
+          address_line1: string
+          address_line2: string | null
+          city: string
+          country: string
+          created_at: string
+          id: string
+          is_default: boolean | null
+          name: string
+          phone: string
+          pincode: string
+          state: string
+          user_id: string
+        }
+        Insert: {
+          address_line1: string
+          address_line2?: string | null
+          city: string
+          country?: string
+          created_at?: string
+          id?: string
+          is_default?: boolean | null
+          name: string
+          phone: string
+          pincode: string
+          state: string
+          user_id: string
+        }
+        Update: {
+          address_line1?: string
+          address_line2?: string | null
+          city?: string
+          country?: string
+          created_at?: string
+          id?: string
+          is_default?: boolean | null
+          name?: string
+          phone?: string
+          pincode?: string
+          state?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "addresses_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       cart_items: {
         Row: {
           color: string

@@ -6,10 +6,12 @@ import { Button } from "@/components/ui/button"
 import { useAuth } from "@/context/auth-context"
 import { createClient } from "@/lib/supabase/client"
 import { useState } from "react"
-import { Loader2 } from "lucide-react"
+import { Loader2, CheckCircle2 } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
 import Script from 'next/script'
 import { createOrder } from "./actions"
+import { AddressSelector } from "@/components/checkout/address-selector"
+import { Address } from "@/lib/services/address-service"
 
 declare global {
     interface Window {
@@ -37,6 +39,20 @@ export default function CheckoutPage() {
       country: '',
       phone: ''
   })
+
+  // Address Selection Handler
+  const handleAddressSelect = (addr: Address) => {
+      setFormData({
+          firstName: addr.name.split(' ')[0],
+          lastName: addr.name.split(' ').slice(1).join(' '),
+          address: addr.address_line1 + (addr.address_line2 ? `, ${addr.address_line2}` : ''),
+          city: addr.city,
+          state: addr.state,
+          zip: addr.pincode,
+          country: addr.country,
+          phone: addr.phone
+      })
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -148,14 +164,16 @@ export default function CheckoutPage() {
   if (isSuccess) {
       return (
           <div className="min-h-screen flex items-center justify-center p-4 text-center animate-in fade-in duration-500">
-              <div className="max-w-md space-y-6 bg-card p-8 rounded-2xl border shadow-xl">
-                  <div className="mx-auto w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
-                      <Loader2 className="h-8 w-8 animate-pulse" /> 
-                      {/* Using Loader as placeholder or Check icon if imported */}
+              <div className="max-w-md space-y-6 bg-card p-8 rounded-2xl border shadow-xl relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-tr from-green-500/10 to-blue-500/10" />
+                  <div className="mx-auto w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center shadow-inner relative z-10">
+                      <CheckCircle2 className="h-10 w-10 animate-in zoom-in duration-300" />
                   </div>
-                  <h1 className="text-3xl font-bold">Order Received!</h1>
-                  <p className="text-muted-foreground">Thank you, {formData.firstName}. We'll send shipping updates to your email.</p>
-                  <Button asChild className="w-full h-12 text-lg rounded-full"><a href="/">Back to Shop</a></Button>
+                  <div className="relative z-10">
+                    <h1 className="text-3xl font-black tracking-tight">Order Confirmed!</h1>
+                    <p className="text-muted-foreground mt-2">Thank you, {formData.firstName}. Your order has been placed successfully.</p>
+                  </div>
+                  <Button asChild className="w-full h-12 text-lg rounded-full relative z-10"><a href="/">Back to Shop</a></Button>
               </div>
           </div>
       )
@@ -173,36 +191,49 @@ export default function CheckoutPage() {
     <div className="min-h-screen pt-24 pb-12 container mx-auto px-4">
         <h1 className="text-4xl font-black tracking-tight mb-8">Checkout</h1>
         <div className="grid md:grid-cols-2 gap-12">
-            <form onSubmit={handleCheckout} className="space-y-6 animate-in slide-in-from-left-5 duration-500">
-                <div className="space-y-4 rounded-xl border border-border p-6 shadow-sm bg-card/50 backdrop-blur-sm">
-                    <h2 className="text-xl font-bold flex items-center gap-2">1. Shipping Information</h2>
-                    <div className="grid grid-cols-2 gap-4">
-                        <Input name="firstName" placeholder="First Name" required value={formData.firstName} onChange={handleInputChange} />
-                        <Input name="lastName" placeholder="Last Name" required value={formData.lastName} onChange={handleInputChange} />
+            <div className="space-y-6 animate-in slide-in-from-left-5 duration-500">
+                
+                {/* 0. Saved Addresses (Only if User) */}
+                {user && (
+                    <div className="space-y-4 rounded-xl border border-border p-6 shadow-sm bg-card/50 backdrop-blur-sm">
+                        <h2 className="text-xl font-bold flex items-center gap-2">Saved Addresses</h2>
+                        <AddressSelector onSelect={handleAddressSelect} />
                     </div>
-                    <Input name="address" placeholder="Address" required value={formData.address} onChange={handleInputChange} />
-                    <Input name="city" placeholder="City" required value={formData.city} onChange={handleInputChange} />
-                    <div className="grid grid-cols-2 gap-4">
-                        <Input name="state" placeholder="State/Province" required value={formData.state} onChange={handleInputChange} />
-                        <Input name="zip" placeholder="Postal Code" required value={formData.zip} onChange={handleInputChange} />
-                    </div>
-                    <Input name="country" placeholder="Country" required value={formData.country} onChange={handleInputChange} />
-                    <Input name="phone" placeholder="Phone" type="tel" required value={formData.phone} onChange={handleInputChange} />
-                </div>
+                )}
 
-                <div className="space-y-4 rounded-xl border border-border p-6 shadow-sm bg-card/50 backdrop-blur-sm">
-                    <h2 className="text-xl font-bold">2. Payment</h2>
-                    <div className="bg-muted/50 p-4 rounded-lg text-sm text-muted-foreground border border-blue-200/20">
-                        This is a demo store. No payment processing is active. Click Pay to simulate an order.
+                <form onSubmit={handleCheckout} className="space-y-6">
+                    <div className="space-y-4 rounded-xl border border-border p-6 shadow-sm bg-card/50 backdrop-blur-sm">
+                        <h2 className="text-xl font-bold flex items-center gap-2">
+                            {user ? 'Edit Shipping Details' : '1. Shipping Information'}
+                        </h2>
+                        <div className="grid grid-cols-2 gap-4">
+                            <Input name="firstName" placeholder="First Name" required value={formData.firstName} onChange={handleInputChange} />
+                            <Input name="lastName" placeholder="Last Name" required value={formData.lastName} onChange={handleInputChange} />
+                        </div>
+                        <Input name="address" placeholder="Address" required value={formData.address} onChange={handleInputChange} />
+                        <Input name="city" placeholder="City" required value={formData.city} onChange={handleInputChange} />
+                        <div className="grid grid-cols-2 gap-4">
+                            <Input name="state" placeholder="State/Province" required value={formData.state} onChange={handleInputChange} />
+                            <Input name="zip" placeholder="Postal Code" required value={formData.zip} onChange={handleInputChange} />
+                        </div>
+                        <Input name="country" placeholder="Country" required value={formData.country} onChange={handleInputChange} />
+                        <Input name="phone" placeholder="Phone" type="tel" required value={formData.phone} onChange={handleInputChange} />
                     </div>
-                    <Input placeholder="Card Number (Demo)" disabled className="bg-muted cursor-not-allowed" />
-                </div>
 
-                <Button type="submit" size="lg" className="w-full h-14 text-lg rounded-full shadow-lg shadow-primary/20" disabled={isProcessing}>
-                    {isProcessing && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-                    {isProcessing ? 'Processing Order...' : `Pay ${formatCurrency(cartTotal)}`}
-                </Button>
-            </form>
+                    <div className="space-y-4 rounded-xl border border-border p-6 shadow-sm bg-card/50 backdrop-blur-sm">
+                        <h2 className="text-xl font-bold">2. Payment</h2>
+                        <div className="bg-muted/50 p-4 rounded-lg text-sm text-muted-foreground border border-blue-200/20">
+                            This is a demo store. No payment processing is active. Click Pay to simulate an order.
+                        </div>
+                        <Input placeholder="Card Number (Demo)" disabled className="bg-muted cursor-not-allowed" />
+                    </div>
+
+                    <Button type="submit" size="lg" className="w-full h-14 text-lg rounded-full shadow-lg shadow-primary/20" disabled={isProcessing}>
+                        {isProcessing && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
+                        {isProcessing ? 'Processing Order...' : `Pay ${formatCurrency(cartTotal)}`}
+                    </Button>
+                </form>
+            </div>
 
             <div className="space-y-6 animate-in slide-in-from-right-5 duration-500 delay-100">
                 <div className="bg-muted/30 p-8 rounded-2xl space-y-6 sticky top-24 border border-border">
