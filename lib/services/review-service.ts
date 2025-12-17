@@ -3,46 +3,23 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-export async function getReviews(
-  search: string = '',
-  page: number = 1,
-  limit: number = 10
-) {
+export async function getReviews(page = 1, limit = 10, search = '') {
   const supabase = await createClient()
-  const from = (page - 1) * limit
-  const to = from + limit - 1
+  const offset = (page - 1) * limit
 
   let query = supabase
     .from('reviews')
-    .select(`
-      *,
-      products (
-        id,
-        name,
-        main_image_url
-      ),
-      profiles (
-        id,
-        name
-      )
-    `, { count: 'exact' })
+    .select('*, products(name, main_image_url)', { count: 'exact' })
     .order('created_at', { ascending: false })
-    .range(from, to)
+    .range(offset, offset + limit - 1)
 
   if (search) {
-     // Search on review comment OR product name OR user name
-     // Note: complex OR on joined tables is tricky in supabase-js simple filters. 
-     // We will search mainly on comment content or try to use a text search if enabled.
-     // For simplicity and reliability without backend extensions, we'll filter on the comment field first.
-     query = query.ilike('comment', `%${search}%`)
+    query = query.ilike('comment', `%${search}%`)
   }
 
   const { data, error, count } = await query
 
-  if (error) {
-    console.error('Error fetching reviews:', error)
-    throw error // Propagate error to be handled by caller/suspense
-  }
+  if (error) throw error
 
   return {
     data: data || [],
@@ -50,17 +27,14 @@ export async function getReviews(
       total: count || 0,
       page,
       limit,
-      totalPages: Math.ceil((count || 0) / limit),
-    },
+      totalPages: Math.ceil((count || 0) / limit)
+    }
   }
 }
 
 export async function deleteReview(id: string) {
-  const supabase = await createClient()
-  const { error } = await supabase.from('reviews').delete().eq('id', id)
-  
-  if (error) throw error
-  
-  revalidatePath('/admin/reviews')
-  revalidatePath('/product/[slug]', 'page') // Revalidate product pages aggressively if possible, or just rely on time-based
+    const supabase = await createClient()
+    const { error } = await supabase.from('reviews').delete().eq('id', id)
+    if (error) throw error
+    revalidatePath('/admin/reviews')
 }

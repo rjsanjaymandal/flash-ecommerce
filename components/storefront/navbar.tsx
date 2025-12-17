@@ -24,7 +24,7 @@ export function Navbar() {
   const pathname = usePathname()
   const supabase = createClient()
 
-  if (pathname.startsWith('/admin')) return null // Don't show public nav on admin
+
   
   // Debug Admin Access
   console.log('Navbar Auth State:', { email: user?.email, role: profile?.role, isAdmin })

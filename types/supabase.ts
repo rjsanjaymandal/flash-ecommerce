@@ -140,6 +140,45 @@ export type Database = {
           },
         ]
       }
+      coupons: {
+        Row: {
+          id: string
+          created_at: string
+          code: string
+          discount_type: Database["public"]["Enums"]["discount_type"]
+          value: number
+          active: boolean | null
+          max_uses: number | null
+          used_count: number | null
+          expires_at: string | null
+          min_order_amount: number | null
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          code: string
+          discount_type: Database["public"]["Enums"]["discount_type"]
+          value: number
+          active?: boolean | null
+          max_uses?: number | null
+          used_count?: number | null
+          expires_at?: string | null
+          min_order_amount?: number | null
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          code?: string
+          discount_type?: Database["public"]["Enums"]["discount_type"]
+          value?: number
+          active?: boolean | null
+          max_uses?: number | null
+          used_count?: number | null
+          expires_at?: string | null
+          min_order_amount?: number | null
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string | null
@@ -262,7 +301,9 @@ export type Database = {
           address_line2: string | null
           city: string | null
           country: string | null
+          coupon_code: string | null
           created_at: string | null
+          discount_amount: number | null
           id: string
           payment_provider: string | null
           payment_reference: string | null
@@ -567,6 +608,7 @@ export type Database = {
       fit_preference_type: "oversized" | "regular" | "fitted"
       order_status: "pending" | "paid" | "shipped" | "delivered" | "cancelled"
       user_role: "user" | "admin"
+      discount_type: "percentage" | "fixed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -698,8 +740,10 @@ export const Constants = {
   public: {
     Enums: {
       fit_preference_type: ["oversized", "regular", "fitted"],
+
       order_status: ["pending", "paid", "shipped", "delivered", "cancelled"],
       user_role: ["user", "admin"],
+      discount_type: ["percentage", "fixed"],
     },
   },
 } as const

@@ -3,13 +3,14 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { LayoutDashboard, ShoppingBag, Layers, ShoppingCart, MessageSquare, LogOut, ExternalLink, Settings, User } from 'lucide-react'
+import { LayoutDashboard, ShoppingBag, Layers, ShoppingCart, MessageSquare, LogOut, ExternalLink, Settings, User, Ticket } from 'lucide-react'
 import { useAuth } from '@/context/auth-context'
 
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
   { href: '/admin/products', label: 'Products', icon: ShoppingBag },
+  { href: '/admin/coupons', label: 'Coupons', icon: Ticket },
   { href: '/admin/categories', label: 'Categories', icon: Layers },
   { href: '/admin/customers', label: 'Customers', icon: User },
   { href: '/admin/reviews', label: 'Reviews', icon: MessageSquare },

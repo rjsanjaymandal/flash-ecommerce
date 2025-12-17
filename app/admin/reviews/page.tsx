@@ -1,22 +1,18 @@
 import { getReviews } from '@/lib/services/review-service'
 import { ReviewsClient } from './reviews-client'
 
-export const metadata = {
-  title: 'Admin | Reviews',
-  description: 'Moderate customer reviews',
-}
+export const revalidate = 0
 
 export default async function ReviewsPage({
-  searchParams,
+  searchParams
 }: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+  searchParams: Promise<{ page?: string, q?: string }>
 }) {
-  const resolvedParams = await searchParams
-  const page = Number(resolvedParams.page) || 1
-  const search = (resolvedParams.q as string) || ''
-
-  // Fetch reviews
-  const { data: reviews, meta } = await getReviews(search, page)
+  const params = await searchParams
+  const page = Number(params.page) || 1
+  const search = params.q || ''
+  
+  const { data: reviews, meta } = await getReviews(page, 10, search)
 
   return <ReviewsClient initialReviews={reviews} meta={meta} />
 }

@@ -6,12 +6,13 @@ import { Button } from "@/components/ui/button"
 import { useAuth } from "@/context/auth-context"
 import { createClient } from "@/lib/supabase/client"
 import { useState } from "react"
-import { Loader2, CheckCircle2 } from "lucide-react"
+import { Loader2, CheckCircle2, Ticket } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
 import Script from 'next/script'
-import { createOrder } from "./actions"
+import { createOrder, validateCoupon } from "./actions"
 import { AddressSelector } from "@/components/checkout/address-selector"
 import { Address } from "@/lib/services/address-service"
+import { toast } from "sonner"
 
 declare global {
     interface Window {
@@ -26,6 +27,12 @@ export default function CheckoutPage() {
   const { user } = useAuth()
   const [isProcessing, setIsProcessing] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+  
+  // Coupon State
+  const [couponCode, setCouponCode] = useState('')
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string, type: 'percentage' | 'fixed', value: number } | null>(null)
+  const [isCheckingCoupon, setIsCheckingCoupon] = useState(false)
+
   const supabase = createClient()
   
   // Form State
@@ -39,6 +46,15 @@ export default function CheckoutPage() {
       country: '',
       phone: ''
   })
+
+  // Calculations
+  const discountAmount = appliedCoupon 
+      ? (appliedCoupon.type === 'percentage' 
+          ? (cartTotal * appliedCoupon.value) / 100 
+          : appliedCoupon.value)
+      : 0
+  
+  const finalTotal = Math.max(0, cartTotal - discountAmount)
 
   // Address Selection Handler
   const handleAddressSelect = (addr: Address) => {
@@ -58,6 +74,35 @@ export default function CheckoutPage() {
       setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
+  const handleApplyCoupon = async () => {
+      if (!couponCode) return
+      setIsCheckingCoupon(true)
+      try {
+          const result = await validateCoupon(couponCode, cartTotal)
+          if (result.valid) {
+              setAppliedCoupon({
+                  code: couponCode.toUpperCase(),
+                  type: result.discount_type!,
+                  value: result.value!
+              })
+              toast.success(`Coupon applied: ${result.message}`)
+          } else {
+              setAppliedCoupon(null)
+              toast.error(result.message)
+          }
+      } catch (err) {
+          toast.error('Failed to validate coupon')
+      } finally {
+          setIsCheckingCoupon(false)
+      }
+  }
+
+  const removeCoupon = () => {
+      setAppliedCoupon(null)
+      setCouponCode('')
+      toast.info('Coupon removed')
+  }
+
   const handleCheckout = async (e: React.FormEvent) => {
       e.preventDefault()
       setIsProcessing(true)
@@ -67,7 +112,7 @@ export default function CheckoutPage() {
           const order = await createOrder({
               user_id: user?.id || null, 
               subtotal: cartTotal,
-              total: cartTotal,
+              total: finalTotal,
               shipping_name: `${formData.firstName} ${formData.lastName}`,
               phone: formData.phone,
               address_line1: formData.address,
@@ -77,14 +122,16 @@ export default function CheckoutPage() {
               country: formData.country,
               payment_provider: 'razorpay',
               payment_reference: '',
-              items: items
-          })
+              items: items,
+              coupon_code: appliedCoupon?.code,
+              discount_amount: discountAmount
+          } as any)
 
           // 3. Create Razorpay Order
           const response = await fetch('/api/razorpay/order', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ amount: cartTotal, currency: 'INR' })
+              body: JSON.stringify({ amount: finalTotal, currency: 'INR' })
           })
           const rzpOrder = await response.json()
           
@@ -140,15 +187,11 @@ export default function CheckoutPage() {
       } catch (err: any) {
           console.error('Checkout failed detailed:', {
               message: err?.message,
-              details: err?.details,
-              hint: err?.hint,
-              code: err?.code,
               fullError: err
           })
           alert(`Checkout failed: ${err?.message || 'Unknown error'}`)
           setIsProcessing(false)
       }
-      // Note: setIsProcessing(false) is handled in modal dismiss or catch to prevent early button enable
   }
 
   if (isSuccess) {
@@ -183,7 +226,7 @@ export default function CheckoutPage() {
         <div className="grid md:grid-cols-2 gap-12">
             <div className="space-y-6 animate-in slide-in-from-left-5 duration-500">
                 
-                {/* 0. Saved Addresses (Only if User) */}
+                {/* Saved Addresses */}
                 {user && (
                     <div className="space-y-4 rounded-xl border border-border p-6 shadow-sm bg-card/50 backdrop-blur-sm">
                         <h2 className="text-xl font-bold flex items-center gap-2">Saved Addresses</h2>
@@ -212,15 +255,12 @@ export default function CheckoutPage() {
 
                     <div className="space-y-4 rounded-xl border border-border p-6 shadow-sm bg-card/50 backdrop-blur-sm">
                         <h2 className="text-xl font-bold">2. Payment</h2>
-                        <div className="bg-muted/50 p-4 rounded-lg text-sm text-muted-foreground border border-blue-200/20">
-                            This is a demo store. No payment processing is active. Click Pay to simulate an order.
-                        </div>
                         <Input placeholder="Card Number (Demo)" disabled className="bg-muted cursor-not-allowed" />
                     </div>
 
                     <Button type="submit" size="lg" className="w-full h-14 text-lg rounded-full shadow-lg shadow-primary/20" disabled={isProcessing}>
                         {isProcessing && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-                        {isProcessing ? 'Processing Order...' : `Pay ${formatCurrency(cartTotal)}`}
+                        {isProcessing ? 'Processing Order...' : `Pay ${formatCurrency(finalTotal)}`}
                     </Button>
                 </form>
             </div>
@@ -228,7 +268,7 @@ export default function CheckoutPage() {
             <div className="space-y-6 animate-in slide-in-from-right-5 duration-500 delay-100">
                 <div className="bg-muted/30 p-8 rounded-2xl space-y-6 sticky top-24 border border-border">
                     <h2 className="font-bold text-xl">Order Summary</h2>
-                    <div className="space-y-4">
+                    <div className="space-y-4 max-h-[400px] overflow-auto pr-2 custom-scrollbar">
                         {items.map(item => (
                             <div key={`${item.productId}-${item.size}`} className="flex justify-between items-center text-sm">
                                 <div className="flex items-center gap-3">
@@ -242,9 +282,44 @@ export default function CheckoutPage() {
                             </div>
                         ))}
                     </div>
-                    <div className="border-t border-border pt-4 flex justify-between font-bold text-2xl">
-                        <span>Total</span>
-                        <span>{formatCurrency(cartTotal)}</span>
+
+                    <div className="border-t border-border pt-4 space-y-3">
+                        {/* Coupon Section */}
+                        <div className="flex items-center gap-2">
+                            <Input 
+                                placeholder="Discount Code" 
+                                className="bg-background"
+                                value={couponCode}
+                                onChange={(e) => setCouponCode(e.target.value)}
+                                disabled={!!appliedCoupon}
+                            />
+                            {appliedCoupon ? (
+                                <Button variant="outline" onClick={removeCoupon} className="shrink-0 text-destructive hover:text-destructive">
+                                    Remove
+                                </Button>
+                            ) : (
+                                <Button onClick={handleApplyCoupon} disabled={isCheckingCoupon || !couponCode} className="shrink-0">
+                                    {isCheckingCoupon ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Apply'}
+                                </Button>
+                            )}
+                        </div>
+
+                        {appliedCoupon && (
+                            <div className="flex justify-between text-sm text-green-600 font-medium px-1">
+                                <span className="flex items-center gap-1"><Ticket className="h-3 w-3" /> Code: {appliedCoupon.code}</span>
+                                <span>-{formatCurrency(discountAmount)}</span>
+                            </div>
+                        )}
+
+                        <div className="flex justify-between text-muted-foreground">
+                            <span>Subtotal</span>
+                            <span>{formatCurrency(cartTotal)}</span>
+                        </div>
+                         
+                         <div className="flex justify-between font-bold text-2xl pt-2 border-t border-border/50">
+                            <span>Total</span>
+                            <span>{formatCurrency(finalTotal)}</span>
+                        </div>
                     </div>
                 </div>
             </div>
