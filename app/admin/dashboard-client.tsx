@@ -1,9 +1,9 @@
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { DollarSign, Package, ShoppingBag, Users, Activity, TrendingUp, AlertTriangle, Calendar } from 'lucide-react'
+import { DollarSign, Package, ShoppingBag, Users, Activity, TrendingUp, AlertTriangle, Calendar, PieChart as PieChartIcon } from 'lucide-react'
 import { formatCurrency, cn } from '@/lib/utils'
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts"
+import { Area, AreaChart, Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, Legend } from "recharts"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 function DashboardCard({ title, value, icon: Icon, description, trend, className, iconClassName, trendValue }: any) {
@@ -33,7 +33,7 @@ function DashboardCard({ title, value, icon: Icon, description, trend, className
   )
 }
 
-export function DashboardClient({ stats, chartData, recentOrders }: { stats: any, chartData: any[], recentOrders: any[] }) {
+export function DashboardClient({ stats, chartData, categoryData, recentOrders }: { stats: any, chartData: any[], categoryData: any[], recentOrders: any[] }) {
   const today = new Date()
   const dateString = today.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
 
@@ -96,7 +96,13 @@ export function DashboardClient({ stats, chartData, recentOrders }: { stats: any
             </CardHeader>
             <CardContent className="pl-2">
                 <ResponsiveContainer width="100%" height={350}>
-                    <BarChart data={chartData}>
+                    <AreaChart data={chartData}>
+                        <defs>
+                            <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.3}/>
+                                <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
+                            </linearGradient>
+                        </defs>
                         <XAxis
                             dataKey="name"
                             stroke="#888888"
@@ -112,21 +118,58 @@ export function DashboardClient({ stats, chartData, recentOrders }: { stats: any
                             tickFormatter={(value) => `$${value}`}
                         />
                         <Tooltip 
-                            cursor={{ fill: 'rgba(var(--primary), 0.1)' }}
-                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                            cursor={{ stroke: '#4f46e5', strokeWidth: 1 }}
+                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                         />
-                        <Bar 
+                        <Area
+                            type="monotone" 
                             dataKey="total" 
-                            fill="currentColor" 
-                            radius={[6, 6, 0, 0]} 
-                            className="fill-primary" 
+                            stroke="#4f46e5" 
+                            strokeWidth={3}
+                            fillOpacity={1} 
+                            fill="url(#colorTotal)" 
                         />
-                    </BarChart>
+                    </AreaChart>
                 </ResponsiveContainer>
             </CardContent>
         </Card>
         
         <Card className="col-span-3 border-none shadow-sm bg-card/50 backdrop-blur-sm">
+            <CardHeader>
+                <CardTitle>Sales by Category</CardTitle>
+                <CardDescription>
+                    Revenue distribution across top categories.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                 <ResponsiveContainer width="100%" height={350}>
+                    <PieChart>
+                        <Pie
+                            data={categoryData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={60}
+                            outerRadius={80}
+                            paddingAngle={5}
+                            dataKey="value"
+                        >
+                            {categoryData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={['#4f46e5', '#8b5cf6', '#ec4899', '#0ea5e9', '#f59e0b', '#10b981'][index % 6]} strokeWidth={0} />
+                            ))}
+                        </Pie>
+                        <Tooltip 
+                             formatter={(value: number) => formatCurrency(value)}
+                             contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                        />
+                        <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                    </PieChart>
+                 </ResponsiveContainer>
+            </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-1">
+        <Card className="border-none shadow-sm bg-card/50 backdrop-blur-sm">
             <CardHeader>
                 <CardTitle>Recent Sales</CardTitle>
                 <CardDescription>

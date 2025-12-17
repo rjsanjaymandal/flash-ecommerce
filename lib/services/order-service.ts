@@ -117,3 +117,37 @@ export async function updateOrderStatus(orderId: string, newStatus: string) {
     if (error) throw error
     return { success: true }
 }
+
+export async function getSalesByCategory() {
+    const supabase = await createClient()
+    
+    // Join orders -> order_items -> products -> categories
+    // We need to filter for 'paid' orders to be accurate for revenue
+    const { data, error } = await supabase
+        .from('order_items')
+        .select(`
+            quantity,
+            unit_price,
+            orders!inner(status),
+            products(categories(name))
+        `)
+        .eq('orders.status', 'paid')
+
+    if (error) {
+        console.error('Error fetching category sales:', error)
+        return []
+    }
+
+    const categoryRevenue: Record<string, number> = {}
+
+    data.forEach((item: any) => {
+        const categoryName = item.products?.categories?.name || 'Uncategorized'
+        const revenue = (item.quantity || 0) * (item.unit_price || 0)
+        categoryRevenue[categoryName] = (categoryRevenue[categoryName] || 0) + revenue
+    })
+
+    // Format for Recharts: [{ name: 'Category', value: 1234 }]
+    return Object.entries(categoryRevenue)
+        .map(([name, value]) => ({ name, value }))
+        .sort((a, b) => b.value - a.value) // Highest revenue first
+}
