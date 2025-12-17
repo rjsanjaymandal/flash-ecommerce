@@ -41,9 +41,9 @@ export async function getProducts(filter: ProductFilter = {}): Promise<Paginated
     const to = from + limit - 1
     
     // If filtering by size or color, we need an inner join on stock
-    let selectString = '*, categories(name), product_stock(*)'
+    let selectString = '*, categories(name), product_stock(*), reviews(rating)'
     if (filter.size || filter.color) {
-        selectString = '*, categories(name), product_stock!inner(*)'
+        selectString = '*, categories(name), product_stock!inner(*), reviews(rating)'
     }
 
     // We use count: 'exact' to get total rows matching filters
@@ -101,8 +101,19 @@ export async function getProducts(filter: ProductFilter = {}): Promise<Paginated
     
     if (error) throw error
 
+    // Aggregate statistics
+    const processedData = (data || []).map((p: any) => {
+        const ratings = p.reviews?.map((r: any) => r.rating) || []
+        const avg = ratings.length > 0 ? ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length : 0
+        return {
+            ...p,
+            average_rating: avg,
+            review_count: ratings.length
+        }
+    })
+
     return {
-        data: data || [],
+        data: processedData,
         meta: {
             total: count || 0,
             page,
@@ -116,12 +127,21 @@ export async function getProductBySlug(slug: string) {
     const supabase = await getDb()
     const { data, error } = await supabase
       .from('products')
-      .select('*, categories(name), product_stock(*)')
+      .select('*, categories(name), product_stock(*), reviews(rating)')
       .eq('slug', slug)
       .single()
     
     if (error) return null
-    return data
+
+    // Aggregate statistics
+    const ratings = data.reviews?.map((r: any) => r.rating) || []
+    const avg = ratings.length > 0 ? ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length : 0
+    
+    return {
+        ...data,
+        average_rating: avg,
+        review_count: ratings.length
+    }
 }
 
 export async function createProduct(productData: any) {
@@ -200,11 +220,20 @@ export async function getProductsByIds(ids: string[]) {
     
     const { data, error } = await supabase
       .from('products')
-      .select('*, categories(name), product_stock(*)')
+      .select('*, categories(name), product_stock(*), reviews(rating)')
       .in('id', ids)
     
     if (error) throw error
-    return data
+
+    return (data || []).map((p: any) => {
+        const ratings = p.reviews?.map((r: any) => r.rating) || []
+        const avg = ratings.length > 0 ? ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length : 0
+        return {
+            ...p,
+            average_rating: avg,
+            review_count: ratings.length
+        }
+    })
 }
 
 export async function getRelatedProducts(currentProductId: string, categoryId: string) {
@@ -213,7 +242,7 @@ export async function getRelatedProducts(currentProductId: string, categoryId: s
     // Simple logic: Same category, not current product, limit 4
     let query = supabase
       .from('products')
-      .select('id, name, price, main_image_url, slug') // minimal fields
+      .select('*, reviews(rating)') // Fetch all fields for ProductCard + reviews
       .eq('is_active', true)
       .neq('id', currentProductId)
       .limit(4)
@@ -223,7 +252,16 @@ export async function getRelatedProducts(currentProductId: string, categoryId: s
     }
     
     const { data } = await query
-    return data || []
+    
+    return (data || []).map((p: any) => {
+        const ratings = p.reviews?.map((r: any) => r.rating) || []
+        const avg = ratings.length > 0 ? ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length : 0
+        return {
+            ...p,
+            average_rating: avg,
+            review_count: ratings.length
+        }
+    })
 }
 
 export async function bulkDeleteProducts(ids: string[]) {

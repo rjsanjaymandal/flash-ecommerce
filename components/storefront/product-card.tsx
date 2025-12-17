@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { cn, formatCurrency } from '@/lib/utils'
-import { ShoppingBag, Heart, Eye } from 'lucide-react'
+import { ShoppingBag, Heart, Star } from 'lucide-react'
 import Image from 'next/image'
 import { useWishlistStore, selectIsInWishlist } from '@/store/use-wishlist-store'
 import { useCartStore } from '@/store/use-cart-store'
@@ -14,7 +14,12 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { QuickView } from '@/components/products/quick-view'
 
-export function ProductCard({ product }: { product: any }) {
+interface ProductCardProps {
+    product: any
+    showRating?: boolean
+}
+
+export function ProductCard({ product, showRating = true }: ProductCardProps) {
   const [imageSrc, setImageSrc] = useState(product.main_image_url || '/placeholder.svg')
   const router = useRouter()
   const addToCart = useCartStore((state) => state.addItem)
@@ -29,6 +34,10 @@ export function ProductCard({ product }: { product: any }) {
   // Calculate total stock
   const totalStock = stock.reduce((acc: number, item: any) => acc + item.quantity, 0)
   const isOutOfStock = totalStock === 0
+
+  // Optional: Get rating from product if passed (e.g. from a joined aggregate)
+  const rating = product.average_rating || 0
+  const reviewCount = product.review_count || 0
 
   const handleWishlistClick = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -106,17 +115,17 @@ export function ProductCard({ product }: { product: any }) {
 
   return (
     <motion.div 
-        whileHover={{ y: -5 }}
+        whileHover={{ y: -4 }}
         className="group relative flex flex-col gap-3"
     >
         {/* Image Container */}
-        <Link href={`/product/${product.slug || product.id}`} className="block relative aspect-3/4 overflow-hidden rounded-lg bg-muted/20">
+        <Link href={`/product/${product.slug || product.id}`} className="block relative aspect-3/4 overflow-hidden rounded-xl bg-muted/20 border border-transparent group-hover:border-border/50 transition-all duration-300 shadow-sm">
             {/* Badges */}
             <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
                  {isOutOfStock ? (
-                     <Badge variant="destructive" className="uppercase tracking-wider text-[10px] font-bold shadow-sm">Out of Stock</Badge>
+                     <Badge variant="destructive" className="uppercase tracking-widest text-[9px] font-bold px-2 py-0.5 rounded-full shadow-sm">Out of Stock</Badge>
                  ) : isNew ? (
-                     <Badge className="bg-white text-black hover:bg-white/90 uppercase tracking-wider text-[10px] font-bold shadow-sm backdrop-blur-md">New</Badge>
+                     <Badge className="bg-white/90 text-black hover:bg-white uppercase tracking-widest text-[9px] font-bold px-2 py-0.5 rounded-full shadow-sm backdrop-blur-md border-none">New</Badge>
                  ) : null}
             </div>
 
@@ -128,21 +137,21 @@ export function ProductCard({ product }: { product: any }) {
                     isWishlisted ? "text-red-500 bg-red-50/90 opacity-100" : "text-black hover:bg-white"
                 )}
             >
-                <Heart className={cn("h-4 w-4", isWishlisted && "fill-current")} />
+                <Heart className={cn("h-4 w-4 transition-colors", isWishlisted ? "fill-current" : "group-hover/heart:fill-red-200")} />
             </button>
 
             {/* Main Image */}
             <motion.div
-                whileHover={{ scale: 1.05 }}
-                transition={{ duration: 0.4 }}
-                className="h-full w-full bg-muted/20"
+                whileHover={{ scale: 1.08 }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                className="h-full w-full bg-zinc-100"
             >
                 <Image 
                     src={imageSrc} 
                     alt={product.name}
                     fill
                     className="object-cover"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                     onError={() => setImageSrc('/placeholder.svg')}
                     unoptimized
                 />
@@ -150,16 +159,16 @@ export function ProductCard({ product }: { product: any }) {
 
             {/* Desktop Action Overlay */}
             {!isOutOfStock && (
-                <div className="hidden lg:flex absolute inset-x-4 bottom-4 gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out z-20">
+                <div className="hidden lg:flex absolute inset-x-3 bottom-3 gap-2 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 ease-out z-20">
                     <Button 
                         size="sm" 
-                        className="flex-1 bg-white text-black hover:bg-white/90 shadow-lg font-medium h-10 rounded-full"
+                        className="flex-1 bg-white text-black hover:bg-black hover:text-white shadow-xl font-bold h-10 rounded-full transition-all duration-300 uppercase text-[10px] tracking-widest"
                         onClick={handleAddToCart}
                     >
-                         <ShoppingBag className="h-4 w-4 mr-2" />
+                         <ShoppingBag className="h-3.5 w-3.5 mr-2" />
                          Add to Cart
                     </Button>
-                    <div onClick={(e) => e.preventDefault()}>
+                    <div onClick={(e) => e.preventDefault()} className="shrink-0">
                         <QuickView product={product} /> 
                     </div>
                 </div>
@@ -167,21 +176,32 @@ export function ProductCard({ product }: { product: any }) {
         </Link>
         
         {/* Details */ }
-        <div className="space-y-1">
-             <div className="flex justify-between items-start gap-2">
-                <Link href={`/product/${product.slug || product.id}`} className="group-hover:text-primary transition-colors flex-1">
-                    <h3 className="font-medium text-sm lg:text-base leading-tight truncate">{product.name}</h3>
+        <div className="space-y-1.5 px-0.5">
+             <div className="flex flex-col gap-0.5">
+                <Link href={`/product/${product.slug || product.id}`} className="hover:text-primary transition-colors inline-block">
+                    <h3 className="font-semibold text-sm lg:text-[15px] leading-tight text-zinc-900 line-clamp-1 capitalize">{product.name}</h3>
                 </Link>
+                
+                {/* Review Integration */}
+                {showRating && (
+                    <div className="flex items-center gap-1.5">
+                        <div className="flex text-yellow-400">
+                             <Star className={cn("h-3 w-3 fill-current", rating === 0 && "text-zinc-200 fill-zinc-200")} />
+                        </div>
+                        <span className="text-[11px] font-bold text-zinc-600">{rating > 0 ? rating.toFixed(1) : 'No reviews'}</span>
+                        {reviewCount > 0 && <span className="text-[10px] text-zinc-400">({reviewCount})</span>}
+                    </div>
+                )}
              </div>
-             <p className="font-bold text-sm lg:text-base">{formatCurrency(product.price)}</p>
+             <p className="font-black text-sm lg:text-base text-zinc-900 tracking-tight">{formatCurrency(product.price)}</p>
         </div>
 
-         {/* Mobile Actions (Visible below card) */}
+         {/* Mobile Actions */}
         <div className="lg:hidden grid grid-cols-2 gap-2 mt-1">
              <Button 
                 variant="outline" 
                 size="sm" 
-                className="rounded-full h-9 text-xs font-semibold"
+                className="rounded-full h-9 text-[10px] font-black uppercase tracking-widest border-zinc-200 shadow-sm"
                 onClick={handleAddToCart}
                 disabled={isOutOfStock}
             >
@@ -189,7 +209,7 @@ export function ProductCard({ product }: { product: any }) {
             </Button>
             <Button 
                 size="sm" 
-                className="rounded-full h-9 text-xs font-semibold"
+                className="rounded-full h-9 text-[10px] font-black uppercase tracking-widest shadow-sm"
                 onClick={handleBuyNow}
                 disabled={isOutOfStock}
             >
@@ -199,3 +219,4 @@ export function ProductCard({ product }: { product: any }) {
     </motion.div>
   )
 }
+
