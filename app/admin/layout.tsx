@@ -1,7 +1,6 @@
-'use client'
-
 import AdminGuard from '@/components/admin/admin-guard'
 import { AdminSidebar } from '@/components/admin/admin-sidebar'
+import './admin-theme.css'
 
 export default function AdminLayout({
   children,
@@ -10,10 +9,11 @@ export default function AdminLayout({
 }) {
   return (
     <AdminGuard>
-      <div className="flex min-h-screen w-full bg-muted/40">
+      <div className="flex min-h-screen w-full admin-theme bg-background text-foreground">
         <AdminSidebar />
-        <div className="flex flex-col sm:gap-4 sm:pl-64 w-full">
-            <main className="flex-1 p-4 sm:px-6 sm:py-md md:gap-8 lg:py-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="flex flex-col sm:gap-4 sm:pl-72 w-full transition-all duration-300">
+             {/* Header could go here */}
+            <main className="flex-1 p-4 sm:px-8 sm:py-8 md:gap-8 lg:py-10 animate-in fade-in slide-in-from-bottom-2 duration-500">
              {children}
             </main>
         </div>

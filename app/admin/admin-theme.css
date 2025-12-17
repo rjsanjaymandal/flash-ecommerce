@@ -1,0 +1,39 @@
+@layer utilities {
+  .admin-theme {
+    /* Enterprise Admin Theme - Slate & Indigo */
+    
+    /* Light Mode Overrides */
+    --background: #f8fafc; /* Slate 50 */
+    --foreground: #0f172a; /* Slate 900 */
+    --card: #ffffff;
+    --card-foreground: #0f172a;
+    --popover: #ffffff;
+    --popover-foreground: #0f172a;
+    --primary: #4f46e5; /* Indigo 600 */
+    --primary-foreground: #ffffff;
+    --secondary: #e2e8f0; /* Slate 200 */
+    --secondary-foreground: #1e293b; /* Slate 800 */
+    --muted: #f1f5f9; /* Slate 100 */
+    --muted-foreground: #64748b; /* Slate 500 */
+    --accent: #f1f5f9; /* Slate 100 */
+    --accent-foreground: #0f172a;
+    --destructive: #ef4444;
+    --destructive-foreground: #f8fafc;
+    --border: #e2e8f0; /* Slate 200 */
+    --input: #e2e8f0;
+    --ring: #4f46e5;
+    
+    /* Radius - slightly sharper for pro feel */
+    --radius: 0.5rem; 
+  }
+
+  /* Specific Sidebar Theme Variables if needed */
+  .admin-sidebar-theme {
+      --background: #0f172a; /* Slate 900 */
+      --foreground: #f8fafc; /* Slate 50 */
+      --muted: #1e293b; /* Slate 800 */
+      --muted-foreground: #94a3b8; /* Slate 400 */
+      /* Accent for sidebar items */
+      --primary: #6366f1; /* Indigo 500 */
+  }
+}
