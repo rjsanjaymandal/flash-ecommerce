@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ProfileTab } from "@/components/account/profile-tab"
 import { OrdersTab } from "@/components/account/orders-tab"
 import { WishlistTab } from "@/components/account/wishlist-tab"
-import { Button } from "@/components/ui/button"
+import { LoyaltyCard } from '@/components/account/loyalty-card'
 import { LogOut } from "lucide-react"
 import { SignOutButton } from "@/components/account/sign-out-button"
 
@@ -55,7 +55,10 @@ export default async function AccountPage() {
             </TabsList>
             </div>
 
-            <TabsContent value="overview" className="space-y-6">
+            <TabsContent value="overview" className="space-y-4 animate-in fade-in duration-500">
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    <LoyaltyCard points={profile?.loyalty_points || 0} />
+                </div>
                 <div>
                     <h2 className="text-2xl font-bold mb-6">Recent Orders</h2>
                     <OrdersTab orders={orders} />

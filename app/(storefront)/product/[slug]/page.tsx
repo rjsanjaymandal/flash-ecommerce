@@ -31,8 +31,35 @@ export default async function ProductPage({ params }: { params: { slug: string }
       getRelatedProducts(product.id, product.category_id)
   ])
 
+  // JSON-LD Structured Data
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    image: product.main_image_url,
+    description: product.description,
+    sku: product.id,
+    brand: {
+      '@type': 'Brand',
+      name: 'Flash',
+    },
+    offers: {
+      '@type': 'Offer',
+      url: `https://flash-ecommerce.vercel.app/product/${slug}`,
+      priceCurrency: 'INR',
+      price: product.price,
+      availability: (product.product_stock?.some((s: any) => s.quantity > 0)) 
+        ? 'https://schema.org/InStock' 
+        : 'https://schema.org/OutOfStock',
+    },
+  }
+
   return (
       <>
+        <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <ProductDetailClient product={product} />
         
         <div className="container mx-auto px-4 lg:px-8 space-y-20 pb-20">

@@ -104,6 +104,7 @@ export default function CheckoutPage() {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({
+                          order_id: (order as any).id,
                           razorpay_order_id: paymentResponse.razorpay_order_id,
                           razorpay_payment_id: paymentResponse.razorpay_payment_id,
                           razorpay_signature: paymentResponse.razorpay_signature
@@ -112,17 +113,6 @@ export default function CheckoutPage() {
                   const verifyData = await verifyRes.json()
 
                   if (verifyData.verified) {
-                      // 6. Update Order Status
-                      // Cast to any to bypass type mismatch where update expects 'never'
-                      await (supabase
-                          .from('orders') as any)
-                          .update({ 
-                              status: 'paid',
-                              payment_provider: 'razorpay',
-                              payment_reference: paymentResponse.razorpay_payment_id
-                          })
-                          .eq('id', (order as any).id)
-
                       setIsSuccess(true)
                       clearCart()
                   } else {

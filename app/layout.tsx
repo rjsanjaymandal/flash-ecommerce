@@ -20,8 +20,25 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: 'FLASH | Queer & Inclusive Fashion',
-  description: 'Bold, affirming fashion for everyone.',
+  title: {
+    default: 'FLASH | Queer & Inclusive Fashion',
+    template: '%s | FLASH'
+  },
+  description: 'Bold, affirming fashion for everyone. Shop our collection of gender-inclusive apparel.',
+  metadataBase: new URL('https://flash-ecommerce.vercel.app'),
+  openGraph: {
+    title: 'FLASH | Queer & Inclusive Fashion',
+    description: 'Bold, affirming fashion for everyone.',
+    url: 'https://flash-ecommerce.vercel.app',
+    siteName: 'FLASH',
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'FLASH | Queer & Inclusive Fashion',
+    description: 'Bold, affirming fashion for everyone.',
+  },
 }
 
 import { createClient } from '@/lib/supabase/server'

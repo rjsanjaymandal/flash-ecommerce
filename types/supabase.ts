@@ -425,6 +425,7 @@ export type Database = {
             | Database["public"]["Enums"]["fit_preference_type"]
             | null
           id: string
+          loyalty_points: number | null
           name: string | null
           pronouns: string | null
           role: Database["public"]["Enums"]["user_role"] | null
@@ -436,6 +437,7 @@ export type Database = {
             | Database["public"]["Enums"]["fit_preference_type"]
             | null
           id: string
+          loyalty_points?: number | null
           name?: string | null
           pronouns?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
@@ -447,6 +449,7 @@ export type Database = {
             | Database["public"]["Enums"]["fit_preference_type"]
             | null
           id?: string
+          loyalty_points?: number | null
           name?: string | null
           pronouns?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null

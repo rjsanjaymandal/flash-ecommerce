@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import { useSearchStore } from '@/store/use-search-store'
+import { MegaMenu } from './mega-menu'
 
 export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -53,7 +54,8 @@ export function Navbar() {
   const navLinks = categories.map((cat: any) => ({
     href: `/shop?category=${cat.id}`,
     label: cat.name,
-    children: cat.children
+    children: cat.children,
+    category: cat
   }))
 
   return (
@@ -97,21 +99,9 @@ export function Navbar() {
                         )}
                     </Link>
                     
-                    {/* Simplified Mega Menu / Dropdown */}
+                    {/* Rich Mega Menu */}
                     {link.children && link.children.length > 0 && (
-                        <div className="absolute top-full left-0 w-48 pt-2 opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-200 ease-out">
-                            <div className="bg-background border border-border shadow-xl rounded-md overflow-hidden p-2 flex flex-col gap-1">
-                                {link.children.map((child: any) => (
-                                    <Link 
-                                        key={child.id}
-                                        href={`/shop?category=${child.id}`}
-                                        className="text-sm px-3 py-2 rounded-sm hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                                    >
-                                        {child.name}
-                                    </Link>
-                                ))}
-                            </div>
-                        </div>
+                        <MegaMenu category={link.category} />
                     )}
                 </div>
             ))}
