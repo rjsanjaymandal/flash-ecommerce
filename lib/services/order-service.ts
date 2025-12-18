@@ -30,12 +30,11 @@ export async function getOrders(filter: OrderFilter = {}): Promise<PaginatedResu
   // NOTE: Supabase doesn't support ILIKE across foreign keys easily in one query without complex RPC or embedding.
   // We will filter by Order ID first. For Profile Name/Email, it's safer to rely on ID search or proper relation filter if enabled.
   if (filter.search) {
-      if (filter.search.includes('-')) {
-          // Likely UUID
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(filter.search)
+      if (isUuid) {
           query = query.eq('id', filter.search)
       } else {
-         // Fallback to searching order string or partial ID
-         query = query.ilike('id::text', `%${filter.search}%`)
+          query = query.ilike('shipping_name', `%${filter.search}%`)
       }
   }
 
@@ -109,45 +108,50 @@ export async function getStats() {
 export async function getRecentActivity(limit = 10) {
     const supabase = await createClient()
 
-    const [orders, reviews, subscribers] = await Promise.all([
-        supabase.from('orders').select('id, created_at, total, shipping_name').order('created_at', { ascending: false }).limit(limit),
-        supabase.from('reviews').select('id, created_at, user_name, rating').order('created_at', { ascending: false }).limit(limit),
-        supabase.from('newsletter_subscribers').select('id, created_at, email').order('created_at', { ascending: false }).limit(limit)
-    ])
+    try {
+        const [ordersRes, reviewsRes, subscribersRes] = await Promise.all([
+            supabase.from('orders').select('id, created_at, total, shipping_name').order('created_at', { ascending: false }).limit(limit),
+            supabase.from('reviews').select('id, created_at, user_name, rating').order('created_at', { ascending: false }).limit(limit),
+            supabase.from('newsletter_subscribers').select('id, created_at, email').order('created_at', { ascending: false }).limit(limit)
+        ])
 
-    const events: any[] = []
+        const events: any[] = []
 
-    if (orders.data) {
-        orders.data.forEach(o => events.push({
-            id: o.id,
-            type: 'order',
-            title: `New Order for ₹${o.total}`,
-            description: `By ${o.shipping_name}`,
-            time: o.created_at
-        }))
+        if (ordersRes.data) {
+            ordersRes.data.forEach(o => events.push({
+                id: o.id,
+                type: 'order',
+                title: `New Order for ₹${o.total}`,
+                description: `By ${o.shipping_name || 'Guest'}`,
+                time: o.created_at
+            }))
+        }
+
+        if (reviewsRes.data) {
+            reviewsRes.data.forEach(r => events.push({
+                id: r.id,
+                type: 'review',
+                title: `New ${r.rating}-Star Review`,
+                description: `By ${r.user_name || 'Anonymous'}`,
+                time: r.created_at
+            }))
+        }
+
+        if (subscribersRes.data) {
+            subscribersRes.data.forEach(s => events.push({
+                id: s.id,
+                type: 'newsletter',
+                title: `New Subscriber`,
+                description: s.email,
+                time: s.created_at
+            }))
+        }
+
+        return events.sort((a: any, b: any) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, limit)
+    } catch (err) {
+        console.error('Activity Feed Error:', err)
+        return []
     }
-
-    if (reviews.data) {
-        reviews.data.forEach(r => events.push({
-            id: r.id,
-            type: 'review',
-            title: `New ${r.rating}-Star Review`,
-            description: `By ${r.user_name || 'Anonymous'}`,
-            time: r.created_at
-        }))
-    }
-
-    if (subscribers.data) {
-        subscribers.data.forEach(s => events.push({
-            id: s.id,
-            type: 'newsletter',
-            title: `New Subscriber`,
-            description: s.email,
-            time: s.created_at
-        }))
-    }
-
-    return events.sort((a: any, b: any) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, limit)
 }
 
 export async function getMonthlyRevenue() {
@@ -188,15 +192,16 @@ export async function getSalesByCategory() {
     
     // Join orders -> order_items -> products -> categories
     // We need to filter for 'paid' orders to be accurate for revenue
+    // We use explicit joins to avoid relationship name ambiguity
     const { data, error } = await supabase
         .from('order_items')
         .select(`
             quantity,
             unit_price,
-            orders!inner(status),
-            products(categories(name))
+            order:orders!inner(status),
+            product:products!inner(category:categories!inner(name))
         `)
-        .eq('orders.status', 'paid')
+        .eq('order.status', 'paid')
 
     if (error) {
         console.error('Error fetching category sales:', error)
@@ -206,7 +211,7 @@ export async function getSalesByCategory() {
     const categoryRevenue: Record<string, number> = {}
 
     data.forEach((item: any) => {
-        const categoryName = item.products?.categories?.name || 'Uncategorized'
+        const categoryName = item.product?.category?.name || 'Uncategorized'
         const revenue = (item.quantity || 0) * (item.unit_price || 0)
         categoryRevenue[categoryName] = (categoryRevenue[categoryName] || 0) + revenue
     })

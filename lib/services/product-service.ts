@@ -77,8 +77,12 @@ export async function getProducts(filter: ProductFilter = {}): Promise<Paginated
     }
 
     if (filter.search) {
-      // Search name OR id
-      query = query.or(`name.ilike.%${filter.search}%,id::text.ilike.%${filter.search}%`)
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(filter.search)
+        if (isUuid) {
+            query = query.eq('id', filter.search)
+        } else {
+            query = query.ilike('name', `%${filter.search}%`)
+        }
     }
 
     // Sorting
@@ -100,24 +104,40 @@ export async function getProducts(filter: ProductFilter = {}): Promise<Paginated
     // Apply Pagination
     query = query.range(from, to)
 
-    const { data, error, count } = await query
-    
-    if (error) throw error
-
-    const processedData = (data || []).map((p: any) => ({
-        ...p,
-        average_rating: Number(p.average_rating || 0),
-        review_count: Number(p.review_count || 0)
-    }))
-
-    return {
-        data: processedData,
-        meta: {
-            total: count || 0,
-            page,
-            limit,
-            totalPages: Math.ceil((count || 0) / limit)
+    try {
+        const { data, error, count } = await query
+        
+        if (error) {
+            // Check for PostgREST undefined column error (42703) if we tried to sort by sale_count
+            if (error.code === '42703' && filter.sort === 'trending') {
+                console.warn('sale_count column missing, falling back to newest sort')
+                // Re-run without the trending order
+                return getProducts({ ...filter, sort: 'newest' })
+            }
+            throw error
         }
+
+        const processedData = (data || []).map((p: any) => ({
+            ...p,
+            average_rating: Number(p.average_rating || 0),
+            review_count: Number(p.review_count || 0)
+        }))
+
+        return {
+            data: processedData,
+            meta: {
+                total: count || 0,
+                page,
+                limit,
+                totalPages: Math.ceil((count || 0) / limit)
+            }
+        }
+    } catch (err: any) {
+        // Double check catch for safety
+        if (err.code === '42703' && filter.sort === 'trending') {
+            return getProducts({ ...filter, sort: 'newest' })
+        }
+        throw err
     }
 }
 
