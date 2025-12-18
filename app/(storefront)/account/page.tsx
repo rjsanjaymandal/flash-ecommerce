@@ -13,19 +13,20 @@ export default async function AccountPage() {
   }
 
   // Parallel data fetching
-  const [profileData, ordersData, trendingData, addressesData, waitlistData] = await Promise.all([
+  const [profileData, ordersData, addressesData, waitlistData] = await Promise.all([
       supabase.from('profiles').select('*').eq('id', user.id).single(),
       supabase.from('orders').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
-      getProducts({ limit: 4, sort: 'trending', is_active: true }),
       supabase.from('addresses').select('*').eq('user_id', user.id).order('is_default', { ascending: false }),
       getWaitlistedProducts(user.id)
   ])
 
   const profile = profileData.data
   const orders = ordersData.data || []
-  const recommendations = trendingData.data || []
+
   const addresses = addressesData.data || []
-  const waitlistedProducts = (await Promise.all([profileData, ordersData, trendingData, addressesData, getWaitlistedProducts(user.id)]))[4] as any[] || []
+  // Fix: We already awaited Promise.all above. The result array is destructured.
+  // waitlistData is the result of getWaitlistedProducts(user.id)
+  const waitlistedProducts = waitlistData || []
   
   // Wait, I messed up the destructuring above in the previous step because I added it to the array but didn't update the destructuring var name in line 16.
   // I need to correct the destructuring in the previous Logic or just use the array index.

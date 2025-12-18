@@ -3,10 +3,10 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ProfileTab } from "@/components/account/profile-tab"
 import { OrdersTab } from "@/components/account/orders-tab"
-import { WishlistTab } from "@/components/account/wishlist-tab"
+// import { WishlistTab } from "@/components/account/wishlist-tab" // Removed
 import { AddressTab } from "@/components/account/address-tab"
 import { LoyaltyCard } from '@/components/account/loyalty-card'
-import { ArrowRight, Zap, ShoppingBag, Heart, Award, MapPin } from "lucide-react"
+import { ArrowRight, Zap, ShoppingBag, Heart, Award, MapPin, Clock } from "lucide-react"
 import { SignOutButton } from "@/components/account/sign-out-button"
 import { FeaturedGrid } from "@/components/storefront/featured-grid"
 import Link from "next/link"
@@ -80,7 +80,7 @@ export function AccountClient({ user, profile, orders, addresses, waitlist }: Ac
                 {[
                     { label: "Flash Points", value: profile?.loyalty_points || 0, icon: Zap, color: "text-yellow-400" },
                     { label: "Total Orders", value: orders.length, icon: ShoppingBag, color: "text-blue-400" },
-                    { label: "Saved Items", value: "8", icon: Heart, color: "text-rose-400" }, 
+                    { label: "My Waitlist", value: waitlist.length, icon: Clock, color: "text-amber-500" }, 
                     { label: "Tier Status", value: "Silver", icon: Award, color: "text-zinc-400" }
                 ].map((stat, i) => (
                     <motion.div 
@@ -101,20 +101,17 @@ export function AccountClient({ user, profile, orders, addresses, waitlist }: Ac
         {/* Tabs Content */}
         <Tabs defaultValue="overview" className="space-y-10 md:space-y-12 animate-in fade-in duration-700">
             <div className="flex justify-start md:justify-center overflow-x-auto pb-4 md:pb-6 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
-                <TabsList className="bg-zinc-100/80 backdrop-blur-md p-1.5 md:p-2 rounded-full inline-flex h-auto shadow-sm border border-zinc-200/50 min-w-max">
-                    <TabsTrigger value="overview" className="rounded-full px-6 md:px-10 py-3 md:py-4 data-[state=active]:bg-white data-[state=active]:shadow-xl transition-all text-[10px] md:text-[11px] font-black uppercase tracking-widest">
+                <TabsList className="bg-zinc-900/95 backdrop-blur-md p-1.5 md:p-2 rounded-full inline-flex h-auto shadow-xl border border-white/10 min-w-max ring-1 ring-white/5">
+                    <TabsTrigger value="overview" className="rounded-full px-6 md:px-10 py-3 md:py-4 data-[state=active]:bg-white data-[state=active]:text-zinc-950 text-zinc-400 hover:text-white transition-all text-[10px] md:text-[11px] font-black uppercase tracking-widest">
                         Overview
                     </TabsTrigger>
-                    <TabsTrigger value="addresses" className="rounded-full px-6 md:px-10 py-3 md:py-4 data-[state=active]:bg-white data-[state=active]:shadow-xl transition-all text-[10px] md:text-[11px] font-black uppercase tracking-widest">
+                    <TabsTrigger value="addresses" className="rounded-full px-6 md:px-10 py-3 md:py-4 data-[state=active]:bg-white data-[state=active]:text-zinc-950 text-zinc-400 hover:text-white transition-all text-[10px] md:text-[11px] font-black uppercase tracking-widest">
                         Addresses
                     </TabsTrigger>
-                    <TabsTrigger value="profile" className="rounded-full px-6 md:px-10 py-3 md:py-4 data-[state=active]:bg-white data-[state=active]:shadow-xl transition-all text-[10px] md:text-[11px] font-black uppercase tracking-widest">
+                    <TabsTrigger value="profile" className="rounded-full px-6 md:px-10 py-3 md:py-4 data-[state=active]:bg-white data-[state=active]:text-zinc-950 text-zinc-400 hover:text-white transition-all text-[10px] md:text-[11px] font-black uppercase tracking-widest">
                         Settings
                     </TabsTrigger>
-                    <TabsTrigger value="wishlist" className="rounded-full px-6 md:px-10 py-3 md:py-4 data-[state=active]:bg-white data-[state=active]:shadow-xl transition-all text-[10px] md:text-[11px] font-black uppercase tracking-widest">
-                       Wishlist
-                    </TabsTrigger>
-                    <TabsTrigger value="waitlist" className="rounded-full px-6 md:px-10 py-3 md:py-4 data-[state=active]:bg-white data-[state=active]:shadow-xl transition-all text-[10px] md:text-[11px] font-black uppercase tracking-widest">
+                    <TabsTrigger value="waitlist" className="rounded-full px-6 md:px-10 py-3 md:py-4 data-[state=active]:bg-white data-[state=active]:text-zinc-950 text-zinc-400 hover:text-white transition-all text-[10px] md:text-[11px] font-black uppercase tracking-widest">
                        Waitlist
                     </TabsTrigger>
                 </TabsList>
@@ -181,21 +178,7 @@ export function AccountClient({ user, profile, orders, addresses, waitlist }: Ac
                 </div>
             </TabsContent>
             
-            <TabsContent value="wishlist" className="focus-visible:outline-none">
-                 <div className="space-y-12">
-                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-                        <div>
-                            <span className="text-primary font-black tracking-[0.4em] uppercase text-[10px]">Curated Selection</span>
-                            <h2 className="text-5xl md:text-7xl font-black tracking-tighter uppercase leading-[0.8] italic mt-4">
-                                SAVED <span className="text-zinc-300">VAULT</span>
-                            </h2>
-                        </div>
-                    </div>
-                    <div className="bg-zinc-50/50 rounded-3xl border-2 p-8 min-h-[400px]">
-                        <WishlistTab />
-                    </div>
-                </div>
-            </TabsContent>
+
             <TabsContent value="waitlist" className="focus-visible:outline-none">
                  <div className="space-y-12 waitlist-tab-content">
                      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
