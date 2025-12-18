@@ -9,6 +9,7 @@ import { ArrowRight, Zap, ShoppingBag, Heart, Award } from "lucide-react"
 import { SignOutButton } from "@/components/account/sign-out-button"
 import { FeaturedGrid } from "@/components/storefront/featured-grid"
 import Link from "next/link"
+import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { motion } from "framer-motion"
 import { Card } from "@/components/ui/card"
@@ -25,6 +26,16 @@ interface AccountClientProps {
 }
 
 export function AccountClient({ user, profile, orders, recommendations }: AccountClientProps) {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+      return null
+  }
+
   return (
     <div className="container mx-auto px-4 py-24 min-h-screen max-w-6xl relative">
         <BrandGlow className="top-0 left-[-10%] opacity-50" size="lg" />
@@ -33,22 +44,22 @@ export function AccountClient({ user, profile, orders, recommendations }: Accoun
         <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="relative rounded-[2.5rem] overflow-hidden bg-zinc-950 p-8 md:p-14 mb-16 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] group border border-white/5"
+            className="relative rounded-[2.5rem] overflow-hidden bg-zinc-950 p-6 md:p-14 mb-12 md:mb-16 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] group border border-white/5"
         >
             <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/20 rounded-full blur-[140px] -mr-64 -mt-64 group-hover:bg-primary/30 transition-colors duration-1000" />
             <div className="absolute bottom-0 left-0 w-80 h-80 bg-indigo-600/10 rounded-full blur-[120px] -ml-32 -mb-32" />
             
-            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-10">
-                <div className="space-y-6">
+            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8 md:gap-10">
+                <div className="space-y-4 md:space-y-6">
                     <BrandBadge variant="primary">Member Dashboard</BrandBadge>
-                    <h1 className="text-6xl md:text-8xl font-black tracking-tighter text-white uppercase leading-[0.8] italic">
+                    <h1 className="text-5xl xs:text-6xl md:text-8xl font-black tracking-tighter text-white uppercase leading-[0.85] md:leading-[0.8] italic">
                         HELLO, <br />
                         <span className="text-gradient drop-shadow-2xl">{profile?.name?.split(' ')[0] || user.email?.split('@')[0]}</span>
                     </h1>
                 </div>
                 
-                <div className="flex flex-wrap gap-4">
-                    <Button variant="outline" className="rounded-full bg-white/5 border-white/10 text-white hover:bg-white/10 h-14 px-10 uppercase tracking-widest text-xs font-black shadow-xl" asChild>
+                <div className="flex flex-wrap gap-3 md:gap-4">
+                    <Button variant="outline" className="rounded-full bg-white/5 border-white/10 text-white hover:bg-white/10 h-12 md:h-14 px-6 md:px-10 uppercase tracking-widest text-[10px] md:text-xs font-black shadow-xl shrink-0" asChild>
                         <Link href="/shop">Continue Shopping</Link>
                     </Button>
                     <SignOutButton />
@@ -56,7 +67,7 @@ export function AccountClient({ user, profile, orders, recommendations }: Accoun
             </div>
 
             {/* Quick Stats Grid */}
-            <div className="relative z-10 grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8 mt-16 pt-16 border-t border-white/10">
+            <div className="relative z-10 grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-8 mt-12 md:mt-16 pt-12 md:pt-16 border-t border-white/10">
                 {[
                     { label: "Flash Points", value: profile?.loyalty_points || 0, icon: Zap, color: "text-yellow-400" },
                     { label: "Total Orders", value: orders.length, icon: ShoppingBag, color: "text-blue-400" },
@@ -66,13 +77,13 @@ export function AccountClient({ user, profile, orders, recommendations }: Accoun
                     <motion.div 
                         key={stat.label} 
                         whileHover={{ y: -5, scale: 1.02 }}
-                        className="space-y-2 p-6 rounded-3xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 transition-all duration-300 shadow-lg group/stat"
+                        className="space-y-1 md:space-y-2 p-4 md:p-6 rounded-2xl md:rounded-3xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 transition-all duration-300 shadow-lg group/stat"
                     >
-                        <div className="flex items-center gap-2 text-zinc-500 mb-2">
-                            <stat.icon className={`h-4 w-4 ${stat.color} transition-transform group-hover/stat:scale-110`} />
-                            <span className="text-[10px] font-black uppercase tracking-widest">{stat.label}</span>
+                        <div className="flex items-center gap-1.5 md:gap-2 text-zinc-500 mb-1 md:mb-2">
+                            <stat.icon className={`h-3 w-3 md:h-4 md:w-4 ${stat.color} transition-transform group-hover/stat:scale-110`} />
+                            <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest leading-none">{stat.label}</span>
                         </div>
-                        <p className="text-3xl md:text-4xl font-black text-white tracking-tight">{stat.value}</p>
+                        <p className="text-2xl md:text-4xl font-black text-white tracking-tight leading-none">{stat.value}</p>
                     </motion.div>
                 ))}
             </div>
@@ -94,20 +105,20 @@ export function AccountClient({ user, profile, orders, recommendations }: Accoun
                 </TabsList>
             </div>
 
-            <TabsContent value="overview" className="space-y-12 md:space-y-16 animate-in fade-in duration-500 focus-visible:outline-none">
-                <div className="grid gap-8 lg:grid-cols-12 items-start">
+            <TabsContent value="overview" className="space-y-8 md:space-y-16 animate-in fade-in duration-500 focus-visible:outline-none">
+                <div className="grid gap-6 md:gap-8 lg:grid-cols-12 items-start">
                     {/* Main Loyalty & Actions */}
-                    <div className="lg:col-span-4 space-y-6">
+                    <div className="lg:col-span-4 space-y-4 md:space-y-6">
                         <LoyaltyCard points={profile?.loyalty_points || 0} />
                     </div>
 
                     {/* Orders History */}
                     <div className="lg:col-span-8">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-                            <h2 className="text-3xl md:text-3xl font-black italic uppercase tracking-tighter">Recent Transmissions</h2>
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 md:gap-4 mb-4 md:mb-8">
+                            <h2 className="text-2xl md:text-3xl font-black italic uppercase tracking-tighter">Recent Transmissions</h2>
                             <Badge variant="outline" className="rounded-full px-4 py-1 font-bold border-2 w-fit">{orders.length} Total</Badge>
                         </div>
-                        <div className="bg-white rounded-4xl border-2 shadow-sm border-zinc-100 overflow-hidden">
+                        <div className="bg-white rounded-4xl md:rounded-4xl border-2 shadow-sm border-zinc-100 overflow-hidden">
                             <OrdersTab orders={orders} />
                         </div>
                     </div>

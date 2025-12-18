@@ -49,7 +49,7 @@ export function ProfileTab({ user, profile }: { user: any, profile: any }) {
             animate="visible"
             className="space-y-10"
         >
-            <motion.div variants={itemVariants} className="flex flex-col md:flex-row items-center gap-8 p-8 rounded-3xl bg-zinc-50 border-2 border-zinc-100 relative overflow-hidden group">
+            <motion.div variants={itemVariants} className="flex flex-col md:flex-row items-center gap-6 md:gap-8 p-5 md:p-8 rounded-[2.5rem] bg-zinc-50 border-2 border-zinc-100 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors" />
                 
                 <div className="relative">
