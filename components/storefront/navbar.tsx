@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ShoppingBag, Menu, X, Heart, ChevronDown, Search, LogOut } from 'lucide-react'
+import { ShoppingBag, Menu, Heart, ChevronDown, Search, LogOut } from 'lucide-react'
 import { useState } from 'react'
 import NextImage from 'next/image'
 import { useWishlistStore } from '@/store/use-wishlist-store'
@@ -14,11 +14,12 @@ import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import { useSearchStore } from '@/store/use-search-store'
 import { MegaMenu } from './mega-menu'
+import { HamburgerMenu } from './hamburger-menu'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useScrollDirection } from '@/hooks/use-scroll-direction'
 
 export function Navbar() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+
   const cartCount = useCartStore(selectCartCount)
   const setIsCartOpen = useCartStore((state) => state.setIsCartOpen)
   const wishlistCount = useWishlistStore((state) => state.items.length)
@@ -65,15 +66,9 @@ export function Navbar() {
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-background/60 backdrop-blur-xl">
       <div className="relative mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         
-        {/* Mobile Menu Button */}
+        {/* Mobile Menu Button replaced by HamburgerMenu Component */}
         <div className="flex items-center gap-2">
-            {/* Mobile Menu Button */}
-            <button 
-                className="lg:hidden p-2 -ml-2 text-foreground hover:bg-white/10 rounded-full transition-colors"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-                {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </button>
+            <HamburgerMenu categories={categories} />
 
             {/* Logo */}
             <Link 
@@ -124,11 +119,24 @@ export function Navbar() {
 
         {/* Actions */}
         <div className="flex items-center gap-1 sm:gap-2">
+            {/* Desktop Search Trigger */}
+            <button 
+                onClick={() => useSearchStore.getState().setOpen(true)}
+                className="hidden md:flex items-center gap-2 bg-zinc-500/5 group hover:bg-zinc-500/10 border border-white/5 hover:border-primary/20 transition-all rounded-full px-3 h-10 w-48 lg:w-64"
+            >
+                <Search className="h-4 w-4 text-zinc-500 group-hover:text-primary transition-colors" />
+                <span className="text-xs font-medium text-zinc-500 group-hover:text-primary/80 truncate">Search products...</span>
+                <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border border-white/10 bg-black/20 px-1.5 font-mono text-[10px] font-medium text-zinc-500 opacity-100">
+                    <span className="text-xs">⌘</span>K
+                </kbd>
+            </button>
+
+            {/* Mobile Search Trigger */}
             <Button 
                 variant="ghost" 
                 size="icon" 
                 onClick={() => useSearchStore.getState().setOpen(true)}
-                className="rounded-full hover:bg-primary/5 text-muted-foreground hover:text-primary transition-colors h-10 w-10"
+                className="md:hidden rounded-full hover:bg-primary/5 text-muted-foreground hover:text-primary transition-colors h-10 w-10"
             >
                 <Search className="h-5 w-5" />
             </Button>
@@ -209,44 +217,7 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Menu */}
-      {isMobileMenuOpen && (
-          <div className="lg:hidden border-t border-border bg-background px-4 py-4 space-y-4 shadow-xl max-h-[80vh] overflow-y-auto">
-              {navLinks.map((link: any) => (
-                <div key={link.href} className="space-y-2">
-                    <Link 
-                        href={link.href}
-                        className="block text-base font-bold text-foreground"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                        {link.label}
-                    </Link>
-                    {/* Mobile Subcategories */}
-                    {link.children && link.children.length > 0 && (
-                        <div className="pl-4 border-l border-border space-y-2 mt-1">
-                            {link.children.map((child: any) => (
-                                <Link 
-                                    key={child.id}
-                                    href={`/shop?category=${child.id}`}
-                                    className="block text-sm text-muted-foreground hover:text-foreground"
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                >
-                                    {child.name}
-                                </Link>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            ))}
-            <Link 
-                href="/contact"
-                className="block text-base font-bold text-foreground pt-2 border-t border-border"
-                onClick={() => setIsMobileMenuOpen(false)}
-            >
-                Contact
-            </Link>
-          </div>
-      )}
+
     </header>
   )
 }
