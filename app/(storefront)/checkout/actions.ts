@@ -2,6 +2,7 @@
 
 import { createClient } from '@supabase/supabase-js'
 import { Database } from '@/types/supabase'
+import { CartItem } from '@/store/use-cart-store'
 
 export async function createOrder(data: {
     user_id: string | null,
@@ -16,8 +17,9 @@ export async function createOrder(data: {
     country: string,
     payment_provider: string,
     payment_reference: string,
-    items: any[],
-    coupon_code?: string
+    items: CartItem[],
+    coupon_code?: string,
+    discount_amount?: number
 }) {
     // Initialize Admin Client
     const supabase = createClient<Database>(
@@ -73,17 +75,17 @@ export async function createOrder(data: {
         }
     }
 
-    const serverTotal = serverSubtotal - serverDiscount
+    const serverTotal = Math.max(0, serverSubtotal - serverDiscount)
 
-    // Allow for minor floating point differences (e.g., 0.01)
+    // Allow for minor floating point differences (e.g., 1.00 because of JS math)
     if (Math.abs(serverTotal - data.total) > 1) {
         console.error(`[Security] Price mismatch! Server: ${serverTotal}, Client: ${data.total}`)
         throw new Error("Security check failed: Price mismatch detected. Please refresh your cart.")
     }
 
     // 1. Create Order
-    const { data: order, error: orderError } = await (supabase
-        .from('orders') as any)
+    const { data: order, error: orderError } = await supabase
+        .from('orders')
         .insert({
             user_id: data.user_id,
             status: 'pending',
@@ -99,8 +101,8 @@ export async function createOrder(data: {
             payment_provider: data.payment_provider,
             payment_reference: data.payment_reference,
             coupon_code: data.coupon_code,
-            discount_amount: serverDiscount
-        } as any)
+            discount_amount: serverDiscount,
+        })
         .select()
         .single()
 
@@ -116,8 +118,8 @@ export async function createOrder(data: {
         color: item.color
     }))
 
-    const { error: itemsError } = await (supabase
-        .from('order_items') as any)
+    const { error: itemsError } = await supabase
+        .from('order_items')
         .insert(orderItems)
     
     if (itemsError) {

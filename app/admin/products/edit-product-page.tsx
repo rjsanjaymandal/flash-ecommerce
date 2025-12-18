@@ -1,6 +1,7 @@
 'use client'
 
-import { ProductForm, ProductFormData } from '@/components/admin/products/product-form'
+import { ProductForm } from '@/components/admin/products/product-form'
+import { ProductFormValues } from '@/lib/validations/product'
 import { updateProduct } from '@/lib/services/product-service'
 import { slugify } from '@/lib/slugify'
 import { useRouter } from 'next/navigation'
@@ -8,40 +9,42 @@ import { useTransition } from 'react'
 import { toast } from 'sonner'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Tables } from '@/types/supabase'
+import { Category } from '@/types/store-types'
 
-export default function EditProductPageClient({ product, stock, categories }: { product: any, stock: any[], categories: any[] }) {
+export default function EditProductPageClient({ product, stock, categories }: { product: Tables<'products'>, stock: Tables<'product_stock'>[], categories: Category[] }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   
   // Transform DB data to Form Data
-  const initialData: ProductFormData = {
+  const initialData: ProductFormValues = {
       name: product.name,
       slug: product.slug,
       description: product.description || '',
-      price: product.price,
-      category_id: product.category_id,
+      price: Number(product.price), // Ensure number
+      category_id: product.category_id || '',
       main_image_url: product.main_image_url || '',
       gallery_image_urls: product.gallery_image_urls || [],
-      is_active: product.is_active,
-      variants: stock.map((s: any) => ({
+      is_active: product.is_active ?? true,
+      variants: stock.map((s) => ({
           size: s.size,
           color: s.color,
-          quantity: s.quantity
+          quantity: s.quantity ?? 0
       }))
   }
 
-  const handleSubmit = (data: ProductFormData) => {
+  const handleSubmit = (data: ProductFormValues) => {
     startTransition(async () => {
         try {
             await updateProduct(product.id, {
                 ...data,
                 slug: data.slug || slugify(data.name),
-                price: parseFloat(data.price as string)
+                price: data.price
             })
             toast.success('Product updated successfully')
             router.push('/admin/products')
-        } catch (error: any) {
-            toast.error('Failed to update product: ' + error.message)
+        } catch (error) {
+            toast.error('Failed to update product: ' + (error as Error).message)
         }
     })
   }

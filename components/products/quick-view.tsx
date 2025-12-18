@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogTrigger, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Eye, ShoppingCart } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
@@ -51,6 +51,7 @@ export function QuickView({ product }: QuickViewProps) {
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[800px] p-0 overflow-hidden bg-white">
+                <DialogTitle className="sr-only">Product Quick View: {product.name}</DialogTitle>
                 <div className="grid md:grid-cols-2 gap-0">
                     <div className="relative h-[300px] md:h-[500px] bg-gray-100">
                         <img 

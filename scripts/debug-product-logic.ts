@@ -6,6 +6,20 @@ const supabaseAnonKey = 'sb_publishable_J7XVC8I7VhmAvUhKH-Qu3A_uBeLMkt8'
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
+interface Stock {
+  size: string
+  color: string
+  quantity: number
+}
+
+interface Product {
+  id: string
+  name: string
+  size_options?: string[]
+  color_options?: string[]
+  product_stock?: Stock[]
+}
+
 async function debugLogic() {
   console.log('--- Simulating ProductDetailClient Logic ---')
   
@@ -20,7 +34,7 @@ async function debugLogic() {
       console.log('❌ Product not found')
       return
   }
-  const product = products[0]
+  const product = products[0] as unknown as Product // Cast for script simplicity
   console.log(`Product: ${product.name} (ID: ${product.id})`)
 
   // 2. Replicate Logic
@@ -28,11 +42,11 @@ async function debugLogic() {
 
   const sizeOptions = product.size_options?.length 
       ? product.size_options 
-      : (product.product_stock?.length ? Array.from(new Set(product.product_stock.map((s: any) => s.size))).sort() : STANDARD_SIZES)
+      : (product.product_stock?.length ? Array.from(new Set(product.product_stock.map(s => s.size))).sort() : STANDARD_SIZES)
 
   const colorOptions = product.color_options?.length 
       ? product.color_options 
-      : Array.from(new Set(product.product_stock?.map((s: any) => s.color) || ['Standard'])).sort() 
+      : Array.from(new Set(product.product_stock?.map(s => s.color) || ['Standard'])).sort() 
 
   console.log('\n--- Options Logic ---')
   console.log('DB size_options:', product.size_options)
@@ -41,7 +55,7 @@ async function debugLogic() {
 
   // 3. Build Map
   const stockMap: Record<string, number> = {}
-  product.product_stock.forEach((item: any) => {
+  product.product_stock?.forEach((item) => {
       const key = `${item.size}-${item.color}`
       stockMap[key] = item.quantity
   })

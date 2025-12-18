@@ -1,6 +1,7 @@
 'use client'
 
-import { ProductForm, ProductFormData } from '@/components/admin/products/product-form'
+import { ProductForm } from '@/components/admin/products/product-form'
+import { ProductFormValues } from '@/lib/validations/product'
 import { createProduct } from '@/lib/services/product-service'
 import { slugify } from '@/lib/slugify'
 import { useRouter } from 'next/navigation'
@@ -8,18 +9,19 @@ import { useTransition } from 'react'
 import { toast } from 'sonner'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Category } from '@/types/store-types'
 
-export default function CreateProductPageClient({ categories }: { categories: any[] }) {
+export default function CreateProductPageClient({ categories }: { categories: Category[] }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
-  const handleSubmit = (data: ProductFormData) => {
+  const handleSubmit = (data: ProductFormValues) => {
     startTransition(async () => {
         try {
             await createProduct({
                 ...data,
                 slug: data.slug || slugify(data.name),
-                price: parseFloat(data.price as string)
+                price: data.price // Already a number from Zod
             })
             toast.success('Product created successfully')
             router.push('/admin/products')

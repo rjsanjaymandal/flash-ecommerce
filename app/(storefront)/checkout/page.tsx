@@ -5,14 +5,22 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/context/auth-context"
 import { createClient } from "@/lib/supabase/client"
-import { useState } from "react"
-import { Loader2, CheckCircle2, Ticket } from "lucide-react"
+import { useState, useTransition } from "react"
+import { Loader2, CheckCircle2, Ticket, ShieldCheck, Lock, CreditCard } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
 import Script from 'next/script'
 import { createOrder, validateCoupon } from "./actions"
 import { AddressSelector } from "@/components/checkout/address-selector"
 import { Address } from "@/lib/services/address-service"
 import { toast } from "sonner"
+import { motion, AnimatePresence } from "framer-motion"
+import { BrandGlow } from "@/components/storefront/brand-glow"
+import { BrandBadge } from "@/components/storefront/brand-badge"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { checkoutSchema, CheckoutFormData } from "@/lib/validations/checkout"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import Link from 'next/link'
 
 declare global {
     interface Window {
@@ -33,10 +41,10 @@ export default function CheckoutPage() {
   const [appliedCoupon, setAppliedCoupon] = useState<{ code: string, type: 'percentage' | 'fixed', value: number } | null>(null)
   const [isCheckingCoupon, setIsCheckingCoupon] = useState(false)
 
-  const supabase = createClient()
-  
-  // Form State
-  const [formData, setFormData] = useState({
+  // Form Setup
+  const form = useForm<CheckoutFormData>({
+    resolver: zodResolver(checkoutSchema),
+    defaultValues: {
       firstName: '',
       lastName: '',
       address: '',
@@ -45,6 +53,7 @@ export default function CheckoutPage() {
       zip: '',
       country: '',
       phone: ''
+    }
   })
 
   // Calculations
@@ -58,20 +67,15 @@ export default function CheckoutPage() {
 
   // Address Selection Handler
   const handleAddressSelect = (addr: Address) => {
-      setFormData({
-          firstName: addr.name.split(' ')[0],
-          lastName: addr.name.split(' ').slice(1).join(' '),
-          address: addr.address_line1 + (addr.address_line2 ? `, ${addr.address_line2}` : ''),
-          city: addr.city,
-          state: addr.state,
-          zip: addr.pincode,
-          country: addr.country,
-          phone: addr.phone
-      })
-  }
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      setFormData({ ...formData, [e.target.name]: e.target.value })
+      form.setValue('firstName', addr.name.split(' ')[0])
+      form.setValue('lastName', addr.name.split(' ').slice(1).join(' '))
+      form.setValue('address', addr.address_line1 + (addr.address_line2 ? `, ${addr.address_line2}` : ''))
+      form.setValue('city', addr.city)
+      form.setValue('state', addr.state)
+      form.setValue('zip', addr.pincode)
+      form.setValue('country', addr.country)
+      form.setValue('phone', addr.phone)
+      toast.success("Address applied")
   }
 
   const handleApplyCoupon = async () => {
@@ -103,8 +107,7 @@ export default function CheckoutPage() {
       toast.info('Coupon removed')
   }
 
-  const handleCheckout = async (e: React.FormEvent) => {
-      e.preventDefault()
+  const onSubmit = async (data: CheckoutFormData) => {
       setIsProcessing(true)
 
       try {
@@ -113,13 +116,13 @@ export default function CheckoutPage() {
               user_id: user?.id || null, 
               subtotal: cartTotal,
               total: finalTotal,
-              shipping_name: `${formData.firstName} ${formData.lastName}`,
-              phone: formData.phone,
-              address_line1: formData.address,
-              city: formData.city,
-              state: formData.state,
-              pincode: formData.zip,
-              country: formData.country,
+              shipping_name: `${data.firstName} ${data.lastName}`,
+              phone: data.phone,
+              address_line1: data.address,
+              city: data.city,
+              state: data.state,
+              pincode: data.zip,
+              country: data.country,
               payment_provider: 'razorpay',
               payment_reference: '',
               items: items,
@@ -163,13 +166,13 @@ export default function CheckoutPage() {
                       setIsSuccess(true)
                       clearCart()
                   } else {
-                      alert('Payment verification failed. Please contact support.')
+                      toast.error('Payment verification failed. Please contact support.')
                   }
               },
               prefill: {
-                  name: `${formData.firstName} ${formData.lastName}`,
+                  name: `${data.firstName} ${data.lastName}`,
                   email: user?.email || 'guest@example.com',
-                  contact: formData.phone
+                  contact: data.phone
               },
               theme: {
                   color: "#000000"
@@ -189,138 +192,341 @@ export default function CheckoutPage() {
               message: err?.message,
               fullError: err
           })
-          alert(`Checkout failed: ${err?.message || 'Unknown error'}`)
+          toast.error(`Checkout failed: ${err?.message || 'Unknown error'}`)
           setIsProcessing(false)
       }
   }
 
   if (isSuccess) {
       return (
-          <div className="min-h-screen flex items-center justify-center p-4 text-center animate-in fade-in duration-500">
-              <div className="max-w-md space-y-6 bg-card p-8 rounded-2xl border shadow-xl relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-tr from-green-500/10 to-blue-500/10" />
-                  <div className="mx-auto w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center shadow-inner relative z-10">
-                      <CheckCircle2 className="h-10 w-10 animate-in zoom-in duration-300" />
+          <div className="min-h-screen flex items-center justify-center p-4 text-center animate-in fade-in duration-500 relative overflow-hidden">
+               <BrandGlow className="animate-pulse" />
+              <motion.div 
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="max-w-md w-full space-y-8 bg-white/80 backdrop-blur-xl p-10 rounded-[2.5rem] border-2 border-white/20 shadow-2xl relative z-10"
+              >
+                  <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-green-400 via-emerald-500 to-teal-500" />
+                  
+                  <div className="mx-auto w-24 h-24 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full flex items-center justify-center shadow-lg shadow-green-500/30 mb-6">
+                      <CheckCircle2 className="h-12 w-12 text-white" />
                   </div>
-                  <div className="relative z-10">
-                    <h1 className="text-3xl font-black tracking-tight">Order Confirmed!</h1>
-                    <p className="text-muted-foreground mt-2">Thank you, {formData.firstName}. Your order has been placed successfully.</p>
+                  
+                  <div className="space-y-2">
+                    <h1 className="text-4xl font-black tracking-tighter uppercase italic">Order Confirmed!</h1>
+                    <p className="text-zinc-500 font-medium">Your gear is on its way via Flash transmission.</p>
                   </div>
-                  <Button asChild className="w-full h-12 text-lg rounded-full relative z-10"><a href="/">Back to Shop</a></Button>
-              </div>
+
+                  <div className="bg-zinc-50 rounded-2xl p-4 border border-zinc-100 text-sm text-zinc-600">
+                    <p>A confirmation email has been sent to <span className="font-bold text-zinc-900">{user?.email}</span></p>
+                  </div>
+
+                  <Button asChild className="w-full h-14 text-sm font-black uppercase tracking-widest rounded-xl shadow-xl shadow-primary/20 hover:scale-[1.02] transition-transform">
+                    <Link href="/shop">Continue Shopping</Link>
+                  </Button>
+              </motion.div>
           </div>
       )
   }
 
   if (items.length === 0) {
       return (
-          <div className="min-h-screen pt-32 text-center text-muted-foreground">
-              Your cart is empty. <a href="/shop" className="text-primary hover:underline font-bold">Go Shop</a>
+          <div className="min-h-screen pt-32 text-center relative">
+              <BrandGlow />
+              <div className="relative z-10 space-y-4">
+                <h2 className="text-2xl font-bold">Your cart is empty</h2>
+                <Button asChild variant="link" className="text-primary text-xl font-black uppercase tracking-widest">
+                    <Link href="/shop">Go Shop Changes</Link>
+                </Button>
+              </div>
           </div>
       )
   }
 
   return (
-    <div className="min-h-screen pt-24 pb-12 container mx-auto px-4">
-        <h1 className="text-4xl font-black tracking-tight mb-8">Checkout</h1>
-        <div className="grid md:grid-cols-2 gap-12">
-            <div className="space-y-6 animate-in slide-in-from-left-5 duration-500">
+    <div className="min-h-screen pt-28 pb-20 container mx-auto px-4 relative">
+        <BrandGlow className="top-20 opacity-40" />
+        
+        <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-12"
+        >
+            <BrandBadge>Secure Checkout</BrandBadge>
+            <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic mt-4 text-transparent bg-clip-text bg-gradient-to-r from-zinc-900 via-zinc-700 to-zinc-900">
+                Finalize <br/><span className="text-stroke text-zinc-900/10">Transmission</span>
+            </h1>
+        </motion.div>
+        
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start relative z-10">
+            {/* Left Column: Forms */}
+            <div className="space-y-8 animate-in slide-in-from-left-5 duration-700">
                 
                 {/* Saved Addresses */}
                 {user && (
-                    <div className="space-y-4 rounded-xl border border-border p-6 shadow-sm bg-card/50 backdrop-blur-sm">
-                        <h2 className="text-xl font-bold flex items-center gap-2">Saved Addresses</h2>
-                        <AddressSelector onSelect={handleAddressSelect} />
-                    </div>
+                    <section className="space-y-4">
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                                <ShieldCheck className="h-4 w-4 text-primary" />
+                            </div>
+                            <h2 className="text-xl font-black uppercase tracking-tight italic">Quick Fill</h2>
+                        </div>
+                        <div className="rounded-3xl border-2 border-zinc-100 p-6 bg-white/50 backdrop-blur-sm hover:border-zinc-200 transition-colors">
+                            <AddressSelector onSelect={handleAddressSelect} />
+                        </div>
+                    </section>
                 )}
 
-                <form onSubmit={handleCheckout} className="space-y-6">
-                    <div className="space-y-4 rounded-xl border border-border p-6 shadow-sm bg-card/50 backdrop-blur-sm">
-                        <h2 className="text-xl font-bold flex items-center gap-2">
-                            {user ? 'Edit Shipping Details' : '1. Shipping Information'}
-                        </h2>
-                        <div className="grid grid-cols-2 gap-4">
-                            <Input name="firstName" placeholder="First Name" required value={formData.firstName} onChange={handleInputChange} />
-                            <Input name="lastName" placeholder="Last Name" required value={formData.lastName} onChange={handleInputChange} />
-                        </div>
-                        <Input name="address" placeholder="Address" required value={formData.address} onChange={handleInputChange} />
-                        <Input name="city" placeholder="City" required value={formData.city} onChange={handleInputChange} />
-                        <div className="grid grid-cols-2 gap-4">
-                            <Input name="state" placeholder="State/Province" required value={formData.state} onChange={handleInputChange} />
-                            <Input name="zip" placeholder="Postal Code" required value={formData.zip} onChange={handleInputChange} />
-                        </div>
-                        <Input name="country" placeholder="Country" required value={formData.country} onChange={handleInputChange} />
-                        <Input name="phone" placeholder="Phone" type="tel" required value={formData.phone} onChange={handleInputChange} />
-                    </div>
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                        {/* Shipping Details */}
+                        <section className="space-y-6 bg-white/80 backdrop-blur-md p-8 rounded-[2.5rem] border-2 border-zinc-100 shadow-sm">
+                             <div className="flex items-center gap-3 border-b border-zinc-100 pb-4">
+                                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-zinc-900 text-white font-bold text-sm">1</span>
+                                <h2 className="text-xl font-black uppercase tracking-tight italic">Shipping Coordinates</h2>
+                            </div>
 
-                    <div className="space-y-4 rounded-xl border border-border p-6 shadow-sm bg-card/50 backdrop-blur-sm">
-                        <h2 className="text-xl font-bold">2. Payment</h2>
-                        <Input placeholder="Card Number (Demo)" disabled className="bg-muted cursor-not-allowed" />
-                    </div>
+                            <div className="grid grid-cols-2 gap-5">
+                                <FormField
+                                    control={form.control}
+                                    name="firstName"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="font-bold text-xs uppercase tracking-widest text-zinc-500">First Name</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="John" {...field} className="h-12 bg-zinc-50 border-zinc-200 rounded-xl focus:ring-primary/20" />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="lastName"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="font-bold text-xs uppercase tracking-widest text-zinc-500">Last Name</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Doe" {...field} className="h-12 bg-zinc-50 border-zinc-200 rounded-xl focus:ring-primary/20" />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
 
-                    <Button type="submit" size="lg" className="w-full h-14 text-lg rounded-full shadow-lg shadow-primary/20" disabled={isProcessing}>
-                        {isProcessing && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-                        {isProcessing ? 'Processing Order...' : `Pay ${formatCurrency(finalTotal)}`}
-                    </Button>
-                </form>
+                            <FormField
+                                control={form.control}
+                                name="address"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="font-bold text-xs uppercase tracking-widest text-zinc-500">Address</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="123 Flash St." {...field} className="h-12 bg-zinc-50 border-zinc-200 rounded-xl focus:ring-primary/20" />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                             <div className="grid grid-cols-2 gap-5">
+                                <FormField
+                                    control={form.control}
+                                    name="city"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="font-bold text-xs uppercase tracking-widest text-zinc-500">City</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Metropolis" {...field} className="h-12 bg-zinc-50 border-zinc-200 rounded-xl focus:ring-primary/20" />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="state"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="font-bold text-xs uppercase tracking-widest text-zinc-500">State</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="NY" {...field} className="h-12 bg-zinc-50 border-zinc-200 rounded-xl focus:ring-primary/20" />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
+                             <div className="grid grid-cols-2 gap-5">
+                                <FormField
+                                    control={form.control}
+                                    name="zip"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="font-bold text-xs uppercase tracking-widest text-zinc-500">Pincode</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="10001" {...field} className="h-12 bg-zinc-50 border-zinc-200 rounded-xl focus:ring-primary/20" />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="country"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="font-bold text-xs uppercase tracking-widest text-zinc-500">Country</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="India" {...field} className="h-12 bg-zinc-50 border-zinc-200 rounded-xl focus:ring-primary/20" />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
+                            <FormField
+                                control={form.control}
+                                name="phone"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="font-bold text-xs uppercase tracking-widest text-zinc-500">Phone</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="+91 99999 99999" {...field} className="h-12 bg-zinc-50 border-zinc-200 rounded-xl focus:ring-primary/20" />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </section>
+
+                        {/* Payment Section - Read Only for now (Razorpay handled via script) */}
+                        <section className="space-y-6 bg-white/80 backdrop-blur-md p-8 rounded-[2.5rem] border-2 border-zinc-100 shadow-sm opacity-80">
+                            <div className="flex items-center gap-3 border-b border-zinc-100 pb-4">
+                                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-zinc-900 text-white font-bold text-sm">2</span>
+                                <h2 className="text-xl font-black uppercase tracking-tight italic">Payment Method</h2>
+                            </div>
+                            <div className="flex items-center gap-4 p-4 border rounded-xl bg-zinc-50">
+                                <CreditCard className="h-6 w-6 text-zinc-400" />
+                                <div>
+                                    <p className="font-bold text-sm">Cards, UPI, NetBanking</p>
+                                    <p className="text-xs text-muted-foreground">Processed securely by Razorpay</p>
+                                </div>
+                                <ShieldCheck className="ml-auto h-5 w-5 text-green-500" />
+                            </div>
+                        </section>
+
+                        <div className="pt-4">
+                             <Button 
+                                type="submit" 
+                                disabled={isProcessing} 
+                                className="w-full h-16 rounded-2xl font-black uppercase tracking-[0.2em] text-sm md:text-base gradient-primary hover:scale-[1.01] active:scale-[0.98] transition-all shadow-xl shadow-primary/25 relative overflow-hidden group"
+                            >
+                                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                                <span className="relative flex items-center gap-3">
+                                    {isProcessing ? (
+                                        <>
+                                            <Loader2 className="h-5 w-5 animate-spin" />
+                                            Processing...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Lock className="h-4 w-4" />
+                                            Pay {formatCurrency(finalTotal)}
+                                        </>
+                                    )}
+                                </span>
+                            </Button>
+                            <p className="text-center text-[10px] uppercase tracking-widest text-zinc-400 mt-4 font-bold flex items-center justify-center gap-2">
+                                <ShieldCheck className="h-3 w-3" />
+                                256-Bit SSL Encrypted Transaction
+                            </p>
+                        </div>
+                    </form>
+                </Form>
             </div>
 
-            <div className="space-y-6 animate-in slide-in-from-right-5 duration-500 delay-100">
-                <div className="bg-muted/30 p-8 rounded-2xl space-y-6 sticky top-24 border border-border">
-                    <h2 className="font-bold text-xl">Order Summary</h2>
-                    <div className="space-y-4 max-h-[400px] overflow-auto pr-2 custom-scrollbar">
-                        {items.map(item => (
-                            <div key={`${item.productId}-${item.size}`} className="flex justify-between items-center text-sm">
-                                <div className="flex items-center gap-3">
-                                    {item.image && <img src={item.image} className="h-10 w-10 rounded-md object-cover" />}
-                                    <div>
-                                        <p className="font-medium">{item.name}</p>
-                                        <p className="text-muted-foreground text-xs">{item.size} / {item.color} x {item.quantity}</p>
-                                    </div>
-                                </div>
-                                <span className="font-mono">{formatCurrency(item.price * item.quantity)}</span>
-                            </div>
-                        ))}
-                    </div>
+            {/* Right Column: Order Summary */}
+            <div className="lg:sticky lg:top-32 space-y-6 animate-in slide-in-from-right-5 duration-700 delay-100">
+                <div className="bg-zinc-900 text-white p-8 rounded-[2.5rem] space-y-8 shadow-2xl relative overflow-hidden group">
+                     {/* Ambient Background */}
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-[80px] -mr-32 -mt-32" />
+                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-[80px] -ml-32 -mb-32" />
+                    
+                    <div className="relative z-10">
+                        <h2 className="font-black text-2xl italic uppercase tracking-tighter mb-6 flex items-center justify-between">
+                            Order Summary
+                            <span className="text-sm not-italic font-medium text-white/50 bg-white/10 px-3 py-1 rounded-full">{items.length} Items</span>
+                        </h2>
 
-                    <div className="border-t border-border pt-4 space-y-3">
+                        <div className="space-y-5 max-h-[400px] overflow-auto pr-2 custom-scrollbar">
+                            {items.map(item => (
+                                <div key={`${item.productId}-${item.size}`} className="flex gap-4 items-start group/item">
+                                    <div className="relative h-16 w-16 rounded-xl overflow-hidden bg-white/5 border border-white/10 shrink-0">
+                                        {item.image && <img src={item.image} className="h-full w-full object-cover group-hover/item:scale-110 transition-transform duration-500" alt={item.name} />}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-bold text-sm truncate pr-4">{item.name}</p>
+                                        <p className="text-white/50 text-xs font-medium mt-0.5">{item.size} / {item.color} <span className="mx-1">x</span> {item.quantity}</p>
+                                    </div>
+                                    <span className="font-mono text-sm font-bold text-primary">{formatCurrency(item.price * item.quantity)}</span>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="h-px w-full bg-white/10 my-6" />
+
                         {/* Coupon Section */}
-                        <div className="flex items-center gap-2">
+                        <div className="bg-white/5 rounded-2xl p-2 flex items-center gap-2">
+                            <Ticket className="h-4 w-4 text-white/50 ml-3" />
                             <Input 
-                                placeholder="Discount Code" 
-                                className="bg-background"
+                                placeholder="PROMO CODE" 
+                                className="bg-transparent border-0 text-white placeholder:text-white/30 focus-visible:ring-0 h-10 font-bold uppercase tracking-wider text-sm"
                                 value={couponCode}
                                 onChange={(e) => setCouponCode(e.target.value)}
                                 disabled={!!appliedCoupon}
                             />
                             {appliedCoupon ? (
-                                <Button variant="outline" onClick={removeCoupon} className="shrink-0 text-destructive hover:text-destructive">
+                                <Button size="sm" variant="destructive" onClick={removeCoupon} className="h-9 rounded-xl px-4 font-bold text-xs uppercase tracking-wider">
                                     Remove
                                 </Button>
                             ) : (
-                                <Button onClick={handleApplyCoupon} disabled={isCheckingCoupon || !couponCode} className="shrink-0">
-                                    {isCheckingCoupon ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Apply'}
+                                <Button size="sm" onClick={handleApplyCoupon} disabled={isCheckingCoupon || !couponCode} className="h-9 bg-white text-black hover:bg-white/90 rounded-xl px-4 font-black text-xs uppercase tracking-wider">
+                                    {isCheckingCoupon ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Apply'}
                                 </Button>
                             )}
                         </div>
 
-                        {appliedCoupon && (
-                            <div className="flex justify-between text-sm text-green-600 font-medium px-1">
-                                <span className="flex items-center gap-1"><Ticket className="h-3 w-3" /> Code: {appliedCoupon.code}</span>
-                                <span>-{formatCurrency(discountAmount)}</span>
-                            </div>
-                        )}
+                        <div className="space-y-3 pt-2">
+                             {appliedCoupon && (
+                                <div className="flex justify-between text-sm text-green-400 font-bold px-1 bg-green-500/10 p-2 rounded-lg border border-green-500/20">
+                                    <span className="flex items-center gap-1.5"><Ticket className="h-3 w-3" /> {appliedCoupon.code}</span>
+                                    <span>-{formatCurrency(discountAmount)}</span>
+                                </div>
+                            )}
 
-                        <div className="flex justify-between text-muted-foreground">
-                            <span>Subtotal</span>
-                            <span>{formatCurrency(cartTotal)}</span>
-                        </div>
-                         
-                         <div className="flex justify-between font-bold text-2xl pt-2 border-t border-border/50">
-                            <span>Total</span>
-                            <span>{formatCurrency(finalTotal)}</span>
+                            <div className="flex justify-between text-white/50 text-sm font-medium">
+                                <span>Subtotal</span>
+                                <span>{formatCurrency(cartTotal)}</span>
+                            </div>
+                             <div className="flex justify-between text-white/50 text-sm font-medium">
+                                <span>Shipping</span>
+                                <span className="text-green-400">Free</span>
+                            </div>
+                             
+                             <div className="flex justify-between font-black text-3xl pt-4 border-t border-white/10 items-baseline">
+                                <span className="text-base font-bold uppercase tracking-widest text-white/70">Total</span>
+                                <span className="text-white">{formatCurrency(finalTotal)}</span>
+                            </div>
                         </div>
                     </div>
+                </div>
+                
+                 <div className="bg-orange-50/50 border border-orange-100 p-4 rounded-2xl flex gap-3 text-xs text-orange-800">
+                    <div className="shrink-0 mt-0.5">⚠️</div>
+                    <p>Depending on your location, flashing high-velocity gear might cause minor sonic booms. Please wear protection.</p>
                 </div>
             </div>
         </div>
