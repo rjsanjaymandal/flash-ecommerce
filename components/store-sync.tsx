@@ -23,6 +23,35 @@ export function StoreSync() {
   const prevCartItemsRef = useRef(cartItems)
   // const prevWishlistItemsRef = useRef(wishlistItems)
 
+  // Helper to validate stock
+  async function validateStock(items: CartItem[]) {
+      if (items.length === 0) return
+      const { data: stocks } = await supabase
+          .from('product_stock')
+          .select('product_id, size, color, quantity')
+          .in('product_id', items.map(i => i.productId))
+      
+      if (!stocks) return
+
+      let changed = false
+      const newItems = items.map(item => {
+          const stockEntry = stocks.find(s => 
+              s.product_id === item.productId && s.size === item.size && s.color === item.color
+          )
+          const available = stockEntry?.quantity ?? 0
+          if (item.quantity > available) {
+              changed = true
+              return { ...item, quantity: available, maxQuantity: available }
+          }
+          return { ...item, maxQuantity: available }
+      }).filter(i => i.quantity > 0)
+
+      if (changed) {
+          toast.warning("Cart updated based on available stock.")
+          setCartItems(newItems)
+      }
+  }
+
   // 1. Load Initial Data on Auth Change
   useEffect(() => {
     async function loadData() {
@@ -134,34 +163,6 @@ export function StoreSync() {
       return () => { supabase.removeChannel(channel) }
   }, [setCartItems])
 
-  // Helper to validate stock
-  async function validateStock(items: CartItem[]) {
-      if (items.length === 0) return
-      const { data: stocks } = await supabase
-          .from('product_stock')
-          .select('product_id, size, color, quantity')
-          .in('product_id', items.map(i => i.productId))
-      
-      if (!stocks) return
-
-      let changed = false
-      const newItems = items.map(item => {
-          const stockEntry = stocks.find(s => 
-              s.product_id === item.productId && s.size === item.size && s.color === item.color
-          )
-          const available = stockEntry?.quantity ?? 0
-          if (item.quantity > available) {
-              changed = true
-              return { ...item, quantity: available, maxQuantity: available }
-          }
-          return { ...item, maxQuantity: available }
-      }).filter(i => i.quantity > 0)
-
-      if (changed) {
-          toast.warning("Cart updated based on available stock.")
-          setCartItems(newItems)
-      }
-  }
 
   // 3. Sync Changes TO Supabase (Debounced or effect-based)
   // This is tricky. simpler to have the STORE call an API, but keeping store pure is nice.

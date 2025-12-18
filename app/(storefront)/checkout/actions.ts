@@ -132,22 +132,20 @@ export async function createOrder(data: {
             // 1. Increment sale_count
             await (supabase as any).rpc('increment_product_sale', { pid: item.productId, qty: item.quantity })
             
-            // 2. Deduct Stock
-            const { data: currentStock } = await supabase
-                .from('product_stock')
-                .select('quantity')
-                .eq('product_id', item.productId)
-                .eq('size', item.size)
-                .eq('color', item.color)
-                .single()
+            // 2. Deduct Stock using Atomic RPC
+            const { error: rpcError } = await (supabase as any).rpc('decrement_stock', { 
+                p_product_id: item.productId, 
+                p_size: item.size, 
+                p_color: item.color, 
+                p_quantity: item.quantity 
+            })
 
-            if (currentStock) {
-                await supabase
-                    .from('product_stock')
-                    .update({ quantity: Math.max(0, (currentStock.quantity || 0) - item.quantity) })
-                    .eq('product_id', item.productId)
-                    .eq('size', item.size)
-                    .eq('color', item.color)
+            if (rpcError) {
+                // Determine if it's an insufficient stock error or something else
+                if (rpcError.message.includes('Insufficient stock')) {
+                    throw new Error(`Insufficient stock for item. Please verify availability.`)
+                }
+                throw rpcError
             }
         } catch (stockErr) {
             console.error(`Inventory Sync Error for ${item.productId}:`, stockErr)

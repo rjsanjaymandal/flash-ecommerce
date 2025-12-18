@@ -4,8 +4,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ProfileTab } from "@/components/account/profile-tab"
 import { OrdersTab } from "@/components/account/orders-tab"
 import { WishlistTab } from "@/components/account/wishlist-tab"
+import { AddressTab } from "@/components/account/address-tab"
 import { LoyaltyCard } from '@/components/account/loyalty-card'
-import { ArrowRight, Zap, ShoppingBag, Heart, Award } from "lucide-react"
+import { ArrowRight, Zap, ShoppingBag, Heart, Award, MapPin } from "lucide-react"
 import { SignOutButton } from "@/components/account/sign-out-button"
 import { FeaturedGrid } from "@/components/storefront/featured-grid"
 import Link from "next/link"
@@ -18,15 +19,19 @@ import { Badge } from "@/components/ui/badge"
 import { BrandBadge } from "@/components/storefront/brand-badge"
 import { BrandGlow } from "@/components/storefront/brand-glow"
 
+import { Tables } from "@/types/supabase"
+import { User } from "@supabase/supabase-js"
+
 interface AccountClientProps {
-  user: any
-  profile: any
-  orders: any[]
-  recommendations: any[]
+  user: User
+  profile: Tables<'profiles'>
+  orders: Tables<'orders'>[]
+  addresses: Tables<'addresses'>[]
 }
 
-export function AccountClient({ user, profile, orders, recommendations }: AccountClientProps) {
+export function AccountClient({ user, profile, orders, addresses }: AccountClientProps) {
   const [mounted, setMounted] = useState(false)
+  const defaultAddress = addresses.find(a => a.is_default)
 
   useEffect(() => {
     setMounted(true)
@@ -72,7 +77,7 @@ export function AccountClient({ user, profile, orders, recommendations }: Accoun
                     { label: "Flash Points", value: profile?.loyalty_points || 0, icon: Zap, color: "text-yellow-400" },
                     { label: "Total Orders", value: orders.length, icon: ShoppingBag, color: "text-blue-400" },
                     { label: "Saved Items", value: "8", icon: Heart, color: "text-rose-400" }, 
-                    { label: "Member Tier", value: "Silver", icon: Award, color: "text-zinc-400" }
+                    { label: "Tier Status", value: "Silver", icon: Award, color: "text-zinc-400" }
                 ].map((stat, i) => (
                     <motion.div 
                         key={stat.label} 
@@ -96,6 +101,9 @@ export function AccountClient({ user, profile, orders, recommendations }: Accoun
                     <TabsTrigger value="overview" className="rounded-full px-6 md:px-10 py-3 md:py-4 data-[state=active]:bg-white data-[state=active]:shadow-xl transition-all text-[10px] md:text-[11px] font-black uppercase tracking-widest">
                         Overview
                     </TabsTrigger>
+                    <TabsTrigger value="addresses" className="rounded-full px-6 md:px-10 py-3 md:py-4 data-[state=active]:bg-white data-[state=active]:shadow-xl transition-all text-[10px] md:text-[11px] font-black uppercase tracking-widest">
+                        Addresses
+                    </TabsTrigger>
                     <TabsTrigger value="profile" className="rounded-full px-6 md:px-10 py-3 md:py-4 data-[state=active]:bg-white data-[state=active]:shadow-xl transition-all text-[10px] md:text-[11px] font-black uppercase tracking-widest">
                         Settings
                     </TabsTrigger>
@@ -110,6 +118,30 @@ export function AccountClient({ user, profile, orders, recommendations }: Accoun
                     {/* Main Loyalty & Actions */}
                     <div className="lg:col-span-4 space-y-4 md:space-y-6">
                         <LoyaltyCard points={profile?.loyalty_points || 0} />
+                        
+                        {/* Mini Address Preview */}
+                        <div className="bg-white rounded-[2rem] p-6 border-2 border-zinc-100 shadow-sm relative overflow-hidden group">
+                           <div className="flex justify-between items-start mb-4">
+                                <h3 className="font-black uppercase italic text-xl tracking-tighter">Primary <br/> Location</h3>
+                                <div className="h-10 w-10 bg-zinc-100 rounded-full flex items-center justify-center">
+                                    <MapPin className="h-4 w-4 text-zinc-500" />
+                                </div>
+                           </div>
+                           {defaultAddress ? (
+                               <div className="text-sm font-medium text-zinc-600 space-y-1">
+                                   <p className="font-bold text-zinc-900">{defaultAddress!.name}</p>
+                                   <p>{defaultAddress!.city}, {defaultAddress!.state}</p>
+                                   <p className="text-xs font-mono bg-zinc-100 px-2 py-1 rounded-md w-fit mt-2">{defaultAddress!.pincode}</p>
+                               </div>
+                           ) : (
+                               <div className="text-center py-4">
+                                   <p className="text-xs text-zinc-400 font-bold uppercase tracking-widest mb-4">No default address set</p>
+                                   <Button size="sm" variant="outline" className="rounded-full text-[10px] font-black uppercase" onClick={() => (document.querySelector('[value="addresses"]') as HTMLElement)?.click()}>
+                                       Manage Addresses
+                                   </Button>
+                               </div>
+                           )}
+                        </div>
                     </div>
 
                     {/* Orders History */}
@@ -123,6 +155,10 @@ export function AccountClient({ user, profile, orders, recommendations }: Accoun
                         </div>
                     </div>
                 </div>
+            </TabsContent>
+
+            <TabsContent value="addresses" className="focus-visible:outline-none">
+                <AddressTab addresses={addresses} />
             </TabsContent>
 
             <TabsContent value="profile" className="focus-visible:outline-none">

@@ -21,6 +21,11 @@ export function AddressSelector({ onSelect }: AddressSelectorProps) {
     const [dialogOpen, setDialogOpen] = useState(false)
     const [selectedId, setSelectedId] = useState<string | null>(null)
 
+    const handleSelect = (addr: Address) => {
+        setSelectedId(addr.id)
+        onSelect(addr)
+    }
+
     const loadAddresses = async () => {
         const data = await getAddresses()
         setAddresses(data)
@@ -36,10 +41,6 @@ export function AddressSelector({ onSelect }: AddressSelectorProps) {
         loadAddresses()
     }, [])
 
-    const handleSelect = (addr: Address) => {
-        setSelectedId(addr.id)
-        onSelect(addr)
-    }
 
     const handleAddAddress = async (formData: FormData) => {
         const res = await addAddress(formData)

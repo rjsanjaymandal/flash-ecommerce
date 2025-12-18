@@ -81,8 +81,10 @@ export function OrdersTab({ orders }: { orders: any[] }) {
                                     {formatCurrency(order.total)}
                                 </TableCell>
                                 <TableCell className="py-6 pr-8 text-right">
-                                    <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl border-2 hover:bg-zinc-100 transition-all opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0">
-                                        <ExternalLink className="h-4 w-4" />
+                                    <Button asChild variant="outline" size="icon" className="h-10 w-10 rounded-xl border-2 hover:bg-zinc-100 transition-all opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0">
+                                        <Link href={`/account/orders/${order.id}`}>
+                                            <ExternalLink className="h-4 w-4" />
+                                        </Link>
                                     </Button>
                                 </TableCell>
                             </motion.tr>

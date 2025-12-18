@@ -1,7 +1,7 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
+import { createClient, createStaticClient } from '@/lib/supabase/server'
+import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache'
 import type { Database, Tables, TablesInsert, TablesUpdate } from '@/types/supabase'
 
 export type Product = Tables<'products'> & {
@@ -39,8 +39,9 @@ export type PaginatedResult<T> = {
   }
 }
 
-export async function getProducts(filter: ProductFilter = {}): Promise<PaginatedResult<Product>> {
-    const supabase = await getDb()
+// Internal Fetcher for Cache
+async function fetchProducts(filter: ProductFilter): Promise<PaginatedResult<Product>> {
+    const supabase = createStaticClient()
     const page = filter.page || 1
     const limit = filter.limit || 10
     const from = (page - 1) * limit
@@ -118,8 +119,8 @@ export async function getProducts(filter: ProductFilter = {}): Promise<Paginated
             // Check for PostgREST undefined column error (42703) if we tried to sort by sale_count
             if (error.code === '42703' && filter.sort === 'trending') {
                 console.warn('sale_count column missing, falling back to newest sort')
-                // Re-run without the trending order
-                return getProducts({ ...filter, sort: 'newest' })
+                // Re-run without the trending order (Recursion safe as strict fallback)
+                return fetchProducts({ ...filter, sort: 'newest' })
             }
             throw error
         }
@@ -140,16 +141,25 @@ export async function getProducts(filter: ProductFilter = {}): Promise<Paginated
             }
         }
     } catch (err: any) {
-        // Double check catch for safety
         if (err.code === '42703' && filter.sort === 'trending') {
-            return getProducts({ ...filter, sort: 'newest' })
+            return fetchProducts({ ...filter, sort: 'newest' })
         }
         throw err
     }
 }
 
-export async function getProductBySlug(slug: string): Promise<Product | null> {
-    const supabase = await getDb()
+// Public Cached Methods
+export async function getProducts(filter: ProductFilter = {}): Promise<PaginatedResult<Product>> {
+    const key = JSON.stringify(filter)
+    return unstable_cache(
+        async () => fetchProducts(filter),
+        ['products-list', key],
+        { tags: ['products'], revalidate: 60 } // Cache for 60s
+    )()
+}
+
+async function fetchProductBySlug(slug: string): Promise<Product | null> {
+    const supabase = createStaticClient()
     const { data, error } = await supabase
       .from('products')
       .select('*, categories(name), product_stock(*)')
@@ -164,6 +174,14 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
         average_rating: Number(p.average_rating || 0),
         review_count: Number(p.review_count || 0)
     } as Product
+}
+
+export async function getProductBySlug(slug: string): Promise<Product | null> {
+    return unstable_cache(
+        async () => fetchProductBySlug(slug),
+        ['product-slug', slug],
+        { tags: [`product-${slug}`, 'products'], revalidate: 60 }
+    )()
 }
 
 export async function createProduct(productData: TablesInsert<'products'> & { variants?: TablesInsert<'product_stock'>[] }) {
@@ -193,6 +211,8 @@ export async function createProduct(productData: TablesInsert<'products'> & { va
       if (stockError) throw stockError
     }
     
+    // @ts-expect-error: revalidateTag expects 1 arg
+    revalidateTag('products')
     revalidatePath('/admin/products')
     revalidatePath('/shop')
     return data
@@ -227,6 +247,12 @@ export async function updateProduct(id: string, productData: TablesUpdate<'produ
         }
     }
 
+    // @ts-expect-error: revalidateTag expects 1 arg
+    revalidateTag('products')
+    if (prod.slug) { 
+        // @ts-expect-error: revalidateTag expects 1 arg
+        revalidateTag(`product-${prod.slug}`)
+    }
     revalidatePath('/admin/products')
     revalidatePath('/shop')
 }
@@ -235,6 +261,8 @@ export async function deleteProduct(id: string) {
     const supabase = await getDb()
     const { error } = await supabase.from('products').delete().eq('id', id)
     if (error) throw error
+    // @ts-expect-error: revalidateTag expects 1 arg
+    revalidateTag('products')
     revalidatePath('/admin/products')
     revalidatePath('/shop')
 }
@@ -262,31 +290,37 @@ export async function getProductsByIds(ids: string[]): Promise<Product[]> {
 }
 
 export async function getRelatedProducts(currentProductId: string, categoryId: string): Promise<Product[]> {
-    const supabase = await getDb()
-    
-    // Simple logic: Same category, not current product, limit 4
-    let query = supabase
-      .from('products')
-      .select('*, reviews(rating)') // Fetch all fields for ProductCard + reviews
-      .eq('is_active', true)
-      .neq('id', currentProductId)
-      .limit(4)
+    const key = `related-${currentProductId}-${categoryId}`
+    return unstable_cache(
+        async () => {
+            const supabase = createStaticClient()
+            // Simple logic: Same category, not current product, limit 4
+            let query = supabase
+            .from('products')
+            .select('*, reviews(rating)') // Fetch all fields for ProductCard + reviews
+            .eq('is_active', true)
+            .neq('id', currentProductId)
+            .limit(4)
 
-    if (categoryId) {
-        query = query.eq('category_id', categoryId)
-    }
-    
-    const { data } = await query
-    
-    return (data || []).map((p: any) => {
-        const ratings = p.reviews?.map((r: any) => r.rating) || []
-        const avg = ratings.length > 0 ? ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length : 0
-        return {
-            ...p,
-            average_rating: avg,
-            review_count: ratings.length
-        } as Product
-    })
+            if (categoryId) {
+                query = query.eq('category_id', categoryId)
+            }
+            
+            const { data } = await query
+            
+            return (data || []).map((p: any) => {
+                const ratings = p.reviews?.map((r: any) => r.rating) || []
+                const avg = ratings.length > 0 ? ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length : 0
+                return {
+                    ...p,
+                    average_rating: avg,
+                    review_count: ratings.length
+                } as Product
+            })
+        },
+        ['related-products', key],
+        { tags: ['products'], revalidate: 60 }
+    )()
 }
 
 export async function bulkDeleteProducts(ids: string[]) {
@@ -294,6 +328,8 @@ export async function bulkDeleteProducts(ids: string[]) {
     const supabase = await getDb()
     const { error } = await supabase.from('products').delete().in('id', ids)
     if (error) throw error
+    // @ts-expect-error: revalidateTag expects 1 arg
+    revalidateTag('products')
     revalidatePath('/admin/products')
     revalidatePath('/shop')
 }
@@ -306,6 +342,8 @@ export async function bulkUpdateProductStatus(ids: string[], isActive: boolean) 
         .update({ is_active: isActive })
         .in('id', ids)
     if (error) throw error
+    // @ts-expect-error: revalidateTag expects 1 arg
+    revalidateTag('products')
     revalidatePath('/admin/products')
     revalidatePath('/shop')
 }

@@ -13,22 +13,24 @@ export default async function AccountPage() {
   }
 
   // Parallel data fetching
-  const [profileData, ordersData, trendingData] = await Promise.all([
+  const [profileData, ordersData, trendingData, addressesData] = await Promise.all([
       supabase.from('profiles').select('*').eq('id', user.id).single(),
       supabase.from('orders').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
-      getProducts({ limit: 4, sort: 'trending', is_active: true })
+      getProducts({ limit: 4, sort: 'trending', is_active: true }),
+      supabase.from('addresses').select('*').eq('user_id', user.id).order('is_default', { ascending: false })
   ])
 
   const profile = profileData.data
   const orders = ordersData.data || []
   const recommendations = trendingData.data || []
+  const addresses = addressesData.data || []
 
   return (
     <AccountClient 
         user={user} 
-        profile={profile} 
+        profile={profile!} 
         orders={orders} 
-        recommendations={recommendations} 
+        addresses={addresses}
     />
   )
 }
