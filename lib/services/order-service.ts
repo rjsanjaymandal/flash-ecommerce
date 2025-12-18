@@ -58,31 +58,96 @@ export async function getOrders(filter: OrderFilter = {}): Promise<PaginatedResu
 export async function getStats() {
   const supabase = await createClient()
   
-  // Independent Promises for Fault Tolerance
+  const now = new Date()
+  const firstDayThisMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
+  const firstDayLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString()
+  const lastDayLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59).toISOString()
+
+  // 1. Fetch current totals
   const totalOrdersPromise = supabase.from('orders').select('*', { count: 'exact', head: true })
   const totalRevenuePromise = supabase.from('orders').select('total').eq('status', 'paid')
   const totalProductsPromise = supabase.from('products').select('*', { count: 'exact', head: true }).eq('is_active', true)
   const totalCustomersPromise = supabase.from('profiles').select('*', { count: 'exact', head: true })
-  
-  const [ordersRes, revenueRes, productsRes, customersRes] = await Promise.allSettled([
+
+  // 2. Fetch last month's comparisons
+  const lastMonthOrdersPromise = supabase.from('orders').select('id', { count: 'exact', head: true }).gte('created_at', firstDayLastMonth).lte('created_at', lastDayLastMonth)
+  const lastMonthRevenuePromise = supabase.from('orders').select('total').eq('status', 'paid').gte('created_at', firstDayLastMonth).lte('created_at', lastDayLastMonth)
+
+  const [ordersRes, revenueRes, productsRes, customersRes, lastOrdersRes, lastRevRes] = await Promise.allSettled([
       totalOrdersPromise,
       totalRevenuePromise,
       totalProductsPromise,
-      totalCustomersPromise
+      totalCustomersPromise,
+      lastMonthOrdersPromise,
+      lastMonthRevenuePromise
   ])
+
+  const totalRevenue = revenueRes.status === 'fulfilled' && revenueRes.value.data 
+      ? revenueRes.value.data.reduce((acc: number, curr: any) => acc + Number(curr.total), 0) 
+      : 0
+
+  const lastMonthRevenue = lastRevRes.status === 'fulfilled' && lastRevRes.value.data
+      ? lastRevRes.value.data.reduce((acc: number, curr: any) => acc + Number(curr.total), 0)
+      : 0
 
   const stats = {
       totalOrders: ordersRes.status === 'fulfilled' ? ordersRes.value.count || 0 : 0,
-      totalRevenue: revenueRes.status === 'fulfilled' && revenueRes.value.data 
-          ? revenueRes.value.data.reduce((acc: number, curr: any) => acc + Number(curr.total), 0) 
-          : 0,
+      totalRevenue: totalRevenue,
       totalProducts: productsRes.status === 'fulfilled' ? productsRes.value.count || 0 : 0,
       totalCustomers: customersRes.status === 'fulfilled' ? customersRes.value.count || 0 : 0,
-      // Pass arrays to avoid undefined errors
+      
+      revenueGrowth: lastMonthRevenue > 0 ? ((totalRevenue - lastMonthRevenue) / lastMonthRevenue) * 100 : 0,
+      orderGrowth: lastOrdersRes.status === 'fulfilled' && (lastOrdersRes.value.count || 0) > 0 
+          ? (((ordersRes.status === 'fulfilled' ? (ordersRes.value.count || 0) : 0) - lastOrdersRes.value.count!) / lastOrdersRes.value.count!) * 100 
+          : 0,
       recentOrders: [] 
   }
 
   return stats
+}
+
+export async function getRecentActivity(limit = 10) {
+    const supabase = await createClient()
+
+    const [orders, reviews, subscribers] = await Promise.all([
+        supabase.from('orders').select('id, created_at, total, shipping_name').order('created_at', { ascending: false }).limit(limit),
+        supabase.from('reviews').select('id, created_at, user_name, rating').order('created_at', { ascending: false }).limit(limit),
+        supabase.from('newsletter_subscribers').select('id, created_at, email').order('created_at', { ascending: false }).limit(limit)
+    ])
+
+    const events: any[] = []
+
+    if (orders.data) {
+        orders.data.forEach(o => events.push({
+            id: o.id,
+            type: 'order',
+            title: `New Order for ₹${o.total}`,
+            description: `By ${o.shipping_name}`,
+            time: o.created_at
+        }))
+    }
+
+    if (reviews.data) {
+        reviews.data.forEach(r => events.push({
+            id: r.id,
+            type: 'review',
+            title: `New ${r.rating}-Star Review`,
+            description: `By ${r.user_name || 'Anonymous'}`,
+            time: r.created_at
+        }))
+    }
+
+    if (subscribers.data) {
+        subscribers.data.forEach(s => events.push({
+            id: s.id,
+            type: 'newsletter',
+            title: `New Subscriber`,
+            description: s.email,
+            time: s.created_at
+        }))
+    }
+
+    return events.sort((a: any, b: any) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, limit)
 }
 
 export async function getMonthlyRevenue() {

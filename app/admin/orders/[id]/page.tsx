@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useParams, useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ChevronLeft, Printer, MapPin, User, Package, CreditCard, Calendar, Truck } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
@@ -116,9 +117,11 @@ export default function OrderDetailsPage() {
                     ))}
                 </SelectContent>
             </Select>
-            <Button variant="outline" size="sm" onClick={handlePrint} className="h-9 gap-2 bg-white text-slate-700 border-slate-200 hover:bg-slate-50">
-                <Printer className="h-4 w-4" />
-                Print Invoice
+            <Button variant="outline" size="sm" asChild className="h-9 gap-2 bg-white text-slate-700 border-slate-200 hover:bg-slate-50">
+                <Link href={`/admin/orders/${order.id}/invoice`} target="_blank">
+                    <Printer className="h-4 w-4" />
+                    Print Invoice
+                </Link>
             </Button>
         </div>
       </div>

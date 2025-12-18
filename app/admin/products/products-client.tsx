@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
-import { Plus, Pencil, Search, Filter, MoreHorizontal, ArrowUpDown, Loader2, Package, Trash2, CheckCircle, XCircle } from 'lucide-react'
+import { Plus, Pencil, Search, Filter, MoreHorizontal, ArrowUpDown, Loader2, Package, Trash2, CheckCircle, XCircle, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -121,14 +121,41 @@ export function ProductsClient({ initialProducts, meta }: { initialProducts: any
 
   // Helper to calculate total stock
   const getStockStatus = (stock: any[]) => {
-      const total = stock?.reduce((acc, curr) => acc + (curr.quantity || 0), 0) || 0
+      const total = stock?.reduce((acc: number, curr: any) => acc + (curr.quantity || 0), 0) || 0
       if (total === 0) return { label: 'Out of Stock', variant: 'destructive' as const, count: 0 }
       if (total < 10) return { label: 'Low Stock', variant: 'secondary' as const, count: total, className: "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100" }
       return { label: 'In Stock', variant: 'outline' as const, count: total, className: "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100" }
   }
+  // Calculate items with total stock < 10
+  const lowStockProducts = initialProducts.filter(p => {
+      const total = p.product_stock?.reduce((acc: number, curr: any) => acc + (curr.quantity || 0), 0) || 0
+      return total < 10 && total > 0
+  })
+
+  const outOfStockProducts = initialProducts.filter(p => {
+    const total = p.product_stock?.reduce((acc: number, curr: any) => acc + (curr.quantity || 0), 0) || 0
+    return total === 0
+  })
 
   return (
     <div className="space-y-6 relative">
+      {(lowStockProducts.length > 0 || outOfStockProducts.length > 0) && (
+          <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-lg mb-6 flex items-start gap-3 shadow-sm animate-in fade-in slide-in-from-left-2">
+              <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                  <h3 className="text-sm font-black uppercase tracking-tight text-amber-900">Inventory Intelligence</h3>
+                  <p className="text-xs text-amber-700 mt-1 font-medium italic">
+                      {lowStockProducts.length > 0 && `${lowStockProducts.length} items are running low on stock. `}
+                      {outOfStockProducts.length > 0 && `${outOfStockProducts.length} items are completely out of stock.`}
+                      Consider resting soon to avoid missing sales.
+                  </p>
+              </div>
+              <Button size="sm" variant="ghost" className="h-7 text-xs font-black uppercase tracking-widest text-amber-900 hover:bg-amber-100" asChild>
+                  <Link href="?status=low">Restock Now</Link>
+              </Button>
+          </div>
+      )}
+
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between px-1">
         <div>
             <h2 className="text-2xl font-bold tracking-tight text-foreground">Products</h2>

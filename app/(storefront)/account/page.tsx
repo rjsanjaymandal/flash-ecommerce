@@ -5,8 +5,12 @@ import { ProfileTab } from "@/components/account/profile-tab"
 import { OrdersTab } from "@/components/account/orders-tab"
 import { WishlistTab } from "@/components/account/wishlist-tab"
 import { LoyaltyCard } from '@/components/account/loyalty-card'
-import { LogOut } from "lucide-react"
+import { LogOut, ArrowRight, Zap } from "lucide-react"
 import { SignOutButton } from "@/components/account/sign-out-button"
+import { getProducts } from "@/lib/services/product-service"
+import { FeaturedGrid } from "@/components/storefront/featured-grid"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
 
 export default async function AccountPage() {
   const supabase = await createClient()
@@ -18,13 +22,15 @@ export default async function AccountPage() {
   }
 
   // Parallel data fetching
-  const [profileData, ordersData] = await Promise.all([
+  const [profileData, ordersData, trendingData] = await Promise.all([
       supabase.from('profiles').select('*').eq('id', user.id).single(),
-      supabase.from('orders').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
+      supabase.from('orders').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
+      getProducts({ limit: 4, sort: 'trending', is_active: true })
   ])
 
   const profile = profileData.data
   const orders = ordersData.data || []
+  const recommendations = trendingData.data || []
 
   return (
     <div className="container mx-auto px-4 py-24 min-h-screen max-w-6xl">
@@ -62,6 +68,25 @@ export default async function AccountPage() {
                 <div>
                     <h2 className="text-2xl font-bold mb-6">Recent Orders</h2>
                     <OrdersTab orders={orders} />
+                </div>
+
+                {/* Recommendations */}
+                <div className="pt-12 border-t mt-12">
+                    <div className="flex items-end justify-between mb-8">
+                        <div>
+                            <span className="text-primary font-black tracking-[0.4em] uppercase text-[10px]">Curated for You</span>
+                            <h2 className="text-4xl font-black tracking-tighter uppercase italic flex items-center gap-2">
+                                <Zap className="h-6 w-6 fill-primary text-primary" />
+                                Recommended <span className="text-muted-foreground font-light">Drops</span>
+                            </h2>
+                        </div>
+                        <Button asChild variant="link" className="text-foreground font-black uppercase tracking-widest group">
+                            <Link href="/shop" className="flex items-center gap-2">
+                                Explore Shop <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                            </Link>
+                        </Button>
+                    </div>
+                    <FeaturedGrid products={recommendations} />
                 </div>
             </TabsContent>
 

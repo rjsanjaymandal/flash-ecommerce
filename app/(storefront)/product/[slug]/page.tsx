@@ -12,6 +12,33 @@ import { notFound } from 'next/navigation'
 
 export const revalidate = 60 // Revalidate every minute
 
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  const product = await getProductBySlug(slug)
+
+  if (!product) return { title: 'Product Not Found' }
+
+  const title = `${product.name} | Flash Store`
+  const description = product.description || `Buy ${product.name} on Flash Store. Premium Streetwear 2025.`
+  
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: product.main_image_url ? [product.main_image_url] : [],
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: product.main_image_url ? [product.main_image_url] : [],
+    }
+  }
+}
+
 export default async function ProductPage({ params }: { params: { slug: string } }) {
   const { slug } = await params 
 

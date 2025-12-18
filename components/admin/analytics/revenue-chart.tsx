@@ -1,6 +1,6 @@
 'use client'
 
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts"
+import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts"
 
 interface RevenueChartProps {
   data: { name: string; total: number }[]
@@ -13,38 +13,47 @@ export function RevenueChart({ data }: RevenueChartProps) {
 
   return (
     <ResponsiveContainer width="100%" height={350}>
-      <BarChart data={data}>
-        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted-foreground))" opacity={0.3} />
+      <AreaChart data={data}>
+        <defs>
+          <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+            <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+          </linearGradient>
+        </defs>
+        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted-foreground))" opacity={0.1} />
         <XAxis
           dataKey="name"
           stroke="#888888"
           fontSize={12}
           tickLine={false}
           axisLine={false}
+          tickMargin={10}
         />
         <YAxis
           stroke="#888888"
           fontSize={12}
           tickLine={false}
           axisLine={false}
-          tickFormatter={(value) => `$${value}`}
+          tickFormatter={(value) => `₹${value}`}
         />
         <Tooltip 
-             cursor={{ fill: 'hsl(var(--muted)/0.4)' }}
              contentStyle={{ 
                  backgroundColor: 'hsl(var(--background))', 
                  borderColor: 'hsl(var(--border))',
-                 borderRadius: '8px' 
+                 borderRadius: '12px',
+                 boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' 
              }}
-             itemStyle={{ color: 'hsl(var(--foreground))' }}
+             itemStyle={{ color: 'hsl(var(--primary))', fontWeight: 'bold' }}
         />
-        <Bar
+        <Area
+          type="monotone"
           dataKey="total"
-          fill="currentColor"
-          radius={[4, 4, 0, 0]}
-          className="fill-primary"
+          stroke="hsl(var(--primary))"
+          strokeWidth={3}
+          fillOpacity={1}
+          fill="url(#colorTotal)"
         />
-      </BarChart>
+      </AreaChart>
     </ResponsiveContainer>
   )
 }

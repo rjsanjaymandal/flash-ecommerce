@@ -14,7 +14,7 @@ export type ProductFilter = {
   category_id?: string
   is_active?: boolean
   search?: string
-  sort?: 'price_asc' | 'price_desc' | 'newest'
+  sort?: 'price_asc' | 'price_desc' | 'newest' | 'trending'
   limit?: number
   page?: number
   min_price?: number
@@ -40,10 +40,10 @@ export async function getProducts(filter: ProductFilter = {}): Promise<Paginated
     const from = (page - 1) * limit
     const to = from + limit - 1
     
-    // If filtering by size or color, we need an inner join on stock
-    let selectString = '*, categories(name), product_stock(*), reviews(rating)'
+    // Use pre-calculated fields for faster performance
+    let selectString = '*, categories(name), product_stock(*)'
     if (filter.size || filter.color) {
-        selectString = '*, categories(name), product_stock!inner(*), reviews(rating)'
+        selectString = '*, categories(name), product_stock!inner(*)'
     }
 
     // We use count: 'exact' to get total rows matching filters
@@ -89,6 +89,9 @@ export async function getProducts(filter: ProductFilter = {}): Promise<Paginated
       case 'price_desc':
         query = query.order('price', { ascending: false })
         break
+      case 'trending':
+        query = query.order('sale_count', { ascending: false })
+        break
       case 'newest':
       default:
         query = query.order('created_at', { ascending: false })
@@ -101,16 +104,11 @@ export async function getProducts(filter: ProductFilter = {}): Promise<Paginated
     
     if (error) throw error
 
-    // Aggregate statistics
-    const processedData = (data || []).map((p: any) => {
-        const ratings = p.reviews?.map((r: any) => r.rating) || []
-        const avg = ratings.length > 0 ? ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length : 0
-        return {
-            ...p,
-            average_rating: avg,
-            review_count: ratings.length
-        }
-    })
+    const processedData = (data || []).map((p: any) => ({
+        ...p,
+        average_rating: Number(p.average_rating || 0),
+        review_count: Number(p.review_count || 0)
+    }))
 
     return {
         data: processedData,
@@ -127,20 +125,17 @@ export async function getProductBySlug(slug: string) {
     const supabase = await getDb()
     const { data, error } = await supabase
       .from('products')
-      .select('*, categories(name), product_stock(*), reviews(rating)')
+      .select('*, categories(name), product_stock(*)')
       .eq('slug', slug)
       .single()
     
     if (error) return null
 
-    // Aggregate statistics
-    const ratings = data.reviews?.map((r: any) => r.rating) || []
-    const avg = ratings.length > 0 ? ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length : 0
-    
+    const p = data as any
     return {
-        ...data,
-        average_rating: avg,
-        review_count: ratings.length
+        ...p,
+        average_rating: Number(p.average_rating || 0),
+        review_count: Number(p.review_count || 0)
     }
 }
 
@@ -282,4 +277,36 @@ export async function bulkUpdateProductStatus(ids: string[], isActive: boolean) 
     if (error) throw error
     revalidatePath('/admin/products')
     revalidatePath('/shop')
+}
+
+export async function decrementStock(productId: string, size: string, color: string, quantity: number) {
+    const supabase = await getDb()
+    
+    // Use an RPC call or a targeted update
+    // For simplicity with JS client, we'll do a decrement update
+    // Note: In highly concurrent environments, an RPC for "UPDATE ... SET quantity = quantity - X" is safer
+    const { data: currentStock, error: fetchError } = await supabase
+        .from('product_stock')
+        .select('quantity')
+        .eq('product_id', productId)
+        .eq('size', size)
+        .eq('color', color)
+        .single()
+
+    if (fetchError || !currentStock) {
+        throw new Error(`Stock record not found for ${productId} (${size}/${color})`)
+    }
+
+    if (currentStock.quantity! < quantity) {
+        throw new Error(`Insufficient stock for ${productId} (${size}/${color})`)
+    }
+
+    const { error: updateError } = await supabase
+        .from('product_stock')
+        .update({ quantity: (currentStock.quantity || 0) - quantity })
+        .eq('product_id', productId)
+        .eq('size', size)
+        .eq('color', color)
+
+    if (updateError) throw updateError
 }
