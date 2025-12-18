@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ShoppingBag, Menu, Heart, ChevronDown, Search, LogOut } from 'lucide-react'
+import { ShoppingBag, Menu, Heart, ChevronDown, Search } from 'lucide-react'
 import { useState } from 'react'
 import NextImage from 'next/image'
 import { useWishlistStore } from '@/store/use-wishlist-store'
@@ -193,19 +193,7 @@ export function Navbar() {
                     </Link>
                 )}
 
-                <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    title="Sign Out"
-                    className="rounded-full h-9 w-9 hover:bg-red-500/10 hover:text-red-500 transition-colors sm:hidden"
-                    onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        signOut();
-                    }}
-                >
-                    <LogOut className="h-4 w-4" />
-                </Button>
+
               </div>
             ) : (
               <Link href="/login">
