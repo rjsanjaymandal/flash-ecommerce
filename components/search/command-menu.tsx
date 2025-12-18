@@ -65,99 +65,58 @@ export function CommandMenu() {
 
   return (
     <CommandDialog open={isOpen} onOpenChange={setOpen} shouldFilter={false}>
-      <CommandInput 
-        placeholder="Type a command or search products..." 
-        value={query}
-        onValueChange={setQuery}
-      />
-      <CommandList className="scrollbar-hide">
+      <div className="bg-zinc-950/20 backdrop-blur-3xl">
+          <CommandInput 
+            placeholder="Search products..." 
+            value={query}
+            onValueChange={setQuery}
+            className="h-16 text-lg font-medium placeholder:text-zinc-500 border-none focus:ring-0 bg-transparent px-6"
+          />
+      </div>
+      <CommandList className="scrollbar-hide bg-zinc-900/40 backdrop-blur-xl border-t border-white/5 p-2">
         <CommandEmpty className="py-12 text-center">
             {isPending ? (
-                 <div className="flex flex-col items-center gap-2">
-                    <Loader2 className="h-10 w-10 text-primary animate-spin" />
-                    <p className="text-sm font-medium text-muted-foreground">Searching typespace...</p>
+                 <div className="flex flex-col items-center gap-3">
+                    <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                    <p className="text-sm font-bold text-zinc-500 uppercase tracking-widest">Searching...</p>
                 </div>
             ) : (
-                <div className="flex flex-col items-center gap-2">
-                    <Package className="h-10 w-10 text-muted-foreground/20" />
-                    <p className="text-sm font-medium text-muted-foreground">No matches found for your vibe.</p>
+                <div className="flex flex-col items-center gap-3">
+                    {!query ? (
+                        <p className="text-sm font-medium text-zinc-500">Start typing to search products.</p>
+                    ) : (
+                        <>
+                             <Package className="h-10 w-10 text-zinc-700" />
+                             <p className="text-sm font-medium text-zinc-500">No products found.</p>
+                        </>
+                    )}
                 </div>
             )}
         </CommandEmpty>
         
-        {!query && (
-            <>
-                <CommandGroup heading={<span className="text-xs font-black uppercase tracking-widest text-primary ml-1">Quick Discovery</span>}>
-                <CommandItem onSelect={() => runCommand(() => router.push('/shop'))} className="rounded-xl mx-1 mb-1">
-                    <ShoppingBag className="mr-2 h-4 w-4" />
-                    <span className="font-bold">Browse All Collections</span>
-                </CommandItem>
-                <CommandItem onSelect={() => runCommand(() => router.push('/account'))} className="rounded-xl mx-1 mb-1">
-                    <User className="mr-2 h-4 w-4" />
-                    <span className="font-bold">Member Profile</span>
-                </CommandItem>
-                </CommandGroup>
-
-                <CommandSeparator className="opacity-50" />
-
-                <CommandGroup heading={<span className="text-xs font-black uppercase tracking-widest text-accent ml-1">Trending Collections</span>}>
-                    <div className="grid grid-cols-2 gap-2 p-2 focus-within:ring-0">
-                        <button 
-                            onClick={() => runCommand(() => router.push('/shop?category=streetwear'))}
-                            className="flex flex-col gap-2 p-4 rounded-2xl bg-primary/5 hover:bg-primary/10 transition-colors text-left group"
-                        >
-                            <span className="text-xs font-black uppercase tracking-widest opacity-60">Collection</span>
-                            <span className="text-lg font-black italic tracking-tighter uppercase group-hover:text-primary transition-colors">Streetwear</span>
-                        </button>
-                        <button 
-                            onClick={() => runCommand(() => router.push('/shop?category=accessories'))}
-                            className="flex flex-col gap-2 p-4 rounded-2xl bg-accent/5 hover:bg-accent/10 transition-colors text-left group"
-                        >
-                            <span className="text-xs font-black uppercase tracking-widest opacity-60">Collection</span>
-                            <span className="text-lg font-black italic tracking-tighter uppercase group-hover:text-accent transition-colors">Accessories</span>
-                        </button>
-                    </div>
-                </CommandGroup>
-            </>
-        )}
-        
         {items.length > 0 && (
-            <>
-                <CommandSeparator className="opacity-50" />
-                <CommandGroup heading={<span className="text-xs font-black uppercase tracking-widest text-primary ml-1">Products</span>}>
-                    {items.map((item) => (
-                        <CommandItem 
-                            key={item.id} 
-                            onSelect={() => runCommand(() => router.push(`/product/${item.slug || item.id}`))}
-                            className="group rounded-xl mx-1 mb-1 cursor-pointer py-3"
-                        >
-                            <div className="relative h-12 w-12 rounded-xl overflow-hidden border border-border group-hover:border-primary transition-colors mr-3 shrink-0">
-                                {item.main_image_url && <img src={item.main_image_url} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" alt={item.name} />}
+            <CommandGroup heading={<span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-2 mb-2 block">Results</span>}>
+                {items.map((item) => (
+                    <CommandItem 
+                        key={item.id} 
+                        onSelect={() => runCommand(() => router.push(`/product/${item.slug || item.id}`))}
+                        className="group rounded-2xl mx-1 mb-2 cursor-pointer py-3 hover:bg-white/5 aria-selected:bg-white/10 transition-colors"
+                    >
+                        <div className="relative h-14 w-14 rounded-xl overflow-hidden border border-white/10 group-hover:border-primary/50 transition-colors mr-4 shrink-0 bg-white/5">
+                            {item.main_image_url && <img src={item.main_image_url} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" alt={item.name} />}
+                        </div>
+                        <div className="flex flex-col flex-1 gap-0.5 min-w-0">
+                            <span className="font-black uppercase tracking-tight text-white group-hover:text-primary transition-colors truncate text-sm md:text-base">{item.name}</span>
+                            <div className="flex items-center gap-2">
+                                    {item.price && <span className="text-xs font-bold text-zinc-400 font-mono">{formatCurrency(item.price)}</span>}
+                                    {item.category && <span className="text-[9px] px-1.5 py-0.5 rounded border border-white/10 bg-white/5 text-zinc-500 uppercase font-bold tracking-wider">{item.category}</span>}
                             </div>
-                            <div className="flex flex-col flex-1 gap-1 min-w-0">
-                                <span className="font-black uppercase tracking-tight leading-none group-hover:text-primary transition-colors truncate">{item.name}</span>
-                                {item.price && <span className="text-xs font-bold text-muted-foreground">{formatCurrency(item.price)}</span>}
-                            </div>
-                            <ArrowRight className="h-4 w-4 opacity-0 -translate-x-2 transition-all group-aria-selected:opacity-100 group-aria-selected:translate-x-0 group-hover:opacity-100 group-hover:translate-x-0 ml-auto" />
-                        </CommandItem>
-                    ))}
-                </CommandGroup>
-            </>
+                        </div>
+                        <ArrowRight className="h-4 w-4 opacity-0 -translate-x-2 transition-all group-aria-selected:opacity-100 group-aria-selected:translate-x-0 group-hover:opacity-100 group-hover:translate-x-0 ml-auto mr-2 text-primary" />
+                    </CommandItem>
+                ))}
+            </CommandGroup>
         )}
-
-        <CommandSeparator className="opacity-50" />
-
-        <CommandGroup heading={<span className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">System</span>}>
-           <CommandItem onSelect={() => runCommand(() => router.push('/'))} className="rounded-xl mx-1">
-            <Home className="mr-2 h-4 w-4" />
-            <span className="font-bold">Home</span>
-          </CommandItem>
-           <CommandItem onSelect={() => runCommand(() => router.push('/admin'))} className="rounded-xl mx-1">
-            <LayoutDashboard className="mr-2 h-4 w-4" />
-            <span className="font-bold">Control Panel</span>
-            <CommandShortcut>⌘A</CommandShortcut>
-          </CommandItem>
-        </CommandGroup>
       </CommandList>
     </CommandDialog>
   )

@@ -1,6 +1,6 @@
 'use client'
 
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Menu, ChevronRight, Facebook, Instagram, Twitter, Youtube, User } from "lucide-react"
 import Link from "next/link"
@@ -27,8 +27,11 @@ export function HamburgerMenu({ categories }: HamburgerMenuProps) {
             <SheetContent side="left" className="w-[300px] sm:w-[350px] p-0 border-r border-white/10 bg-zinc-950">
                 <SheetHeader className="sr-only">
                     <SheetTitle>Navigation Menu</SheetTitle>
+                    <SheetDescription>
+                        Main navigation menu for accessing shop categories, user account, and login options.
+                    </SheetDescription>
                 </SheetHeader>
-                <div className="flex flex-col h-full bg-[url('/noise.png')] bg-repeat opacity-100">
+                <div className="flex flex-col h-full bg-zinc-950 bg-gradient-to-b from-zinc-900/50 to-zinc-950">
                     {/* Header */}
                     <div className="p-6 border-b border-white/10 bg-zinc-900/50">
                         <Link href="/" onClick={() => setOpen(false)} className="flex items-center gap-3 w-fit">
