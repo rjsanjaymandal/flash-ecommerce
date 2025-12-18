@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient, createStaticClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache'
 import type { Database, Tables, TablesInsert, TablesUpdate } from '@/types/supabase'
 
@@ -47,8 +48,8 @@ export type PaginatedResult<T> = {
 }
 
 // Internal Fetcher for Cache
-async function fetchProducts(filter: ProductFilter): Promise<PaginatedResult<Product>> {
-    const supabase = createStaticClient()
+async function fetchProducts(filter: ProductFilter, supabaseClient?: any): Promise<PaginatedResult<Product>> {
+    const supabase = supabaseClient || createStaticClient()
     const page = filter.page || 1
     const limit = filter.limit || 10
     const from = (page - 1) * limit
@@ -140,13 +141,13 @@ async function fetchProducts(filter: ProductFilter): Promise<PaginatedResult<Pro
                 // Determine what failed
                 if (filter.sort === 'trending' && !filter.ignoreStockSort) {
                     // Try removing trending first, keeping stock
-                     return fetchProducts({ ...filter, sort: 'newest' })
+                     return fetchProducts({ ...filter, sort: 'newest' }, supabase)
                 } else if (!filter.ignoreStockSort) {
                     // Start over without stock sort
                     return fetchProducts({ ...filter, ignoreStockSort: true })
                 } else if (filter.sort === 'trending') {
                      // Last resort: remove trending
-                     return fetchProducts({ ...filter, sort: 'newest', ignoreStockSort: true })
+                     return fetchProducts({ ...filter, sort: 'newest', ignoreStockSort: true }, supabase)
                 }
             }
             throw error
@@ -172,7 +173,7 @@ async function fetchProducts(filter: ProductFilter): Promise<PaginatedResult<Pro
         if (err.code === '42703') {
              // Fallback for unexpected recursive fails
              if (!filter.ignoreStockSort) {
-                return fetchProducts({ ...filter, ignoreStockSort: true })
+                return fetchProducts({ ...filter, ignoreStockSort: true }, supabase)
              }
         }
         throw err
@@ -187,6 +188,12 @@ export async function getProducts(filter: ProductFilter = {}): Promise<Paginated
         ['products-list', key],
         { tags: ['products'], revalidate: 60 } // Cache for 60s
     )()
+}
+
+export async function getAdminProducts(filter: ProductFilter = {}): Promise<PaginatedResult<Product>> {
+    // Admin fetch - No cache, Admin Client (bypasses RLS for preorders count)
+    const adminClient = createAdminClient()
+    return fetchProducts(filter, adminClient)
 }
 
 async function fetchProductBySlug(slug: string): Promise<Product | null> {

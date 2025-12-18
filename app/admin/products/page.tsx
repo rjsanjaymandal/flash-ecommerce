@@ -1,5 +1,5 @@
 
-import { getProducts } from '@/lib/services/product-service'
+import { getProducts, getAdminProducts } from '@/lib/services/product-service'
 import { ProductsClient } from './products-client'
 
 export const revalidate = 0 // Ensure fresh data on every request for admin
@@ -14,7 +14,7 @@ export default async function ProductsPage({
   const page = Number(params.page) || 1
   const search = params.q || ''
   
-  const { data: products, meta } = await getProducts({
+  const { data: products, meta } = await getAdminProducts({
       page,
       search,
       limit: 10,
