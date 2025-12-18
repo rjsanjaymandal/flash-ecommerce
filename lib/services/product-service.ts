@@ -9,6 +9,11 @@ export type Product = Tables<'products'> & {
     product_stock?: Tables<'product_stock'>[]
     average_rating?: number
     review_count?: number
+    images?: {
+        thumbnail: string
+        mobile: string
+        desktop: string
+    } | null
 }
 
 // Helper to get DB client
@@ -190,7 +195,7 @@ export async function createProduct(productData: TablesInsert<'products'> & { va
     
     const { data, error } = await supabase
       .from('products')
-      .insert(prod)
+      .insert(prod as any) // Type assertion until DB types are regenerated
       .select()
       .single()
 
@@ -224,7 +229,7 @@ export async function updateProduct(id: string, productData: TablesUpdate<'produ
 
     const { error } = await supabase
         .from('products')
-        .update(prod)
+        .update(prod as any)
         .eq('id', id)
     
     if (error) throw error

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
-import { Plus, Pencil, Search, Filter, MoreHorizontal, ArrowUpDown, Loader2, Package, Trash2, CheckCircle, XCircle, AlertTriangle } from 'lucide-react'
+import { Plus, Pencil, Search, Filter, MoreHorizontal, ArrowUpDown, Loader2, Package, Trash2, CheckCircle, XCircle, AlertTriangle, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -182,6 +182,25 @@ export function ProductsClient({ initialProducts, meta }: { initialProducts: any
         <Button variant="outline" className="gap-2 h-9 text-xs font-medium text-muted-foreground hover:text-foreground">
             <Filter className="h-3.5 w-3.5" />
             Filters
+        </Button>
+        <Button 
+            variant="ghost" 
+            className="gap-2 h-9 text-xs font-medium text-muted-foreground hover:text-primary border border-dashed"
+            onClick={async () => {
+                const toastId = toast.loading('Optimizing legacy images...')
+                try {
+                    const res = await fetch('/api/admin/optimize-legacy', { method: 'POST' })
+                    const data = await res.json()
+                    if (!res.ok) throw new Error(data.error)
+                    toast.success(`Processed ${data.processed_count} images. ${data.remaining_count} remaining.`, { id: toastId })
+                    router.refresh()
+                } catch (err: any) {
+                    toast.error('Optimization failed: ' + err.message, { id: toastId })
+                }
+            }}
+        >
+            <RefreshCw className="h-3.5 w-3.5" />
+            Optimize Images
         </Button>
       </div>
 

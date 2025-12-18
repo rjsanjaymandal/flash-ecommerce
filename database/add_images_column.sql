@@ -1,0 +1,2 @@
+ALTER TABLE products 
+ADD COLUMN IF NOT EXISTS images JSONB DEFAULT '{}'::jsonb;

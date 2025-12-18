@@ -14,6 +14,11 @@ export const productSchema = z.object({
   category_id: z.string().min(1, "Category is required"),
   main_image_url: z.string().min(1, "Main image is required"),
   gallery_image_urls: z.array(z.string()),
+  images: z.object({
+    thumbnail: z.string(),
+    mobile: z.string(),
+    desktop: z.string()
+  }).optional(),
   is_active: z.boolean().default(true),
   variants: z.array(variantSchema).default([])
 })

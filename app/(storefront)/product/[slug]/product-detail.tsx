@@ -35,6 +35,11 @@ type ProductDetailProps = {
         color_options: string[]
         product_stock: StockItem[]
         category_id?: string
+        images?: {
+            thumbnail: string
+            mobile: string
+            desktop: string
+        }
     }
     initialReviews: {
         count: number
@@ -51,7 +56,8 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
   const [selectedSize, setSelectedSize] = useState<string>('')
   const [selectedColor, setSelectedColor] = useState<string>('')
   const [quantity, setQuantity] = useState(1)
-  const [activeImage, setActiveImage] = useState(product.main_image_url)
+  const initialImage = product.images?.desktop || product.main_image_url
+  const [activeImage, setActiveImage] = useState(initialImage)
 
   // Fallback Standards
   const STANDARD_SIZES = ['S', 'M', 'L', 'XL', 'XXL']
@@ -138,8 +144,9 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
   }
 
   // Construct Gallery Images
+  // Prioritize variants if available for the main gallery
   const galleryImages = [
-      product.main_image_url,
+      product.images?.desktop || product.main_image_url,
       ...(product.gallery_image_urls || [])
   ].filter(Boolean)
 

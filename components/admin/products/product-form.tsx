@@ -16,6 +16,7 @@ import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { productSchema, ProductFormValues } from '@/lib/validations/product'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { ProductImageUpload } from '@/components/admin/product-image-upload'
 import { cn } from '@/lib/utils'
 
 import { Category } from '@/types/store-types'
@@ -47,6 +48,7 @@ export function ProductForm({ initialData, categories, isLoading, onSubmit, onCa
             main_image_url: '',
             gallery_image_urls: [],
             is_active: true,
+            images: undefined,
             variants: []
         }
     })
@@ -217,32 +219,22 @@ export function ProductForm({ initialData, categories, isLoading, onSubmit, onCa
                              <CardContent className="space-y-6 pt-6">
                                 <div className="space-y-2">
                                     <FormLabel>Main Image</FormLabel>
-                                    <div className="border-2 border-dashed rounded-lg p-4 flex flex-col items-center justify-center min-h-[200px] bg-muted/10 hover:bg-muted/20 transition-colors">
-                                        {watch('main_image_url') ? (
-                                            <div className="relative h-48 w-full max-w-xs group">
-                                                <img src={watch('main_image_url')} className="h-full w-full object-cover rounded-md shadow-sm" alt="Main" />
-                                                <Button 
-                                                    type="button"
-                                                    variant="destructive" size="icon" className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                    onClick={() => setValue('main_image_url', '', { shouldValidate: true })}
-                                                >
-                                                    <X className="h-4 w-4" />
-                                                </Button>
-                                            </div>
-                                        ) : (
-                                            <div className="text-center">
-                                                {isUploading ? <Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground"/> : <ImageIcon className="h-8 w-8 mx-auto text-muted-foreground mb-2"/>}
-                                                <div className="text-sm text-muted-foreground">Click to upload main image</div>
-                                                <Input 
-                                                    type="file" accept="image/*" className="hidden" id="main-upload"
-                                                    onChange={(e) => handleImageUpload(e, 'main')}
-                                                    disabled={isUploading}
-                                                />
-                                                <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => document.getElementById('main-upload')?.click()}>
-                                                    Select File
-                                                </Button>
-                                            </div>
-                                        )}
+                                    <FormLabel>Main Image (Optimized)</FormLabel>
+                                    <div className="flex flex-col gap-4">
+                                        <ProductImageUpload 
+                                            currentImage={form.watch('images')?.thumbnail || form.watch('main_image_url')} 
+                                            onUploadComplete={(urls) => {
+                                                setValue('images', urls)
+                                                setValue('main_image_url', urls.desktop) // Fallback for legacy
+                                                toast.success('Optimized images saved')
+                                            }}
+                                            onRemove={() => {
+                                                setValue('images', undefined)
+                                                setValue('main_image_url', '')
+                                            }}
+                                        />
+                                        
+                                        {/* Hidden fallback input for form validation if needed, though handled by component state usually */}
                                     </div>
                                     <div className="text-[0.8rem] text-muted-foreground">
                                         <FormField name="main_image_url" render={() => <FormMessage />} />

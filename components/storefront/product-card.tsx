@@ -22,7 +22,10 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, showRating = true, priority = false }: ProductCardProps) {
-  const [imageSrc, setImageSrc] = useState(product.main_image_url || '/placeholder.svg')
+  // Use optimized images if available, starting with thumbnail for grid, or mobile for slightly larger cards
+  // Fallback to main_image_url
+  const optimizedSrc = product.images?.thumbnail || product.images?.mobile || product.main_image_url
+  const [imageSrc, setImageSrc] = useState(optimizedSrc || '/placeholder.svg')
   const [isNew, setIsNew] = useState(false)
   const router = useRouter()
   
