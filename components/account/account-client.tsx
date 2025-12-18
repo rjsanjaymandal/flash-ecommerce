@@ -42,22 +42,22 @@ export function AccountClient({ user, profile, orders, addresses }: AccountClien
   }
 
   return (
-    <div className="container mx-auto px-4 py-24 min-h-screen max-w-6xl relative">
+    <div className="container mx-auto px-4 py-8 md:py-24 min-h-screen max-w-6xl relative">
         <BrandGlow className="top-0 left-[-10%] opacity-50" size="lg" />
         
         {/* Premium Header */}
         <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="relative rounded-[2.5rem] overflow-hidden bg-zinc-950 p-6 md:p-14 mb-12 md:mb-16 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] group border border-white/5"
+            className="relative rounded-[2rem] md:rounded-[2.5rem] overflow-hidden bg-zinc-950 p-6 md:p-14 mb-8 md:mb-16 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] group border border-white/5"
         >
             <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/20 rounded-full blur-[140px] -mr-64 -mt-64 group-hover:bg-primary/30 transition-colors duration-1000" />
             <div className="absolute bottom-0 left-0 w-80 h-80 bg-indigo-600/10 rounded-full blur-[120px] -ml-32 -mb-32" />
             
-            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8 md:gap-10">
+            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6 md:gap-10">
                 <div className="space-y-4 md:space-y-6">
-                    <BrandBadge variant="primary">Member Dashboard</BrandBadge>
-                    <h1 className="text-5xl xs:text-6xl md:text-8xl font-black tracking-tighter text-white uppercase leading-[0.85] md:leading-[0.8] italic">
+                    <BrandBadge variant="primary" className="text-[10px] py-0.5 px-2">Member Dashboard</BrandBadge>
+                    <h1 className="text-4xl xs:text-5xl md:text-8xl font-black tracking-tighter text-white uppercase leading-[0.85] md:leading-[0.8] italic break-words">
                         HELLO, <br />
                         <span className="text-gradient drop-shadow-2xl">{profile?.name?.split(' ')[0] || user.email?.split('@')[0]}</span>
                     </h1>
@@ -72,7 +72,7 @@ export function AccountClient({ user, profile, orders, addresses }: AccountClien
             </div>
 
             {/* Quick Stats Grid */}
-            <div className="relative z-10 grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-8 mt-12 md:mt-16 pt-12 md:pt-16 border-t border-white/10">
+            <div className="relative z-10 grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-8 mt-8 md:mt-16 pt-8 md:pt-16 border-t border-white/10">
                 {[
                     { label: "Flash Points", value: profile?.loyalty_points || 0, icon: Zap, color: "text-yellow-400" },
                     { label: "Total Orders", value: orders.length, icon: ShoppingBag, color: "text-blue-400" },
@@ -82,13 +82,13 @@ export function AccountClient({ user, profile, orders, addresses }: AccountClien
                     <motion.div 
                         key={stat.label} 
                         whileHover={{ y: -5, scale: 1.02 }}
-                        className="space-y-1 md:space-y-2 p-4 md:p-6 rounded-2xl md:rounded-3xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 transition-all duration-300 shadow-lg group/stat"
+                        className="space-y-1 md:space-y-2 p-3 md:p-6 rounded-xl md:rounded-3xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 transition-all duration-300 shadow-lg group/stat"
                     >
-                        <div className="flex items-center gap-1.5 md:gap-2 text-zinc-500 mb-1 md:mb-2">
+                        <div className="flex items-center gap-1.5 md:gap-2 text-zinc-500 mb-0.5 md:mb-2">
                             <stat.icon className={`h-3 w-3 md:h-4 md:w-4 ${stat.color} transition-transform group-hover/stat:scale-110`} />
                             <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest leading-none">{stat.label}</span>
                         </div>
-                        <p className="text-2xl md:text-4xl font-black text-white tracking-tight leading-none">{stat.value}</p>
+                        <p className="text-xl md:text-4xl font-black text-white tracking-tight leading-none">{stat.value}</p>
                     </motion.div>
                 ))}
             </div>
