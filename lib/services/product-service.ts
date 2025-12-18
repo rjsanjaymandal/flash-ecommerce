@@ -32,6 +32,7 @@ export type ProductFilter = {
   max_price?: number
   size?: string
   color?: string
+  ignoreStockSort?: boolean
 }
 
 export type PaginatedResult<T> = {
@@ -98,6 +99,13 @@ async function fetchProducts(filter: ProductFilter): Promise<PaginatedResult<Pro
     }
 
     // Sorting
+    // Primary sort: In-stock items first
+    // We try to order by the computed column 'in_stock'. 
+    // If the function doesn't exist, we catch the error and retry without it.
+    if (!filter.ignoreStockSort) {
+        query = query.order('in_stock', { ascending: false })
+    }
+
     switch (filter.sort) {
       case 'price_asc':
         query = query.order('price', { ascending: true })
@@ -121,11 +129,22 @@ async function fetchProducts(filter: ProductFilter): Promise<PaginatedResult<Pro
         const { data, error, count } = await query
         
         if (error) {
-            // Check for PostgREST undefined column error (42703) if we tried to sort by sale_count
-            if (error.code === '42703' && filter.sort === 'trending') {
-                console.warn('sale_count column missing, falling back to newest sort')
-                // Re-run without the trending order (Recursion safe as strict fallback)
-                return fetchProducts({ ...filter, sort: 'newest' })
+            // Check for PostgREST undefined column error (42703) 
+            // This happens if 'in_stock' function or 'sale_count' column is missing
+            if (error.code === '42703') {
+                console.warn('Sort column missing (likely in_stock or sale_count), retrying with simplified sort', error.message)
+                
+                // Determine what failed
+                if (filter.sort === 'trending' && !filter.ignoreStockSort) {
+                    // Try removing trending first, keeping stock
+                     return fetchProducts({ ...filter, sort: 'newest' })
+                } else if (!filter.ignoreStockSort) {
+                    // Start over without stock sort
+                    return fetchProducts({ ...filter, ignoreStockSort: true })
+                } else if (filter.sort === 'trending') {
+                     // Last resort: remove trending
+                     return fetchProducts({ ...filter, sort: 'newest', ignoreStockSort: true })
+                }
             }
             throw error
         }
@@ -146,8 +165,11 @@ async function fetchProducts(filter: ProductFilter): Promise<PaginatedResult<Pro
             }
         }
     } catch (err: any) {
-        if (err.code === '42703' && filter.sort === 'trending') {
-            return fetchProducts({ ...filter, sort: 'newest' })
+        if (err.code === '42703') {
+             // Fallback for unexpected recursive fails
+             if (!filter.ignoreStockSort) {
+                return fetchProducts({ ...filter, ignoreStockSort: true })
+             }
         }
         throw err
     }

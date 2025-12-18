@@ -46,6 +46,7 @@ export function QuickView({ product }: QuickViewProps) {
                     size="icon" 
                     className="rounded-full bg-white/90 hover:bg-white text-black shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0"
                     onClick={(e) => e.stopPropagation()} // Prevent navigation to slug
+                    suppressHydrationWarning
                 >
                     <Eye className="h-4 w-4" />
                 </Button>
