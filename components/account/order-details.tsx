@@ -30,31 +30,52 @@ export function OrderDetails({ order, items }: OrderDetailsProps) {
     return (
         <div className="max-w-4xl mx-auto px-4 py-12 md:py-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
-                <div>
-                    <Link href="/account" className="inline-flex items-center text-zinc-500 hover:text-black mb-4 transition-colors text-xs font-bold uppercase tracking-widest">
-                        <ArrowLeft className="mr-2 h-3 w-3" /> Back to Dashboard
+            <div className="mb-8 md:mb-12 space-y-6 md:space-y-0">
+                {/* Mobile Top Bar */}
+                <div className="flex md:hidden items-center justify-between">
+                     <Link href="/account" className="inline-flex items-center text-zinc-500 hover:text-black transition-colors text-[10px] font-black uppercase tracking-widest">
+                        <ArrowLeft className="mr-2 h-3 w-3" /> Back
                     </Link>
-                    <h1 className="text-4xl md:text-5xl font-black uppercase italic tracking-tighter">
-                        Order <span className="text-zinc-300">#{order.id.slice(0, 8)}</span>
-                    </h1>
-                     <p className="text-zinc-500 font-medium mt-2">Placed on {new Date(order.created_at!).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                    <Button size="icon" variant="outline" className="h-9 w-9 rounded-full border-zinc-200">
+                        <Download className="h-4 w-4" />
+                    </Button>
                 </div>
-                <div className="flex items-center gap-3">
-                     <Button variant="outline" className="rounded-full h-10 px-6 uppercase font-black tracking-widest text-[10px]">
-                        <Download className="mr-2 h-3 w-3" /> Invoice
-                     </Button>
-                     <BrandBadge variant={order.status === 'delivered' ? 'primary' : 'accent'} className="px-4 py-2 text-xs">
-                         {order.status}
-                     </BrandBadge>
+
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                    <div>
+                        <Link href="/account" className="hidden md:inline-flex items-center text-zinc-500 hover:text-black mb-4 transition-colors text-xs font-bold uppercase tracking-widest">
+                            <ArrowLeft className="mr-2 h-3 w-3" /> Back to Dashboard
+                        </Link>
+                        <h1 className="text-5xl xs:text-6xl md:text-5xl font-black uppercase italic tracking-tighter leading-[0.85] md:leading-tight">
+                            Order <br className="md:hidden"/> <span className="text-zinc-300">#{order.id.slice(0, 8)}</span>
+                        </h1>
+                        <div className="flex flex-wrap items-center gap-3 mt-4 md:mt-2">
+                             <BrandBadge variant={order.status === 'delivered' ? 'primary' : 'accent'} className="md:hidden px-3 py-1 text-[10px]">
+                                 {order.status}
+                             </BrandBadge>
+                             <p className="text-zinc-500 font-medium text-xs md:text-base">
+                                Placed on {new Date(order.created_at!).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
+                             </p>
+                        </div>
+                    </div>
+                    
+                    {/* Desktop Actions */}
+                    <div className="hidden md:flex items-center gap-3">
+                         <Button variant="outline" className="rounded-full h-10 px-6 uppercase font-black tracking-widest text-[10px]">
+                            <Download className="mr-2 h-3 w-3" /> Invoice
+                         </Button>
+                         <BrandBadge variant={order.status === 'delivered' ? 'primary' : 'accent'} className="px-4 py-2 text-xs">
+                             {order.status}
+                         </BrandBadge>
+                    </div>
                 </div>
             </div>
 
             {/* Timeline */}
             {!isCancelled && (
-                <div className="mb-16 relative">
+                <div className="mb-12 md:mb-16 relative">
                     <div className="absolute top-1/2 left-0 w-full h-1 bg-zinc-100 -translate-y-1/2 rounded-full hidden md:block" />
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 relative">
+                    <div className="grid grid-cols-2 gap-y-6 md:grid-cols-4 md:gap-4 relative">
                         {steps.map((step, i) => {
                             const completed = i <= currentStepIndex || order.status === 'delivered'
                             const current = i === currentStepIndex
@@ -62,12 +83,12 @@ export function OrderDetails({ order, items }: OrderDetailsProps) {
                             return (
                                 <div key={step.status} className="relative z-10 flex flex-col items-center text-center">
                                     <div className={`
-                                        h-12 w-12 rounded-full border-4 flex items-center justify-center transition-all duration-500 mb-3 bg-white
+                                        h-10 w-10 md:h-12 md:w-12 rounded-full border-4 flex items-center justify-center transition-all duration-500 mb-3 bg-white
                                         ${completed ? 'border-primary text-primary shadow-lg scale-110' : 'border-zinc-100 text-zinc-300'}
                                     `}>
-                                        <step.icon className="h-5 w-5" />
+                                        <step.icon className="h-4 w-4 md:h-5 md:w-5" />
                                     </div>
-                                    <p className={`text-[10px] uppercase font-black tracking-widest ${completed ? 'text-black' : 'text-zinc-300'}`}>
+                                    <p className={`text-[9px] md:text-[10px] uppercase font-black tracking-widest ${completed ? 'text-black' : 'text-zinc-300'}`}>
                                         {step.label}
                                     </p>
                                 </div>
@@ -77,33 +98,33 @@ export function OrderDetails({ order, items }: OrderDetailsProps) {
                 </div>
             )}
 
-            <div className="grid md:grid-cols-3 gap-8 md:gap-12">
+            <div className="grid lg:grid-cols-3 gap-8 md:gap-12">
                 {/* Items */}
-                <div className="md:col-span-2 space-y-8">
+                <div className="lg:col-span-2 space-y-8">
                      <div className="bg-white rounded-3xl border-2 border-zinc-100 overflow-hidden shadow-sm">
-                         <div className="px-8 py-6 bg-zinc-50/50 border-b-2 border-zinc-100">
+                         <div className="px-6 md:px-8 py-6 bg-zinc-50/50 border-b-2 border-zinc-100">
                              <h3 className="font-black uppercase tracking-widest text-xs text-zinc-500">Items Ordered</h3>
                          </div>
                          <div className="divide-y divide-zinc-100">
                              {items.map((item) => (
-                                 <div key={item.id} className="p-6 md:p-8 flex gap-6 group hover:bg-zinc-50/50 transition-colors">
-                                     <div className="h-24 w-20 bg-zinc-100 rounded-xl overflow-hidden shrink-0">
+                                 <div key={item.id} className="p-5 md:p-8 flex flex-col sm:flex-row gap-4 md:gap-6 group hover:bg-zinc-50/50 transition-colors">
+                                     <div className="h-20 w-20 md:h-24 md:w-20 bg-zinc-100 rounded-xl overflow-hidden shrink-0 self-start">
                                          {/* Placeholder for item image - ideally we join this in SQL or fetch it */}
                                          <div className="w-full h-full bg-linear-to-tr from-zinc-200 to-zinc-100 flex items-center justify-center">
                                              <Package className="h-6 w-6 text-zinc-300" />
                                          </div>
                                      </div>
                                      <div className="flex-1">
-                                         <div className="flex justify-between items-start">
+                                         <div className="flex flex-col sm:flex-row justify-between items-start gap-2">
                                              <div>
-                                                 <h4 className="font-bold text-lg leading-tight">{item.name_snapshot || 'Product Item'}</h4>
-                                                  <p className="text-zinc-500 text-sm mt-1 font-medium">Size: {item.size} • Color: {item.color}</p>
+                                                 <h4 className="font-bold text-base md:text-lg leading-tight">{item.name_snapshot || 'Product Item'}</h4>
+                                                  <p className="text-zinc-500 text-xs md:text-sm mt-1 font-medium">Size: {item.size} • Color: {item.color}</p>
                                              </div>
-                                             <p className="font-black text-lg font-mono">{formatCurrency(item.unit_price * item.quantity)}</p>
+                                             <p className="font-black text-base md:text-lg font-mono">{formatCurrency(item.unit_price * item.quantity)}</p>
                                          </div>
                                          <div className="flex justify-between items-end mt-4">
                                               <Badge variant="secondary" className="rounded-md font-mono text-[10px]">Qty: {item.quantity}</Badge>
-                                              <Button variant="link" className="text-primary p-0 h-auto text-xs font-bold uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity">
+                                              <Button variant="link" className="text-primary p-0 h-auto text-xs font-bold uppercase tracking-wider opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                                                   Write a Review
                                               </Button>
                                          </div>

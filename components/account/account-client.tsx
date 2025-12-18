@@ -96,7 +96,7 @@ export function AccountClient({ user, profile, orders, addresses }: AccountClien
 
         {/* Tabs Content */}
         <Tabs defaultValue="overview" className="space-y-10 md:space-y-12 animate-in fade-in duration-700">
-            <div className="flex justify-center overflow-x-auto pb-4 md:pb-6 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
+            <div className="flex justify-start md:justify-center overflow-x-auto pb-4 md:pb-6 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
                 <TabsList className="bg-zinc-100/80 backdrop-blur-md p-1.5 md:p-2 rounded-full inline-flex h-auto shadow-sm border border-zinc-200/50 min-w-max">
                     <TabsTrigger value="overview" className="rounded-full px-6 md:px-10 py-3 md:py-4 data-[state=active]:bg-white data-[state=active]:shadow-xl transition-all text-[10px] md:text-[11px] font-black uppercase tracking-widest">
                         Overview
