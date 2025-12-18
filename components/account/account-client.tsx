@@ -22,14 +22,18 @@ import { BrandGlow } from "@/components/storefront/brand-glow"
 import { Tables } from "@/types/supabase"
 import { User } from "@supabase/supabase-js"
 
+import { WaitlistTab } from "@/components/account/waitlist-tab"
+import { Product } from "@/lib/services/product-service"
+
 interface AccountClientProps {
   user: User
   profile: Tables<'profiles'>
   orders: Tables<'orders'>[]
   addresses: Tables<'addresses'>[]
+  waitlist: Product[]
 }
 
-export function AccountClient({ user, profile, orders, addresses }: AccountClientProps) {
+export function AccountClient({ user, profile, orders, addresses, waitlist }: AccountClientProps) {
   const [mounted, setMounted] = useState(false)
   const defaultAddress = addresses.find(a => a.is_default)
 
@@ -110,6 +114,9 @@ export function AccountClient({ user, profile, orders, addresses }: AccountClien
                     <TabsTrigger value="wishlist" className="rounded-full px-6 md:px-10 py-3 md:py-4 data-[state=active]:bg-white data-[state=active]:shadow-xl transition-all text-[10px] md:text-[11px] font-black uppercase tracking-widest">
                        Wishlist
                     </TabsTrigger>
+                    <TabsTrigger value="waitlist" className="rounded-full px-6 md:px-10 py-3 md:py-4 data-[state=active]:bg-white data-[state=active]:shadow-xl transition-all text-[10px] md:text-[11px] font-black uppercase tracking-widest">
+                       Waitlist
+                    </TabsTrigger>
                 </TabsList>
             </div>
 
@@ -186,6 +193,21 @@ export function AccountClient({ user, profile, orders, addresses }: AccountClien
                     </div>
                     <div className="bg-zinc-50/50 rounded-3xl border-2 p-8 min-h-[400px]">
                         <WishlistTab />
+                    </div>
+                </div>
+            </TabsContent>
+            <TabsContent value="waitlist" className="focus-visible:outline-none">
+                 <div className="space-y-12 waitlist-tab-content">
+                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+                        <div>
+                            <span className="text-amber-500 font-black tracking-[0.4em] uppercase text-[10px]">Back In Stock Soon</span>
+                            <h2 className="text-5xl md:text-7xl font-black tracking-tighter uppercase leading-[0.8] italic mt-4">
+                                WAIT<span className="text-zinc-300">LIST</span>
+                            </h2>
+                        </div>
+                    </div>
+                    <div className="bg-zinc-50/50 rounded-3xl border-2 p-8 min-h-[400px]">
+                        <WaitlistTab products={waitlist} />
                     </div>
                 </div>
             </TabsContent>

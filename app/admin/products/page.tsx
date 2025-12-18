@@ -1,5 +1,6 @@
 
-import { getProducts, getAdminProducts } from '@/lib/services/product-service'
+import { getProductsSecure } from '@/lib/services/product-service'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { ProductsClient } from './products-client'
 
 export const revalidate = 0 // Ensure fresh data on every request for admin
@@ -14,12 +15,13 @@ export default async function ProductsPage({
   const page = Number(params.page) || 1
   const search = params.q || ''
   
-  const { data: products, meta } = await getAdminProducts({
+  const adminClient = createAdminClient()
+  const { data: products, meta } = await getProductsSecure({
       page,
       search,
       limit: 10,
       sort: 'newest'
-  })
+  }, adminClient)
 
   return <ProductsClient initialProducts={products} meta={meta} />
 }

@@ -204,10 +204,29 @@ export function ProductsClient({ initialProducts, meta }: { initialProducts: any
                 onChange={(e) => setSearch(e.target.value)}
             />
         </div>
-        <Button variant="outline" className="gap-2 h-9 text-xs font-medium text-muted-foreground hover:text-foreground">
-            <Filter className="h-3.5 w-3.5" />
-            Filters
-        </Button>
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="gap-2 h-9 text-xs font-medium text-muted-foreground hover:text-foreground">
+                    <Filter className="h-3.5 w-3.5" />
+                    Sort: {
+                        searchParams.get('sort') === 'waitlist_desc' ? 'Most Anticipated' : 
+                        searchParams.get('sort') === 'price_asc' ? 'Price: Low to High' : 
+                        searchParams.get('sort') === 'price_desc' ? 'Price: High to Low' : 
+                        searchParams.get('sort') === 'trending' ? 'Trending' : 'Newest'
+                    }
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Sort By</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => router.push('?sort=newest')}>Newest</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push('?sort=trending')}>Trending</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push('?sort=waitlist_desc')}>Most Anticipated (Waitlist)</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => router.push('?sort=price_asc')}>Price: Low to High</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push('?sort=price_desc')}>Price: High to Low</DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
         <Button 
             variant="ghost" 
             className="gap-2 h-9 text-xs font-medium text-muted-foreground hover:text-primary border border-dashed"

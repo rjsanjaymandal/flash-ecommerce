@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient, createStaticClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+// import { createAdminClient } from '@/lib/supabase/admin' // Removed to prevent potential client bundle issues
 import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache'
 import type { Database, Tables, TablesInsert, TablesUpdate } from '@/types/supabase'
 
@@ -27,7 +27,7 @@ export type ProductFilter = {
   category_id?: string
   is_active?: boolean
   search?: string
-  sort?: 'price_asc' | 'price_desc' | 'newest' | 'trending'
+  sort?: 'price_asc' | 'price_desc' | 'newest' | 'trending' | 'waitlist_desc'
   limit?: number
   page?: number
   min_price?: number
@@ -55,6 +55,60 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: any): Promi
     const from = (page - 1) * limit
     const to = from + limit - 1
     
+    // Special handling for Waitlist Sort (Two-Step Fetch to avoid computed column dependency)
+    if (filter.sort === 'waitlist_desc') {
+         // 1. Fetch ALL products with their preorder counts (lightweight)
+         const { data: allIds, error: idError } = await supabase
+            .from('products')
+            .select('id, preorders(count)')
+            .eq('is_active', true) // Assume we only care about active products for waitlist demand? Or all? Let's respect filter.
+        
+         if (idError) throw idError
+
+         // 2. Sort in Memory
+         const sortedIds = (allIds || [])
+            .map((p: any) => ({ 
+                id: p.id, 
+                count: p.preorders ? p.preorders[0]?.count : 0 
+            }))
+            .sort((a: any, b: any) => b.count - a.count)
+        
+        // 3. Paginate
+        const total = sortedIds.length
+        const sliced = sortedIds.slice(from, to)
+        const targetIds = sliced.map((i: any) => i.id)
+
+        // 4. Fetch Details
+        const { data: details, error: detailError } = await supabase
+            .from('products')
+            .select('*, categories(name), product_stock(*), preorders(count)')
+            .in('id', targetIds)
+        
+        if (detailError) throw detailError
+
+        // Re-order details to match sortedIds (since .in() does not preserve order)
+        const orderedData = targetIds
+            .map((id: string) => details?.find((d: any) => d.id === id))
+            .filter(Boolean) as Product[]
+            
+        const processedData = orderedData.map((p: any) => ({
+             ...p,
+             average_rating: Number(p.average_rating || 0),
+             review_count: Number(p.review_count || 0),
+             preorder_count: p.preorders ? p.preorders[0]?.count : 0
+        }))
+
+        return {
+            data: processedData,
+            meta: {
+                total,
+                page,
+                limit,
+                totalPages: Math.ceil(total / limit)
+            }
+        }
+    }
+
     // Use pre-calculated fields for faster performance
     // Including preorders count for admin view (and potentially sorting/badges later)
     // Note: 'preorders(count)' requires a foreign key relationship which exists.
@@ -190,10 +244,9 @@ export async function getProducts(filter: ProductFilter = {}): Promise<Paginated
     )()
 }
 
-export async function getAdminProducts(filter: ProductFilter = {}): Promise<PaginatedResult<Product>> {
-    // Admin fetch - No cache, Admin Client (bypasses RLS for preorders count)
-    const adminClient = createAdminClient()
-    return fetchProducts(filter, adminClient)
+
+export async function getProductsSecure(filter: ProductFilter = {}, client: any): Promise<PaginatedResult<Product>> {
+    return fetchProducts(filter, client)
 }
 
 async function fetchProductBySlug(slug: string): Promise<Product | null> {
@@ -416,4 +469,31 @@ export async function decrementStock(productId: string, size: string, color: str
         .eq('color', color)
 
     if (updateError) throw updateError
+}
+
+export async function getWaitlistedProducts(userId: string): Promise<Product[]> {
+    const supabase = await getDb()
+    
+    // 1. Get Preorders
+    const { data: preorders, error } = await supabase
+        .from('preorders' as any)
+        .select('product_id')
+        .eq('user_id', userId)
+    
+    if (error || !preorders || preorders.length === 0) return []
+
+    const productIds = preorders.map((p: any) => p.product_id)
+
+    // 2. Get Products (Reusing existing fetcher logic or direct call)
+    const { data: products } = await supabase
+        .from('products')
+        .select('*, categories(name), product_stock(*)')
+        .in('id', productIds)
+        .eq('is_active', true)
+    
+    return (products || []).map((p: any) => ({
+        ...p,
+        average_rating: 0, 
+        review_count: 0
+    })) as Product[]
 }
