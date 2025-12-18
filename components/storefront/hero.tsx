@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import Image from 'next/image'
+import { BrandBadge } from './brand-badge'
+import { BrandGlow } from './brand-glow'
 
 export function Hero() {
   return (
@@ -12,12 +14,7 @@ export function Hero() {
       
       {/* TEXT SECTION */}
       <div className="relative z-20 w-full h-full lg:w-1/2 flex flex-col justify-center px-6 py-12 lg:px-16 xl:px-24">
-         <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1 }}
-            className="absolute top-1/2 left-0 w-full h-full -translate-y-1/2 bg-radial-gradient from-primary/5 to-transparent pointer-events-none"
-        />
+         <BrandGlow className="top-1/2 left-0 -translate-y-1/2" />
         
          <motion.div
             initial={{ y: 30, opacity: 0 }}
@@ -26,22 +23,17 @@ export function Hero() {
             className="space-y-8 lg:space-y-10 relative"
         >
             <div className="space-y-4">
-                <motion.span 
-                    initial={{ x: -20, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: 0.2 }}
-                    className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-black uppercase tracking-[0.3em]"
-                >
+                <BrandBadge variant="primary" className="mb-4">
                     Summer Drop 2025
-                </motion.span>
+                </BrandBadge>
                 <div className="overflow-hidden">
                     <motion.h1 
                         initial={{ y: "100%" }}
                         animate={{ y: 0 }}
                         transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }} 
-                        className="text-6xl sm:text-7xl lg:text-8xl xl:text-9xl font-black tracking-tighter leading-[0.85] text-foreground"
+                        className="text-7xl sm:text-8xl lg:text-9xl xl:text-[10rem] font-black tracking-tighter leading-[0.8] text-foreground uppercase italic"
                     >
-                        UNLEASH<br />THE<br /><span className="text-gradient">FLASH</span>
+                        UNLEASH<br />THE<br /><span className="text-gradient drop-shadow-[0_0_30px_rgba(var(--primary),0.3)]">FLASH</span>
                     </motion.h1>
                 </div>
             </div>

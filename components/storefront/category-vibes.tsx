@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { BrandGlow } from './brand-glow'
+import { BrandBadge } from './brand-badge'
 
 interface Category {
   id: string
@@ -21,21 +23,31 @@ export function CategoryVibes({ categories }: CategoryVibesProps) {
 
   return (
     <section className="py-16 md:py-24 bg-background relative overflow-hidden">
-      {/* Dynamic Blobs */}
-      <div className="absolute top-0 right-[-10%] w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] -z-10" />
-      <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-accent/5 rounded-full blur-[120px] -z-10" />
+      {/* Brand Glows */}
+      <BrandGlow className="top-0 right-[-10%]" size="lg" />
+      <BrandGlow className="bottom-[-10%] left-[-10%]" size="lg" color="accent" />
 
       <div className="container mx-auto px-4 lg:px-8">
-        <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-12">
-           <div className="space-y-3">
-              <span className="text-primary font-black tracking-[0.4em] uppercase text-[10px] pl-1">The Collections</span>
-              <h2 className="text-5xl md:text-8xl font-black tracking-tighter leading-none">
-                PICK YOUR <span className="text-gradient italic">VIBE</span>
-              </h2>
-              <p className="text-muted-foreground text-sm font-medium tracking-wide max-w-sm">
-                  Curated drops designed to affirm your identity and express your authentic self.
-              </p>
-           </div>
+        <div className="flex flex-col items-center text-center gap-4 mb-20 max-w-4xl mx-auto relative pt-12">
+            <BrandBadge variant="primary" className="mb-2">The Collections</BrandBadge>
+            <motion.h2 
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                className="text-6xl md:text-9xl font-black tracking-tighter text-foreground leading-[0.8] uppercase italic"
+            >
+                PICK YOUR <span className="text-gradient drop-shadow-[0_0_30px_rgba(var(--primary),0.3)]">VIBES</span>
+            </motion.h2>
+            <motion.p 
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3 }}
+                className="text-muted-foreground text-sm md:text-base font-medium tracking-wide max-w-md mt-2"
+            >
+                Curated drops designed to affirm your identity and express your authentic self.
+            </motion.p>
         </div>
 
         <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-6 overflow-x-auto snap-x snap-mandatory pt-4 pb-12 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">

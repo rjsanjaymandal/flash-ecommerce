@@ -47,7 +47,7 @@ export const useCartStore = create<CartState>()(
             i.color === item.color
         )
 
-        let newItems = [...currentItems]
+        const newItems = [...currentItems]
         let newQuantity = item.quantity
 
         if (existingIndex > -1) {

@@ -99,10 +99,23 @@ export async function getStats() {
       orderGrowth: lastOrdersRes.status === 'fulfilled' && (lastOrdersRes.value.count || 0) > 0 
           ? (((ordersRes.status === 'fulfilled' ? (ordersRes.value.count || 0) : 0) - lastOrdersRes.value.count!) / lastOrdersRes.value.count!) * 100 
           : 0,
+      averageOrderValue: (ordersRes.status === 'fulfilled' && ordersRes.value.count! > 0) ? (totalRevenue / ordersRes.value.count!) : 0,
       recentOrders: [] 
   }
 
   return stats
+}
+
+export async function getTopProducts(limit: number = 5) {
+    const supabase = await createClient()
+    const { data, error } = await supabase
+        .from('products')
+        .select('*, categories(name)')
+        .order('sale_count', { ascending: false })
+        .limit(limit)
+
+    if (error) throw error
+    return data || []
 }
 
 export async function getRecentActivity(limit = 10) {

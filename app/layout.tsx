@@ -43,9 +43,6 @@ export const metadata: Metadata = {
 
 import { createClient } from '@/lib/supabase/server'
 
-// ... imports
-
-
 
 export default async function RootLayout({
   children,

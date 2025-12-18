@@ -1,10 +1,10 @@
-const { createClient } = require("@supabase/supabase-js");
+import { createClient } from "@supabase/supabase-js";
 // Load environment variables if possible, or just expect them to be set
 // Actually, in this environment, it's safer to read them from the file or use a simple fetch if possible.
 // Let's assume the user has a .env.local file.
 
-const fs = require("fs");
-const path = require("path");
+import fs from "fs";
+import path from "path";
 
 async function main() {
   console.log("--- Verifying Category Access ---");

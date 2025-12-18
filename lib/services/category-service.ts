@@ -2,19 +2,12 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import type { Tables, TablesInsert, TablesUpdate } from '@/types/supabase'
+import type { Category } from '@/types/store-types'
 
-export type Category = {
-  id: string
-  name: string
-  slug: string
-  description?: string
-  parent_id: string | null
-  image_url?: string
-  is_active: boolean
-  children?: Category[]
-}
+export type { Category }
 
-export async function getCategoriesTree() {
+export async function getCategoriesTree(): Promise<Category[]> {
     const supabase = await createClient()
     
     // 1. Fetch ALL active categories in one flat O(1) query
@@ -34,12 +27,12 @@ export async function getCategoriesTree() {
     const rootCategories: Category[] = []
 
     // Initialize Map
-    allCategories.forEach((cat: any) => {
+    allCategories.forEach((cat) => {
       categoryMap.set(cat.id, { ...cat, children: [] })
     })
 
     // Link Children to Parents
-    allCategories.forEach((cat: any) => {
+    allCategories.forEach((cat) => {
       const node = categoryMap.get(cat.id)!
       if (cat.parent_id) {
         const parent = categoryMap.get(cat.parent_id)
@@ -54,7 +47,7 @@ export async function getCategoriesTree() {
     return rootCategories
   }
 
-export async function getLinearCategories() {
+export async function getLinearCategories(): Promise<Category[]> {
     const supabase = await createClient()
     const { data, error } = await supabase
         .from('categories')
@@ -62,20 +55,13 @@ export async function getLinearCategories() {
         .order('name')
     if (error) throw error
     
-    // Map to ensure types match Category definition (null vs undefined mismatch)
-    return (data || []).map((d: any) => ({
-        id: d.id,
-        name: d.name,
-        slug: d.slug,
-        description: d.description || undefined,
-        parent_id: d.parent_id,
-        image_url: d.image_url || undefined,
-        is_active: d.is_active ?? false, // Handle null
+    return (data || []).map((d) => ({
+        ...d,
         children: []
     })) as Category[]
 }
 
-export async function getRootCategories(limit?: number) {
+export async function getRootCategories(limit?: number): Promise<Tables<'categories'>[]> {
   const supabase = await createClient()
   let query = supabase
     .from('categories')
@@ -93,17 +79,17 @@ export async function getRootCategories(limit?: number) {
   return data || []
 }
 
-export async function createCategory(data: any) {
+export async function createCategory(data: TablesInsert<'categories'>) {
     const supabase = await createClient()
-    const { error } = await (supabase.from('categories') as any).insert([data])
+    const { error } = await supabase.from('categories').insert(data)
     if (error) throw error
     revalidatePath('/admin/categories')
     revalidatePath('/shop')
 }
 
-export async function updateCategory(id: string, data: any) {
+export async function updateCategory(id: string, data: TablesUpdate<'categories'>) {
     const supabase = await createClient()
-    const { error } = await (supabase.from('categories') as any).update(data).eq('id', id)
+    const { error } = await supabase.from('categories').update(data).eq('id', id)
     if (error) throw error
     revalidatePath('/admin/categories')
     revalidatePath('/shop')
@@ -111,7 +97,7 @@ export async function updateCategory(id: string, data: any) {
 
 export async function deleteCategory(id: string) {
     const supabase = await createClient()
-    const { error } = await (supabase.from('categories') as any).delete().eq('id', id)
+    const { error } = await supabase.from('categories').delete().eq('id', id)
     if (error) throw error
     revalidatePath('/admin/categories')
     revalidatePath('/shop')

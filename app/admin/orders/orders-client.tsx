@@ -19,7 +19,12 @@ export function OrdersClient({ initialOrders, meta, status }: { initialOrders: a
     const router = useRouter()
     const searchParams = useSearchParams()
     const [search, setSearch] = useState(searchParams.get('q') || '')
+    const [mounted, setMounted] = useState(false)
     const currentStatus = searchParams.get('status')
+
+    useEffect(() => {
+        setMounted(true)
+    }, [])
 
     // Debounce Search
     useEffect(() => {
@@ -166,39 +171,45 @@ export function OrdersClient({ initialOrders, meta, status }: { initialOrders: a
                                             {/* <span className="text-xs text-muted-foreground">{order.profiles?.email || 'No email'}</span> */}
                                         </div>
                                     </TableCell>
-                                    <TableCell className="text-muted-foreground" suppressHydrationWarning>{new Date(order.created_at).toLocaleDateString('en-US')}</TableCell>
+                                    <TableCell className="text-muted-foreground">
+                                        {mounted ? new Date(order.created_at).toLocaleDateString('en-US') : null}
+                                    </TableCell>
                                     <TableCell className="font-medium">{formatCurrency(order.total)}</TableCell>
                                     <TableCell>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <div className="cursor-pointer hover:opacity-80 transition-opacity inline-flex">
-                                                    <Badge variant={getStatusColor(order.status)} className={cn(
-                                                        "rounded-md px-2 py-0.5 font-medium text-[10px] uppercase tracking-wider border",
-                                                        order.status === 'paid' && "bg-emerald-50 text-emerald-700 border-emerald-200", // Paid = Green
-                                                        order.status === 'pending' && "bg-yellow-50 text-yellow-700 border-yellow-200", // Pending = Yellow
-                                                        order.status === 'shipped' && "bg-indigo-50 text-indigo-700 border-indigo-200", // Shipped = Indigo
-                                                        order.status === 'delivered' && "bg-slate-100 text-slate-700 border-slate-200", // Delivered = Slate (Completed)
-                                                        order.status === 'cancelled' && "bg-red-50 text-red-700 border-red-200", // Cancelled = Red
-                                                    )}>
-                                                        {order.status}
-                                                        <ChevronDown className="ml-1 h-3 w-3 opacity-50" />
-                                                    </Badge>
-                                                </div>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="start">
-                                                <DropdownMenuLabel className="text-xs">Update Status</DropdownMenuLabel>
-                                                <DropdownMenuSeparator />
-                                                {['pending', 'paid', 'shipped', 'delivered', 'cancelled'].map((s) => (
-                                                    <DropdownMenuItem
-                                                        key={s}
-                                                        onClick={() => handleStatusUpdate(order.id, s)}
-                                                        className={cn("text-xs cursor-pointer", order.status === s && "bg-accent")}
-                                                    >
-                                                        {s.charAt(0).toUpperCase() + s.slice(1)}
-                                                    </DropdownMenuItem>
-                                                ))}
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
+                                        {mounted ? (
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <div className="cursor-pointer hover:opacity-80 transition-opacity inline-flex">
+                                                        <Badge variant={getStatusColor(order.status)} className={cn(
+                                                            "rounded-md px-2 py-0.5 font-medium text-[10px] uppercase tracking-wider border",
+                                                            order.status === 'paid' && "bg-emerald-50 text-emerald-700 border-emerald-200", // Paid = Green
+                                                            order.status === 'pending' && "bg-yellow-50 text-yellow-700 border-yellow-200", // Pending = Yellow
+                                                            order.status === 'shipped' && "bg-indigo-50 text-indigo-700 border-indigo-200", // Shipped = Indigo
+                                                            order.status === 'delivered' && "bg-slate-100 text-slate-700 border-slate-200", // Delivered = Slate (Completed)
+                                                            order.status === 'cancelled' && "bg-red-50 text-red-700 border-red-200", // Cancelled = Red
+                                                        )}>
+                                                            {order.status}
+                                                            <ChevronDown className="ml-1 h-3 w-3 opacity-50" />
+                                                        </Badge>
+                                                    </div>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="start">
+                                                    <DropdownMenuLabel className="text-xs">Update Status</DropdownMenuLabel>
+                                                    <DropdownMenuSeparator />
+                                                    {['pending', 'paid', 'shipped', 'delivered', 'cancelled'].map((s) => (
+                                                        <DropdownMenuItem
+                                                            key={s}
+                                                            onClick={() => handleStatusUpdate(order.id, s)}
+                                                            className={cn("text-xs cursor-pointer", order.status === s && "bg-accent")}
+                                                        >
+                                                            {s.charAt(0).toUpperCase() + s.slice(1)}
+                                                        </DropdownMenuItem>
+                                                    ))}
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        ) : (
+                                            <Badge variant="outline" className="opacity-0">Loading</Badge>
+                                        )}
                                     </TableCell>
                                     <TableCell className="text-right pr-4">
                                         <Button variant="ghost" size="sm" asChild className="h-8 text-xs font-medium text-muted-foreground hover:text-primary">

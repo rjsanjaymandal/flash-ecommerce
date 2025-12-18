@@ -17,6 +17,11 @@ export function CustomersClient({ initialCustomers, meta }: { initialCustomers: 
     const router = useRouter()
     const searchParams = useSearchParams()
     const [search, setSearch] = useState(searchParams.get('q') || '')
+    const [mounted, setMounted] = useState(false)
+
+    useEffect(() => {
+        setMounted(true)
+    }, [])
 
     // Debounce Search
     useEffect(() => {
@@ -124,27 +129,33 @@ export function CustomersClient({ initialCustomers, meta }: { initialCustomers: 
                                         {formatCurrency(customer.stats.totalSpent)}
                                     </TableCell>
                                     <TableCell className="text-muted-foreground text-sm">
-                                        {new Date(customer.created_at).toLocaleDateString('en-US')}
+                                        {mounted ? new Date(customer.created_at).toLocaleDateString('en-US') : null}
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-background">
-                                                    <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                <DropdownMenuItem className="cursor-pointer" asChild>
-                                                    <Link href={`/admin/customers/${customer.id}`}>
-                                                        <User className="mr-2 h-4 w-4" /> View Profile
-                                                    </Link>
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem className="cursor-pointer">
-                                                    <Mail className="mr-2 h-4 w-4" /> Send Email
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
+                                        {mounted ? (
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-background">
+                                                        <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                    <DropdownMenuItem className="cursor-pointer" asChild>
+                                                        <Link href={`/admin/customers/${customer.id}`}>
+                                                            <User className="mr-2 h-4 w-4" /> View Profile
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem className="cursor-pointer">
+                                                        <Mail className="mr-2 h-4 w-4" /> Send Email
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        ) : (
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0">
+                                                <MoreHorizontal className="h-4 w-4" />
+                                            </Button>
+                                        )}
                                     </TableCell>
                                 </TableRow>
                             ))

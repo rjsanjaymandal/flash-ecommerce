@@ -10,7 +10,7 @@ async function debugLogic() {
   console.log('--- Simulating ProductDetailClient Logic ---')
   
   // 1. Fetch Product
-  const { data: products, error } = await supabase
+  const { data: products } = await supabase
     .from('products')
     .select('*, product_stock(*)')
     .ilike('slug', '%cream-hoodie%')

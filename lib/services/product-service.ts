@@ -2,8 +2,14 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import type { Database, Tables, TablesInsert, TablesUpdate } from '@/types/supabase'
 
-
+export type Product = Tables<'products'> & {
+    categories?: { name: string } | null
+    product_stock?: Tables<'product_stock'>[]
+    average_rating?: number
+    review_count?: number
+}
 
 // Helper to get DB client
 async function getDb() {
@@ -33,7 +39,7 @@ export type PaginatedResult<T> = {
   }
 }
 
-export async function getProducts(filter: ProductFilter = {}): Promise<PaginatedResult<any>> {
+export async function getProducts(filter: ProductFilter = {}): Promise<PaginatedResult<Product>> {
     const supabase = await getDb()
     const page = filter.page || 1
     const limit = filter.limit || 10
@@ -94,7 +100,8 @@ export async function getProducts(filter: ProductFilter = {}): Promise<Paginated
         query = query.order('price', { ascending: false })
         break
       case 'trending':
-        query = query.order('sale_count', { ascending: false })
+        // trending fallback is handled in the catch/error check
+        query = query.order('sale_count' as any, { ascending: false })
         break
       case 'newest':
       default:
@@ -121,7 +128,7 @@ export async function getProducts(filter: ProductFilter = {}): Promise<Paginated
             ...p,
             average_rating: Number(p.average_rating || 0),
             review_count: Number(p.review_count || 0)
-        }))
+        })) as Product[]
 
         return {
             data: processedData,
@@ -141,7 +148,7 @@ export async function getProducts(filter: ProductFilter = {}): Promise<Paginated
     }
 }
 
-export async function getProductBySlug(slug: string) {
+export async function getProductBySlug(slug: string): Promise<Product | null> {
     const supabase = await getDb()
     const { data, error } = await supabase
       .from('products')
@@ -156,14 +163,15 @@ export async function getProductBySlug(slug: string) {
         ...p,
         average_rating: Number(p.average_rating || 0),
         review_count: Number(p.review_count || 0)
-    }
+    } as Product
 }
 
-export async function createProduct(productData: any) {
+export async function createProduct(productData: TablesInsert<'products'> & { variants?: TablesInsert<'product_stock'>[] }) {
     const supabase = await getDb()
     const { variants, ...prod } = productData
     
-    const { data, error } = await (supabase.from('products') as any)
+    const { data, error } = await supabase
+      .from('products')
       .insert(prod)
       .select()
       .single()
@@ -171,15 +179,16 @@ export async function createProduct(productData: any) {
     if (error) throw error
 
     if (variants && variants.length > 0) {
-      const stockData = variants.map((v: any) => ({
+      const stockData = variants.map((v) => ({
         product_id: data.id,
         size: v.size,
         color: v.color,
         quantity: v.quantity
       }))
 
-      const { error: stockError } = await (supabase.from('product_stock') as any)
-        .insert(stockData)
+      const { error: stockError } = await supabase
+        .from('product_stock')
+        .insert(stockData as any)
       
       if (stockError) throw stockError
     }
@@ -189,11 +198,12 @@ export async function createProduct(productData: any) {
     return data
 }
 
-export async function updateProduct(id: string, productData: any) {
+export async function updateProduct(id: string, productData: TablesUpdate<'products'> & { variants?: TablesInsert<'product_stock'>[] }) {
     const supabase = await getDb()
     const { variants, ...prod } = productData
 
-    const { error } = await (supabase.from('products') as any)
+    const { error } = await supabase
+        .from('products')
         .update(prod)
         .eq('id', id)
     
@@ -202,17 +212,17 @@ export async function updateProduct(id: string, productData: any) {
     // Update Stock if variants provided (Full Replace Strategy)
     if (variants) {
         // Delete old
-        await (supabase.from('product_stock') as any).delete().eq('product_id', id)
+        await supabase.from('product_stock').delete().eq('product_id', id)
         
         // Insert new
         if (variants.length > 0) {
-             const stockData = variants.map((v: any) => ({
+             const stockData = variants.map((v) => ({
                 product_id: id,
                 size: v.size,
                 color: v.color,
                 quantity: v.quantity
               }))
-              const { error: stockError } = await (supabase.from('product_stock') as any).insert(stockData)
+              const { error: stockError } = await supabase.from('product_stock').insert(stockData as any)
               if (stockError) throw stockError
         }
     }
@@ -223,13 +233,13 @@ export async function updateProduct(id: string, productData: any) {
 
 export async function deleteProduct(id: string) {
     const supabase = await getDb()
-    const { error } = await (supabase.from('products') as any).delete().eq('id', id)
+    const { error } = await supabase.from('products').delete().eq('id', id)
     if (error) throw error
     revalidatePath('/admin/products')
     revalidatePath('/shop')
 }
 
-export async function getProductsByIds(ids: string[]) {
+export async function getProductsByIds(ids: string[]): Promise<Product[]> {
     if (!ids || ids.length === 0) return []
     const supabase = await getDb()
     
@@ -247,11 +257,11 @@ export async function getProductsByIds(ids: string[]) {
             ...p,
             average_rating: avg,
             review_count: ratings.length
-        }
+        } as Product
     })
 }
 
-export async function getRelatedProducts(currentProductId: string, categoryId: string) {
+export async function getRelatedProducts(currentProductId: string, categoryId: string): Promise<Product[]> {
     const supabase = await getDb()
     
     // Simple logic: Same category, not current product, limit 4
@@ -275,14 +285,14 @@ export async function getRelatedProducts(currentProductId: string, categoryId: s
             ...p,
             average_rating: avg,
             review_count: ratings.length
-        }
+        } as Product
     })
 }
 
 export async function bulkDeleteProducts(ids: string[]) {
     if (!ids || ids.length === 0) return
     const supabase = await getDb()
-    const { error } = await (supabase.from('products') as any).delete().in('id', ids)
+    const { error } = await supabase.from('products').delete().in('id', ids)
     if (error) throw error
     revalidatePath('/admin/products')
     revalidatePath('/shop')
@@ -291,7 +301,8 @@ export async function bulkDeleteProducts(ids: string[]) {
 export async function bulkUpdateProductStatus(ids: string[], isActive: boolean) {
     if (!ids || ids.length === 0) return
     const supabase = await getDb()
-    const { error } = await (supabase.from('products') as any)
+    const { error } = await supabase
+        .from('products')
         .update({ is_active: isActive })
         .in('id', ids)
     if (error) throw error

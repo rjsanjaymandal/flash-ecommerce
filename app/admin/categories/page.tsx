@@ -12,7 +12,8 @@ import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Badge } from '@/components/ui/badge'
 import { CategoryForm, CategoryFormData } from '@/components/admin/categories/category-form'
-import { Category, updateCategory, createCategory, deleteCategory, getLinearCategories } from '@/lib/services/category-service'
+import { updateCategory, createCategory, deleteCategory, getLinearCategories } from '@/lib/services/category-service'
+import type { Category } from '@/types/store-types'
 import {
   AlertDialog,
   AlertDialogAction,

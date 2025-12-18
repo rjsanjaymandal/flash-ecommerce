@@ -192,7 +192,7 @@ export function Navbar() {
               </div>
             ) : (
               <Link href="/login">
-                <Button size="sm" className="rounded-full px-6 font-bold uppercase tracking-wider text-[11px] gradient-primary shadow-lg">
+                <Button size="sm" className="rounded-full px-8 font-black uppercase tracking-[0.15em] text-[10px] gradient-primary shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all duration-300">
                     Join
                 </Button>
               </Link>

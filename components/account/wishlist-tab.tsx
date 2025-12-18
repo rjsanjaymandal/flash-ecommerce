@@ -31,7 +31,7 @@ export function WishlistTab() {
                     price: item.price,
                     main_image_url: item.image,
                     slug: item.slug
-                }} />
+                } as any} />
             ))}
         </div>
     )

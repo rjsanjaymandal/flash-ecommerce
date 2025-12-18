@@ -1,6 +1,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { getLinearCategories } from '@/lib/services/category-service'
+import type { Category } from '@/types/store-types'
 import EditProductPageClient from '../edit-product-page'
 import { notFound } from 'next/navigation'
 

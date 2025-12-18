@@ -10,19 +10,22 @@ import { useCartStore } from '@/store/use-cart-store'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { QuickView } from '@/components/products/quick-view'
+import type { Product } from '@/lib/services/product-service'
 
 interface ProductCardProps {
-    product: any
+    product: Product
     showRating?: boolean
     priority?: boolean
 }
 
 export function ProductCard({ product, showRating = true, priority = false }: ProductCardProps) {
   const [imageSrc, setImageSrc] = useState(product.main_image_url || '/placeholder.svg')
+  const [isNew, setIsNew] = useState(false)
   const router = useRouter()
+  
   const addToCart = useCartStore((state) => state.addItem)
   const setIsCartOpen = useCartStore((state) => state.setIsCartOpen)
   const addToWishlist = useWishlistStore((state) => state.addItem)
@@ -30,10 +33,10 @@ export function ProductCard({ product, showRating = true, priority = false }: Pr
   const isWishlisted = useWishlistStore((state) => selectIsInWishlist(state, product.id))
   
   const stock = product.product_stock || []
-  const hasMultipleOptions = (product.size_options?.length > 0 || product.color_options?.length > 0)
+  const hasMultipleOptions = (product.size_options && product.size_options.length > 0) || (product.color_options && product.color_options.length > 0)
   
   // Calculate total stock
-  const totalStock = stock.reduce((acc: number, item: any) => acc + item.quantity, 0)
+  const totalStock = stock.reduce((acc: number, item: any) => acc + (item.quantity || 0), 0)
   const isOutOfStock = totalStock === 0
 
   // Optional: Get rating from product if passed (e.g. from a joined aggregate)
@@ -50,7 +53,7 @@ export function ProductCard({ product, showRating = true, priority = false }: Pr
             productId: product.id,
             name: product.name,
             price: product.price,
-            image: product.main_image_url,
+            image: product.main_image_url || '',
             slug: product.slug || ''
         })
         toast.success("Added to Wishlist")
@@ -72,10 +75,10 @@ export function ProductCard({ product, showRating = true, priority = false }: Pr
             productId: product.id,
             name: product.name,
             price: product.price,
-            image: product.main_image_url,
+            image: product.main_image_url || '',
             size: variant.size,
             color: variant.color,
-            maxQuantity: variant.quantity,
+            maxQuantity: variant.quantity || 0,
             quantity: 1
         })
         toast.success("Added to Bag")
@@ -100,10 +103,10 @@ export function ProductCard({ product, showRating = true, priority = false }: Pr
             productId: product.id,
             name: product.name,
             price: product.price,
-            image: product.main_image_url,
+            image: product.main_image_url || '',
             size: variant.size,
             color: variant.color,
-            maxQuantity: variant.quantity,
+            maxQuantity: variant.quantity || 0,
             quantity: 1
         })
         router.push('/checkout')
@@ -111,8 +114,13 @@ export function ProductCard({ product, showRating = true, priority = false }: Pr
          router.push(`/product/${product.slug}`)
     }
   }
-  
-  const isNew = product.created_at && new Date(product.created_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+
+  useEffect(() => {
+    if (product.created_at) {
+        const isProductNew = new Date(product.created_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+        setIsNew(isProductNew)
+    }
+  }, [product.created_at])
 
   return (
     <motion.div 

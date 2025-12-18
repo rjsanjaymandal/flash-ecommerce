@@ -4,8 +4,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Package, ExternalLink } from "lucide-react"
+import { useState, useEffect } from "react"
+import { formatCurrency } from "@/lib/utils"
 
 export function OrdersTab({ orders }: { orders: any[] }) {
+    const [mounted, setMounted] = useState(false)
+    
+    useEffect(() => {
+        setMounted(true)
+    }, [])
     if (orders.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center py-12 text-center rounded-xl border border-dashed bg-muted/20">
@@ -36,7 +43,7 @@ export function OrdersTab({ orders }: { orders: any[] }) {
                     {orders.map((order) => (
                         <TableRow key={order.id} className="hover:bg-muted/5">
                             <TableCell className="font-mono text-xs font-bold text-primary">#{order.id.slice(0, 8)}</TableCell>
-                            <TableCell className="text-sm text-muted-foreground">{new Date(order.created_at).toLocaleDateString()}</TableCell>
+                             <TableCell className="text-sm text-muted-foreground">{mounted ? new Date(order.created_at).toLocaleDateString() : null}</TableCell>
                             <TableCell>
                                  <Badge variant="secondary" className={`uppercase text-[10px] font-bold tracking-wider ${
                                     order.status === 'Delivered' ? 'bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-500' :
@@ -47,7 +54,7 @@ export function OrdersTab({ orders }: { orders: any[] }) {
                                     {order.status}
                                 </Badge>
                             </TableCell>
-                            <TableCell className="text-right font-bold text-sm">${order.total_amount}</TableCell>
+                             <TableCell className="text-right font-bold text-sm">{formatCurrency(order.total)}</TableCell>
                             <TableCell>
                                 <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
                                     <ExternalLink className="h-4 w-4" />

@@ -3,26 +3,34 @@
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { ProductCard } from './product-card'
+import { BrandGlow } from './brand-glow'
+import { BrandBadge } from './brand-badge'
 
 export function FeaturedGrid({ products }: { products: any[] }) {
   return (
-    <section className="py-16 md:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-16 px-1">
-            <div className="space-y-3">
-                <span className="text-primary font-black tracking-[0.4em] uppercase text-[10px]">What's Hot</span>
-                <h2 className="text-5xl md:text-7xl font-black tracking-tighter leading-none italic uppercase">
-                    TRE<span className="text-gradient">NDING</span> NOW
-                </h2>
-            </div>
-            <Link 
-                href="/shop" 
-                className="group flex items-center gap-3 font-black text-xs tracking-widest uppercase hover:text-primary transition-all pr-1"
+    <section className="py-16 md:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative overflow-hidden">
+        <BrandGlow className="top-0 left-[-10%]" size="lg" />
+        
+        <div className="flex flex-col items-center text-center gap-4 mb-20 max-w-4xl mx-auto relative">
+            <BrandBadge variant="accent">What's Hot</BrandBadge>
+            <motion.h2 
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                className="text-6xl md:text-8xl font-black tracking-tighter text-foreground leading-[0.8] uppercase italic"
             >
-                Explore Full Shop 
-                <div className="h-8 w-8 rounded-full border border-border group-hover:border-primary group-hover:bg-primary group-hover:text-white flex items-center justify-center transition-all duration-300">
-                    <span className="group-hover:translate-x-0.5 transition-transform">→</span>
-                </div>
-            </Link>
+                TRENDING <span className="text-gradient drop-shadow-[0_0_30px_rgba(var(--primary),0.3)]">NOW</span>
+            </motion.h2>
+            <motion.p 
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3 }}
+                className="text-muted-foreground text-sm md:text-base font-medium tracking-wide max-w-md mt-2"
+            >
+                The most coveted pieces from our latest collection.
+            </motion.p>
         </div>
 
         {/* Mobile: Horizontal Scroll | Desktop: Grid */}
