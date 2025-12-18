@@ -15,28 +15,35 @@ import { createClient } from '@/lib/supabase/client'
 import { useSearchStore } from '@/store/use-search-store'
 import { MegaMenu } from './mega-menu'
 import { HamburgerMenu } from './hamburger-menu'
+import { SearchOverlay } from '@/components/site/search-bar'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useScrollDirection } from '@/hooks/use-scroll-direction'
 
-export function Navbar() {
+export function StorefrontNavbar() {
 
   const cartCount = useCartStore(selectCartCount)
   const setIsCartOpen = useCartStore((state) => state.setIsCartOpen)
   const wishlistCount = useWishlistStore((state) => state.items.length)
   const { user, profile, isAdmin, signOut } = useAuth()
-// ...
+  
+  // Local Search State for Overlay
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
+  
   const pathname = usePathname()
   const supabase = createClient()
-
-
   
+  // ... (keep defined vars)
+
   // Debug Admin Access
   console.log('Navbar Auth State:', { email: user?.email, role: profile?.role, isAdmin })
 
-  // Fetch Categories
-  // Fetch Categories
-  const { data: categories = [] } = useQuery({
-    queryKey: ['nav-categories-v2'], // Bump version to clear cache
+  // Fetch Categories logic ... (omitted for brevity in replacement if unchanged, but I need to include it or rely on existing)
+  // Re-including fetch to be safe as I am replacing the whole function body essentially or need to be careful with chunks.
+  // Actually, I'll just target the `return` block mostly, but need to insert the state hook.
+  
+  // Fetch Categories (Re-declaring to ensure context is safe)
+   const { data: categories = [] } = useQuery({
+    queryKey: ['nav-categories-v2'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('categories')
@@ -44,12 +51,6 @@ export function Navbar() {
         .eq('is_active', true)
         .is('parent_id', null)
         .order('name')
-
-      if (error) {
-        console.error('Navbar category fetch error:', error)
-      } else {
-        console.log('Navbar fetched categories (v2):', data?.length, data)
-      }
       return data || []
     }
   })
@@ -66,146 +67,138 @@ export function Navbar() {
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-background/60 backdrop-blur-xl">
       <div className="relative mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         
-        {/* Mobile Menu Button replaced by HamburgerMenu Component */}
-        <div className="flex items-center gap-2">
-            <HamburgerMenu categories={categories} />
-
-            {/* Logo */}
-            <Link 
-                href="/" 
-                className="flex items-center gap-2 group" 
-                title="Home"
-            >
-                <div className="relative h-9 w-9 overflow-hidden rounded-full border border-white/20 group-hover:scale-105 transition-all duration-300 shadow-lg">
-                    <NextImage 
-                        src="/flash-logo.jpg" 
-                        alt="Flash Logo" 
-                        fill 
-                        sizes="36px"
-                        className="object-cover" 
-                    />
-                </div>
-                <span className="hidden lg:block text-xl font-black tracking-tighter text-gradient">FLASH</span>
-            </Link>
-        </div>
-
-        {/* Desktop Nav */}
-        <nav className="hidden lg:flex items-center gap-2">
-            {navLinks.map((link: any) => (
-                <div key={link.href} className="group relative">
-                    <Link 
-                        href={link.href}
-                        className="flex items-center gap-1.5 text-[13px] font-bold uppercase tracking-wider text-muted-foreground hover:text-primary transition-all px-4 py-2 hover:bg-primary/5 rounded-full"
-                    >
-                        {link.label}
-                        {link.children && link.children.length > 0 && (
-                            <ChevronDown className="h-3.5 w-3.5 opacity-50 group-hover:opacity-100 transition-opacity" />
-                        )}
-                    </Link>
-                    
-                    {/* Rich Mega Menu */}
-                    {link.children && link.children.length > 0 && (
-                        <MegaMenu category={link.category} />
-                    )}
-                </div>
-            ))}
-            <Link 
-                href="/contact"
-                className="text-[13px] font-bold uppercase tracking-wider text-muted-foreground hover:text-primary transition-all px-4 py-2 hover:bg-primary/5 rounded-full"
-            >
-                Contact
-            </Link>
-        </nav>
-
-        {/* Actions */}
-        <div className="flex items-center gap-1 sm:gap-2">
-            {/* Desktop Search Trigger */}
-            <button 
-                onClick={() => useSearchStore.getState().setOpen(true)}
-                className="hidden md:flex items-center gap-2 bg-zinc-500/5 group hover:bg-zinc-500/10 border border-white/5 hover:border-primary/20 transition-all rounded-full px-3 h-10 w-48 lg:w-64"
-            >
-                <Search className="h-4 w-4 text-zinc-500 group-hover:text-primary transition-colors" />
-                <span className="text-xs font-medium text-zinc-500 group-hover:text-primary/80 truncate">Search products...</span>
-                <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border border-white/10 bg-black/20 px-1.5 font-mono text-[10px] font-medium text-zinc-500 opacity-100">
-                    <span className="text-xs">⌘</span>K
-                </kbd>
-            </button>
-
-            {/* Mobile Search Trigger */}
-            <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => useSearchStore.getState().setOpen(true)}
-                className="md:hidden rounded-full hover:bg-primary/5 text-muted-foreground hover:text-primary transition-colors h-10 w-10"
-            >
-                <Search className="h-5 w-5" />
-            </Button>
+        {/* Main Content - Fades out when search is open  */}
+        <div className={cn("w-full flex items-center justify-between transition-opacity duration-200", isSearchOpen ? "opacity-0 pointer-events-none" : "opacity-100")}>
             
-            <Link href="/wishlist">
+            {/* Mobile Menu & Logo */}
+            <div className="flex items-center gap-2">
+                <HamburgerMenu categories={categories} />
+
+                <Link 
+                    href="/" 
+                    className="flex items-center gap-2 group" 
+                    title="Home"
+                >
+                    <div className="relative h-9 w-9 overflow-hidden rounded-full border border-white/20 group-hover:scale-105 transition-all duration-300 shadow-lg">
+                        <NextImage 
+                            src="/flash-logo.jpg" 
+                            alt="Flash Logo" 
+                            fill 
+                            sizes="36px"
+                            className="object-cover" 
+                        />
+                    </div>
+                    <span className="hidden lg:block text-xl font-black tracking-tighter text-gradient">FLASH</span>
+                </Link>
+            </div>
+
+            {/* Desktop Nav */}
+            <nav className="hidden lg:flex items-center gap-2">
+                {navLinks.map((link: any) => (
+                    <div key={link.href} className="group relative">
+                        <Link 
+                            href={link.href}
+                            className="flex items-center gap-1.5 text-[13px] font-bold uppercase tracking-wider text-muted-foreground hover:text-primary transition-all px-4 py-2 hover:bg-primary/5 rounded-full"
+                        >
+                            {link.label}
+                            {link.children && link.children.length > 0 && (
+                                <ChevronDown className="h-3.5 w-3.5 opacity-50 group-hover:opacity-100 transition-opacity" />
+                            )}
+                        </Link>
+                        
+                        {/* Rich Mega Menu */}
+                        {link.children && link.children.length > 0 && (
+                            <MegaMenu category={link.category} />
+                        )}
+                    </div>
+                ))}
+                <Link 
+                    href="/contact"
+                    className="text-[13px] font-bold uppercase tracking-wider text-muted-foreground hover:text-primary transition-all px-4 py-2 hover:bg-primary/5 rounded-full"
+                >
+                    Contact
+                </Link>
+            </nav>
+
+            {/* Actions */}
+            <div className="flex items-center gap-1 sm:gap-2">
+                
+                {/* Search Trigger */}
                 <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="relative rounded-full hover:bg-primary/5 text-muted-foreground hover:text-primary transition-colors h-10 w-10"
+                    onClick={() => setIsSearchOpen(true)}
+                    className="rounded-full hover:bg-primary/5 text-muted-foreground hover:text-primary transition-colors h-10 w-10"
                 >
-                    <Heart className="h-5 w-5" />
-                    {wishlistCount > 0 && (
-                        <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full gradient-primary text-[9px] font-black text-white ring-2 ring-background">
-                            {wishlistCount}
-                        </span>
-                    )}
+                    <Search className="h-5 w-5" />
                 </Button>
-            </Link>
-            
-            <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => setIsCartOpen(true)}
-                className="relative rounded-full hover:bg-primary/5 text-muted-foreground hover:text-primary transition-colors h-10 w-10"
-            >
-                <ShoppingBag className="h-5 w-5" />
-                {cartCount > 0 && (
-                    <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full gradient-primary text-[9px] font-black text-white ring-2 ring-background">
-                        {cartCount}
-                    </span>
-                )}
-            </Button>
-
-            <div className="h-6 w-px bg-white/10 mx-1 hidden sm:block" />
-
-            {user ? (
-              <div className="flex items-center gap-2">
-                <Link href="/account" className="hidden sm:block">
-                    <Button variant="ghost" size="sm" className="rounded-full gap-2 px-3 font-bold border border-border/50 hover:border-primary/50 transition-all">
-                         <div className="h-6 w-6 rounded-full gradient-primary flex items-center justify-center text-[10px] text-white">
-                            {user.email?.[0].toUpperCase()}
-                         </div>
-                         <span className="max-w-[100px] truncate text-xs uppercase tracking-tight">
-                            {profile?.name || user.email?.split('@')[0]}
-                         </span>
+                
+                <Link href="/wishlist">
+                    <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="relative rounded-full hover:bg-primary/5 text-muted-foreground hover:text-primary transition-colors h-10 w-10"
+                    >
+                        <Heart className="h-5 w-5" />
+                        {wishlistCount > 0 && (
+                            <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full gradient-primary text-[9px] font-black text-white ring-2 ring-background">
+                                {wishlistCount}
+                            </span>
+                        )}
                     </Button>
                 </Link>
                 
-                {isAdmin && (
-                    <Link href="/admin" className="hidden md:block">
-                        <Button size="sm" className="rounded-full gradient-primary shadow-lg shadow-indigo-500/20 text-[10px] font-black uppercase tracking-widest h-8">
-                             Admin
+                <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => setIsCartOpen(true)}
+                    className="relative rounded-full hover:bg-primary/5 text-muted-foreground hover:text-primary transition-colors h-10 w-10"
+                >
+                    <ShoppingBag className="h-5 w-5" />
+                    {cartCount > 0 && (
+                        <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full gradient-primary text-[9px] font-black text-white ring-2 ring-background">
+                            {cartCount}
+                        </span>
+                    )}
+                </Button>
+
+                <div className="h-6 w-px bg-white/10 mx-1 hidden sm:block" />
+
+                {user ? (
+                <div className="flex items-center gap-2">
+                    <Link href="/account" className="hidden sm:block">
+                        <Button variant="ghost" size="sm" className="rounded-full gap-2 px-3 font-bold border border-border/50 hover:border-primary/50 transition-all">
+                            <div className="h-6 w-6 rounded-full gradient-primary flex items-center justify-center text-[10px] text-white">
+                                {user.email?.[0].toUpperCase()}
+                            </div>
+                            <span className="max-w-[100px] truncate text-xs uppercase tracking-tight">
+                                {profile?.name || user.email?.split('@')[0]}
+                            </span>
                         </Button>
                     </Link>
+                    
+                    {isAdmin && (
+                        <Link href="/admin" className="hidden md:block">
+                            <Button size="sm" className="rounded-full gradient-primary shadow-lg shadow-indigo-500/20 text-[10px] font-black uppercase tracking-widest h-8">
+                                Admin
+                            </Button>
+                        </Link>
+                    )}
+                </div>
+                ) : (
+                <Link href="/login">
+                    <Button size="sm" className="rounded-full px-8 font-black uppercase tracking-[0.15em] text-[10px] gradient-primary shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all duration-300">
+                        Join
+                    </Button>
+                </Link>
                 )}
-
-
-              </div>
-            ) : (
-              <Link href="/login">
-                <Button size="sm" className="rounded-full px-8 font-black uppercase tracking-[0.15em] text-[10px] gradient-primary shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all duration-300">
-                    Join
-                </Button>
-              </Link>
-            )}
+            </div>
         </div>
+
+        {/* Search Overlay */}
+        <SearchOverlay isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+
       </div>
-
-
     </header>
   )
 }

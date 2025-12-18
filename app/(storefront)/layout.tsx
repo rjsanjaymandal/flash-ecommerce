@@ -1,9 +1,10 @@
-import { Navbar } from '@/components/storefront/navbar'
+import { StorefrontNavbar as Navbar } from '@/components/storefront/navbar'
 import { Footer } from '@/components/storefront/footer'
 import { MobileNav } from '@/components/storefront/mobile-nav'
 import { CommandMenu } from '@/components/search/command-menu'
 import { PageTransition } from '@/components/storefront/page-transition'
 
+// Force Layout Refresh
 export default function StorefrontLayout({
   children,
 }: {
