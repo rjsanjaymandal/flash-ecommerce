@@ -6,13 +6,23 @@ import { ProductCard } from './product-card'
 import { BrandGlow } from './brand-glow'
 import { BrandBadge } from './brand-badge'
 
-export function FeaturedGrid({ products }: { products: any[] }) {
+export function FeaturedGrid({ 
+    products, 
+    title = "TRENDING NOW", 
+    subtitle = "The most coveted pieces from our latest collection.",
+    badge = "What's Hot"
+}: { 
+    products: any[], 
+    title?: string, 
+    subtitle?: string,
+    badge?: string
+}) {
   return (
     <section className="py-16 md:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative overflow-hidden">
         <BrandGlow className="top-0 left-[-10%]" size="lg" />
         
         <div className="flex flex-col items-center text-center gap-4 mb-20 max-w-4xl mx-auto relative">
-            <BrandBadge variant="accent">What's Hot</BrandBadge>
+            <BrandBadge variant="accent">{badge}</BrandBadge>
             <motion.h2 
                 initial={{ opacity: 0, scale: 0.95 }}
                 whileInView={{ opacity: 1, scale: 1 }}
@@ -20,7 +30,11 @@ export function FeaturedGrid({ products }: { products: any[] }) {
                 transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                 className="text-6xl md:text-8xl font-black tracking-tighter text-foreground leading-[0.8] uppercase italic"
             >
-                TRENDING <span className="text-gradient drop-shadow-[0_0_30px_rgba(var(--primary),0.3)]">NOW</span>
+                {title.split(' ').map((word, i) => (
+                    <span key={i} className={i === title.split(' ').length - 1 ? "text-gradient drop-shadow-[0_0_30px_rgba(var(--primary),0.3)]" : ""}>
+                        {word}{' '}
+                    </span>
+                ))}
             </motion.h2>
             <motion.p 
                 initial={{ opacity: 0 }}
@@ -29,7 +43,7 @@ export function FeaturedGrid({ products }: { products: any[] }) {
                 transition={{ delay: 0.3 }}
                 className="text-muted-foreground text-sm md:text-base font-medium tracking-wide max-w-md mt-2"
             >
-                The most coveted pieces from our latest collection.
+                {subtitle}
             </motion.p>
         </div>
 

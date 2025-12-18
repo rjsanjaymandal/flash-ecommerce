@@ -1,11 +1,13 @@
 'use client'
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Package, ExternalLink } from "lucide-react"
+import { Package, ExternalLink, ArrowRight } from "lucide-react"
 import { useState, useEffect } from "react"
 import { formatCurrency } from "@/lib/utils"
+import { motion } from "framer-motion"
+import { BrandBadge } from "@/components/storefront/brand-badge"
+import Link from "next/link"
 
 export function OrdersTab({ orders }: { orders: any[] }) {
     const [mounted, setMounted] = useState(false)
@@ -13,57 +15,81 @@ export function OrdersTab({ orders }: { orders: any[] }) {
     useEffect(() => {
         setMounted(true)
     }, [])
+
     if (orders.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center py-12 text-center rounded-xl border border-dashed bg-muted/20">
-                <div className="h-12 w-12 bg-background rounded-full flex items-center justify-center mb-4 shadow-sm">
-                    <Package className="h-6 w-6 text-muted-foreground" />
-                </div>
-                <h3 className="font-bold text-lg mb-1">No Orders Yet</h3>
-                <p className="text-muted-foreground max-w-sm mb-4 text-sm">
-                    You haven't placed any orders yet. Start shopping to fill your closet!
+            <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex flex-col items-center justify-center py-20 text-center rounded-4xl border-2 border-dashed bg-zinc-50/50"
+            >
+                <motion.div 
+                    animate={{ y: [0, -10, 0] }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                    className="h-20 w-20 bg-white rounded-3xl flex items-center justify-center mb-6 shadow-xl border-2 border-zinc-100"
+                >
+                    <Package className="h-10 w-10 text-primary" />
+                </motion.div>
+                <h3 className="font-black text-2xl mb-2 uppercase italic tracking-tighter">Your Closet is Empty</h3>
+                <p className="text-muted-foreground max-w-xs mb-8 text-sm font-medium">
+                    No transmissions detected in your order history. Time to refresh your rotation?
                 </p>
-            </div>
+                <Button asChild className="rounded-full px-8 h-12 gradient-primary shadow-lg font-black uppercase tracking-widest text-[10px]">
+                    <Link href="/shop" className="flex items-center gap-2">Explore Collections <ArrowRight className="h-4 w-4" /></Link>
+                </Button>
+            </motion.div>
         )
     }
 
     return (
-        <div className="border rounded-xl overflow-hidden animate-in slide-in-from-bottom-2 duration-500 overflow-x-auto">
-            <Table>
-                <TableHeader className="bg-muted/50">
-                    <TableRow>
-                        <TableHead className="w-[100px]">Order ID</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Total</TableHead>
-                        <TableHead className="w-[50px]"></TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {orders.map((order) => (
-                        <TableRow key={order.id} className="hover:bg-muted/5">
-                            <TableCell className="font-mono text-xs font-bold text-primary">#{order.id.slice(0, 8)}</TableCell>
-                             <TableCell className="text-sm text-muted-foreground">{mounted ? new Date(order.created_at).toLocaleDateString() : null}</TableCell>
-                            <TableCell>
-                                 <Badge variant="secondary" className={`uppercase text-[10px] font-bold tracking-wider ${
-                                    order.status === 'Delivered' ? 'bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-500' :
-                                    order.status === 'Shipped' ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-500' :
-                                    order.status === 'Processing' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/10 dark:text-yellow-500' :
-                                    'bg-zinc-100 text-zinc-700 dark:bg-zinc-500/10 dark:text-zinc-500'
-                                }`}>
-                                    {order.status}
-                                </Badge>
-                            </TableCell>
-                             <TableCell className="text-right font-bold text-sm">{formatCurrency(order.total)}</TableCell>
-                            <TableCell>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
-                                    <ExternalLink className="h-4 w-4" />
-                                </Button>
-                            </TableCell>
+        <div className="rounded-4xl bg-white border-2 border-zinc-100 overflow-hidden shadow-sm animate-in fade-in duration-700">
+            <div className="overflow-x-auto">
+                <Table>
+                    <TableHeader className="bg-zinc-50/80 backdrop-blur-sm border-b-2 border-zinc-100">
+                        <TableRow className="hover:bg-transparent">
+                            <TableHead className="w-[120px] font-black uppercase tracking-widest text-[10px] text-zinc-500 py-6 pl-8">Order ID</TableHead>
+                            <TableHead className="font-black uppercase tracking-widest text-[10px] text-zinc-500 py-6">Timeline</TableHead>
+                            <TableHead className="font-black uppercase tracking-widest text-[10px] text-zinc-500 py-6">Status</TableHead>
+                            <TableHead className="text-right font-black uppercase tracking-widest text-[10px] text-zinc-500 py-6 pr-8">Quantum Total</TableHead>
+                            <TableHead className="w-[80px] pr-8"></TableHead>
                         </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
+                    </TableHeader>
+                    <TableBody>
+                        {orders.map((order, idx) => (
+                            <motion.tr 
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: idx * 0.05 }}
+                                key={order.id} 
+                                className="group hover:bg-zinc-50 transition-colors border-b last:border-b-0 border-zinc-100"
+                            >
+                                <TableCell className="font-mono text-[11px] font-black text-primary py-6 pl-8">
+                                    <span className="opacity-40">#</span>{order.id.slice(0, 8).toUpperCase()}
+                                </TableCell>
+                                <TableCell className="text-[11px] font-bold text-zinc-500 py-6">
+                                    {mounted ? new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "-"}
+                                </TableCell>
+                                <TableCell className="py-6">
+                                    <BrandBadge 
+                                        variant={order.status === 'Delivered' ? 'primary' : order.status === 'Processing' ? 'accent' : 'glass'}
+                                        className="text-[9px]"
+                                    >
+                                        {order.status}
+                                    </BrandBadge>
+                                </TableCell>
+                                <TableCell className="text-right font-black text-sm py-6 pr-8 tracking-tighter">
+                                    {formatCurrency(order.total)}
+                                </TableCell>
+                                <TableCell className="py-6 pr-8 text-right">
+                                    <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl border-2 hover:bg-zinc-100 transition-all opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0">
+                                        <ExternalLink className="h-4 w-4" />
+                                    </Button>
+                                </TableCell>
+                            </motion.tr>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
         </div>
     )
 }

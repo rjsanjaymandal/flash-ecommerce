@@ -13,7 +13,7 @@ import { PersonalizedPicks } from "@/components/storefront/personalized-picks"
 export const revalidate = 60
 
 export default async function Home() {
-  const [{ data: products }, { data: picks }, { data: trending }, categories] = await Promise.all([
+  const [{ data: products }, { data: picks }, { data: _trending }, categories] = await Promise.all([
     getProducts({
         is_active: true,
         limit: 8,
@@ -41,30 +41,13 @@ export default async function Home() {
       {/* 2. SHOP BY CATEGORY (Pick Your Vibe) */}
       <CategoryVibes categories={categories || []} />
 
-      {/* 3. FEATURED GRID */}
-      <FeaturedGrid products={products?.slice(0, 4) || []} />
-
-      {/* 4. TRENDING NOW (Dynamic Bestsellers) */}
-      {trending && trending.length > 0 && (
-          <section className="py-24 bg-zinc-50/50">
-              <div className="container mx-auto px-4">
-                  <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-                      <div className="space-y-4">
-                          <span className="text-primary font-black tracking-[0.4em] uppercase text-[10px]">What's Hot</span>
-                          <h2 className="text-5xl md:text-7xl font-black tracking-tighter uppercase leading-[0.8] italic">
-                              TRENDING <span className="text-gradient">NOW</span>
-                          </h2>
-                      </div>
-                      <Button asChild variant="link" className="text-foreground font-black uppercase tracking-widest group">
-                          <Link href="/shop?sort=trending" className="flex items-center gap-2">
-                              View All Trends <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                          </Link>
-                      </Button>
-                  </div>
-                  <FeaturedGrid products={trending} />
-              </div>
-          </section>
-      )}
+      {/* 4. FEATURED PRODUCTS (New Arrivals) */}
+      <FeaturedGrid 
+        products={products || []} 
+        title="NEW ARRIVALS" 
+        subtitle="The latest drops and freshest fits, curated just for you."
+        badge="Just In"
+      />
 
       {/* 5. PERSONALIZED PICKS */}
       <PersonalizedPicks products={picks || []} />

@@ -6,6 +6,8 @@ import { Home, Grid, Heart, User, ShoppingBag } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useCartStore, selectCartCount } from '@/store/use-cart-store'
 import { useWishlistStore } from '@/store/use-wishlist-store'
+import { motion } from 'framer-motion'
+import { useScrollDirection } from '@/hooks/use-scroll-direction'
 
 export function MobileNav() {
   const pathname = usePathname()

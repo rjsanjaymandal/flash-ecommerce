@@ -13,6 +13,8 @@ import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import { useSearchStore } from '@/store/use-search-store'
 import { MegaMenu } from './mega-menu'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useScrollDirection } from '@/hooks/use-scroll-direction'
 
 export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
