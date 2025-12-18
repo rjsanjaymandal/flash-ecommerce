@@ -1,7 +1,7 @@
 'use client'
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { DollarSign, Package, ShoppingCart, Users, ArrowUpRight, Activity, MessageSquare, Mail, Zap } from "lucide-react"
+import { DollarSign, Package, ShoppingCart, Users, ArrowUpRight, Activity, MessageSquare, Mail, Zap, Clock } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -20,9 +20,10 @@ interface DashboardClientProps {
   categoryData: any[]
   activity?: any[]
   topProducts?: any[]
+  waitlistStats?: { count: number, potentialRevenue: number }
 }
 
-export function DashboardClient({ stats, recentOrders, chartData, categoryData, activity = [], topProducts = [] }: DashboardClientProps) {
+export function DashboardClient({ stats, recentOrders, chartData, categoryData, activity = [], topProducts = [], waitlistStats }: DashboardClientProps) {
   const [mounted, setMounted] = useState(false)
   
   useEffect(() => {
@@ -68,7 +69,8 @@ export function DashboardClient({ stats, recentOrders, chartData, categoryData, 
             { title: "Revenue", value: `₹${stats.totalRevenue.toLocaleString()}`, growth: stats.revenueGrowth, icon: DollarSign, color: "emerald" },
             { title: "Avg. Order", value: `₹${Math.round(stats.averageOrderValue || 0).toLocaleString()}`, icon: ArrowUpRight, color: "blue", sub: "Ticket Size" },
             { title: "Total Orders", value: stats.totalOrders, growth: stats.orderGrowth, icon: ShoppingCart, color: "violet" },
-            { title: "Active Catalog", value: stats.totalProducts, icon: Package, color: "amber", sub: "Live Items" }
+            { title: "Active Catalog", value: stats.totalProducts, icon: Package, color: "amber", sub: "Live Items" },
+            { title: "Waitlist Demand", value: waitlistStats?.count || 0, icon: Clock, color: "rose", sub: `Potential: ₹${(waitlistStats?.potentialRevenue || 0).toLocaleString()}` }
         ].map((item, i) => (
             <motion.div
                 key={item.title}
@@ -88,7 +90,8 @@ export function DashboardClient({ stats, recentOrders, chartData, categoryData, 
                             item.color === 'emerald' && "bg-emerald-50 border-emerald-100 text-emerald-600",
                             item.color === 'blue' && "bg-blue-50 border-blue-100 text-blue-600",
                             item.color === 'violet' && "bg-violet-50 border-violet-100 text-violet-600",
-                            item.color === 'amber' && "bg-amber-50 border-amber-100 text-amber-600"
+                            item.color === 'amber' && "bg-amber-50 border-amber-100 text-amber-600",
+                            item.color === 'rose' && "bg-rose-50 border-rose-100 text-rose-600"
                         )}>
                             <item.icon className="h-4 w-4" />
                         </div>

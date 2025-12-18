@@ -3,6 +3,7 @@ import { getProducts } from '@/lib/services/product-service'
 import { ProductsClient } from './products-client'
 
 export const revalidate = 0 // Ensure fresh data on every request for admin
+// Rebuild trigger: Force update for new preorder service logic
 
 export default async function ProductsPage({
   searchParams

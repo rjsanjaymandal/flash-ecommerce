@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
-import { Plus, Pencil, Search, Filter, MoreHorizontal, ArrowUpDown, Loader2, Package, Trash2, CheckCircle, XCircle, AlertTriangle, RefreshCw } from 'lucide-react'
+import { Plus, Pencil, Search, Filter, MoreHorizontal, ArrowUpDown, Loader2, Package, Trash2, CheckCircle, XCircle, AlertTriangle, RefreshCw, Users, Clock } from 'lucide-react'
 import Link from 'next/link'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -21,7 +21,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { deleteProduct, bulkDeleteProducts, bulkUpdateProductStatus } from '@/lib/services/product-service'
+import { getWaitlistUsers } from '@/app/actions/admin-preorder'
 import { formatCurrency, cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 
@@ -39,6 +41,11 @@ export function ProductsClient({ initialProducts, meta }: { initialProducts: any
   // Bulk Selection State
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [isBulkDeleting, setIsBulkDeleting] = useState(false)
+
+  // Waitlist Modal State
+  const [waitlistProduct, setWaitlistProduct] = useState<any>(null)
+  const [waitlistUsers, setWaitlistUsers] = useState<any[]>([])
+  const [isWaitlistLoading, setIsWaitlistLoading] = useState(false)
 
   // Clear selection on page change or search
   useEffect(() => {
@@ -116,6 +123,24 @@ export function ProductsClient({ initialProducts, meta }: { initialProducts: any
           router.refresh()
       } catch (err: any) {
           toast.error('Bulk update failed')
+      }
+  }
+
+  const handleViewWaitlist = async (product: any) => {
+      setWaitlistProduct(product)
+      setIsWaitlistLoading(true)
+      setWaitlistUsers([])
+      try {
+          const res = await getWaitlistUsers(product.id)
+          if (res.error) {
+              toast.error(res.error)
+          } else {
+              setWaitlistUsers(res.data || [])
+          }
+      } catch (error) {
+          toast.error("Failed to load waitlist")
+      } finally {
+          setIsWaitlistLoading(false)
       }
   }
 
@@ -249,17 +274,20 @@ export function ProductsClient({ initialProducts, meta }: { initialProducts: any
               <TableHead className="py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Category</TableHead>
               <TableHead className="py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Stock</TableHead>
               <TableHead className="py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Price</TableHead>
+              <TableHead className="py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Waitlist Queue</TableHead>
               <TableHead className="py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Status</TableHead>
               <TableHead className="text-right py-3 pr-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {initialProducts.length === 0 ? (
-                <TableRow><TableCell colSpan={8} className="text-center py-24 text-muted-foreground">No products found.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={9} className="text-center py-24 text-muted-foreground">No products found.</TableCell></TableRow>
             ) : (
                 initialProducts.map((product: any) => {
                     const stockStatus = getStockStatus(product.product_stock)
                     const isSelected = selectedIds.has(product.id)
+                    const preorderCount = product.preorder_count || 0
+
                     return (
                     <TableRow key={product.id} className={cn("group transition-colors border-b last:border-0 text-sm", isSelected ? "bg-primary/5 hover:bg-primary/5" : "hover:bg-muted/50")}>
                         <TableCell className="px-4 align-middle">
@@ -291,6 +319,18 @@ export function ProductsClient({ initialProducts, meta }: { initialProducts: any
                             </div>
                         </TableCell>
                         <TableCell className="font-medium align-middle text-foreground">{formatCurrency(product.price)}</TableCell>
+                         <TableCell className="align-middle">
+                             <Badge 
+                                variant={preorderCount > 0 ? "default" : "outline"}
+                                className={cn(
+                                    "cursor-pointer transition-colors",
+                                    preorderCount > 0 ? "bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200 hover:text-blue-900" : "text-muted-foreground border-zinc-200 hover:bg-zinc-100"
+                                )}
+                                onClick={() => handleViewWaitlist(product)}
+                            >
+                                {preorderCount} Interested
+                            </Badge>
+                        </TableCell>
                         <TableCell className="align-middle">
                             <div className="flex items-center gap-1.5">
                                 <div className={cn("h-1.5 w-1.5 rounded-full ring-2 ring-offset-1 ring-offset-card", product.is_active ? "bg-emerald-500 ring-emerald-100" : "bg-slate-300 ring-slate-100")} />
@@ -353,6 +393,46 @@ export function ProductsClient({ initialProducts, meta }: { initialProducts: any
             </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Waitlist Modal */}
+      <Dialog open={!!waitlistProduct} onOpenChange={(open) => !open && setWaitlistProduct(null)}>
+          <DialogContent className="max-w-md">
+              <DialogHeader>
+                  <DialogTitle>Waitlist for {waitlistProduct?.name}</DialogTitle>
+                  <DialogDescription>
+                      Users who have requested a pre-order notification.
+                  </DialogDescription>
+              </DialogHeader>
+              <div className="mt-4 max-h-[300px] overflow-y-auto space-y-3">
+                  {isWaitlistLoading ? (
+                      <div className="flex items-center justify-center py-8 text-muted-foreground">
+                          <Loader2 className="h-6 w-6 animate-spin" />
+                      </div>
+                  ) : waitlistUsers.length > 0 ? (
+                      waitlistUsers.map((user: any) => (
+                          <div key={user.user_id} className="flex items-center gap-3 p-3 rounded-lg border bg-muted/20">
+                              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs uppercase">
+                                  {user.profiles?.name?.[0] || 'U'}
+                              </div>
+                              <div className="flex-1 overflow-hidden">
+                                  <p className="text-sm font-medium truncate">{user.profiles?.name || 'Unknown User'}</p>
+                                  <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                              </div>
+                              <div className="text-xs text-muted-foreground whitespace-nowrap flex items-center gap-1">
+                                  <Clock className="h-3 w-3" />
+                                  {new Date(user.created_at).toLocaleDateString()}
+                              </div>
+                          </div>
+                      ))
+                  ) : (
+                      <div className="text-center py-8 text-muted-foreground">
+                          <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          <p>No users on the waitlist yet.</p>
+                      </div>
+                  )}
+              </div>
+          </DialogContent>
+      </Dialog>
     </div>
   )
 }

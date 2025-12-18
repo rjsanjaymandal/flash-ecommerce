@@ -14,6 +14,7 @@ export type Product = Tables<'products'> & {
         mobile: string
         desktop: string
     } | null
+    preorder_count?: number
 }
 
 // Helper to get DB client
@@ -54,9 +55,11 @@ async function fetchProducts(filter: ProductFilter): Promise<PaginatedResult<Pro
     const to = from + limit - 1
     
     // Use pre-calculated fields for faster performance
-    let selectString = '*, categories(name), product_stock(*)'
+    // Including preorders count for admin view (and potentially sorting/badges later)
+    // Note: 'preorders(count)' requires a foreign key relationship which exists.
+    let selectString = '*, categories(name), product_stock(*), preorders(count)'
     if (filter.size || filter.color) {
-        selectString = '*, categories(name), product_stock!inner(*)'
+        selectString = '*, categories(name), product_stock!inner(*), preorders(count)'
     }
 
     // We use count: 'exact' to get total rows matching filters
@@ -152,7 +155,8 @@ async function fetchProducts(filter: ProductFilter): Promise<PaginatedResult<Pro
         const processedData = (data || []).map((p: any) => ({
             ...p,
             average_rating: Number(p.average_rating || 0),
-            review_count: Number(p.review_count || 0)
+            review_count: Number(p.review_count || 0),
+            preorder_count: p.preorders ? p.preorders[0]?.count : 0
         })) as Product[]
 
         return {

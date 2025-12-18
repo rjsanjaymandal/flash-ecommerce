@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { useCartStore } from '@/store/use-cart-store'
 import { useWishlistStore, selectIsInWishlist } from '@/store/use-wishlist-store'
 import { cn, formatCurrency } from "@/lib/utils"
-import { Star, Truck, RefreshCcw, ShieldCheck, ChevronDown, Plus, Minus, Heart, ChevronRight, Home } from 'lucide-react'
+import { Star, Truck, RefreshCcw, ShieldCheck, ChevronDown, Plus, Minus, Heart, ChevronRight, Home, Clock } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
 import {
@@ -15,6 +15,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 import { motion, AnimatePresence } from 'framer-motion'
+import { checkPreorderStatus, togglePreorder } from '@/app/actions/preorder'
 
 // Types
 type StockItem = {
@@ -58,6 +59,31 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
   const [quantity, setQuantity] = useState(1)
   const initialImage = product.images?.desktop || product.main_image_url
   const [activeImage, setActiveImage] = useState(initialImage)
+  const [isOnWaitlist, setIsOnWaitlist] = useState(false)
+
+  // Check Waitlist Status
+  useEffect(() => {
+      const checkStatus = async () => {
+          const status = await checkPreorderStatus(product.id)
+          setIsOnWaitlist(status)
+      }
+      checkStatus()
+  }, [product.id])
+
+  const handlePreOrder = async () => {
+      try {
+          const result = await togglePreorder(product.id)
+          if (result.error) {
+              toast.error(result.error)
+              return
+          }
+          const isAdded = result.status === 'added'
+          setIsOnWaitlist(isAdded)
+          toast.success(isAdded ? "Added to waitlist" : "Removed from waitlist")
+      } catch (error) {
+          toast.error("Please login to join the waitlist")
+      }
+  }
 
   // Fallback Standards
   const STANDARD_SIZES = ['S', 'M', 'L', 'XL', 'XXL']
@@ -312,11 +338,21 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
                                 <div className="flex gap-3">
                                     <Button 
                                         size="lg" 
-                                        className="flex-[3] h-16 text-xs sm:text-sm font-black uppercase tracking-[0.2em] rounded-2xl gradient-primary shadow-2xl shadow-primary/30 hover:scale-[1.02] active:scale-95 transition-all duration-300"
-                                        disabled={Boolean(!selectedSize || !selectedColor || isOutOfStock)}
-                                        onClick={handleAddToCart}
+                                        className={cn(
+                                            "flex-1 h-16 text-xs sm:text-sm font-black uppercase tracking-[0.2em] rounded-2xl shadow-2xl transition-all duration-300",
+                                            isOutOfStock 
+                                                ? "bg-amber-400 text-amber-950 hover:bg-amber-500 shadow-amber-500/20" 
+                                                : "gradient-primary shadow-primary/30 hover:scale-[1.02] active:scale-95"
+                                        )}
+                                        disabled={Boolean(!selectedSize || !selectedColor)}
+                                        onClick={isOutOfStock ? handlePreOrder : handleAddToCart}
                                     >
-                                        {isOutOfStock ? 'Sold Out' : (
+                                        {isOutOfStock ? (
+                                            <span className="flex items-center gap-2">
+                                                <Clock className="h-4 w-4" />
+                                                {isOnWaitlist ? "Joined Waitlist" : "Join Waitlist"}
+                                            </span>
+                                        ) : (
                                             <span className="flex items-center gap-2">
                                                 <Plus className="h-4 w-4" />
                                                 Add to Bag
@@ -349,14 +385,16 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
                                     </Button>
                                 </div>
                                 
-                                <Button 
-                                    size="lg" 
-                                    className="w-full h-16 text-xs sm:text-sm font-black uppercase tracking-[0.2em] rounded-2xl bg-foreground text-background hover:bg-foreground/90 transition-all duration-300 shadow-xl"
-                                    disabled={Boolean(!selectedSize || !selectedColor || isOutOfStock)}
-                                    onClick={handleBuyNow}
-                                >
-                                    Instantly Checkout
-                                </Button>
+                                {isOutOfStock ? null : (
+                                    <Button 
+                                        size="lg" 
+                                        className="w-full h-16 text-xs sm:text-sm font-black uppercase tracking-[0.2em] rounded-2xl bg-foreground text-background hover:bg-foreground/90 transition-all duration-300 shadow-xl"
+                                        disabled={Boolean(!selectedSize || !selectedColor)}
+                                        onClick={handleBuyNow}
+                                    >
+                                        Instantly Checkout
+                                    </Button>
+                                )}
                             </div>
                         </div>
 
