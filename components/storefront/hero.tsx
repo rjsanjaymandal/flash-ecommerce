@@ -31,9 +31,9 @@ export function Hero() {
                         initial={{ y: "100%" }}
                         animate={{ y: 0 }}
                         transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }} 
-                        className="text-7xl sm:text-8xl lg:text-9xl xl:text-[10rem] font-black tracking-tighter leading-[0.8] text-foreground uppercase italic"
+                        className="text-7xl sm:text-8xl lg:text-[8.5rem] xl:text-[9rem] font-black tracking-tight leading-[0.85] text-foreground uppercase italic"
                     >
-                        UNLEASH<br />THE<br /><span className="text-gradient drop-shadow-[0_0_30px_rgba(var(--primary),0.3)]">FLASH</span>
+                        UNLEASH<br />THE<br /><span className="text-gradient drop-shadow-[0_0_40px_rgba(var(--primary),0.3)]">FLASH</span>
                     </motion.h1>
                 </div>
             </div>
@@ -42,7 +42,7 @@ export function Hero() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.8 }}
-                className="text-lg lg:text-xl text-muted-foreground font-medium max-w-md leading-relaxed"
+                className="text-lg lg:text-xl text-muted-foreground font-medium max-w-lg leading-relaxed"
             >
                 Authentic, Bold, and Queermade. High-performance fashion for those who refuse to blend in.
             </motion.p>
@@ -70,10 +70,10 @@ export function Hero() {
         <motion.div 
             animate={{ y: [0, -10, 0] }}
             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-            className="hidden xl:flex absolute top-[15%] right-[10%] p-4 glass rounded-2xl flex-col gap-1 items-center shadow-2xl rotate-12"
+            className="hidden xl:flex absolute top-[10%] right-[3%] p-5 glass rounded-2xl flex-col gap-1 items-center shadow-3xl rotate-12 z-30"
         >
-            <span className="text-2xl font-black">100%</span>
-            <span className="text-[10px] uppercase font-bold tracking-widest opacity-60">Authentic</span>
+            <span className="text-3xl font-black">100%</span>
+            <span className="text-[11px] uppercase font-bold tracking-widest opacity-60">Authentic</span>
         </motion.div>
       </div>
 
