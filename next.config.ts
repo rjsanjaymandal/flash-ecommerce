@@ -2,18 +2,19 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'images.unsplash.com',
-        port: '',
       },
       {
         protocol: 'https',
-        hostname: 'gyizmixhmrfwywvafdbi.supabase.co',
-        port: '',
+        hostname: '*.supabase.co',
       },
     ],
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     formats: ['image/avif', 'image/webp'],
   },
 };

@@ -31,7 +31,7 @@ export function Hero() {
                         initial={{ y: "100%" }}
                         animate={{ y: 0 }}
                         transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }} 
-                        className="text-7xl sm:text-8xl lg:text-[8.5rem] xl:text-[9rem] font-black tracking-tight leading-[0.85] text-foreground uppercase italic"
+                        className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight leading-[0.85] text-foreground uppercase italic"
                     >
                         UNLEASH<br />THE<br /><span className="text-gradient drop-shadow-[0_0_40px_rgba(var(--primary),0.3)]">FLASH</span>
                     </motion.h1>
@@ -90,6 +90,7 @@ export function Hero() {
                   alt="Premium Fashion" 
                   fill
                   priority
+                  sizes="(max-width: 1024px) 100vw, 50vw"
                   className="object-cover"
               />
               <div className="absolute inset-0 bg-linear-to-t from-background via-transparent to-transparent lg:bg-linear-to-r" />

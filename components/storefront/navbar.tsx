@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { ShoppingBag, Menu, X, Heart, ChevronDown, Search, LogOut } from 'lucide-react'
 import { useState } from 'react'
+import NextImage from 'next/image'
 import { useWishlistStore } from '@/store/use-wishlist-store'
 import { useCartStore, selectCartCount } from '@/store/use-cart-store'
 import { useAuth } from '@/context/auth-context'
@@ -81,7 +82,13 @@ export function Navbar() {
                 title="Home"
             >
                 <div className="relative h-9 w-9 overflow-hidden rounded-full border border-white/20 group-hover:scale-105 transition-all duration-300 shadow-lg">
-                    <img src="/flash-logo.jpg" alt="Flash Logo" className="h-full w-full object-cover" />
+                    <NextImage 
+                        src="/flash-logo.jpg" 
+                        alt="Flash Logo" 
+                        fill 
+                        sizes="36px"
+                        className="object-cover" 
+                    />
                 </div>
                 <span className="hidden lg:block text-xl font-black tracking-tighter text-gradient">FLASH</span>
             </Link>

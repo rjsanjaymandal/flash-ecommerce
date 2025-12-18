@@ -8,6 +8,39 @@ import { ArrowLeft } from 'lucide-react'
 export const revalidate = 0
 export const dynamic = 'force-dynamic'
 
+
+export async function generateMetadata({ params }: { params: Promise<{ category: string }> }) {
+  const { category: slug } = await params
+  
+  if (slug === 'all') {
+      return {
+          title: 'Shop All | Flash Store',
+          description: 'Browse our entire collection of premium streetwear and accessories.'
+      }
+  }
+
+  if (slug === 'new-arrivals') {
+      return {
+          title: 'New Arrivals | Flash Store',
+          description: 'The latest drops and freshest fits. Limited edition releases available now.'
+      }
+  }
+
+  const supabase = await createClient()
+  const { data: category } = await supabase.from('categories').select('name, description').eq('slug', slug).single()
+
+  if (!category) {
+      return {
+          title: 'Category Not Found | Flash Store'
+      }
+  }
+
+  return {
+      title: `${category.name} | Flash Store`,
+      description: category.description || `Shop ${category.name} at Flash Store.`
+  }
+}
+
 export default async function ShopPage(props: { params: Promise<{ category: string }> }) {
   const params = await props.params;
   const { category: slug } = params

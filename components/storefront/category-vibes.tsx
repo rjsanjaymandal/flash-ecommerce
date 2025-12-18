@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import NextImage from 'next/image'
 import { motion } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -35,7 +36,7 @@ export function CategoryVibes({ categories }: CategoryVibesProps) {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                className="text-6xl md:text-9xl font-black tracking-tighter text-foreground leading-[0.8] uppercase italic"
+                className="text-5xl md:text-7xl font-black tracking-tighter text-foreground leading-[0.8] uppercase italic"
             >
                 PICK YOUR <span className="text-gradient drop-shadow-[0_0_30px_rgba(var(--primary),0.3)]">VIBES</span>
             </motion.h2>
@@ -80,10 +81,12 @@ export function CategoryVibes({ categories }: CategoryVibesProps) {
                 {/* Background Image / Gradient */}
                 <div className={`absolute inset-0 bg-linear-to-br ${gradient} z-10 opacity-60 group-hover:opacity-100 transition-opacity duration-700`} />
                 {cat.image_url && (
-                    <img 
+                    <NextImage 
                         src={cat.image_url} 
-                        className="absolute inset-0 w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000 ease-out" 
+                        className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000 ease-out" 
                         alt={cat.name} 
+                        fill
+                        sizes="(max-width: 768px) 80vw, (max-width: 1200px) 50vw, 25vw"
                     />
                 )}
                 

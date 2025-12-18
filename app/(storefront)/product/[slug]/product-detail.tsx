@@ -213,7 +213,7 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
                     
                     {/* Title & Price */}
                     <div className="border-b border-border/60 pb-8 mb-8">
-                         <h1 className="text-5xl lg:text-7xl font-black tracking-tighter text-foreground uppercase mb-6 leading-[0.85]">
+                         <h1 className="text-4xl lg:text-6xl font-black tracking-tighter text-foreground uppercase mb-6 leading-[0.85]">
                             <span className="text-gradient">{product.name}</span>
                         </h1>
                         <div className="flex items-center justify-between">

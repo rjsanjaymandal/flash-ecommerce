@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import NextImage from 'next/image'
 import { formatCurrency } from "@/lib/utils"
 import { useRecentStore } from '@/lib/store/use-recent-store'
 
@@ -44,9 +45,9 @@ export function RecentlyViewed({ currentProduct }: { currentProduct?: any }) {
                         href={`/product/${item.slug || item.id}`} 
                         className="min-w-[160px] w-[160px] snap-start group"
                     >
-                        <div className="aspect-[3/4] bg-muted mb-3 rounded-md overflow-hidden relative">
+                        <div className="aspect-3/4 bg-muted mb-3 rounded-md overflow-hidden relative">
                             {item.image ? (
-                                <img src={item.image} alt={item.name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                                <NextImage src={item.image} alt={item.name} width={160} height={213} className="object-cover transition-transform duration-500 group-hover:scale-105" />
                             ) : (
                                 <div className="h-full w-full flex items-center justify-center text-muted-foreground bg-secondary">No Image</div>
                             )}

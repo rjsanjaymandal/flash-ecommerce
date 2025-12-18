@@ -19,10 +19,15 @@ export async function searchProducts(query: string) {
   
   const supabase = await createClient()
 
+  // Use Full Text Search with 'websearch_to_tsquery' logic
+  // logic: filter by search_vector matching query
   const { data } = await supabase
     .from('products')
     .select('id, name, description, main_image_url, price, slug')
-    .ilike('name', `%${query}%`)
+    .textSearch('search_vector', query, {
+        type: 'websearch',
+        config: 'english'
+    })
     .limit(10)
 
   return data || []

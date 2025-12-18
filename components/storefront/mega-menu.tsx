@@ -2,6 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
+import NextImage from 'next/image'
 import { NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuTrigger } from '@/components/ui/navigation-menu'
 import { cn } from '@/lib/utils'
 
@@ -51,10 +52,12 @@ export function MegaMenu({ category }: MegaMenuProps) {
             <div className="col-span-8">
                 <Link href={`/shop?category=${category.id}`} className="group/card block relative h-full w-full overflow-hidden rounded-lg bg-muted">
                     {category.image_url ? (
-                        <img 
+                        <NextImage 
                             src={category.image_url} 
                             alt={category.name} 
-                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-105"
+                            fill
+                            sizes="(max-width: 1024px) 100vw, 500px"
+                            className="object-cover transition-transform duration-500 group-hover/card:scale-105"
                         />
                     ) : (
                         <div className="absolute inset-0 flex items-center justify-center text-muted-foreground bg-secondary/30">

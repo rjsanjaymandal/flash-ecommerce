@@ -4,6 +4,7 @@ import { useCartStore, selectCartTotal } from "@/store/use-cart-store"
 import { X, Minus, Plus, ShoppingBag } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import NextImage from "next/image"
 import { cn, formatCurrency } from "@/lib/utils"
 
 export function CartDrawer() {
@@ -51,7 +52,7 @@ export function CartDrawer() {
                     <div key={`${item.productId}-${item.size}-${item.color}`} className="flex gap-4">
                         <div className="h-24 w-20 bg-muted rounded-md overflow-hidden shrink-0">
                             {item.image ? (
-                                <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+                                <NextImage src={item.image} alt={item.name} width={80} height={96} className="h-full w-full object-cover" />
                             ) : (
                                 <div className="h-full w-full flex items-center justify-center bg-secondary/30 text-xs">NO IMG</div>
                             )}
