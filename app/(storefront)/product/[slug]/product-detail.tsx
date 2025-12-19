@@ -86,12 +86,23 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
   }
 
   // Fallback Standards
-  const STANDARD_SIZES = ['S', 'M', 'L', 'XL', 'XXL']
+  const STANDARD_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL']
   
   // Logic to determine what options to show
-  const sizeOptions = product.size_options?.length 
-      ? product.size_options 
-      : (product.product_stock?.length ? Array.from(new Set(product.product_stock.map((s: any) => s.size))).sort() : STANDARD_SIZES)
+  const sizeOptions = useMemo(() => {
+      const sizes = product.size_options?.length 
+          ? [...product.size_options]
+          : (product.product_stock?.length ? Array.from(new Set(product.product_stock.map((s: any) => s.size))) : [...STANDARD_SIZES])
+      
+      return sizes.sort((a, b) => {
+          const indexA = STANDARD_SIZES.indexOf(a)
+          const indexB = STANDARD_SIZES.indexOf(b)
+          if (indexA !== -1 && indexB !== -1) return indexA - indexB
+          if (indexA !== -1) return -1
+          if (indexB !== -1) return 1
+          return a.localeCompare(b)
+      })
+  }, [product.size_options, product.product_stock])
 
   const colorOptions = product.color_options?.length 
       ? product.color_options 
@@ -254,13 +265,13 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
                             
                             {/* Integrated Reviews */}
                             {initialReviews.count > 0 && (
-                                <div className="flex items-center gap-2 glass px-4 py-2 rounded-2xl border-white/5 shadow-xl">
+                                <div className="flex items-center gap-2 bg-muted/30 backdrop-blur-md px-4 py-2 rounded-2xl border border-border/50 shadow-sm">
                                     <div className="flex text-amber-400">
                                         <Star className="h-4 w-4 fill-current" />
                                     </div>
-                                    <span className="font-black text-xs uppercase tracking-widest">{initialReviews.average}</span>
-                                    <div className="h-3 w-px bg-white/10 mx-1" />
-                                    <span className="text-[10px] uppercase font-black tracking-[0.2em] opacity-60">
+                                    <span className="font-black text-xs uppercase tracking-widest text-foreground">{initialReviews.average}</span>
+                                    <div className="h-3 w-px bg-border mx-1" />
+                                    <span className="text-[10px] uppercase font-black tracking-[0.2em] text-muted-foreground">
                                         {initialReviews.count} Reviews
                                     </span>
                                 </div>

@@ -28,35 +28,36 @@ export function ReviewSection({ productId, reviews }: { productId: string, revie
     : '0.0'
 
   return (
-    <div className="py-12 lg:py-16">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+    <div className="py-12 lg:py-24 border-t border-border/40">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl mb-4">Customer Reviews</h2>
+          <h2 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl mb-6">Customer Vibes</h2>
 
-          <div className="flex items-center gap-6 bg-slate-50 p-6 rounded-2xl border border-slate-100">
+          <div className="flex items-center gap-6 bg-muted/30 p-6 rounded-3xl border border-border/50 backdrop-blur-sm">
              <div className="flex flex-col">
-                 <span className="text-5xl font-black text-slate-900 leading-none tracking-tighter">{averageRating}</span>
-                 <div className="flex items-center gap-1 mt-2 text-yellow-400">
+                 <span className="text-6xl font-black text-foreground leading-none tracking-tighter">{averageRating}</span>
+                 <div className="flex items-center gap-1 mt-3 text-primary">
                      {[1, 2, 3, 4, 5].map((s) => (
-                        <Star key={s} className={cn("h-4 w-4", s <= Math.round(Number(averageRating)) ? "fill-current" : "text-slate-200 fill-slate-200")} />
+                        <Star key={s} className={cn("h-4 w-4", s <= Math.round(Number(averageRating)) ? "fill-current" : "text-muted-foreground/30 fill-muted-foreground/30")} />
                      ))}
                  </div>
-                 <p className="text-xs font-medium text-slate-500 mt-1 uppercase tracking-wider">{reviews.length} Verified Reviews</p>
+                 <p className="text-[10px] font-bold text-muted-foreground mt-2 uppercase tracking-widest">{reviews.length} Verified Reviews</p>
              </div>
-             <div className="hidden sm:block h-12 w-px bg-slate-200"></div>
-             <div className="hidden sm:block text-sm text-slate-500 max-w-[200px]">
-                 All reviews are from verified purchasers. We value authentic feedback.
+             <div className="hidden sm:block h-16 w-px bg-border/60"></div>
+             <div className="hidden sm:block text-xs font-medium text-muted-foreground max-w-[200px] leading-relaxed">
+                 VERIFIED PURCHASES ONLY.<br/>
+                 WE VALUE AUTHENTIC SIGNAL.
              </div>
           </div>
         </div>
         
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
-             <Button className="rounded-full bg-indigo-600 hover:bg-indigo-700 text-white px-8">Write a Review</Button>
+             <Button size="lg" className="rounded-2xl px-8 h-12 font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-105 transition-transform">Drop a Review</Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-md rounded-3xl border-border/50 bg-card/95 backdrop-blur-xl">
              <DialogHeader>
-                 <DialogTitle>Write a Review</DialogTitle>
+                 <DialogTitle className="font-black uppercase tracking-tight text-xl">Review Specs</DialogTitle>
              </DialogHeader>
              <ReviewForm productId={productId} onSuccess={() => setIsOpen(false)} />
           </DialogContent>
@@ -65,31 +66,31 @@ export function ReviewSection({ productId, reviews }: { productId: string, revie
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
           {reviews.length === 0 ? (
-              <div className="col-span-full text-center py-12 bg-gray-50 rounded-lg border border-gray-100 border-dashed">
-                <MessageSquare className="h-10 w-10 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-500 font-medium">No reviews yet. Share your thoughts!</p>
+              <div className="col-span-full text-center py-20 bg-muted/20 rounded-[2rem] border-2 border-dashed border-border/50">
+                <MessageSquare className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+                <p className="text-muted-foreground font-bold uppercase tracking-wider text-sm">No signals yet. Be the first to transmit.</p>
               </div>
           ) : (
               reviews.map((review) => (
-                  <article key={review.id} className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
-                      <div className="flex items-center gap-4">
-                        <div className="h-10 w-10 text-white rounded-full bg-linear-to-br from-indigo-500 to-purple-500 flex items-center justify-center font-bold uppercase shadow-inner">
+                  <article key={review.id} className="rounded-[2rem] border border-border/50 bg-card/50 p-8 shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300">
+                      <div className="flex items-center gap-4 mb-6">
+                        <div className="h-12 w-12 text-white rounded-2xl bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center font-black text-lg uppercase shadow-lg shadow-primary/20">
                              {review.user_name.charAt(0)}
                         </div>
                         <div>
-                            <p className="font-semibold text-gray-900">{review.user_name}</p>
-                            <p className="text-xs text-gray-500" suppressHydrationWarning>{new Date(review.created_at).toLocaleDateString('en-US')}</p>
+                            <p className="font-bold text-foreground text-sm uppercase tracking-wide">{review.user_name}</p>
+                            <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider" suppressHydrationWarning>{new Date(review.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
                         </div>
                       </div>
 
-                      <div className="mt-4 flex gap-0.5">
+                      <div className="flex gap-1 mb-4">
                         {[1, 2, 3, 4, 5].map((s) => (
-                           <Star key={s} className={cn("h-4 w-4", s <= review.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-200 fill-gray-200")} />
+                           <Star key={s} className={cn("h-3 w-3", s <= review.rating ? "text-primary fill-primary" : "text-muted-foreground/20 fill-muted-foreground/20")} />
                         ))}
                       </div>
 
-                      <p className="mt-4 text-gray-700 leading-relaxed text-sm">
-                        {review.comment}
+                      <p className="text-muted-foreground leading-relaxed text-sm font-medium">
+                        &quot;{review.comment}&quot;
                       </p>
                   </article>
               ))
