@@ -242,21 +242,21 @@ export function ProductCard({ product, showRating = true, priority = false }: Pr
         <div className="space-y-1.5 px-0.5">
              <div className="flex flex-col gap-0.5">
                 <Link href={`/product/${product.slug || product.id}`} className="hover:text-primary transition-colors inline-block">
-                    <h3 className="font-semibold text-sm lg:text-[15px] leading-tight text-zinc-900 line-clamp-1 capitalize">{product.name}</h3>
+                    <h3 className="font-semibold text-sm lg:text-[15px] leading-tight text-foreground line-clamp-1 capitalize">{product.name}</h3>
                 </Link>
                 
                 {/* Review Integration */}
                 {showRating && (
                     <div className="flex items-center gap-1.5">
                         <div className="flex text-yellow-400">
-                             <Star className={cn("h-3 w-3 fill-current", rating === 0 && "text-zinc-200 fill-zinc-200")} />
+                             <Star className={cn("h-3 w-3 fill-current", rating === 0 && "text-muted/30 fill-muted/30")} />
                         </div>
-                        <span className="text-[11px] font-bold text-zinc-600">{rating > 0 ? rating.toFixed(1) : 'No reviews'}</span>
-                        {reviewCount > 0 && <span className="text-[10px] text-zinc-400">({reviewCount})</span>}
+                        <span className="text-[11px] font-bold text-muted-foreground">{rating > 0 ? rating.toFixed(1) : 'No reviews'}</span>
+                        {reviewCount > 0 && <span className="text-[10px] text-muted-foreground/60">({reviewCount})</span>}
                     </div>
                 )}
              </div>
-             <p className="font-black text-sm lg:text-base text-zinc-900 tracking-tight">{formatCurrency(product.price)}</p>
+             <p className="font-black text-sm lg:text-base text-foreground tracking-tight">{formatCurrency(product.price)}</p>
         </div>
 
          {/* Mobile Actions */}

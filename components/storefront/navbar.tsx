@@ -64,7 +64,7 @@ export function StorefrontNavbar() {
   }))
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-background/60 backdrop-blur-xl">
+    <header className="fixed top-0 left-0 right-0 z-50 border-b border-border/40 bg-background/60 backdrop-blur-xl">
       <div className="relative mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         
         {/* Main Content - Fades out when search is open  */}
@@ -79,7 +79,7 @@ export function StorefrontNavbar() {
                     className="flex items-center gap-2 group" 
                     title="Home"
                 >
-                    <div className="relative h-9 w-9 overflow-hidden rounded-full border border-white/20 group-hover:scale-105 transition-all duration-300 shadow-lg">
+                    <div className="relative h-9 w-9 overflow-hidden rounded-full border border-border group-hover:scale-105 transition-all duration-300 shadow-lg">
                         <NextImage 
                             src="/flash-logo.jpg" 
                             alt="Flash Logo" 
@@ -162,7 +162,7 @@ export function StorefrontNavbar() {
                     )}
                 </Button>
 
-                <div className="h-6 w-px bg-white/10 mx-1 hidden sm:block" />
+                <div className="h-6 w-px bg-border mx-1 hidden sm:block" />
 
                 {user ? (
                 <div className="flex items-center gap-2">
