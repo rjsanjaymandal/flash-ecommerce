@@ -1,45 +1,97 @@
-
 import {
     Accordion,
     AccordionContent,
     AccordionItem,
     AccordionTrigger,
 } from "@/components/ui/accordion"
+import { BrandGlow } from "@/components/storefront/brand-glow"
+import { motion } from "framer-motion"
 
 export default function FAQPage() {
     return (
-        <div className="container mx-auto px-4 py-20 lg:py-32 max-w-2xl">
-            <h1 className="text-4xl font-bold tracking-tight mb-4 text-center">Frequently Asked Questions</h1>
-            <p className="text-muted-foreground text-center mb-12">
-                Everything you need to know about shopping with Flash.
-            </p>
+        <div className="min-h-screen pt-28 pb-20 relative overflow-hidden">
+            <BrandGlow className="top-20 opacity-30" />
+            
+            <div className="container mx-auto px-4 relative z-10 max-w-3xl">
+                <div className="text-center mb-16 space-y-4">
+                    <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic text-transparent bg-clip-text bg-gradient-to-r from-zinc-900 via-zinc-600 to-zinc-900">
+                        The Lowdown
+                    </h1>
+                    <p className="text-lg md:text-xl font-medium text-zinc-500 max-w-xl mx-auto">
+                        Everything you need to know about the Flash vibe.
+                    </p>
+                </div>
 
-            <Accordion type="single" collapsible className="w-full">
-                <AccordionItem value="item-1">
-                    <AccordionTrigger>How long does shipping take?</AccordionTrigger>
-                    <AccordionContent>
-                        We process orders within 24 hours. Domestic shipping typically takes 3-5 business days.
-                    </AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="item-2">
-                    <AccordionTrigger>What is your return policy?</AccordionTrigger>
-                    <AccordionContent>
-                        We accept returns within 14 days of delivery. Items must be unworn and in original packaging.
-                    </AccordionContent>
-                </AccordionItem>
-                 <AccordionItem value="item-3">
-                    <AccordionTrigger>Do you ship internationally?</AccordionTrigger>
-                    <AccordionContent>
-                        Yes, we ship to select countries worldwide. Shipping rates are calculated at checkout.
-                    </AccordionContent>
-                </AccordionItem>
-                 <AccordionItem value="item-4">
-                    <AccordionTrigger>How can I track my order?</AccordionTrigger>
-                    <AccordionContent>
-                        Once your order ships, you will receive a tracking link via email.
-                    </AccordionContent>
-                </AccordionItem>
-            </Accordion>
+                <div className="bg-white/50 backdrop-blur-xl rounded-[2.5rem] border border-white/20 shadow-2xl p-6 md:p-10">
+                    <Accordion type="single" collapsible className="w-full space-y-4">
+                        <AccordionItem value="item-1" className="border-b-0">
+                            <AccordionTrigger className="hover:no-underline hover:bg-zinc-50 px-6 rounded-2xl data-[state=open]:bg-zinc-50 transition-colors [&[data-state=open]>div]:text-primary">
+                                <div className="text-left font-black text-lg md:text-xl uppercase tracking-tight italic">
+                                    What is Flashh?
+                                </div>
+                            </AccordionTrigger>
+                            <AccordionContent className="px-6 pb-6 pt-2 text-base md:text-lg text-zinc-600 font-medium leading-relaxed">
+                                Flashh fashion is a gender-neutral clothing platform that promotes inclusivity, diversity & basically <span className="text-zinc-900 font-black italic">LETS YOU, BE YOU</span>.
+                            </AccordionContent>
+                        </AccordionItem>
+
+                        <AccordionItem value="item-2" className="border-b-0">
+                            <AccordionTrigger className="hover:no-underline hover:bg-zinc-50 px-6 rounded-2xl data-[state=open]:bg-zinc-50 transition-colors [&[data-state=open]>div]:text-primary">
+                                <div className="text-left font-black text-lg md:text-xl uppercase tracking-tight italic">
+                                    What do you sell here?
+                                </div>
+                            </AccordionTrigger>
+                            <AccordionContent className="px-6 pb-6 pt-2 text-base md:text-lg text-zinc-600 font-medium leading-relaxed">
+                                What fits your vibe, gives you comfort, love & style.
+                            </AccordionContent>
+                        </AccordionItem>
+
+                        <AccordionItem value="item-3" className="border-b-0">
+                            <AccordionTrigger className="hover:no-underline hover:bg-zinc-50 px-6 rounded-2xl data-[state=open]:bg-zinc-50 transition-colors [&[data-state=open]>div]:text-primary">
+                                <div className="text-left font-black text-lg md:text-xl uppercase tracking-tight italic">
+                                    What is your poll and create session thingy?
+                                </div>
+                            </AccordionTrigger>
+                            <AccordionContent className="px-6 pb-6 pt-2 text-base md:text-lg text-zinc-600 font-medium leading-relaxed">
+                                Umm, we upload designs of a few products & let the community answer. Their vote means love and dislike means doing good but we can be <span className="italic">more better</span>.
+                            </AccordionContent>
+                        </AccordionItem>
+
+                        <AccordionItem value="item-4" className="border-b-0">
+                            <AccordionTrigger className="hover:no-underline hover:bg-zinc-50 px-6 rounded-2xl data-[state=open]:bg-zinc-50 transition-colors [&[data-state=open]>div]:text-primary">
+                                <div className="text-left font-black text-lg md:text-xl uppercase tracking-tight italic">
+                                    Why only prepaid and no COD?
+                                </div>
+                            </AccordionTrigger>
+                            <AccordionContent className="px-6 pb-6 pt-2 text-base md:text-lg text-zinc-600 font-medium leading-relaxed">
+                                Ab kya btau yarrr, you know about scamsters right? <span className="font-bold text-red-500">NO NO NO</span> we are NOT talking about our lovely community (they are FAB) but scamsters ki fitrat 😤
+                            </AccordionContent>
+                        </AccordionItem>
+
+                        <AccordionItem value="item-5" className="border-b-0">
+                            <AccordionTrigger className="hover:no-underline hover:bg-zinc-50 px-6 rounded-2xl data-[state=open]:bg-zinc-50 transition-colors [&[data-state=open]>div]:text-primary">
+                                <div className="text-left font-black text-lg md:text-xl uppercase tracking-tight italic">
+                                    What about your delivery period?
+                                </div>
+                            </AccordionTrigger>
+                            <AccordionContent className="px-6 pb-6 pt-2 text-base md:text-lg text-zinc-600 font-medium leading-relaxed">
+                                Will try to be quick with the delivery like <span className="text-yellow-500 font-black italic">sssoooniiccc⚡️</span>. But uncertainty ke chalte 7-14 days.
+                            </AccordionContent>
+                        </AccordionItem>
+
+                        <AccordionItem value="item-6" className="border-b-0">
+                            <AccordionTrigger className="hover:no-underline hover:bg-zinc-50 px-6 rounded-2xl data-[state=open]:bg-zinc-50 transition-colors [&[data-state=open]>div]:text-primary">
+                                <div className="text-left font-black text-lg md:text-xl uppercase tracking-tight italic">
+                                    What are your return policies?
+                                </div>
+                            </AccordionTrigger>
+                            <AccordionContent className="px-6 pb-6 pt-2 text-base md:text-lg text-zinc-600 font-medium leading-relaxed">
+                                Very simple: record a video before opening the parcel. If you are not sure about size and fit, then record another video of packing the parcel properly with our product. Once the product reaches us, we do our inspection and very soon refund your amount.
+                            </AccordionContent>
+                        </AccordionItem>
+                    </Accordion>
+                </div>
+            </div>
         </div>
     )
 }
