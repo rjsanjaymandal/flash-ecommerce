@@ -29,14 +29,14 @@ export function ShopFilters({ categories }: { categories: any[] }) {
                 <Sheet>
                     <SheetTrigger asChild>
                         <Button className="h-14 w-14 rounded-full gradient-primary shadow-2xl shadow-primary/40 flex items-center justify-center p-0 group overflow-hidden">
-                             <Filter className="h-6 w-6 text-white group-hover:scale-110 transition-transform" />
+                             <Filter className="h-6 w-6 text-primary-foreground group-hover:scale-110 transition-transform" />
                         </Button>
                     </SheetTrigger>
-                    <SheetContent side="bottom" className="h-[80vh] rounded-t-[3rem] border-border/10 bg-zinc-950/90 backdrop-blur-3xl overflow-y-auto px-8 pb-12">
+                    <SheetContent side="bottom" className="h-[80vh] rounded-t-[3rem] border-border/10 bg-background/95 backdrop-blur-3xl overflow-y-auto px-8 pb-12">
                         <SheetHeader className="mb-8 pt-4">
                             <div className="flex flex-col gap-2">
                                 <span className="text-primary font-black tracking-[0.4em] uppercase text-[10px]">Selections</span>
-                                <SheetTitle className="text-4xl font-black italic tracking-tighter uppercase text-white">RE<span className="text-gradient">FINE</span> VIBE</SheetTitle>
+                                <SheetTitle className="text-4xl font-black italic tracking-tighter uppercase text-foreground">RE<span className="text-gradient">FINE</span> VIBE</SheetTitle>
                             </div>
                         </SheetHeader>
                         <FilterContent categories={categories} />
@@ -45,8 +45,8 @@ export function ShopFilters({ categories }: { categories: any[] }) {
             </div>
 
             {/* Desktop Sidebar */}
-            <aside className="hidden md:block w-72 shrink-0 animate-in sticky top-24 h-[calc(100vh-120px)] overflow-y-auto pr-6 scrollbar-hide">
-                <div className="flex flex-col gap-2 mb-10 pl-2">
+            <aside className="hidden md:block w-72 shrink-0 animate-in sticky top-24 h-fit rounded-3xl border border-border/60 bg-card/80 p-6 backdrop-blur-md">
+                <div className="flex flex-col gap-2 mb-8">
                     <span className="text-primary font-black tracking-[0.4em] uppercase text-[10px]">Filter By</span>
                     <h3 className="font-black text-3xl italic tracking-tighter uppercase">Category</h3>
                 </div>
@@ -103,10 +103,10 @@ function FilterContent({ categories }: { categories: any[] }) {
         <div className="space-y-8 pb-12">
             {hasFilters && mounted && (
                  <Button 
-                    variant="ghost" 
+                    variant="outline" 
                     size="sm" 
                     onClick={clearFilters} 
-                    className="w-full h-12 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all bg-destructive/10 text-destructive hover:bg-destructive/20 hover:text-destructive border border-destructive/20"
+                    className="w-full h-12 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all bg-transparent text-primary border-primary/20 hover:bg-primary/5 hover:text-primary hover:border-primary/50 shadow-sm"
                 >
                     Reset Selections
                 </Button>
@@ -190,7 +190,7 @@ function FilterContent({ categories }: { categories: any[] }) {
                                         "h-12 w-full rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all", 
                                         size === s 
                                             ? "bg-primary text-primary-foreground shadow-xl shadow-primary/20 scale-105 border-primary" 
-                                            : cn("border-border hover:border-primary/50 hover:bg-muted text-muted-foreground", mutedClass)
+                                            : cn("border-border hover:border-primary/50 hover:bg-muted text-muted-foreground hover:text-foreground", mutedClass)
                                     )}
                                 >
                                     {s}
