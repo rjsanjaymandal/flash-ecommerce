@@ -212,7 +212,7 @@ export function ProductCard({ product, showRating = true, priority = false }: Pr
                     <>
                         <Button 
                             size="sm" 
-                            className="flex-1 bg-white text-black hover:bg-black hover:text-white shadow-xl font-bold h-10 rounded-full transition-all duration-300 uppercase text-[10px] tracking-widest"
+                            className="flex-1 bg-card text-foreground hover:bg-primary hover:text-primary-foreground shadow-xl font-bold h-10 rounded-full transition-all duration-300 uppercase text-[10px] tracking-widest"
                             onClick={handleAddToCart}
                         >
                              <ShoppingBag className="h-3.5 w-3.5 mr-2" />
@@ -227,7 +227,7 @@ export function ProductCard({ product, showRating = true, priority = false }: Pr
                         size="sm" 
                         className={cn(
                             "flex-1 shadow-xl font-bold h-10 rounded-full transition-all duration-300 uppercase text-[10px] tracking-widest",
-                            isOnWaitlist ? "bg-green-500 hover:bg-green-600 text-white" : "bg-white text-black hover:bg-black hover:text-white"
+                            isOnWaitlist ? "bg-amber-500 hover:bg-amber-600 text-white" : "bg-card hover:bg-primary hover:text-primary-foreground text-foreground"
                         )}
                         onClick={handlePreOrder}
                         disabled={isLoadingWaitlist}

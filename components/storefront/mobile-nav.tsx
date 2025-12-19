@@ -23,7 +23,7 @@ export function MobileNav() {
   ]
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-t border-white/5 lg:hidden pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-t border-border/40 lg:hidden pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
       <div className="flex items-center justify-around h-16 px-2">
         {links.map((link) => {
           const Icon = link.icon

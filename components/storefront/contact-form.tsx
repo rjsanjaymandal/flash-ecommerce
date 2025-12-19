@@ -83,7 +83,7 @@ export function ContactForm() {
       <Button 
         type="submit" 
         disabled={isLoading}
-        className="w-full rounded-full bg-black hover:bg-zinc-800 text-white font-bold h-12 shadow-lg hover:shadow-xl transition-all active:scale-[0.98]"
+        className="w-full rounded-full bg-primary text-primary-foreground hover:bg-primary/90 font-bold h-12 shadow-lg hover:shadow-xl transition-all active:scale-[0.98]"
       >
         {isLoading ? (
             <>

@@ -20,22 +20,22 @@ export function HamburgerMenu({ categories }: HamburgerMenuProps) {
     return (
         <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="lg:hidden -ml-2 text-foreground hover:bg-white/10 rounded-full h-10 w-10" suppressHydrationWarning>
+                <Button variant="ghost" size="icon" className="lg:hidden -ml-2 text-foreground hover:bg-accent rounded-full h-10 w-10" suppressHydrationWarning>
                     <Menu className="h-6 w-6" />
                 </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[300px] sm:w-[350px] p-0 border-r border-white/10 bg-zinc-950">
+            <SheetContent side="left" className="w-[300px] sm:w-[350px] p-0 border-r border-border bg-background">
                 <SheetHeader className="sr-only">
                     <SheetTitle>Navigation Menu</SheetTitle>
                     <SheetDescription>
                         Main navigation menu for accessing shop categories, user account, and login options.
                     </SheetDescription>
                 </SheetHeader>
-                <div className="flex flex-col h-full bg-zinc-950 bg-gradient-to-b from-zinc-900/50 to-zinc-950">
+                <div className="flex flex-col h-full bg-background">
                     {/* Header */}
-                    <div className="p-6 border-b border-white/10 bg-zinc-900/50">
+                    <div className="p-6 border-b border-border bg-muted/20">
                         <Link href="/" onClick={() => setOpen(false)} className="flex items-center gap-3 w-fit">
-                            <div className="relative h-10 w-10 overflow-hidden rounded-full border border-white/20 shadow-lg">
+                            <div className="relative h-10 w-10 overflow-hidden rounded-full border border-border shadow-lg">
                                 <NextImage 
                                     src="/flash-logo.jpg" 
                                     alt="Flash Logo" 
@@ -43,7 +43,7 @@ export function HamburgerMenu({ categories }: HamburgerMenuProps) {
                                     className="object-cover" 
                                 />
                             </div>
-                            <span className="text-2xl font-black tracking-tighter text-white italic">FLASH</span>
+                            <span className="text-2xl font-black tracking-tighter text-foreground italic">FLASH</span>
                         </Link>
                     </div>
 
@@ -54,7 +54,7 @@ export function HamburgerMenu({ categories }: HamburgerMenuProps) {
                              <Link 
                                 href="/shop" 
                                 onClick={() => setOpen(false)}
-                                className="flex items-center justify-between p-3 rounded-xl hover:bg-white/5 text-zinc-400 hover:text-white transition-all group"
+                                className="flex items-center justify-between p-3 rounded-xl hover:bg-accent text-muted-foreground hover:text-foreground transition-all group"
                             >
                                 <span className="text-lg font-black uppercase tracking-tight">Shop All</span>
                                 <ChevronRight className="h-4 w-4 opacity-50 group-hover:translate-x-1 transition-transform" />
@@ -64,20 +64,20 @@ export function HamburgerMenu({ categories }: HamburgerMenuProps) {
                                     <Link 
                                         href={`/shop?category=${cat.id}`}
                                         onClick={() => setOpen(false)}
-                                        className="flex items-center justify-between p-3 rounded-xl hover:bg-white/5 text-zinc-400 hover:text-white transition-all group"
+                                        className="flex items-center justify-between p-3 rounded-xl hover:bg-accent text-muted-foreground hover:text-foreground transition-all group"
                                     >
                                         <span className="text-lg font-bold uppercase tracking-tight">{cat.name}</span>
                                         <ChevronRight className="h-4 w-4 opacity-50 group-hover:translate-x-1 transition-transform" />
                                     </Link>
                                     {/* Subcategories (if any) */}
                                     {cat.children && cat.children.length > 0 && (
-                                        <div className="pl-6 mt-1 space-y-1 border-l border-white/5 ml-3">
+                                        <div className="pl-6 mt-1 space-y-1 border-l border-border/50 ml-3">
                                             {cat.children.map((child: any) => (
                                                  <Link 
                                                     key={child.id}
                                                     href={`/shop?category=${child.id}`}
                                                     onClick={() => setOpen(false)}
-                                                    className="block py-2 px-3 text-sm font-medium text-zinc-500 hover:text-white transition-colors uppercase tracking-wider"
+                                                    className="block py-2 px-3 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors uppercase tracking-wider"
                                                 >
                                                     {child.name}
                                                 </Link>
@@ -89,27 +89,27 @@ export function HamburgerMenu({ categories }: HamburgerMenuProps) {
                         </div>
                         
                         {/* Divider */}
-                        <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                        <div className="h-px bg-linear-to-r from-transparent via-border to-transparent" />
 
                         {/* Account Section */}
                          <div className="space-y-4">
                             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600 px-3">Using Flash As</span>
                             {user ? (
                                 <Link href="/account" onClick={() => setOpen(false)}>
-                                    <div className="flex items-center gap-4 p-3 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/50 transition-colors">
+                                    <div className="flex items-center gap-4 p-3 rounded-2xl bg-muted/20 border border-border hover:border-primary/50 transition-colors">
                                         <div className="h-10 w-10 rounded-full gradient-primary flex items-center justify-center text-xs font-black text-white">
                                             {user.email?.[0].toUpperCase()}
                                         </div>
                                         <div>
-                                            <p className="text-sm font-bold text-white uppercase tracking-tight">{profile?.name || 'Member'}</p>
-                                            <p className="text-[10px] text-zinc-500 font-medium truncate max-w-[140px]">{user.email}</p>
+                                            <p className="text-sm font-bold text-foreground uppercase tracking-tight">{profile?.name || 'Member'}</p>
+                                            <p className="text-[10px] text-muted-foreground font-medium truncate max-w-[140px]">{user.email}</p>
                                         </div>
                                     </div>
                                 </Link>
                             ) : (
                                 <div className="grid grid-cols-2 gap-3">
                                     <Link href="/login" onClick={() => setOpen(false)}>
-                                        <Button className="w-full rounded-xl bg-white/10 hover:bg-white/20 text-white border-0 font-bold uppercase tracking-wider text-xs h-12">
+                                        <Button className="w-full rounded-xl bg-muted hover:bg-muted/80 text-foreground border-0 font-bold uppercase tracking-wider text-xs h-12">
                                             Login
                                         </Button>
                                     </Link>
@@ -124,10 +124,10 @@ export function HamburgerMenu({ categories }: HamburgerMenuProps) {
                     </div>
 
                     {/* Footer / Socials */}
-                    <div className="p-6 border-t border-white/10 bg-zinc-900/50">
+                    <div className="p-6 border-t border-border bg-muted/20">
                         <div className="flex justify-center gap-6">
                             {[Instagram, Twitter, Youtube, Facebook].map((Icon, i) => (
-                                <Button key={i} variant="ghost" size="icon" className="text-zinc-500 hover:text-white hover:bg-white/10 rounded-full h-8 w-8">
+                                <Button key={i} variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground hover:bg-accent rounded-full h-8 w-8">
                                     <Icon className="h-4 w-4" />
                                 </Button>
                             ))}
