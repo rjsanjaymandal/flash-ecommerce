@@ -313,19 +313,51 @@ export async function updateProduct(id: string, productData: TablesUpdate<'produ
     const supabase = await getDb()
     const { variants, ...prod } = productData
 
+    // 1. Fetch existing product to compare data and get old slug
+    const { data: existing, error: fetchError } = await supabase
+        .from('products')
+        .select('slug, name')
+        .eq('id', id)
+        .single()
+    
+    if (fetchError || !existing) {
+        throw new Error("Product not found")
+    }
+
+    // 2. Check for slug collision if slug is changing
+    if (prod.slug && prod.slug !== existing.slug) {
+        // Validation: lowercase alphanumeric
+        if (!/^[a-z0-9-]+$/.test(prod.slug)) {
+            throw new Error("Slug must be lowercase, alphanumeric, and contain only dashes.")
+        }
+
+        const { data: collision } = await supabase
+            .from('products')
+            .select('id')
+            .eq('slug', prod.slug)
+            .neq('id', id) // Exclude self
+            .single()
+        
+        if (collision) {
+            throw new Error(`The slug "${prod.slug}" is already taken by another product.`)
+        }
+    }
+
+    // 3. Perform Update
     const { error } = await supabase
         .from('products')
         .update(prod as any)
         .eq('id', id)
     
-    if (error) throw error
+    if (error) {
+        // Fallback catch for DB constraints
+        if (error.code === '23505') throw new Error("This slug or name is already in use.")
+        throw error
+    }
 
-    // Update Stock if variants provided (Full Replace Strategy)
+    // 4. Update Stock (Full Replace Strategy)
     if (variants) {
-        // Delete old
         await supabase.from('product_stock').delete().eq('product_id', id)
-        
-        // Insert new
         if (variants.length > 0) {
              const stockData = variants.map((v) => ({
                 product_id: id,
@@ -338,14 +370,34 @@ export async function updateProduct(id: string, productData: TablesUpdate<'produ
         }
     }
 
-    // @ts-expect-error: revalidateTag expects 1 arg
-    revalidateTag('products')
-    if (prod.slug) { 
+    // 5. Revalidation with Robustness
+    console.log(`Update successful for ${id}. Revalidating...`)
+
+    try {
         // @ts-expect-error: revalidateTag expects 1 arg
-        revalidateTag(`product-${prod.slug}`)
+        revalidateTag('products')
+        
+        // Revalidate NEW slug
+        if (prod.slug) { 
+            // @ts-expect-error: revalidateTag expects 1 arg
+            revalidateTag(`product-${prod.slug}`)
+        }
+
+        // Revalidate OLD slug (if different) to clear stale cache
+        if (existing.slug && existing.slug !== prod.slug) {
+            // @ts-expect-error: revalidateTag expects 1 arg
+            revalidateTag(`product-${existing.slug}`)
+            console.log(`Cleared cache for old slug: ${existing.slug}`)
+        }
+
+        revalidatePath('/admin/products')
+        revalidatePath('/shop')
+        // Also revalidate the specific product page just in case
+        revalidatePath(`/product/${prod.slug || existing.slug}`)
+
+    } catch (e) {
+        console.error('Revalidation failed:', e)
     }
-    revalidatePath('/admin/products')
-    revalidatePath('/shop')
 }
 
 export async function deleteProduct(id: string) {
