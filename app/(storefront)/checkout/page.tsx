@@ -251,17 +251,18 @@ export default function CheckoutPage() {
         <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-12"
+            className="mb-12 text-center md:text-left"
         >
             <BrandBadge>Secure Checkout</BrandBadge>
-            <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic mt-4 text-transparent bg-clip-text bg-gradient-to-r from-zinc-900 via-zinc-700 to-zinc-900">
-                Finalize <br/><span className="text-stroke text-zinc-900/10">Transmission</span>
+            <h1 className="text-4xl md:text-7xl font-black tracking-tighter uppercase italic mt-4 text-transparent bg-clip-text bg-gradient-to-r from-foreground via-muted-foreground to-foreground">
+                Finalize <br className="hidden md:block"/>
+                <span className="text-stroke text-foreground/10">Transmission</span>
             </h1>
         </motion.div>
         
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-20 items-start relative z-10">
             {/* Left Column: Forms */}
-            <div className="space-y-8 animate-in slide-in-from-left-5 duration-700">
+            <div className="space-y-8 animate-in slide-in-from-left-5 duration-700 order-2 lg:order-1">
                 
                 {/* Saved Addresses */}
                 {user && (
@@ -270,9 +271,9 @@ export default function CheckoutPage() {
                             <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
                                 <ShieldCheck className="h-4 w-4 text-primary" />
                             </div>
-                            <h2 className="text-xl font-black uppercase tracking-tight italic">Quick Fill</h2>
+                            <h2 className="text-xl font-black uppercase tracking-tight italic text-foreground">Quick Fill</h2>
                         </div>
-                        <div className="rounded-3xl border-2 border-zinc-100 p-6 bg-white/50 backdrop-blur-sm hover:border-zinc-200 transition-colors">
+                        <div className="rounded-3xl border border-border/50 p-6 bg-card/50 backdrop-blur-sm hover:border-primary/20 transition-colors">
                             <AddressSelector onSelect={handleAddressSelect} />
                         </div>
                     </section>
@@ -281,21 +282,21 @@ export default function CheckoutPage() {
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                         {/* Shipping Details */}
-                        <section className="space-y-6 bg-white/80 backdrop-blur-md p-8 rounded-[2.5rem] border-2 border-zinc-100 shadow-sm">
-                             <div className="flex items-center gap-3 border-b border-zinc-100 pb-4">
-                                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-zinc-900 text-white font-bold text-sm">1</span>
-                                <h2 className="text-xl font-black uppercase tracking-tight italic">Shipping Coordinates</h2>
+                        <section className="space-y-6 bg-card/80 backdrop-blur-md p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-border/50 shadow-sm">
+                             <div className="flex items-center gap-3 border-b border-border/50 pb-4">
+                                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-foreground text-background font-bold text-sm">1</span>
+                                <h2 className="text-xl font-black uppercase tracking-tight italic text-foreground">Shipping Coordinates</h2>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-5">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <FormField
                                     control={form.control}
                                     name="firstName"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="font-bold text-xs uppercase tracking-widest text-zinc-500">First Name</FormLabel>
+                                            <FormLabel className="font-bold text-xs uppercase tracking-widest text-muted-foreground">First Name</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="John" {...field} className="h-12 bg-zinc-50 border-zinc-200 rounded-xl focus:ring-primary/20" />
+                                                <Input placeholder="John" {...field} className="h-12 bg-muted/50 border-transparent focus:border-primary/50 rounded-xl focus:ring-primary/20" />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -306,9 +307,9 @@ export default function CheckoutPage() {
                                     name="lastName"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="font-bold text-xs uppercase tracking-widest text-zinc-500">Last Name</FormLabel>
+                                            <FormLabel className="font-bold text-xs uppercase tracking-widest text-muted-foreground">Last Name</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="Doe" {...field} className="h-12 bg-zinc-50 border-zinc-200 rounded-xl focus:ring-primary/20" />
+                                                <Input placeholder="Doe" {...field} className="h-12 bg-muted/50 border-transparent focus:border-primary/50 rounded-xl focus:ring-primary/20" />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -321,9 +322,9 @@ export default function CheckoutPage() {
                                 name="address"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="font-bold text-xs uppercase tracking-widest text-zinc-500">Address</FormLabel>
+                                        <FormLabel className="font-bold text-xs uppercase tracking-widest text-muted-foreground">Address</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="123 Flash St." {...field} className="h-12 bg-zinc-50 border-zinc-200 rounded-xl focus:ring-primary/20" />
+                                            <Input placeholder="123 Flash St." {...field} className="h-12 bg-muted/50 border-transparent focus:border-primary/50 rounded-xl focus:ring-primary/20" />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -336,9 +337,9 @@ export default function CheckoutPage() {
                                     name="city"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="font-bold text-xs uppercase tracking-widest text-zinc-500">City</FormLabel>
+                                            <FormLabel className="font-bold text-xs uppercase tracking-widest text-muted-foreground">City</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="Metropolis" {...field} className="h-12 bg-zinc-50 border-zinc-200 rounded-xl focus:ring-primary/20" />
+                                                <Input placeholder="Metropolis" {...field} className="h-12 bg-muted/50 border-transparent focus:border-primary/50 rounded-xl focus:ring-primary/20" />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -349,9 +350,9 @@ export default function CheckoutPage() {
                                     name="state"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="font-bold text-xs uppercase tracking-widest text-zinc-500">State</FormLabel>
+                                            <FormLabel className="font-bold text-xs uppercase tracking-widest text-muted-foreground">State</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="NY" {...field} className="h-12 bg-zinc-50 border-zinc-200 rounded-xl focus:ring-primary/20" />
+                                                <Input placeholder="NY" {...field} className="h-12 bg-muted/50 border-transparent focus:border-primary/50 rounded-xl focus:ring-primary/20" />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -365,9 +366,9 @@ export default function CheckoutPage() {
                                     name="zip"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="font-bold text-xs uppercase tracking-widest text-zinc-500">Pincode</FormLabel>
+                                            <FormLabel className="font-bold text-xs uppercase tracking-widest text-muted-foreground">Pincode</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="10001" {...field} className="h-12 bg-zinc-50 border-zinc-200 rounded-xl focus:ring-primary/20" />
+                                                <Input placeholder="10001" {...field} className="h-12 bg-muted/50 border-transparent focus:border-primary/50 rounded-xl focus:ring-primary/20" />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -378,9 +379,9 @@ export default function CheckoutPage() {
                                     name="country"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="font-bold text-xs uppercase tracking-widest text-zinc-500">Country</FormLabel>
+                                            <FormLabel className="font-bold text-xs uppercase tracking-widest text-muted-foreground">Country</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="India" {...field} className="h-12 bg-zinc-50 border-zinc-200 rounded-xl focus:ring-primary/20" />
+                                                <Input placeholder="India" {...field} className="h-12 bg-muted/50 border-transparent focus:border-primary/50 rounded-xl focus:ring-primary/20" />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -393,9 +394,9 @@ export default function CheckoutPage() {
                                 name="phone"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="font-bold text-xs uppercase tracking-widest text-zinc-500">Phone</FormLabel>
+                                        <FormLabel className="font-bold text-xs uppercase tracking-widest text-muted-foreground">Phone</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="+91 99999 99999" {...field} className="h-12 bg-zinc-50 border-zinc-200 rounded-xl focus:ring-primary/20" />
+                                            <Input placeholder="+91 99999 99999" {...field} className="h-12 bg-muted/50 border-transparent focus:border-primary/50 rounded-xl focus:ring-primary/20" />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -404,26 +405,26 @@ export default function CheckoutPage() {
                         </section>
 
                         {/* Payment Section - Read Only for now (Razorpay handled via script) */}
-                        <section className="space-y-6 bg-white/80 backdrop-blur-md p-8 rounded-[2.5rem] border-2 border-zinc-100 shadow-sm opacity-80">
-                            <div className="flex items-center gap-3 border-b border-zinc-100 pb-4">
-                                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-zinc-900 text-white font-bold text-sm">2</span>
-                                <h2 className="text-xl font-black uppercase tracking-tight italic">Payment Method</h2>
+                        <section className="space-y-6 bg-card/80 backdrop-blur-md p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-border/50 shadow-sm opacity-80">
+                            <div className="flex items-center gap-3 border-b border-border/50 pb-4">
+                                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-foreground text-background font-bold text-sm">2</span>
+                                <h2 className="text-xl font-black uppercase tracking-tight italic text-foreground">Payment Method</h2>
                             </div>
-                            <div className="flex items-center gap-4 p-4 border rounded-xl bg-zinc-50">
-                                <CreditCard className="h-6 w-6 text-zinc-400" />
+                            <div className="flex items-center gap-4 p-4 border border-border/50 rounded-xl bg-muted/20">
+                                <CreditCard className="h-6 w-6 text-muted-foreground" />
                                 <div>
-                                    <p className="font-bold text-sm">Cards, UPI, NetBanking</p>
+                                    <p className="font-bold text-sm text-foreground">Cards, UPI, NetBanking</p>
                                     <p className="text-xs text-muted-foreground">Processed securely by Razorpay</p>
                                 </div>
                                 <ShieldCheck className="ml-auto h-5 w-5 text-green-500" />
                             </div>
                         </section>
 
-                        <div className="pt-4">
+                        <div className="pt-4 sticky bottom-4 z-20 lg:static">
                              <Button 
                                 type="submit" 
                                 disabled={isProcessing} 
-                                className="w-full h-16 rounded-2xl font-black uppercase tracking-[0.2em] text-sm md:text-base gradient-primary hover:scale-[1.01] active:scale-[0.98] transition-all shadow-xl shadow-primary/25 relative overflow-hidden group"
+                                className="w-full h-16 rounded-2xl font-black uppercase tracking-[0.2em] text-sm md:text-base gradient-primary hover:scale-[1.01] active:scale-[0.98] transition-all shadow-xl shadow-primary/25 relative overflow-hidden group border-0 text-white"
                             >
                                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
                                 <span className="relative flex items-center gap-3">
@@ -440,7 +441,7 @@ export default function CheckoutPage() {
                                     )}
                                 </span>
                             </Button>
-                            <p className="text-center text-[10px] uppercase tracking-widest text-zinc-400 mt-4 font-bold flex items-center justify-center gap-2">
+                            <p className="text-center text-[10px] uppercase tracking-widest text-muted-foreground mt-4 font-bold flex items-center justify-center gap-2 bg-background/80 backdrop-blur-sm py-1 rounded-full lg:bg-transparent">
                                 <ShieldCheck className="h-3 w-3" />
                                 256-Bit SSL Encrypted Transaction
                             </p>
@@ -450,41 +451,41 @@ export default function CheckoutPage() {
             </div>
 
             {/* Right Column: Order Summary */}
-            <div className="lg:sticky lg:top-32 space-y-6 animate-in slide-in-from-right-5 duration-700 delay-100">
-                <div className="bg-zinc-900 text-white p-8 rounded-[2.5rem] space-y-8 shadow-2xl relative overflow-hidden group">
-                     {/* Ambient Background */}
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-[80px] -mr-32 -mt-32" />
-                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-[80px] -ml-32 -mb-32" />
+            <div className="order-1 lg:order-2 lg:sticky lg:top-32 space-y-6 animate-in slide-in-from-right-5 duration-700 delay-100">
+                <div className="bg-card text-card-foreground p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] space-y-8 shadow-2xl relative overflow-hidden group border border-border/50">
+                     {/* Ambient Background - Adaptive */}
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-[80px] -mr-32 -mt-32" />
+                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-[80px] -ml-32 -mb-32" />
                     
                     <div className="relative z-10">
-                        <h2 className="font-black text-2xl italic uppercase tracking-tighter mb-6 flex items-center justify-between">
+                        <h2 className="font-black text-2xl italic uppercase tracking-tighter mb-6 flex items-center justify-between text-foreground">
                             Order Summary
-                            <span className="text-sm not-italic font-medium text-white/50 bg-white/10 px-3 py-1 rounded-full">{items.length} Items</span>
+                            <span className="text-sm not-italic font-medium text-muted-foreground bg-muted px-3 py-1 rounded-full">{items.length} Items</span>
                         </h2>
 
-                        <div className="space-y-5 max-h-[400px] overflow-auto pr-2 custom-scrollbar">
+                        <div className="space-y-5 max-h-[300px] lg:max-h-[400px] overflow-auto pr-2 custom-scrollbar">
                             {items.map(item => (
                                 <div key={`${item.productId}-${item.size}`} className="flex gap-4 items-start group/item">
-                                    <div className="relative h-16 w-16 rounded-xl overflow-hidden bg-white/5 border border-white/10 shrink-0">
+                                    <div className="relative h-16 w-16 rounded-xl overflow-hidden bg-muted border border-border/50 shrink-0">
                                         {item.image && <img src={item.image} className="h-full w-full object-cover group-hover/item:scale-110 transition-transform duration-500" alt={item.name} />}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="font-bold text-sm truncate pr-4">{item.name}</p>
-                                        <p className="text-white/50 text-xs font-medium mt-0.5">{item.size} / {item.color} <span className="mx-1">x</span> {item.quantity}</p>
+                                        <p className="font-bold text-sm truncate pr-4 text-foreground">{item.name}</p>
+                                        <p className="text-muted-foreground text-xs font-medium mt-0.5">{item.size} / {item.color} <span className="mx-1">x</span> {item.quantity}</p>
                                     </div>
                                     <span className="font-mono text-sm font-bold text-primary">{formatCurrency(item.price * item.quantity)}</span>
                                 </div>
                             ))}
                         </div>
 
-                        <div className="h-px w-full bg-white/10 my-6" />
+                        <div className="h-px w-full bg-border/50 my-6" />
 
                         {/* Coupon Section */}
-                        <div className="bg-white/5 rounded-2xl p-2 flex items-center gap-2">
-                            <Ticket className="h-4 w-4 text-white/50 ml-3" />
+                        <div className="bg-muted/30 rounded-2xl p-2 flex items-center gap-2 border border-border/50">
+                            <Ticket className="h-4 w-4 text-muted-foreground ml-3" />
                             <Input 
                                 placeholder="PROMO CODE" 
-                                className="bg-transparent border-0 text-white placeholder:text-white/30 focus-visible:ring-0 h-10 font-bold uppercase tracking-wider text-sm"
+                                className="bg-transparent border-0 text-foreground placeholder:text-muted-foreground/50 focus-visible:ring-0 h-10 font-bold uppercase tracking-wider text-sm shadow-none"
                                 value={couponCode}
                                 onChange={(e) => setCouponCode(e.target.value)}
                                 disabled={!!appliedCoupon}
@@ -494,7 +495,7 @@ export default function CheckoutPage() {
                                     Remove
                                 </Button>
                             ) : (
-                                <Button size="sm" onClick={handleApplyCoupon} disabled={isCheckingCoupon || !couponCode} className="h-9 bg-white text-black hover:bg-white/90 rounded-xl px-4 font-black text-xs uppercase tracking-wider">
+                                <Button size="sm" onClick={handleApplyCoupon} disabled={isCheckingCoupon || !couponCode} className="h-9 bg-foreground text-background hover:bg-foreground/90 rounded-xl px-4 font-black text-xs uppercase tracking-wider">
                                     {isCheckingCoupon ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Apply'}
                                 </Button>
                             )}
@@ -502,30 +503,30 @@ export default function CheckoutPage() {
 
                         <div className="space-y-3 pt-2">
                              {appliedCoupon && (
-                                <div className="flex justify-between text-sm text-green-400 font-bold px-1 bg-green-500/10 p-2 rounded-lg border border-green-500/20">
+                                <div className="flex justify-between text-sm text-green-500 font-bold px-1 bg-green-500/10 p-2 rounded-lg border border-green-500/20">
                                     <span className="flex items-center gap-1.5"><Ticket className="h-3 w-3" /> {appliedCoupon.code}</span>
                                     <span>-{formatCurrency(discountAmount)}</span>
                                 </div>
                             )}
 
-                            <div className="flex justify-between text-white/50 text-sm font-medium">
+                            <div className="flex justify-between text-muted-foreground text-sm font-medium">
                                 <span>Subtotal</span>
                                 <span>{formatCurrency(cartTotal)}</span>
                             </div>
-                             <div className="flex justify-between text-white/50 text-sm font-medium">
+                             <div className="flex justify-between text-muted-foreground text-sm font-medium">
                                 <span>Shipping</span>
-                                <span className="text-green-400">Free</span>
+                                <span className="text-green-500">Free</span>
                             </div>
                              
-                             <div className="flex justify-between font-black text-3xl pt-4 border-t border-white/10 items-baseline">
-                                <span className="text-base font-bold uppercase tracking-widest text-white/70">Total</span>
-                                <span className="text-white">{formatCurrency(finalTotal)}</span>
+                             <div className="flex justify-between font-black text-3xl pt-4 border-t border-border/50 items-baseline">
+                                <span className="text-base font-bold uppercase tracking-widest text-muted-foreground">Total</span>
+                                <span className="text-foreground">{formatCurrency(finalTotal)}</span>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                 <div className="bg-orange-50/50 border border-orange-100 p-4 rounded-2xl flex gap-3 text-xs text-orange-800">
+                 <div className="bg-orange-50/50 dark:bg-orange-950/10 border border-orange-100 dark:border-orange-900/20 p-4 rounded-2xl flex gap-3 text-xs text-orange-800 dark:text-orange-400">
                     <div className="shrink-0 mt-0.5">⚠️</div>
                     <p>Depending on your location, flashing high-velocity gear might cause minor sonic booms. Please wear protection.</p>
                 </div>
