@@ -131,10 +131,11 @@ export default function CheckoutPage() {
           } as any)
 
           // 3. Create Razorpay Order
+          // Security: We send the Order ID, not the amount. Server fetches amount from DB.
           const response = await fetch('/api/razorpay/order', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ amount: finalTotal, currency: 'INR' })
+              body: JSON.stringify({ order_id: (order as any).id })
           })
           const rzpOrder = await response.json()
           

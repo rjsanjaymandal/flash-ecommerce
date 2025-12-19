@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import crypto from 'crypto'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@supabase/supabase-js'
+import { Database } from '@/types/supabase'
 
 export async function POST(req: Request) {
   try {
@@ -19,20 +20,30 @@ export async function POST(req: Request) {
         return NextResponse.json({ verified: false, error: 'Invalid signature' }, { status: 400 })
     }
 
-    // 2. Initialize Admin/Service Client for secure updates
-    // Note: We need a service role client here to update user profiles if RLS blocks it, specifically for points. 
-    // Ideally use createClient(cookieStore) but for points we might need admin rights if users can't edit their own points.
-    // Assuming RLS allows users to read their own points but NOT update them.
-    // For now we will use the standard client assuming user is logged in, but really this should be a service role operation.
-    // Since I don't have SUPABASE_SERVICE_KEY in env here (usually), I'll stick to standard flow or assume user can update (which is risky)
-    // OR BETTER: Use a stored procedure (RPC) for "complete_order" that handles status and points.
-    
-    // For this implementation, I will just update using standard client, assuming RLS allows update purely for demonstration or use a server-side action.
-    // Actually, createClient from server works with cookies.
-    
-    const supabase = await createClient()
+    // 2. Initialize Service Role Client
+    // This bypasses RLS, which is required for updating order status and awarding points securely.
+    const supabase = createClient<Database>(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
 
-    // 3. Update Order Status
+    // 3. Idempotency Check & Fetch Order
+    const { data: order, error: fetchError } = await supabase
+        .from('orders')
+        .select('id, user_id, total, status')
+        .eq('id', order_id)
+        .single()
+    
+    if (fetchError || !order) {
+        return NextResponse.json({ verified: false, error: 'Order not found' }, { status: 404 })
+    }
+
+    if (order.status === 'paid') {
+        // Already processed
+        return NextResponse.json({ verified: true, message: 'Already processed' })
+    }
+
+    // 4. Update Order Status
     const { error: orderError } = await supabase
         .from('orders')
         .update({ 
@@ -42,23 +53,34 @@ export async function POST(req: Request) {
         })
         .eq('id', order_id)
     
-    if (orderError) console.error('Error updating order:', orderError)
+    if (orderError) {
+        console.error('Error updating order:', orderError)
+        return NextResponse.json({ verified: false, error: 'Failed to update order status' }, { status: 500 })
+    }
 
-    // 4. Award Points (Fetch order to get total/user_id first)
-    // We can do this in parallel or after.
-    const { data: order } = await supabase.from('orders').select('user_id, total').eq('id', order_id).single()
-    
-    if (order?.user_id) {
-        const pointsEarned = Math.floor(Number(order.total) / 100) // 1 point per 100 currency units
-        if (pointsEarned > 0) {
-            // Fetch current points
-            const { data: profile } = await supabase.from('profiles').select('loyalty_points').eq('id', order.user_id).single()
-            const newPoints = (profile?.loyalty_points || 0) + pointsEarned
-            
-            await supabase
-                .from('profiles')
-                .update({ loyalty_points: newPoints })
-                .eq('id', order.user_id)
+    // 5. Award Points
+    if (order.user_id) {
+        try {
+            const pointsEarned = Math.floor(Number(order.total) / 100) // 1 point per 100 currency units
+            if (pointsEarned > 0) {
+                // We use an RPC if available, or sequential update. 
+                // Using sequential update with Service Role is safe enough here.
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('loyalty_points')
+                    .eq('id', order.user_id)
+                    .single()
+                
+                const newPoints = (profile?.loyalty_points || 0) + pointsEarned
+                
+                await supabase
+                    .from('profiles')
+                    .update({ loyalty_points: newPoints })
+                    .eq('id', order.user_id)
+            }
+        } catch (pointError) {
+            console.error('Failed to award points (non-critical):', pointError)
+            // Do not fail the verification response, just log it.
         }
     }
 
