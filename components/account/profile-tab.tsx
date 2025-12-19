@@ -49,14 +49,14 @@ export function ProfileTab({ user, profile }: { user: any, profile: any }) {
             animate="visible"
             className="space-y-10"
         >
-            <motion.div variants={itemVariants} className="flex flex-col md:flex-row items-center gap-6 md:gap-8 p-5 md:p-8 rounded-[2.5rem] bg-zinc-50 border-2 border-zinc-100 relative overflow-hidden group">
+            <motion.div variants={itemVariants} className="flex flex-col md:flex-row items-center gap-6 md:gap-8 p-5 md:p-8 rounded-[2.5rem] bg-card border-2 border-border/50 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors" />
                 
                 <div className="relative">
                     <div className="h-24 w-24 rounded-full bg-linear-to-br from-primary to-indigo-600 flex items-center justify-center text-white text-4xl font-black shadow-2xl group-hover:scale-105 transition-transform duration-500">
                         {profile?.name?.[0].toUpperCase() || user.email?.[0].toUpperCase()}
                     </div>
-                    <div className="absolute -bottom-1 -right-1 h-8 w-8 bg-white rounded-full border-4 border-zinc-50 flex items-center justify-center shadow-lg">
+                    <div className="absolute -bottom-1 -right-1 h-8 w-8 bg-card rounded-full border-4 border-card flex items-center justify-center shadow-lg">
                         <User className="h-4 w-4 text-primary" />
                     </div>
                 </div>
@@ -80,31 +80,31 @@ export function ProfileTab({ user, profile }: { user: any, profile: any }) {
             <form action={onSubmit} className="space-y-8 max-w-2xl">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <motion.div variants={itemVariants} className="space-y-3">
-                        <Label htmlFor="name" className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">Display Name</Label>
+                        <Label htmlFor="name" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Display Name</Label>
                         <Input 
                             id="name" 
                             name="name" 
                             defaultValue={profile?.name || ''} 
                             placeholder="John Doe" 
-                            className="h-14 rounded-2xl border-2 focus:ring-primary/20 bg-zinc-50/50"
+                            className="h-14 rounded-2xl border-2 focus:ring-primary/20 bg-muted/50 border-border/50"
                         />
                     </motion.div>
                     <motion.div variants={itemVariants} className="space-y-3">
-                        <Label htmlFor="pronouns" className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">Pronouns</Label>
+                        <Label htmlFor="pronouns" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Pronouns</Label>
                         <Input 
                             id="pronouns" 
                             name="pronouns" 
                             defaultValue={profile?.pronouns || ''} 
                             placeholder="they/them" 
-                            className="h-14 rounded-2xl border-2 focus:ring-primary/20 bg-zinc-50/50"
+                            className="h-14 rounded-2xl border-2 focus:ring-primary/20 bg-muted/50 border-border/50"
                         />
                     </motion.div>
                 </div>
 
                 <motion.div variants={itemVariants} className="space-y-3">
-                     <Label htmlFor="fit_preference" className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">Fit Preference</Label>
+                     <Label htmlFor="fit_preference" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Fit Preference</Label>
                      <Select name="fit_preference" defaultValue={profile?.fit_preference || 'none'}>
-                        <SelectTrigger className="h-14 rounded-2xl border-2 focus:ring-primary/20 bg-zinc-50/50">
+                        <SelectTrigger className="h-14 rounded-2xl border-2 focus:ring-primary/20 bg-muted/50 border-border/50">
                             <SelectValue placeholder="Select your vibe" />
                         </SelectTrigger>
                         <SelectContent className="rounded-2xl border-2 shadow-2xl">

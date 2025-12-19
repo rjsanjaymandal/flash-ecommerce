@@ -13,12 +13,12 @@ import { Filter, X } from 'lucide-react'
 // Constants
 const SIZES = ["XS", "S", "M", "L", "XL", "XXL"]
 const COLORS = [
-    { name: "Black", value: "black", class: "bg-black" },
-    { name: "White", value: "white", class: "bg-white border-2 border-gray-200" },
-    { name: "Blue", value: "blue", class: "bg-blue-500" },
-    { name: "Red", value: "red", class: "bg-red-500" },
-    { name: "Green", value: "green", class: "bg-green-500" },
-    { name: "Beige", value: "beige", class: "bg-[#F5F5DC] border border-gray-200" },
+    { name: "Black", value: "black", class: "bg-black border border-white/10" },
+    { name: "White", value: "white", class: "bg-background border-2 border-border" },
+    { name: "Blue", value: "blue", class: "bg-blue-500 border-none" },
+    { name: "Red", value: "red", class: "bg-red-500 border-none" },
+    { name: "Green", value: "green", class: "bg-green-500 border-none" },
+    { name: "Beige", value: "beige", class: "bg-[#F5F5DC] border border-border" },
 ]
 
 export function ShopFilters({ categories }: { categories: any[] }) {
@@ -32,14 +32,14 @@ export function ShopFilters({ categories }: { categories: any[] }) {
                              <Filter className="h-6 w-6 text-white group-hover:scale-110 transition-transform" />
                         </Button>
                     </SheetTrigger>
-                    <SheetContent side="bottom" className="h-[80vh] rounded-t-[3rem] border-white/5 glass-dark overflow-y-auto px-8 pb-12">
+                    <SheetContent side="bottom" className="h-[80vh] rounded-t-[3rem] border-border/10 bg-zinc-950/90 backdrop-blur-3xl overflow-y-auto px-8 pb-12">
                         <SheetHeader className="mb-8 pt-4">
                             <div className="flex flex-col gap-2">
                                 <span className="text-primary font-black tracking-[0.4em] uppercase text-[10px]">Selections</span>
                                 <SheetTitle className="text-4xl font-black italic tracking-tighter uppercase text-white">RE<span className="text-gradient">FINE</span> VIBE</SheetTitle>
                             </div>
                         </SheetHeader>
-                        <FilterContent categories={categories} isDark />
+                        <FilterContent categories={categories} />
                     </SheetContent>
                 </Sheet>
             </div>
@@ -56,7 +56,7 @@ export function ShopFilters({ categories }: { categories: any[] }) {
     )
 }
 
-function FilterContent({ categories, isDark = false }: { categories: any[], isDark?: boolean }) {
+function FilterContent({ categories }: { categories: any[] }) {
     // State
     const [minPrice, setMinPrice] = useQueryState('min_price', parseAsInteger)
     const [maxPrice, setMaxPrice] = useQueryState('max_price', parseAsInteger)
@@ -66,11 +66,16 @@ function FilterContent({ categories, isDark = false }: { categories: any[], isDa
 
     // Local state for slider performance
     const [priceRange, setPriceRange] = useState([0, 20000])
+    const [mounted, setMounted] = useState(false)
 
     // Sync local slider with URL on mount/update
     useEffect(() => {
         setPriceRange([minPrice || 0, maxPrice || 20000])
     }, [minPrice, maxPrice])
+
+    useEffect(() => {
+        setMounted(true)
+    }, [])
 
     const handlePriceChange = (value: number[]) => {
         setPriceRange(value)
@@ -91,20 +96,17 @@ function FilterContent({ categories, isDark = false }: { categories: any[], isDa
 
     const hasFilters = minPrice || maxPrice || size || color || category
 
-    const textClass = isDark ? "text-white" : "text-foreground"
-    const mutedClass = isDark ? "text-white/60" : "text-muted-foreground"
+    const textClass = "text-foreground"
+    const mutedClass = "text-muted-foreground"
 
     return (
         <div className="space-y-8 pb-12">
-            {hasFilters && (
+            {hasFilters && mounted && (
                  <Button 
                     variant="ghost" 
                     size="sm" 
                     onClick={clearFilters} 
-                    className={cn(
-                        "w-full h-12 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all",
-                        isDark ? "bg-white/10 text-white hover:bg-red-500/20 hover:text-red-400" : "bg-primary/5 text-primary hover:bg-red-500/5 hover:text-red-500 border border-dashed border-primary/20"
-                    )}
+                    className="w-full h-12 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all bg-destructive/10 text-destructive hover:bg-destructive/20 hover:text-destructive border border-destructive/20"
                 >
                     Reset Selections
                 </Button>
@@ -123,8 +125,8 @@ function FilterContent({ categories, isDark = false }: { categories: any[], isDa
                                 className={cn(
                                     "text-left text-sm py-2 px-4 rounded-xl transition-all font-black uppercase tracking-tighter italic",
                                     !category 
-                                        ? "bg-primary text-white shadow-lg shadow-primary/20 scale-105" 
-                                        : cn("hover:bg-primary/10", mutedClass)
+                                        ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-105" 
+                                        : cn("hover:bg-muted text-muted-foreground hover:text-foreground")
                                 )}
                             >
                                 All Drops
@@ -136,8 +138,8 @@ function FilterContent({ categories, isDark = false }: { categories: any[], isDa
                                     className={cn(
                                         "text-left text-sm py-2 px-4 rounded-xl transition-all font-black uppercase tracking-tighter italic",
                                         category === c.id 
-                                            ? "bg-primary text-white shadow-lg shadow-primary/20 scale-105" 
-                                            : cn("hover:bg-primary/10", mutedClass)
+                                            ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-105" 
+                                            : cn("hover:bg-muted text-muted-foreground hover:text-foreground")
                                     )}
                                 >
                                     {c.name}
@@ -187,8 +189,8 @@ function FilterContent({ categories, isDark = false }: { categories: any[], isDa
                                     className={cn(
                                         "h-12 w-full rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all", 
                                         size === s 
-                                            ? "bg-primary text-white shadow-xl shadow-primary/20 scale-105 border-primary" 
-                                            : cn("border-border hover:border-primary/50 hover:bg-primary/5", mutedClass)
+                                            ? "bg-primary text-primary-foreground shadow-xl shadow-primary/20 scale-105 border-primary" 
+                                            : cn("border-border hover:border-primary/50 hover:bg-muted text-muted-foreground", mutedClass)
                                     )}
                                 >
                                     {s}

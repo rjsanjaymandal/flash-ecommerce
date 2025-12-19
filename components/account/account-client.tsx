@@ -49,7 +49,7 @@ export function AccountClient({ user, profile, orders, addresses, waitlist }: Ac
     <div className="container mx-auto px-4 py-8 md:py-24 min-h-screen max-w-6xl relative">
         <BrandGlow className="top-0 left-[-10%] opacity-50" size="lg" />
         
-        {/* Premium Header */}
+        {/* Premium Header - Always Dark for Flash Brand consistency, or Adaptive? Let's make it Adaptive Premium */}
         <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -88,7 +88,7 @@ export function AccountClient({ user, profile, orders, addresses, waitlist }: Ac
                         whileHover={{ y: -5, scale: 1.02 }}
                         className="space-y-1 md:space-y-2 p-3 md:p-6 rounded-xl md:rounded-3xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 transition-all duration-300 shadow-lg group/stat"
                     >
-                        <div className="flex items-center gap-1.5 md:gap-2 text-zinc-500 mb-0.5 md:mb-2">
+                        <div className="flex items-center gap-1.5 md:gap-2 text-zinc-400 mb-0.5 md:mb-2">
                             <stat.icon className={`h-3 w-3 md:h-4 md:w-4 ${stat.color} transition-transform group-hover/stat:scale-110`} />
                             <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest leading-none">{stat.label}</span>
                         </div>
@@ -101,17 +101,17 @@ export function AccountClient({ user, profile, orders, addresses, waitlist }: Ac
         {/* Tabs Content */}
         <Tabs defaultValue="overview" className="space-y-10 md:space-y-12 animate-in fade-in duration-700">
             <div className="flex justify-start md:justify-center overflow-x-auto pb-4 md:pb-6 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
-                <TabsList className="bg-zinc-900/95 backdrop-blur-md p-1.5 md:p-2 rounded-full inline-flex h-auto shadow-xl border border-white/10 min-w-max ring-1 ring-white/5">
-                    <TabsTrigger value="overview" className="rounded-full px-6 md:px-10 py-3 md:py-4 data-[state=active]:bg-white data-[state=active]:text-zinc-950 text-zinc-400 hover:text-white transition-all text-[10px] md:text-[11px] font-black uppercase tracking-widest">
+                <TabsList className="bg-muted/80 backdrop-blur-md p-1.5 md:p-2 rounded-full inline-flex h-auto shadow-xl border border-border/50 min-w-max ring-1 ring-border/5">
+                    <TabsTrigger value="overview" className="rounded-full px-6 md:px-10 py-3 md:py-4 data-[state=active]:bg-background data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-all text-[10px] md:text-[11px] font-black uppercase tracking-widest">
                         Overview
                     </TabsTrigger>
-                    <TabsTrigger value="addresses" className="rounded-full px-6 md:px-10 py-3 md:py-4 data-[state=active]:bg-white data-[state=active]:text-zinc-950 text-zinc-400 hover:text-white transition-all text-[10px] md:text-[11px] font-black uppercase tracking-widest">
+                    <TabsTrigger value="addresses" className="rounded-full px-6 md:px-10 py-3 md:py-4 data-[state=active]:bg-background data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-all text-[10px] md:text-[11px] font-black uppercase tracking-widest">
                         Addresses
                     </TabsTrigger>
-                    <TabsTrigger value="profile" className="rounded-full px-6 md:px-10 py-3 md:py-4 data-[state=active]:bg-white data-[state=active]:text-zinc-950 text-zinc-400 hover:text-white transition-all text-[10px] md:text-[11px] font-black uppercase tracking-widest">
+                    <TabsTrigger value="profile" className="rounded-full px-6 md:px-10 py-3 md:py-4 data-[state=active]:bg-background data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-all text-[10px] md:text-[11px] font-black uppercase tracking-widest">
                         Settings
                     </TabsTrigger>
-                    <TabsTrigger value="waitlist" className="rounded-full px-6 md:px-10 py-3 md:py-4 data-[state=active]:bg-white data-[state=active]:text-zinc-950 text-zinc-400 hover:text-white transition-all text-[10px] md:text-[11px] font-black uppercase tracking-widest">
+                    <TabsTrigger value="waitlist" className="rounded-full px-6 md:px-10 py-3 md:py-4 data-[state=active]:bg-background data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-all text-[10px] md:text-[11px] font-black uppercase tracking-widest">
                        Waitlist
                     </TabsTrigger>
                 </TabsList>
@@ -124,22 +124,22 @@ export function AccountClient({ user, profile, orders, addresses, waitlist }: Ac
                         <LoyaltyCard points={profile?.loyalty_points || 0} />
                         
                         {/* Mini Address Preview */}
-                        <div className="bg-white rounded-[2rem] p-6 border-2 border-zinc-100 shadow-sm relative overflow-hidden group">
+                        <div className="bg-card rounded-[2rem] p-6 border-2 border-border/50 shadow-sm relative overflow-hidden group">
                            <div className="flex justify-between items-start mb-4">
-                                <h3 className="font-black uppercase italic text-xl tracking-tighter">Primary <br/> Location</h3>
-                                <div className="h-10 w-10 bg-zinc-100 rounded-full flex items-center justify-center">
-                                    <MapPin className="h-4 w-4 text-zinc-500" />
+                                <h3 className="font-black uppercase italic text-xl tracking-tighter text-foreground">Primary <br/> Location</h3>
+                                <div className="h-10 w-10 bg-muted rounded-full flex items-center justify-center">
+                                    <MapPin className="h-4 w-4 text-muted-foreground" />
                                 </div>
                            </div>
                            {defaultAddress ? (
-                               <div className="text-sm font-medium text-zinc-600 space-y-1">
-                                   <p className="font-bold text-zinc-900">{defaultAddress!.name}</p>
+                               <div className="text-sm font-medium text-muted-foreground space-y-1">
+                                   <p className="font-bold text-foreground">{defaultAddress!.name}</p>
                                    <p>{defaultAddress!.city}, {defaultAddress!.state}</p>
-                                   <p className="text-xs font-mono bg-zinc-100 px-2 py-1 rounded-md w-fit mt-2">{defaultAddress!.pincode}</p>
+                                   <p className="text-xs font-mono bg-muted px-2 py-1 rounded-md w-fit mt-2">{defaultAddress!.pincode}</p>
                                </div>
                            ) : (
                                <div className="text-center py-4">
-                                   <p className="text-xs text-zinc-400 font-bold uppercase tracking-widest mb-4">No default address set</p>
+                                   <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest mb-4">No default address set</p>
                                    <Button size="sm" variant="outline" className="rounded-full text-[10px] font-black uppercase" onClick={() => (document.querySelector('[value="addresses"]') as HTMLElement)?.click()}>
                                        Manage Addresses
                                    </Button>

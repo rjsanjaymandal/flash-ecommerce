@@ -32,17 +32,17 @@ export async function ProductGrid({ params }: { params: any }) {
                 <div className="flex items-center gap-2">
                     <span className="text-xs uppercase tracking-wider font-bold text-muted-foreground mr-2 hidden sm:inline-block">Sort By</span>
                     <Link href={{ query: { ...params, sort: undefined } }}>
-                        <Button variant={!params.sort ? "secondary" : "ghost"} size="sm" className={cn("h-8 rounded-full text-xs font-bold", !params.sort && "bg-black text-white hover:bg-zinc-800")}>
+                        <Button variant={!params.sort ? "secondary" : "ghost"} size="sm" className={cn("h-8 rounded-full text-xs font-bold transition-all", !params.sort && "bg-primary text-primary-foreground hover:bg-primary/90 shadow-md")}>
                             Newest
                         </Button>
                     </Link>
                     <Link href={{ query: { ...params, sort: 'price_asc' } }}>
-                        <Button variant={params.sort === 'price_asc' ? "secondary" : "ghost"} size="sm" className={cn("h-8 rounded-full text-xs font-bold", params.sort === 'price_asc' && "bg-black text-white hover:bg-zinc-800")}>
+                        <Button variant={params.sort === 'price_asc' ? "secondary" : "ghost"} size="sm" className={cn("h-8 rounded-full text-xs font-bold transition-all", params.sort === 'price_asc' && "bg-primary text-primary-foreground hover:bg-primary/90 shadow-md")}>
                             Price Low
                         </Button>
                     </Link>
                     <Link href={{ query: { ...params, sort: 'price_desc' } }}>
-                        <Button variant={params.sort === 'price_desc' ? "secondary" : "ghost"} size="sm" className={cn("h-8 rounded-full text-xs font-bold", params.sort === 'price_desc' && "bg-black text-white hover:bg-zinc-800")}>
+                        <Button variant={params.sort === 'price_desc' ? "secondary" : "ghost"} size="sm" className={cn("h-8 rounded-full text-xs font-bold transition-all", params.sort === 'price_desc' && "bg-primary text-primary-foreground hover:bg-primary/90 shadow-md")}>
                             Price High
                         </Button>
                     </Link>

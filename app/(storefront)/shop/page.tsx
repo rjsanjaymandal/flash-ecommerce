@@ -36,7 +36,9 @@ export default async function ShopPage({
         <div className="flex flex-col md:flex-row gap-8 lg:gap-12 relative">
           
             {/* Filters Sidebar Component */}
-            <ShopFilters categories={categories || []} />
+            <Suspense fallback={<div className="w-72 hidden md:block" />}>
+                <ShopFilters categories={categories || []} />
+            </Suspense>
 
             {/* Product Grid Area with Suspense Streaming */}
             <Suspense fallback={<ProductGridSkeleton />}>

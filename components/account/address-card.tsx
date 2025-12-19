@@ -38,27 +38,27 @@ export function AddressCard({ address }: AddressCardProps) {
         <div className={cn(
             "group relative p-6 rounded-3xl border-2 transition-all duration-300",
             address.is_default 
-                ? "bg-zinc-900 border-zinc-900 text-white shadow-xl scale-[1.02]" 
-                : "bg-white border-zinc-100 hover:border-zinc-200 hover:shadow-lg"
+                ? "bg-primary border-primary text-primary-foreground shadow-xl scale-[1.02]" 
+                : "bg-card border-border/50 hover:border-border hover:shadow-lg"
         )}>
             {/* Header */}
             <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-2">
                     <div className={cn(
                         "h-10 w-10 rounded-full flex items-center justify-center",
-                        address.is_default ? "bg-white/10 text-white" : "bg-zinc-100 text-zinc-900"
+                        address.is_default ? "bg-primary-foreground/10 text-primary-foreground" : "bg-muted text-foreground"
                     )}>
                         <MapPin className="h-5 w-5" />
                     </div>
                     <div>
-                        <h3 className="font-black text-lg leading-none">{address.name}</h3>
-                        <p className={cn("text-xs font-bold uppercase tracking-wider mt-1", address.is_default ? "text-zinc-400" : "text-zinc-500")}>
+                        <h3 className="font-black text-lg leading-none text-foreground">{address.name}</h3>
+                        <p className={cn("text-xs font-bold uppercase tracking-wider mt-1", address.is_default ? "text-primary-foreground/80" : "text-muted-foreground")}>
                             {address.city}, {address.state}
                         </p>
                     </div>
                 </div>
                 {address.is_default && (
-                    <Badge className="bg-white/20 hover:bg-white/20 text-white border-0 uppercase tracking-widest text-[9px] font-bold px-3">
+                    <Badge className="bg-primary-foreground/20 hover:bg-primary-foreground/20 text-primary-foreground border-0 uppercase tracking-widest text-[9px] font-bold px-3">
                         Default
                     </Badge>
                 )}
@@ -66,14 +66,14 @@ export function AddressCard({ address }: AddressCardProps) {
 
             {/* Content */}
             <div className="space-y-1 mb-6">
-                <p className={cn("text-sm font-medium leading-relaxed", address.is_default ? "text-zinc-300" : "text-zinc-600")}>
+                <p className={cn("text-sm font-medium leading-relaxed", address.is_default ? "text-primary-foreground/90" : "text-muted-foreground")}>
                     {address.address_line1} {address.address_line2 && <br />}
                     {address.address_line2}
                 </p>
-                <p className={cn("text-sm font-medium", address.is_default ? "text-zinc-300" : "text-zinc-600")}>
+                <p className={cn("text-sm font-medium", address.is_default ? "text-primary-foreground/90" : "text-muted-foreground")}>
                     {address.city} - {address.pincode}
                 </p>
-                <div className={cn("flex items-center gap-2 mt-2 pt-2 border-t", address.is_default ? "border-white/10 text-zinc-400" : "border-zinc-100 text-zinc-500")}>
+                <div className={cn("flex items-center gap-2 mt-2 pt-2 border-t", address.is_default ? "border-primary-foreground/10 text-primary-foreground/70" : "border-border/50 text-muted-foreground")}>
                     <Phone className="h-3 w-3" />
                     <span className="text-xs font-bold tracking-wider">{address.phone}</span>
                 </div>
@@ -87,7 +87,7 @@ export function AddressCard({ address }: AddressCardProps) {
                         size="sm" 
                         onClick={handleSetDefault}
                         disabled={loading}
-                        className="flex-1 rounded-xl h-9 hover:bg-zinc-100 text-zinc-600 font-bold text-xs uppercase"
+                        className="flex-1 rounded-xl h-9 hover:bg-muted text-muted-foreground font-bold text-xs uppercase"
                     >
                         {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : "Set Default"}
                     </Button>
@@ -102,8 +102,8 @@ export function AddressCard({ address }: AddressCardProps) {
                     className={cn(
                         "h-9 w-9 rounded-xl transition-colors",
                         address.is_default 
-                            ? "hover:bg-white/10 text-white/50 hover:text-red-400" 
-                            : "hover:bg-red-50 text-zinc-400 hover:text-red-500"
+                            ? "hover:bg-primary-foreground/10 text-primary-foreground/50 hover:text-red-200" 
+                            : "hover:bg-red-500/10 text-muted-foreground hover:text-red-500"
                     )}
                 >
                     {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-4 w-4" />}
