@@ -46,7 +46,7 @@ export function AccountClient({ user, profile, orders, addresses, waitlist }: Ac
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 md:py-24 min-h-screen max-w-6xl relative">
+    <div className="container mx-auto px-4 py-6 md:py-12 min-h-screen max-w-6xl relative">
         <BrandGlow className="top-0 left-[-10%] opacity-50" size="lg" />
         
         {/* Premium Header - Always Dark for Flash Brand consistency, or Adaptive? Let's make it Adaptive Premium */}

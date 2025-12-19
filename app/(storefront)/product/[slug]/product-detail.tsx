@@ -190,7 +190,7 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
   if (galleryImages.length === 0) galleryImages.push('/placeholder.svg')
 
   return (
-    <div className="min-h-screen bg-background pt-12 pb-20">
+    <div className="min-h-screen bg-background pt-6 pb-20">
         <div className="container mx-auto px-4 lg:px-8">
             
             {/* Breadcrumbs */}
@@ -421,7 +421,7 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
                                  <div className="h-10 w-10 flex items-center justify-center bg-accent/5 rounded-2xl group-hover:bg-accent/10 transition-colors">
                                      <RefreshCcw className="h-5 w-5 text-accent" />
                                  </div>
-                                 <span className="text-[10px] uppercase font-black tracking-widest opacity-60">No-Sync Returns</span>
+                                 <span className="text-[10px] uppercase font-black tracking-widest opacity-60">Easy Returns</span>
                              </div>
                              <div className="flex flex-col items-center gap-3 text-center group">
                                  <div className="h-10 w-10 flex items-center justify-center bg-emerald-500/5 rounded-2xl group-hover:bg-emerald-500/10 transition-colors">
