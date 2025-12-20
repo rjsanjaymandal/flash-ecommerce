@@ -308,10 +308,10 @@ export function ProductsClient({ initialProducts, meta }: { initialProducts: any
           </div>
       )}
 
-      <div className="rounded-lg border bg-card shadow-sm overflow-hidden">
+      <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="bg-muted/5 hover:bg-muted/5 border-b">
+            <TableRow className="bg-muted/30 hover:bg-muted/30 border-b border-border/50">
               <TableHead className="w-[40px] px-4">
                   <Checkbox 
                     checked={initialProducts.length > 0 && selectedIds.size === initialProducts.length}
@@ -319,31 +319,37 @@ export function ProductsClient({ initialProducts, meta }: { initialProducts: any
                     aria-label="Select all"
                   />
               </TableHead>
-              <TableHead className="w-[80px] py-3 pl-0">Image</TableHead>
-              <TableHead className="py-3">
-                  <div className="flex items-center gap-2 cursor-pointer hover:text-primary transition-colors text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <TableHead className="w-[80px] py-4 pl-0">Image</TableHead>
+              <TableHead className="py-4">
+                  <div className="flex items-center gap-2 cursor-pointer hover:text-primary transition-colors text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
                     Name <ArrowUpDown className="h-3 w-3" />
                   </div>
               </TableHead>
-              <TableHead className="py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Category</TableHead>
-              <TableHead className="py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Stock</TableHead>
-              <TableHead className="py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Price</TableHead>
-              <TableHead className="py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Waitlist Queue</TableHead>
-              <TableHead className="py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Status</TableHead>
-              <TableHead className="text-right py-3 pr-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Actions</TableHead>
+              <TableHead className="py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground/80">Category</TableHead>
+              <TableHead className="py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground/80">Stock</TableHead>
+              <TableHead className="py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground/80">Price</TableHead>
+              <TableHead className="py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground/80">Waitlist</TableHead>
+              <TableHead className="py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground/80">Status</TableHead>
+              <TableHead className="py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground/80">Created</TableHead>
+              <TableHead className="text-right py-4 pr-4 text-xs font-bold uppercase tracking-wider text-muted-foreground/80">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {initialProducts.length === 0 ? (
-                <TableRow><TableCell colSpan={9} className="text-center py-24 text-muted-foreground">No products found.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={10} className="text-center py-24 text-muted-foreground">No products found.</TableCell></TableRow>
             ) : (
                 initialProducts.map((product: any) => {
                     const stockStatus = getStockStatus(product.product_stock)
                     const isSelected = selectedIds.has(product.id)
                     const preorderCount = product.preorder_count || 0
+                    
+                    // Stock Breakdown String
+                    const stockBreakdown = product.product_stock?.length 
+                        ? product.product_stock.map((s: any) => `${s.size || 'N/A'}: ${s.quantity}`).join(', ')
+                        : 'No stock records'
 
                     return (
-                    <TableRow key={product.id} className={cn("group transition-colors border-b last:border-0 text-sm", isSelected ? "bg-primary/5 hover:bg-primary/5" : "hover:bg-muted/50")}>
+                    <TableRow key={product.id} className={cn("group transition-colors border-b last:border-0 text-sm hover:bg-muted/40", isSelected && "bg-primary/5 hover:bg-primary/10")}>
                         <TableCell className="px-4 align-middle">
                             <Checkbox 
                                 checked={isSelected}
@@ -353,62 +359,92 @@ export function ProductsClient({ initialProducts, meta }: { initialProducts: any
                         </TableCell>
                         <TableCell className="p-4 pl-0 align-middle">
                             {product.main_image_url ? (
-                                <img src={product.main_image_url} alt="" className="h-10 w-10 rounded-md object-cover border shadow-sm" />
+                                <img src={product.main_image_url} alt="" className="h-12 w-12 rounded-lg object-cover border shadow-sm transition-transform hover:scale-105" />
                             ) : (
-                                <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center text-muted-foreground text-xs border"><Package className="h-4 w-4 opacity-50"/></div>
+                                <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center text-muted-foreground text-xs border border-dashed"><Package className="h-4 w-4 opacity-50"/></div>
                             )}
                         </TableCell>
                         <TableCell className="font-medium align-middle">
-                            <div className="font-medium text-foreground">{product.name}</div>
+                            <div className="font-semibold text-foreground">{product.name}</div>
                         </TableCell>
                         <TableCell className="align-middle">
-                            <Badge variant="secondary" className="font-medium rounded-md text-xs bg-slate-100 text-slate-700 hover:bg-slate-200">{product.categories?.name || 'Uncategorized'}</Badge>
+                            <Badge variant="secondary" className="font-medium rounded-md text-[10px] bg-secondary/50 text-secondary-foreground hover:bg-secondary/70">{product.categories?.name || 'Uncategorized'}</Badge>
                         </TableCell>
                         <TableCell className="align-middle">
-                            <div className="flex items-center gap-2">
-                                <Badge variant={stockStatus.variant} className={cn("px-2 py-0.5 rounded-full text-[10px] font-semibold border", stockStatus.className)}>
-                                    {stockStatus.label}
-                                </Badge>
-                                <span className="text-xs text-muted-foreground">{stockStatus.count}</span>
+                            <div className="relative group/stock w-fit">
+                                <div className="flex items-center gap-2 cursor-help">
+                                    <Badge variant={stockStatus.variant} className={cn("px-2 py-0.5 rounded-full text-[10px] font-semibold border shadow-sm", stockStatus.className)}>
+                                        {stockStatus.label}
+                                    </Badge>
+                                    <span className="text-xs text-muted-foreground font-mono">{stockStatus.count}</span>
+                                </div>
+                                {/* Simple CSS Tooltip */}
+                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-popover text-popover-foreground text-xs rounded-md border shadow-xl opacity-0 invisible group-hover/stock:opacity-100 group-hover/stock:visible transition-all whitespace-nowrap z-50 pointer-events-none">
+                                    <div className="font-semibold mb-1 border-b pb-1 border-border/50">Stock Breakdown</div>
+                                    <div className="text-muted-foreground max-w-[200px] flex flex-wrap gap-2">
+                                        {product.product_stock?.map((s: any) => (
+                                            <span key={s.id} className="bg-secondary/30 px-1.5 rounded">{s.size}: <span className={s.quantity < 3 ? "text-red-500 font-bold" : ""}>{s.quantity}</span></span>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
                         </TableCell>
-                        <TableCell className="font-medium align-middle text-foreground">{formatCurrency(product.price)}</TableCell>
+                        <TableCell className="font-semibold align-middle text-foreground">{formatCurrency(product.price)}</TableCell>
                          <TableCell className="align-middle">
-                             <Badge 
-                                variant={preorderCount > 0 ? "default" : "outline"}
+                             <div 
                                 className={cn(
-                                    "cursor-pointer transition-colors",
-                                    preorderCount > 0 ? "bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200 hover:text-blue-900" : "text-muted-foreground border-zinc-200 hover:bg-zinc-100"
+                                    "flex items-center gap-1.5 px-2.5 py-1 rounded-full w-fit text-xs font-medium border transition-colors cursor-pointer",
+                                    preorderCount > 0 
+                                        ? "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 hover:border-blue-300" 
+                                        : "bg-transparent text-muted-foreground border-transparent hover:bg-muted"
                                 )}
                                 onClick={() => handleViewWaitlist(product)}
                             >
-                                {preorderCount} Interested
-                            </Badge>
+                                <Users className="h-3 w-3" />
+                                {preorderCount}
+                            </div>
                         </TableCell>
                         <TableCell className="align-middle">
                             <div className="flex items-center gap-1.5">
-                                <div className={cn("h-1.5 w-1.5 rounded-full ring-2 ring-offset-1 ring-offset-card", product.is_active ? "bg-emerald-500 ring-emerald-100" : "bg-slate-300 ring-slate-100")} />
+                                <span className={cn("relative flex h-2 w-2")}>
+                                  <span className={cn("animate-ping absolute inline-flex h-full w-full rounded-full opacity-75", product.is_active ? "bg-emerald-400" : "hidden")}></span>
+                                  <span className={cn("relative inline-flex rounded-full h-2 w-2", product.is_active ? "bg-emerald-500" : "bg-slate-300")}></span>
+                                </span>
                                 <span className="text-xs text-muted-foreground font-medium">{product.is_active ? 'Active' : 'Draft'}</span>
+                            </div>
+                        </TableCell>
+                        <TableCell className="align-middle">
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground/70">
+                                <Clock className="h-3 w-3" />
+                                {new Date(product.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                             </div>
                         </TableCell>
                         <TableCell className="text-right align-middle pr-4">
                             <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary" asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10" asChild>
                                     <Link href={`/admin/products/${product.id}`}>
                                         <Pencil className="h-3.5 w-3.5" />
                                     </Link>
                                 </Button>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground">
+                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted">
                                             <MoreHorizontal className="h-3.5 w-3.5" />
                                         </Button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="w-32">
+                                    <DropdownMenuContent align="end" className="w-40">
+                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem asChild>
+                                             <Link href={`/product/${product.slug}`} target="_blank" className="flex items-center cursor-pointer">
+                                                <div className="w-4 mr-2">↗</div> View in Store
+                                             </Link>
+                                        </DropdownMenuItem>
                                         <DropdownMenuItem 
-                                            className="text-destructive focus:text-destructive cursor-pointer text-xs"
+                                            className="text-destructive focus:text-destructive cursor-pointer group/delete"
                                             onClick={() => setDeleteId(product.id)}
                                         >
+                                            <Trash2 className="mr-2 h-4 w-4" />
                                             Delete
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
@@ -422,7 +458,10 @@ export function ProductsClient({ initialProducts, meta }: { initialProducts: any
         </Table>
         
         {/* Pagination Controls */}
-        <div className="border-t p-3 bg-muted/5">
+        <div className="border-t p-4 bg-muted/5 flex items-center justify-between">
+            <div className="text-xs text-muted-foreground">
+                Showing {initialProducts.length} of {meta.total} products
+            </div>
             <DataTablePagination totalItems={meta.total} itemsPerPage={meta.limit} />
         </div>
       </div>
