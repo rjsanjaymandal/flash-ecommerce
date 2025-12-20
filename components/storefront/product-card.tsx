@@ -257,36 +257,36 @@ export function ProductCard({ product, showRating = true, priority = false }: Pr
         </div>
 
          {/* Mobile Actions */}
-        <div className="lg:hidden mt-1">
+        <div className="lg:hidden mt-2 grid grid-cols-2 gap-2">
             {!isOutOfStock ? (
-                <div className="grid grid-cols-2 gap-2">
+                <>
                      <Button 
                         variant="outline" 
                         size="sm" 
-                        className="rounded-full h-9 text-[10px] font-black uppercase tracking-widest border-zinc-200 shadow-sm"
+                        className="h-9 rounded-sm text-[10px] font-bold uppercase tracking-widest border-zinc-200 shadow-sm hover:bg-zinc-50"
                         onClick={handleAddToCart}
                     >
                         Add
                     </Button>
                     <Button 
                         size="sm" 
-                        className="rounded-full h-9 text-[10px] font-black uppercase tracking-widest shadow-sm"
+                        className="h-9 rounded-sm text-[10px] font-bold uppercase tracking-widest shadow-sm bg-neutral-900 text-white hover:bg-neutral-800"
                         onClick={handleBuyNow}
                     >
                         Buy Now
                     </Button>
-                </div>
+                </>
             ) : (
                 <Button 
                     size="sm" 
                     className={cn(
-                        "w-full rounded-full h-9 text-[10px] font-black uppercase tracking-widest shadow-sm",
-                        isOnWaitlist ? "bg-green-500 hover:bg-green-600 text-white" : ""
+                        "col-span-2 h-9 rounded-sm text-[10px] font-bold uppercase tracking-widest shadow-sm",
+                        isOnWaitlist ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-neutral-900 hover:bg-neutral-800 text-white"
                     )}
                     onClick={handlePreOrder}
                     disabled={isLoadingWaitlist}
                 >
-                    {isLoadingWaitlist ? '...' : isOnWaitlist ? 'On Waitlist' : 'Pre Order'}
+                    {isLoadingWaitlist ? '...' : isOnWaitlist ? 'Joined Waitlist' : 'Notify Me'}
                 </Button>
             )}
         </div>
