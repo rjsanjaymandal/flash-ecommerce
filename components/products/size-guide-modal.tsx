@@ -57,7 +57,6 @@ export function SizeGuideModal({ open, onOpenChange }: SizeGuideModalProps) {
 
                 <div className="mt-6 space-y-2 text-sm text-muted-foreground bg-muted/20 p-4 rounded-lg">
                     <p><strong>Pro Tip:</strong> If you prefer an oversized fit (thug life aesthetic), go one size up.</p>
-                    <p>Model is 6'1" and wearing size L.</p>
                 </div>
             </DialogContent>
         </Dialog>
