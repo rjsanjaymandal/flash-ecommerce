@@ -18,12 +18,12 @@ export function FeaturedGrid({
     badge?: string
 }) {
   return (
-    <section className="py-12 md:py-24 px-4 sm:px-6 lg:px-8 max-w-[1600px] mx-auto relative overflow-hidden">
+    <section className="py-8 md:py-16 px-4 sm:px-6 lg:px-8 max-w-[1600px] mx-auto relative overflow-hidden">
         {/* Background Gradients */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none mix-blend-screen" />
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo-500/5 rounded-full blur-[100px] pointer-events-none mix-blend-screen" />
         
-        <div className="flex flex-col items-center text-center gap-6 mb-12 md:mb-16 relative z-10">
+        <div className="flex flex-col items-center text-center gap-6 mb-8 md:mb-12 relative z-10">
             <BrandBadge variant="outline">{badge}</BrandBadge>
             <motion.div
                 initial={{ opacity: 0, y: 20 }}

@@ -23,13 +23,13 @@ export function CategoryVibes({ categories }: CategoryVibesProps) {
   if (!categories?.length) return null
 
   return (
-    <section className="py-16 md:py-24 bg-background relative overflow-hidden">
+    <section className="py-8 md:py-16 bg-background relative overflow-hidden">
       {/* Brand Glows */}
       <BrandGlow className="top-0 right-[-10%]" size="lg" />
       <BrandGlow className="bottom-[-10%] left-[-10%]" size="lg" color="accent" />
 
       <div className="container mx-auto px-4 lg:px-8">
-        <div className="flex flex-col items-center text-center gap-4 mb-20 max-w-4xl mx-auto relative pt-12">
+        <div className="flex flex-col items-center text-center gap-4 mb-8 max-w-4xl mx-auto relative pt-8">
             <BrandBadge variant="primary" className="mb-2">The Collections</BrandBadge>
             <motion.h2 
                 initial={{ opacity: 0, scale: 0.95 }}
