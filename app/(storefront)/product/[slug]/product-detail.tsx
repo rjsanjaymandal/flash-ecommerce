@@ -15,6 +15,7 @@ import { ProductSelectors } from '@/components/products/product-selectors'
 import { MobileStickyBar } from '@/components/storefront/mobile-sticky-bar'
 import { FAQJsonLd } from '@/components/seo/faq-json-ld'
 import { ShareButton } from '@/components/products/share-button'
+import { motion } from 'framer-motion'
 
 // Types
 type StockItem = {
@@ -41,6 +42,9 @@ type ProductDetailProps = {
             desktop: string
         }
         slug?: string
+        categories?: {
+            name: string
+        } | null
     }
     initialReviews: {
         count: number
@@ -199,157 +203,175 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
             />
 
             <div className="container mx-auto px-4 lg:px-8">
-                {/* Breadcrumbs */}
-                <nav className="flex items-center text-sm text-muted-foreground mb-8 overflow-x-auto whitespace-nowrap pb-2">
-                    <Link href="/" className="hover:text-foreground transition-colors"><Home className="h-4 w-4" /></Link>
-                    <ChevronRight className="h-4 w-4 mx-2" />
-                    <Link href="/shop" className="hover:text-foreground transition-colors">Shop</Link>
-                    {(product as any).categories?.name && (
+                {/* Refined Breadcrumbs */}
+                <nav className="flex items-center text-xs lg:text-sm text-muted-foreground mb-8 lg:mb-12 overflow-x-auto whitespace-nowrap pb-2 scrollbar-hide">
+                    <Link href="/" className="hover:text-primary transition-colors flex-shrink-0">
+                        Home
+                    </Link>
+                    <span className="mx-2 text-muted-foreground/40">/</span>
+                    <Link href="/shop" className="hover:text-primary transition-colors flex-shrink-0">
+                        Shop
+                    </Link>
+                    
+                    {product.categories?.name && (
                         <>
-                            <ChevronRight className="h-4 w-4 mx-2" />
-                            <Link href={`/shop?category=${product.category_id}`} className="hover:text-foreground transition-colors hidden sm:inline">
-                                {(product as any).categories.name}
+                            <span className="mx-2 text-muted-foreground/40">/</span>
+                            <Link 
+                                href={`/shop?category=${product.category_id}`} 
+                                className="hover:text-primary transition-colors flex-shrink-0 font-medium text-foreground/80 hover:text-primary"
+                            >
+                                {product.categories.name}
                             </Link>
                         </>
                     )}
-                    <ChevronRight className="h-4 w-4 mx-2" />
-                    <span className="font-medium text-foreground truncate max-w-[150px] sm:max-w-xs">{product.name}</span>
+                    
+                    <span className="mx-2 text-muted-foreground/40">/</span>
+                    <span className="font-bold text-foreground truncate max-w-[120px] sm:max-w-xs md:max-w-md">
+                        {product.name}
+                    </span>
                 </nav>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 xl:gap-24">
-                    {/* LEFT: Gallery */}
-                    <ProductGallery 
-                        images={product.gallery_image_urls || []} 
-                        name={product.name} 
-                        mainImage={product.images?.desktop || product.main_image_url} 
-                    />
-
-                    {/* RIGHT: Product Info */}
-                    <div className="flex flex-col h-full pt-2">
-                        {/* Title & Price */}
-                        <div className="border-b border-border/60 pb-8 mb-8">
-                             <div className="flex justify-between items-start mb-6">
-                                <h1 className="text-4xl lg:text-6xl font-black tracking-tighter text-foreground uppercase leading-[0.85] max-w-[90%]">
-                                    <span className="text-gradient">{product.name}</span>
-                                </h1>
-                                <ShareButton title={product.name} />
-                             </div>
-                             
-                            <div className="flex items-center justify-between">
-                                <p className="text-4xl font-black tracking-tighter italic">{formatCurrency(product.price)}</p>
-                                {initialReviews.count > 0 && (
-                                    <div className="flex items-center gap-2 bg-muted/30 backdrop-blur-md px-4 py-2 rounded-2xl border border-border/50 shadow-sm">
-                                        <div className="flex text-amber-400"><Star className="h-4 w-4 fill-current" /></div>
-                                        <span className="font-black text-xs uppercase tracking-widest text-foreground">{initialReviews.average}</span>
-                                        <div className="h-3 w-px bg-border mx-1" />
-                                        <span className="text-[10px] uppercase font-black tracking-[0.2em] text-muted-foreground">{initialReviews.count} Reviews</span>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Selectors */}
-                        <ProductSelectors 
-                            sizeOptions={sizeOptions}
-                            colorOptions={colorOptions}
-                            selectedSize={selectedSize}
-                            selectedColor={selectedColor}
-                            onSelectSize={(s) => { setSelectedSize(s); setQuantity(1); setSelectedColor('') }}
-                            onSelectColor={(c) => { setSelectedColor(c); setQuantity(1) }}
-                            isAvailable={isAvailable}
-                            isSizeAvailable={isSizeAvailable}
-                            getStock={getStock}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 xl:gap-20">
+                    {/* LEFT: Gallery (Takes 7 cols) */}
+                    <div className="lg:col-span-7">
+                        <ProductGallery 
+                            images={product.gallery_image_urls || []} 
+                            name={product.name} 
+                            mainImage={product.images?.desktop || product.main_image_url} 
                         />
+                    </div>
 
-                        {/* Actions */}
-                        <div className="space-y-8" ref={mainActionRef}>
-                            <div className="flex flex-col gap-4">
-                                <div className="flex gap-3">
-                                    <Button 
-                                        size="lg" 
-                                        className={cn(
-                                            "flex-1 h-16 text-xs sm:text-sm font-black uppercase tracking-[0.2em] rounded-2xl shadow-2xl transition-all duration-300",
-                                            isOutOfStock 
-                                                ? "bg-amber-400 text-amber-950 hover:bg-amber-500 shadow-amber-500/20" 
-                                                : "gradient-primary shadow-primary/30 hover:scale-[1.02] active:scale-95"
-                                        )}
-                                        disabled={Boolean(!selectedSize || !selectedColor)}
-                                        onClick={isOutOfStock ? handlePreOrder : handleAddToCart}
-                                    >
-                                        {isOutOfStock ? (
-                                            <span className="flex items-center gap-2">
-                                                <Clock className="h-4 w-4" />
-                                                {isOnWaitlist ? "Joined Waitlist" : "Join Waitlist"}
-                                            </span>
-                                        ) : (
-                                            <span className="flex items-center gap-2">
-                                                <Plus className="h-4 w-4" />
-                                                Add to Bag
-                                            </span>
-                                        )}
-                                    </Button>
-
-                                    <Button
-                                        size="lg"
-                                        variant="outline"
-                                        className={cn(
-                                            "h-16 w-16 rounded-2xl border-2 transition-all duration-300 px-0 shrink-0",
-                                            isWishlisted ? "border-red-500/50 bg-red-500/10 text-red-500 shadow-lg shadow-red-500/20" : "hover:border-primary/50 hover:bg-primary/5"
-                                        )}
-                                        onClick={() => isWishlisted ? removeItem(product.id) : addItem({ productId: product.id, name: product.name, price: product.price, image: product.main_image_url, slug: product.slug || '' })}
-                                    >
-                                        <Heart className={cn("h-6 w-6 transition-colors", isWishlisted ? "fill-red-500 stroke-red-500" : "text-foreground")} />
-                                    </Button>
+                    {/* RIGHT: Product Info (Takes 5 cols) */}
+                    <div className="lg:col-span-5 flex flex-col h-full pt-2 lg:sticky lg:top-24 self-start">
+                        <motion.div 
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.5, delay: 0.2 }}
+                            className="bg-card/50 backdrop-blur-sm rounded-none lg:p-0"
+                        >
+                            {/* Title & Price */}
+                            <div className="border-b border-border/60 pb-8 mb-8">
+                                <div className="flex justify-between items-start mb-4">
+                                    <h1 className="text-4xl lg:text-5xl font-black tracking-tighter text-foreground uppercase leading-[0.9] max-w-[85%]">
+                                        <span className="text-gradient">{product.name}</span>
+                                    </h1>
+                                    <ShareButton title={product.name} />
                                 </div>
-                                
-                                {isOutOfStock ? null : (
-                                    <Button 
-                                        size="lg" 
-                                        className="w-full h-16 text-xs sm:text-sm font-black uppercase tracking-[0.2em] rounded-2xl bg-foreground text-background hover:bg-foreground/90 transition-all duration-300 shadow-xl"
-                                        disabled={Boolean(!selectedSize || !selectedColor)}
-                                        onClick={handleBuyNow}
-                                    >
-                                        Instantly Checkout
-                                    </Button>
-                                )}
+                                <div className="flex items-center justify-between">
+                                    <div className="flex flex-col">
+                                        <p className="text-3xl font-black tracking-tighter text-foreground">{formatCurrency(product.price)}</p>
+                                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest mt-1">Inclusive of all taxes</p>
+                                    </div>
+                                    
+                                    {initialReviews.count > 0 && (
+                                        <div className="flex flex-col items-end">
+                                            <div className="flex items-center gap-1.5 text-amber-400">
+                                                <Star className="h-4 w-4 fill-current" />
+                                                <span className="font-black text-lg text-foreground">{initialReviews.average}</span>
+                                            </div>
+                                            <Link href="#reviews" className="text-[10px] bg-muted px-2 py-1 rounded-full font-bold uppercase tracking-widest text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors">
+                                                {initialReviews.count} Reviews
+                                            </Link>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                        </div>
 
-                         {/* Trust Badges */}
-                        <div className="grid grid-cols-3 gap-2 py-8 border-b border-border/60">
-                             <div className="flex flex-col items-center gap-3 text-center group">
-                                 <div className="h-10 w-10 flex items-center justify-center bg-primary/5 rounded-2xl group-hover:bg-primary/10 transition-colors"><Truck className="h-5 w-5 text-primary" /></div>
-                                 <span className="text-[10px] uppercase font-black tracking-widest opacity-60">Express Shipping</span>
-                             </div>
-                             <div className="flex flex-col items-center gap-3 text-center group">
-                                 <div className="h-10 w-10 flex items-center justify-center bg-accent/5 rounded-2xl group-hover:bg-accent/10 transition-colors"><RefreshCcw className="h-5 w-5 text-accent" /></div>
-                                 <span className="text-[10px] uppercase font-black tracking-widest opacity-60">Easy Returns</span>
-                             </div>
-                             <div className="flex flex-col items-center gap-3 text-center group">
-                                 <div className="h-10 w-10 flex items-center justify-center bg-emerald-500/5 rounded-2xl group-hover:bg-emerald-500/10 transition-colors"><ShieldCheck className="h-5 w-5 text-emerald-500" /></div>
-                                 <span className="text-[10px] uppercase font-black tracking-widest opacity-60">Secure Checkout</span>
-                             </div>
-                        </div>
+                            {/* Selectors */}
+                            <ProductSelectors 
+                                sizeOptions={sizeOptions}
+                                colorOptions={colorOptions}
+                                selectedSize={selectedSize}
+                                selectedColor={selectedColor}
+                                onSelectSize={(s) => { setSelectedSize(s); setQuantity(1); setSelectedColor('') }}
+                                onSelectColor={(c) => { setSelectedColor(c); setQuantity(1) }}
+                                isAvailable={isAvailable}
+                                isSizeAvailable={isSizeAvailable}
+                                getStock={getStock}
+                            />
 
-                        {/* Accordions */}
-                        <Accordion type="single" collapsible className="w-full">
-                            <AccordionItem value="details" className="border-border/60">
-                                <AccordionTrigger className="uppercase text-xs font-bold tracking-widest text-muted-foreground hover:text-foreground hover:no-underline py-6">Product Details</AccordionTrigger>
-                                <AccordionContent className="text-muted-foreground leading-relaxed pb-6">
-                                    <div 
-                                        className="prose prose-stone prose-lg max-w-none prose-headings:font-bold prose-p:text-muted-foreground prose-li:text-muted-foreground"
-                                        dangerouslySetInnerHTML={{ __html: product.description || "No description available." }}
-                                    />
-                                </AccordionContent>
-                            </AccordionItem>
-                            <AccordionItem value="shipping" className="border-border/60">
-                                <AccordionTrigger className="uppercase text-xs font-bold tracking-widest text-muted-foreground hover:text-foreground hover:no-underline py-6">Shipping & Returns</AccordionTrigger>
-                                <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-6">
-                                    <p className="mb-2"><strong>Global Shipping:</strong> Free shipping on all orders over ₹2000. Orders are processed within 24 hours.</p>
-                                    <p><strong>Easy Returns:</strong> Returns accepted within 14 days of delivery. No questions asked.</p>
-                                </AccordionContent>
-                            </AccordionItem>
-                        </Accordion>
+                            {/* Actions */}
+                            <div className="space-y-6" ref={mainActionRef}>
+                                <div className="flex flex-col gap-3">
+                                    <div className="flex gap-3">
+                                        <Button 
+                                            size="lg" 
+                                            className={cn(
+                                                "flex-1 h-14 text-sm font-black uppercase tracking-[0.15em] rounded-xl shadow-lg hover:shadow-xl transition-all duration-300",
+                                                isOutOfStock 
+                                                    ? "bg-amber-400 text-amber-950 hover:bg-amber-500" 
+                                                    : "bg-foreground text-background hover:bg-foreground/90 hover:scale-[1.01]"
+                                            )}
+                                            disabled={Boolean(!selectedSize || !selectedColor)}
+                                            onClick={isOutOfStock ? handlePreOrder : handleAddToCart}
+                                        >
+                                            {isOutOfStock ? (
+                                                <span className="flex items-center gap-2">
+                                                    <Clock className="h-4 w-4" />
+                                                    {isOnWaitlist ? "On Waitlist" : "Join Waitlist"}
+                                                </span>
+                                            ) : (
+                                                <span className="flex items-center gap-2">
+                                                    <Plus className="h-4 w-4" />
+                                                    Add to Bag
+                                                </span>
+                                            )}
+                                        </Button>
+
+                                        <Button
+                                            size="lg"
+                                            variant="outline"
+                                            className={cn(
+                                                "h-14 w-14 rounded-xl border-2 transition-all duration-300 px-0 shrink-0",
+                                                isWishlisted ? "border-red-500/50 bg-red-500/5 text-red-500" : "hover:border-primary/30 hover:bg-primary/5"
+                                            )}
+                                            onClick={() => isWishlisted ? removeItem(product.id) : addItem({ productId: product.id, name: product.name, price: product.price, image: product.main_image_url, slug: product.slug || '' })}
+                                        >
+                                            <Heart className={cn("h-5 w-5 transition-colors", isWishlisted ? "fill-red-500 stroke-red-500" : "text-foreground")} />
+                                        </Button>
+                                    </div>
+                                    
+                                    {!isOutOfStock && (
+                                        <Button 
+                                            size="lg" 
+                                            className="w-full h-14 text-sm font-black uppercase tracking-[0.15em] rounded-xl gradient-primary text-white shadow-xl shadow-primary/25 hover:shadow-primary/40 hover:scale-[1.01] transition-all"
+                                            disabled={Boolean(!selectedSize || !selectedColor)}
+                                            onClick={handleBuyNow}
+                                        >
+                                            Buy It Now
+                                        </Button>
+                                    )}
+                                </div>
+                            </div>
+                            
+                            {/* Short Description Accordion */}
+                            <div className="mt-8">
+                                <Accordion type="single" collapsible className="w-full">
+                                    <AccordionItem value="details" className="border-border/60">
+                                        <AccordionTrigger className="uppercase text-[11px] font-black tracking-widest text-muted-foreground hover:text-foreground">Product Description</AccordionTrigger>
+                                        <AccordionContent className="text-muted-foreground leading-relaxed">
+                                            <div 
+                                                className="prose prose-sm prose-stone max-w-none text-sm text-foreground/80 font-medium"
+                                                dangerouslySetInnerHTML={{ __html: product.description || "No description available." }}
+                                            />
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                    <AccordionItem value="shipping" className="border-border/60">
+                                        <AccordionTrigger className="uppercase text-[11px] font-black tracking-widest text-muted-foreground hover:text-foreground">Shipping Info</AccordionTrigger>
+                                        <AccordionContent className="text-sm text-muted-foreground leading-relaxed space-y-2">
+                                            <div className="flex items-center gap-2">
+                                                <Truck className="h-4 w-4 text-primary" />
+                                                <span>Free shipping on orders over ₹2000</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <RefreshCcw className="h-4 w-4 text-primary" />
+                                                <span>14-day easy returns policy</span>
+                                            </div>
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                </Accordion>
+                            </div>
+                        </motion.div>
                     </div>
                 </div>
             </div>
