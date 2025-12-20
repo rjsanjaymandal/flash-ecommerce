@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next"
 import './globals.css'
 import { Providers } from './providers'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
+import { OrganizationJsonLd } from '@/components/seo/organization-json-ld'
 
 // import { Geist, Geist_Mono } from 'next/font/google'
 // const geistSans = Geist({
@@ -80,7 +81,7 @@ export default async function RootLayout({
         <PostHogProvider>
           <Providers initialUser={user} initialSession={session} initialProfile={profile}>
         <NuqsAdapter>
-
+            <OrganizationJsonLd />
             {children}
             <Analytics />
           </NuqsAdapter>

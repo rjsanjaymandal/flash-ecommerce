@@ -290,6 +290,23 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
                                 getStock={getStock}
                             />
 
+                            {/* Low Stock Warning */}
+                            {maxQty > 0 && maxQty < 5 && selectedSize && selectedColor && (
+                                <motion.div 
+                                    initial={{ opacity: 0, y: -5 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="p-3 mb-4 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center gap-3"
+                                >
+                                    <div className="relative flex h-2 w-2">
+                                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                                      <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                                    </div>
+                                    <p className="text-xs font-bold uppercase tracking-wide text-amber-500">
+                                        Hurry! Only {maxQty} left in this size.
+                                    </p>
+                                </motion.div>
+                            )}
+
                             {/* Actions */}
                             <div className="space-y-6" ref={mainActionRef}>
                                 <div className="flex flex-col gap-3">

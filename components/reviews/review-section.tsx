@@ -58,6 +58,7 @@ export function ReviewSection({ productId, reviews }: { productId: string, revie
           <DialogContent className="sm:max-w-md rounded-3xl border-border/50 bg-card/95 backdrop-blur-xl">
              <DialogHeader>
                  <DialogTitle className="font-black uppercase tracking-tight text-xl">Review Specs</DialogTitle>
+                 <p className="text-xs text-muted-foreground">Upload a photo & get <span className="text-primary font-bold">10% OFF</span> your next order.</p>
              </DialogHeader>
              <ReviewForm productId={productId} onSuccess={() => setIsOpen(false)} />
           </DialogContent>
