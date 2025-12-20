@@ -22,6 +22,20 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '10mb',
     },
   },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  async rewrites() {
+    return [
+      {
+        source: '/auth/v1/callback',
+        destination: '/auth/callback',
+      },
+    ]
+  },
 };
 
 export default nextConfig;

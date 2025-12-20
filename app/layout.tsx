@@ -5,15 +5,16 @@ import './globals.css'
 import { Providers } from './providers'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-})
-
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
-})
+// import { Geist, Geist_Mono } from 'next/font/google'
+// const geistSans = Geist({
+//   variable: '--font-geist-sans',
+//   subsets: ['latin'],
+// })
+// 
+// const geistMono = Geist_Mono({
+//   variable: '--font-geist-mono',
+//   subsets: ['latin'],
+// })
 
 export const viewport: Viewport = {
   themeColor: '#000000',
@@ -25,11 +26,11 @@ export const metadata: Metadata = {
     template: '%s | FLASH'
   },
   description: 'Bold, affirming fashion for everyone. Shop our collection of gender-inclusive apparel.',
-  metadataBase: new URL('https://flash-ecommerce.vercel.app'),
+  metadataBase: new URL('https://flashhfashion.in'),
   openGraph: {
     title: 'FLASH | Queer & Inclusive Fashion',
     description: 'Bold, affirming fashion for everyone.',
-    url: 'https://flash-ecommerce.vercel.app',
+    url: 'https://flashhfashion.in',
     siteName: 'FLASH',
     locale: 'en_US',
     type: 'website',
@@ -72,7 +73,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`antialiased overflow-x-hidden`}
         suppressHydrationWarning
       >
         <Providers initialUser={user} initialSession={session} initialProfile={profile}>

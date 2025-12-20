@@ -140,6 +140,35 @@ export type Database = {
           },
         ]
       }
+      content_globals: {
+        Row: {
+          key: string
+          value: Json
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          key: string
+          value?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          key?: string
+          value?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+           {
+             foreignKeyName: "content_globals_updated_by_fkey"
+             columns: ["updated_by"]
+             isOneToOne: false
+             referencedRelation: "profiles"
+             referencedColumns: ["id"]
+           }
+         ]
+       }
       coupons: {
         Row: {
           id: string

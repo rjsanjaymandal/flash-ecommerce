@@ -118,7 +118,7 @@ export default function LoginPage() {
             email,
             options: {
                 shouldCreateUser: true,
-                emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+                emailRedirectTo: `${window.location.origin}/auth/v1/callback?next=${encodeURIComponent(next)}`,
                 data: isSignup ? { full_name: name, name: name } : undefined
             }
         })
@@ -188,7 +188,7 @@ export default function LoginPage() {
         const { error } = await supabase.auth.signInWithOAuth({
             provider,
             options: {
-                redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`
+                redirectTo: `${window.location.origin}/auth/v1/callback?next=${encodeURIComponent(next)}`
             }
         })
         if (error) throw error
