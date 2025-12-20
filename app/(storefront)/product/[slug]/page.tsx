@@ -34,6 +34,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       title,
       description,
       images: product.main_image_url ? [product.main_image_url] : [],
+    },
+    alternates: {
+      canonical: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://flashhfashion.in'}/product/${product.slug}`,
     }
   }
 }
