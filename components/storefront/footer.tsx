@@ -25,10 +25,14 @@ export function Footer() {
                     Redefining fashion with bold, inclusive styles for everyone. Quality meets unapologetic self-expression.
                 </p>
                 <div className="flex gap-2 pt-2">
-                    {[Instagram, Twitter, Facebook].map((Icon, i) => (
-                        <div key={i} className="h-10 w-10 rounded-full border border-input flex items-center justify-center hover:bg-foreground hover:text-background hover:border-foreground transition-all duration-300 cursor-pointer group">
+                    {[
+                        { Icon: Instagram, href: "https://www.instagram.com/flashhfashion/" },
+                        { Icon: Twitter, href: "#" },
+                        { Icon: Facebook, href: "#" }
+                    ].map(({ Icon, href }, i) => (
+                        <a key={i} href={href} target="_blank" rel="noopener noreferrer" className="h-10 w-10 rounded-full border border-input flex items-center justify-center hover:bg-foreground hover:text-background hover:border-foreground transition-all duration-300 cursor-pointer group">
                              <Icon className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                        </div>
+                        </a>
                     ))}
                 </div>
             </div>

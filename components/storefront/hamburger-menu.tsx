@@ -126,9 +126,16 @@ export function HamburgerMenu({ categories }: HamburgerMenuProps) {
                     {/* Footer / Socials */}
                     <div className="p-6 border-t border-border bg-muted/20">
                         <div className="flex justify-center gap-6">
-                            {[Instagram, Twitter, Youtube, Facebook].map((Icon, i) => (
-                                <Button key={i} variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground hover:bg-accent rounded-full h-8 w-8">
-                                    <Icon className="h-4 w-4" />
+                            {[
+                                { Icon: Instagram, href: "https://www.instagram.com/flashhfashion/" },
+                                { Icon: Twitter, href: "#" },
+                                { Icon: Youtube, href: "#" },
+                                { Icon: Facebook, href: "#" }
+                            ].map(({ Icon, href }, i) => (
+                                <Button key={i} variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground hover:bg-accent rounded-full h-8 w-8" asChild>
+                                    <a href={href} target="_blank" rel="noopener noreferrer">
+                                        <Icon className="h-4 w-4" />
+                                    </a>
                                 </Button>
                             ))}
                         </div>
