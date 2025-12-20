@@ -68,7 +68,10 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
   return (
       <>
-        <ProductJsonLd product={{...product, stock: product.product_stock?.some((s: any) => s.quantity > 0) ? 1 : 0}} />
+        <ProductJsonLd 
+            product={{...product, stock: product.product_stock?.some((s: any) => s.quantity > 0) ? 1 : 0}} 
+            reviews={reviews as any[]}
+        />
         <ProductDetailClient product={product} initialReviews={{ count: reviewCount, average: averageRating }} />
         
         <div className="container mx-auto px-4 lg:px-8 space-y-20 pb-20">

@@ -18,7 +18,8 @@ export function ProductGallery({ images, name, mainImage }: ProductGalleryProps)
 
     return (
         <div className="relative">
-            <div className="lg:sticky lg:top-24 space-y-4">
+            {/* Desktop: Sticky + Grid */}
+            <div className="hidden lg:block lg:sticky lg:top-24 space-y-4">
                 <div className="aspect-3/4 lg:aspect-4/5 w-full overflow-hidden rounded-md bg-muted/20 border border-border/50 shadow-sm relative group">
                     <AnimatePresence mode="wait">
                         <motion.img 
@@ -32,10 +33,8 @@ export function ProductGallery({ images, name, mainImage }: ProductGalleryProps)
                             className="h-full w-full object-cover" 
                         />
                     </AnimatePresence>
-                    {/* Zoom/Interactive Hint can go here */}
                 </div>
                 
-                {/* Thumbnails */}
                 {allImages.length > 1 && (
                     <div className="grid grid-cols-4 gap-2">
                         {allImages.map((img, i) => (
@@ -52,6 +51,20 @@ export function ProductGallery({ images, name, mainImage }: ProductGalleryProps)
                         ))}
                     </div>
                 )}
+            </div>
+
+            {/* Mobile: Swipeable Carousel */}
+            <div className="lg:hidden -mx-4 sm:mx-0">
+                <div className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide gap-1 px-4 sm:px-0 pb-4">
+                    {allImages.map((img, i) => (
+                        <div key={i} className="snap-center shrink-0 w-[85vw] sm:w-[400px] aspect-3/4 rounded-xl overflow-hidden bg-muted/20 border border-border/50 relative">
+                             <img src={img} alt={`${name} ${i + 1}`} className="w-full h-full object-cover" />
+                             <div className="absolute bottom-3 right-3 bg-black/50 text-white text-[10px] px-2 py-1 rounded-full backdrop-blur-md font-bold">
+                                 {i + 1} / {allImages.length}
+                             </div>
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     )

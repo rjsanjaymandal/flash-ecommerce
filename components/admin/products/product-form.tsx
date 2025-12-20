@@ -405,7 +405,7 @@ export function ProductForm({ initialData, categories, isLoading, onSubmit, onCa
                                                         <SelectValue placeholder="Select..." />
                                                     </SelectTrigger>
                                                 </FormControl>
-                                                <SelectContent className="bg-white dark:bg-neutral-950 border shadow-md relative z-[9999]">
+                                                <SelectContent className="bg-white dark:bg-neutral-950 border shadow-md relative z-9999">
                                                     {categories.map(c => (
                                                         <SelectItem key={c.id} value={c.id} className="cursor-pointer bg-white dark:bg-neutral-950 hover:bg-zinc-100 dark:hover:bg-zinc-800">{c.name}</SelectItem>
                                                     ))}
