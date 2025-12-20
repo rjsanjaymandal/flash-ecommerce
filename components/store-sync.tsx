@@ -31,24 +31,82 @@ export function StoreSync() {
           .select('product_id, size, color, quantity')
           .in('product_id', items.map(i => i.productId))
       
+      // Edge Case: If stocks query fails or returns nothing, we shouldn't assume OOS for everything unless we are sure.
+      // But if we get an empty array and we asked for specific IDs, it means they might be deleted. 
+      // Safe bet: if !stocks, do nothing.
       if (!stocks) return
 
       let changed = false
+      const changes: string[] = []
+
       const newItems = items.map(item => {
           const stockEntry = stocks.find(s => 
               s.product_id === item.productId && s.size === item.size && s.color === item.color
           )
+          
+          // If stock entry is missing, it implies 0 stock (or product deleted).
           const available = stockEntry?.quantity ?? 0
+          
           if (item.quantity > available) {
               changed = true
+              if (available === 0) {
+                  changes.push(`Removed ${item.name} (${item.size}/${item.color}) - Out of Stock`)
+              } else {
+                  changes.push(`Adjusted ${item.name} quantity to ${available}`)
+              }
               return { ...item, quantity: available, maxQuantity: available }
           }
           return { ...item, maxQuantity: available }
       }).filter(i => i.quantity > 0)
 
       if (changed) {
-          toast.warning("Cart updated based on available stock.")
+          // Show specific changes or a summary
+          if (changes.length === 1) {
+             toast.warning(changes[0])
+          } else {
+             toast.warning("Some items were updated due to stock changes.")
+          }
           setCartItems(newItems)
+          
+          // SYNC BACK TO DB
+          if (user) {
+              // 1. Identify removed items to DELETE
+              const removedItems = items.filter(oldItem => 
+                  !newItems.some(newItem => 
+                      newItem.productId === oldItem.productId && 
+                      newItem.size === oldItem.size && 
+                      newItem.color === oldItem.color
+                  )
+              )
+
+              for (const removed of removedItems) {
+                  await supabase.from('cart_items').delete().match({ 
+                      user_id: user.id, 
+                      product_id: removed.productId, 
+                      size: removed.size, 
+                      color: removed.color 
+                  })
+              }
+
+              // 2. Identify modified items to UPDATE
+              const modifiedItems = newItems.filter(newItem => {
+                  const oldItem = items.find(i => 
+                      i.productId === newItem.productId && 
+                      i.size === newItem.size && 
+                      i.color === newItem.color
+                  )
+                  return oldItem && oldItem.quantity !== newItem.quantity
+              })
+
+              for (const modified of modifiedItems) {
+                  await supabase.from('cart_items').update({ quantity: modified.quantity }).match({
+                      user_id: user.id,
+                      product_id: modified.productId,
+                      size: modified.size,
+                      color: modified.color
+                  })
+              }
+          }
       }
   }
 

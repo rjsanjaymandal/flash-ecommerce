@@ -73,7 +73,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           setItems(mappedItems)
           
           // Validate stock after loading
-          validateStock(mappedItems)
+          // Stock validation is now handled by StoreSync
+          // validateStock(mappedItems)
         }
       } else {
         // Load from LocalStorage
@@ -100,75 +101,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, [items, user, isLoading])
 
-  // Real-time Stock Check & Listener
-  const validateStock = useCallback(async (currentItems: CartItem[]) => {
-      if (currentItems.length === 0) return
-
-      // Fetch latest stock for all items in cart
-      const { data: stocks } = await supabase
-          .from('product_stock')
-          .select('product_id, size, color, quantity')
-          .in('product_id', currentItems.map(i => i.productId))
-      
-      if (!stocks) return
-
-      let stockChanged = false
-      const newItems = currentItems.map(item => {
-          const stockEntry = stocks.find(s => 
-              s.product_id === item.productId && s.size === item.size && s.color === item.color
-          )
-          
-          // If stock doesn't exist or is 0, remove item (or set to 0?)
-          // If stock < quantity, cap it
-          const available = stockEntry?.quantity ?? 0
-          
-          if (item.quantity > available) {
-              stockChanged = true
-              return { ...item, quantity: available, maxQuantity: available }
-          }
-           return { ...item, maxQuantity: available }
-      }).filter(item => item.quantity > 0) // Remove OOS items
-
-      if (stockChanged) {
-          toast.warning("Some items in your cart were updated due to stock changes.")
-          setItems(newItems)
-          // If user logged in, should sync this back to DB ideally, but for now just UI
-      }
-  }, [])
-
-  // Subscribe to real-time stock changes
-  useEffect(() => {
-    const channel = supabase
-      .channel('stock-changes')
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'product_stock' },
-        (payload) => {
-            // Check if this stock update affects our cart
-            const { product_id, size, color, quantity } = payload.new as any
-            
-            setItems(current => {
-                 const needsUpdate = current.some(i => 
-                     i.productId === product_id && i.size === size && i.color === color && i.quantity > quantity
-                 )
-
-                 if (needsUpdate) {
-                     toast.error("An item in your cart has sold out or reduced stock!")
-                     return current.map(i => 
-                        (i.productId === product_id && i.size === size && i.color === color && i.quantity > quantity)
-                            ? { ...i, quantity: Math.max(0, quantity), maxQuantity: quantity }
-                            : i
-                     ).filter(i => i.quantity > 0)
-                 }
-                 return current
-            })
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
+    // Validation and subscriptions are now handled by StoreSync to avoid duplication
+    // We only keep basic state loading here if needed, but really CartProvider should just expose the Context
+    return () => {}
   }, [])
 
 
