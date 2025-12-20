@@ -6,8 +6,7 @@ import { ReviewSection } from '@/components/reviews/review-section'
 import { RecentlyViewed } from '@/components/products/recently-viewed'
 import { NewsletterSection } from '@/components/marketing/newsletter-section'
 import { ProductCarousel } from '@/components/products/product-carousel'
-import Link from 'next/link'
-import { formatCurrency } from '@/lib/utils'
+import { ProductJsonLd } from '@/components/seo/product-json-ld'
 import { notFound } from 'next/navigation'
 
 export const revalidate = 60 // Revalidate every minute
@@ -18,8 +17,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
   if (!product) return { title: 'Product Not Found' }
 
-  const title = `${product.name} | Flash Store`
-  const description = product.description || `Buy ${product.name} on Flash Store. Premium Streetwear 2025.`
+  const title = `${product.name} | Flash Brand`
+  const description = (product.description || `Buy ${product.name} on Flash Store. Premium Streetwear 2025.`).slice(0, 160)
   
   return {
     title,
@@ -39,8 +38,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }
 }
 
-export default async function ProductPage({ params }: { params: { slug: string } }) {
-  const { slug } = await params 
+export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
 
   // Parallel Fetching for performance
   const productData = getProductBySlug(slug)
@@ -64,40 +63,9 @@ export default async function ProductPage({ params }: { params: { slug: string }
       ? (reviews.reduce((acc: number, r: any) => acc + r.rating, 0) / reviewCount).toFixed(1)
       : '0.0'
 
-  // JSON-LD Structured Data
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Product',
-    name: product.name,
-    image: product.main_image_url,
-    description: product.description,
-    sku: product.id,
-    brand: {
-      '@type': 'Brand',
-      name: 'Flash',
-    },
-    aggregateRating: reviewCount > 0 ? {
-        '@type': 'AggregateRating',
-        ratingValue: averageRating,
-        reviewCount: reviewCount
-    } : undefined,
-    offers: {
-      '@type': 'Offer',
-      url: `https://flash-ecommerce.vercel.app/product/${slug}`,
-      priceCurrency: 'INR',
-      price: product.price,
-      availability: (product.product_stock?.some((s: any) => s.quantity > 0)) 
-        ? 'https://schema.org/InStock' 
-        : 'https://schema.org/OutOfStock',
-    },
-  }
-
   return (
       <>
-        <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
+        <ProductJsonLd product={{...product, stock: product.product_stock?.some((s: any) => s.quantity > 0) ? 1 : 0}} />
         <ProductDetailClient product={product} initialReviews={{ count: reviewCount, average: averageRating }} />
         
         <div className="container mx-auto px-4 lg:px-8 space-y-20 pb-20">
