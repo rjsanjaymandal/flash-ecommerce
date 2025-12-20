@@ -42,7 +42,7 @@ export function MobileStickyBar({
                         <Button 
                             size="lg" 
                             className={cn(
-                                "flex-2 h-12 text-xs font-black uppercase tracking-[0.2em] rounded-xl shadow-xl",
+                                "flex-[2] h-12 text-xs font-black uppercase tracking-[0.2em] rounded-xl shadow-xl",
                                 isOutOfStock 
                                     ? "bg-amber-400 text-amber-950 hover:bg-amber-500" 
                                     : "gradient-primary hover:scale-[1.02] active:scale-95"

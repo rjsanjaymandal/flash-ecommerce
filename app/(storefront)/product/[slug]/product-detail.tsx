@@ -204,14 +204,16 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
                     <Link href="/" className="hover:text-foreground transition-colors"><Home className="h-4 w-4" /></Link>
                     <ChevronRight className="h-4 w-4 mx-2" />
                     <Link href="/shop" className="hover:text-foreground transition-colors">Shop</Link>
-                    {product.category_id && (
+                    {(product as any).categories?.name && (
                         <>
                             <ChevronRight className="h-4 w-4 mx-2" />
-                            <Link href={`/shop?category=${product.category_id}`} className="hover:text-foreground transition-colors">Category</Link>
+                            <Link href={`/shop?category=${product.category_id}`} className="hover:text-foreground transition-colors hidden sm:inline">
+                                {(product as any).categories.name}
+                            </Link>
                         </>
                     )}
                     <ChevronRight className="h-4 w-4 mx-2" />
-                    <span className="font-medium text-foreground">{product.name}</span>
+                    <span className="font-medium text-foreground truncate max-w-[150px] sm:max-w-xs">{product.name}</span>
                 </nav>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 xl:gap-24">
