@@ -164,58 +164,56 @@ export function ProductCard({ product, showRating = true, priority = false }: Pr
   return (
     <motion.div 
         whileHover={{ y: -4 }}
-        className="group relative flex flex-col gap-3"
+        className="group relative flex flex-col gap-2"
     >
         {/* Image Container */}
-        <Link href={`/product/${product.slug || product.id}`} className="block relative aspect-3/4 overflow-hidden rounded-xl bg-muted/20 border border-transparent group-hover:border-border/50 transition-all duration-300 shadow-sm">
+        <Link href={`/product/${product.slug || product.id}`} className="block relative aspect-[3/4] overflow-hidden rounded-md bg-muted/20 border border-transparent group-hover:border-border/50 transition-all duration-300">
             {/* Badges */}
-            <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
+            <div className="absolute top-2 left-2 z-10 flex flex-col gap-1.5">
                  {isOutOfStock ? (
-                     <Badge className="bg-amber-500 hover:bg-amber-600 text-white uppercase tracking-widest text-[9px] font-bold px-2 py-0.5 rounded-full shadow-sm border-none">Coming Soon</Badge>
+                     <Badge className="bg-neutral-900 text-white hover:bg-neutral-800 uppercase tracking-wider text-[9px] font-bold px-2 py-0.5 rounded-sm border-none shadow-sm">Sold Out</Badge>
                  ) : isNew ? (
-                     <Badge className="bg-white/90 text-black hover:bg-white uppercase tracking-widest text-[9px] font-bold px-2 py-0.5 rounded-full shadow-sm backdrop-blur-md border-none">New</Badge>
+                     <Badge className="bg-white text-black hover:bg-white/90 uppercase tracking-wider text-[9px] font-bold px-2 py-0.5 rounded-sm border-none shadow-sm backdrop-blur-md">New</Badge>
                  ) : null}
+                 
+                 {/* Sale Badge Example (Logic can be added later) */}
+                 {/* <Badge className="bg-red-600 text-white uppercase tracking-wider text-[9px] font-bold px-2 py-0.5 rounded-sm border-none">-20%</Badge> */}
             </div>
 
             {/* Wishlist Button */}
              <button
                 onClick={handleWishlistClick}
                 className={cn(
-                    "absolute top-3 right-3 z-10 h-8 w-8 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-md transition-all duration-300 hover:scale-110 shadow-sm opacity-0 group-hover:opacity-100",
-                    isWishlisted ? "text-red-500 bg-red-50/90 opacity-100" : "text-black hover:bg-white"
+                    "absolute top-2 right-2 z-10 h-7 w-7 flex items-center justify-center rounded-full bg-white/90 backdrop-blur-sm transition-all duration-200 hover:scale-110 shadow-sm opacity-0 group-hover:opacity-100",
+                    isWishlisted ? "text-red-500 opacity-100" : "text-black hover:bg-white"
                 )}
             >
-                <Heart className={cn("h-4 w-4 transition-colors", isWishlisted ? "fill-current" : "group-hover/heart:fill-red-200")} />
+                <Heart className={cn("h-3.5 w-3.5 transition-colors", isWishlisted ? "fill-current" : "group-hover/heart:fill-red-200")} />
             </button>
 
             {/* Main Image */}
-            <motion.div
-                whileHover={{ scale: 1.08 }}
-                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                className="relative h-full w-full bg-zinc-100"
-            >
+            <div className="relative h-full w-full bg-zinc-100 overflow-hidden">
                 <Image 
                     src={imageSrc} 
                     alt={product.name}
                     fill
-                    className="object-cover"
+                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                     sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                     onError={() => setImageSrc('/placeholder.svg')}
                     priority={priority}
                     unoptimized
                 />
-            </motion.div>
+            </div>
 
             {/* Desktop Action Overlay */}
-            <div className="hidden lg:flex absolute inset-x-3 bottom-3 gap-2 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 ease-out z-20">
+            <div className="hidden lg:flex absolute inset-x-2 bottom-2 gap-2 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 ease-out z-20">
                 {!isOutOfStock ? (
                     <>
                         <Button 
                             size="sm" 
-                            className="flex-1 bg-card text-foreground hover:bg-primary hover:text-primary-foreground shadow-xl font-bold h-10 rounded-full transition-all duration-300 uppercase text-[10px] tracking-widest"
+                            className="flex-1 bg-white text-black hover:bg-neutral-100 shadow-md font-bold h-9 rounded-sm transition-all duration-200 uppercase text-[10px] tracking-widest border border-transparent"
                             onClick={handleAddToCart}
                         >
-                             <ShoppingBag className="h-3.5 w-3.5 mr-2" />
                              Add to Cart
                         </Button>
                         <div onClick={(e) => e.preventDefault()} className="shrink-0">
@@ -226,37 +224,36 @@ export function ProductCard({ product, showRating = true, priority = false }: Pr
                     <Button 
                         size="sm" 
                         className={cn(
-                            "flex-1 shadow-xl font-bold h-10 rounded-full transition-all duration-300 uppercase text-[10px] tracking-widest",
-                            isOnWaitlist ? "bg-amber-500 hover:bg-amber-600 text-white" : "bg-card hover:bg-primary hover:text-primary-foreground text-foreground"
+                            "flex-1 shadow-md font-bold h-9 rounded-sm transition-all duration-200 uppercase text-[10px] tracking-widest",
+                            isOnWaitlist ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-neutral-900 hover:bg-neutral-800 text-white"
                         )}
                         onClick={handlePreOrder}
                         disabled={isLoadingWaitlist}
                     >
-                         {isLoadingWaitlist ? 'Updating...' : isOnWaitlist ? 'Joined Waitlist' : 'Pre Order'}
+                         {isLoadingWaitlist ? '...' : isOnWaitlist ? 'Joined' : 'Notify Me'}
                     </Button>
                 )}
             </div>
         </Link>
         
         {/* Details */ }
-        <div className="space-y-1.5 px-0.5">
+        <div className="space-y-1 px-0.5">
              <div className="flex flex-col gap-0.5">
-                <Link href={`/product/${product.slug || product.id}`} className="hover:text-primary transition-colors inline-block">
-                    <h3 className="font-semibold text-sm lg:text-[15px] leading-tight text-foreground line-clamp-1 capitalize">{product.name}</h3>
-                </Link>
+                <div className="flex justify-between items-start gap-2">
+                    <Link href={`/product/${product.slug || product.id}`} className="hover:text-primary transition-colors flex-1 min-w-0">
+                        <h3 className="font-bold text-xs lg:text-sm leading-tight text-foreground uppercase tracking-wide truncate">{product.name}</h3>
+                    </Link>
+                    <p className="font-bold text-xs lg:text-sm text-foreground tracking-tight tabular-nums whitespace-nowrap">{formatCurrency(product.price)}</p>
+                </div>
                 
-                {/* Review Integration */}
-                {showRating && (
-                    <div className="flex items-center gap-1.5">
-                        <div className="flex text-yellow-400">
-                             <Star className={cn("h-3 w-3 fill-current", rating === 0 && "text-muted/30 fill-muted/30")} />
-                        </div>
-                        <span className="text-[11px] font-bold text-muted-foreground">{rating > 0 ? rating.toFixed(1) : 'No reviews'}</span>
-                        {reviewCount > 0 && <span className="text-[10px] text-muted-foreground/60">({reviewCount})</span>}
-                    </div>
-                )}
+                {/* Variant Hint or Metadata */}
+                <div className="flex items-center justify-between text-[10px] text-muted-foreground/70 uppercase tracking-wider font-medium">
+                    <span>{product.categories?.name || 'Collection'}</span>
+                    {hasMultipleOptions && (
+                         <span>{stock.length > 0 ? '+ Options' : ''}</span>
+                    )}
+                </div>
              </div>
-             <p className="font-black text-sm lg:text-base text-foreground tracking-tight">{formatCurrency(product.price)}</p>
         </div>
 
          {/* Mobile Actions */}
