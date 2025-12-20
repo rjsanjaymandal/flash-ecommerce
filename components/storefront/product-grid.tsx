@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { SlidersHorizontal } from 'lucide-react'
+import { ItemListJsonLd } from '@/components/seo/item-list-json-ld'
 
 interface ProductGridProps {
   products: any[]
@@ -22,8 +23,17 @@ export async function ProductGrid({ params }: { params: any }) {
       color: params.color
     })
 
+    const itemListItems = products?.map((p) => ({
+        name: p.name,
+        image: p.main_image_url || '',
+        url: `${process.env.NEXT_PUBLIC_SITE_URL}/product/${p.slug}`,
+        price: p.price,
+        currency: 'INR'
+    })) || []
+
     return (
         <div className="flex-1 min-w-0 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {itemListItems.length > 0 && <ItemListJsonLd products={itemListItems} />}
             {/* Secondary Toolbar (Sort) */}
             <div className="flex flex-wrap gap-2 items-center justify-between mb-8 pb-4 border-b border-border/40">
                 <p className="text-sm font-bold text-foreground">

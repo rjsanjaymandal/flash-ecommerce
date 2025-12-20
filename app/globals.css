@@ -15,6 +15,8 @@
   --color-border: var(--border);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --radius-lg: var(--radius);
@@ -41,13 +43,13 @@
   --card-foreground: #020205;
   --popover: #ffffff;
   --popover-foreground: #020205;
-  
+
   --muted: #f8fafc;
   --muted-foreground: #64748b;
-  
+
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  
+
   --border: #e2e8f0;
   --input: #f1f5f9;
   --ring: #6366f1;
@@ -76,10 +78,10 @@
 
     --muted: #1e293b;
     --muted-foreground: #94a3b8;
-    
+
     --destructive: #991b1b;
     --destructive-foreground: #f8fafc;
-    
+
     --border: #1e293b;
     --input: #1e293b;
     --ring: #818cf8;
@@ -124,17 +126,23 @@ body {
 
 /* Scrollbar Utilities */
 .scrollbar-hide::-webkit-scrollbar {
-    display: none !important;
+  display: none !important;
 }
 .scrollbar-hide {
-    -ms-overflow-style: none !important;
-    scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
 }
 
 /* Micro-animations */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animate-fade-in {

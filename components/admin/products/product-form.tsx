@@ -6,9 +6,9 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Card, CardContent } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Loader2, Save, X, Plus, Image as ImageIcon, Trash2 } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Loader2, Save, X, Plus, Trash2, ArrowLeft } from 'lucide-react'
 import { uploadImage } from '@/lib/services/upload-service'
 import { slugify } from '@/lib/slugify'
 import { toast } from 'sonner'
@@ -18,8 +18,8 @@ import { productSchema, ProductFormValues } from '@/lib/validations/product'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { ProductImageUpload } from '@/components/admin/product-image-upload'
 import { cn } from '@/lib/utils'
-
 import { Category } from '@/types/store-types'
+import { RichTextEditor } from '@/components/admin/products/rich-text-editor'
 
 const SIZE_OPTIONS = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Oversized']
 const COLOR_OPTIONS = ['Black', 'White', 'Navy', 'Beige', 'Red', 'Green', 'Blue', 'Pink', 'Grey', 'Yellow', 'Purple']
@@ -33,7 +33,6 @@ interface ProductFormProps {
 }
 
 export function ProductForm({ initialData, categories, isLoading, onSubmit, onCancel }: ProductFormProps) {
-    const [activeTab, setActiveTab] = useState("details")
     const [isUploading, setIsUploading] = useState(false)
 
     // Form Initialization
@@ -53,7 +52,7 @@ export function ProductForm({ initialData, categories, isLoading, onSubmit, onCa
         }
     })
 
-    const { fields, append, remove, update } = useFieldArray({
+    const { fields, append, remove } = useFieldArray({
         control: form.control,
         name: "variants"
     })
@@ -103,84 +102,46 @@ export function ProductForm({ initialData, categories, isLoading, onSubmit, onCa
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 animate-in fade-in slide-in-from-bottom-5 duration-500">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 animate-in fade-in slide-in-from-bottom-5 duration-500 pb-20">
                 
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    <TabsList className="grid w-full grid-cols-3">
-                        <TabsTrigger value="details">Details</TabsTrigger>
-                        <TabsTrigger value="media">Media</TabsTrigger>
-                        <TabsTrigger value="variants">Variants ({fields.length})</TabsTrigger>
-                    </TabsList>
-
-                    {/* -- TAB: DETAILS -- */}
-                    <TabsContent value="details" className="space-y-4 mt-4">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    
+                    {/* LEFT COLUMN: Main Content */}
+                    <div className="lg:col-span-2 space-y-8">
+                        
+                        {/* 1. General Info */}
                         <Card>
-                            <CardContent className="space-y-4 pt-6">
+                            <CardHeader>
+                                <CardTitle>Product Details</CardTitle>
+                                <CardDescription>Basic information about your product.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
                                 <FormField
                                     control={form.control}
                                     name="name"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Product Name <span className="text-destructive">*</span></FormLabel>
+                                            <FormLabel>Product Name</FormLabel>
                                             <FormControl><Input placeholder="e.g. Essential Tee" {...field} /></FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )}
                                 />
-                                
                                 <FormField
                                     control={form.control}
                                     name="slug"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Slug <span className="text-destructive">*</span></FormLabel>
+                                            <FormLabel>Slug</FormLabel>
                                             <FormControl>
                                                 <div className="flex">
                                                      <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-input bg-muted text-muted-foreground text-sm">/product/</span>
                                                     <Input {...field} className="rounded-l-none font-mono text-sm" placeholder="essential-tee" />
                                                 </div>
                                             </FormControl>
-                                            <FormDescription>Unique ID for the product URL.</FormDescription>
-                                            <FormMessage />
                                         </FormItem>
                                     )}
                                 />
-                                
-                                <div className="grid grid-cols-2 gap-4">
-                                    <FormField
-                                        control={form.control}
-                                        name="price"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Price ($) <span className="text-destructive">*</span></FormLabel>
-                                                <FormControl><Input type="number" step="0.01" {...field} /></FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="category_id"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Category <span className="text-destructive">*</span></FormLabel>
-                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                    <FormControl>
-                                                        <SelectTrigger>
-                                                            <SelectValue placeholder="Select..." />
-                                                        </SelectTrigger>
-                                                    </FormControl>
-                                                    <SelectContent>
-                                                        {categories.map(c => (
-                                                            <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
 
                                 <FormField
                                     control={form.control}
@@ -188,44 +149,35 @@ export function ProductForm({ initialData, categories, isLoading, onSubmit, onCa
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Description</FormLabel>
-                                            <FormControl><Textarea className="min-h-[100px]" {...field} /></FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <FormField
-                                    control={form.control}
-                                    name="is_active"
-                                    render={({ field }) => (
-                                        <FormItem className="flex items-center justify-between rounded-lg border p-3 bg-muted/20">
-                                            <div className="space-y-0.5">
-                                                <FormLabel>Active Status</FormLabel>
-                                                <FormDescription>Visible to customers</FormDescription>
-                                            </div>
                                             <FormControl>
-                                                <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                                <RichTextEditor 
+                                                    value={field.value || ''} 
+                                                    onChange={field.onChange}
+                                                    placeholder="Describe your product..." 
+                                                />
                                             </FormControl>
+                                            <FormMessage />
                                         </FormItem>
                                     )}
                                 />
                             </CardContent>
                         </Card>
-                    </TabsContent>
 
-                    {/* -- TAB: MEDIA -- */}
-                    <TabsContent value="media" className="space-y-4 mt-4">
+                        {/* 2. Media */}
                         <Card>
-                             <CardContent className="space-y-6 pt-6">
+                             <CardHeader>
+                                <CardTitle>Media Gallery</CardTitle>
+                                <CardDescription>High-quality images for the storefront.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-6">
                                 <div className="space-y-2">
                                     <FormLabel>Main Image</FormLabel>
-                                    <FormLabel>Main Image (Optimized)</FormLabel>
                                     <div className="flex flex-col gap-4">
                                         <ProductImageUpload 
                                             currentImage={form.watch('images')?.thumbnail || form.watch('main_image_url')} 
                                             onUploadComplete={(urls) => {
                                                 setValue('images', urls)
-                                                setValue('main_image_url', urls.desktop) // Fallback for legacy
+                                                setValue('main_image_url', urls.desktop)
                                                 toast.success('Optimized images saved')
                                             }}
                                             onRemove={() => {
@@ -233,17 +185,13 @@ export function ProductForm({ initialData, categories, isLoading, onSubmit, onCa
                                                 setValue('main_image_url', '')
                                             }}
                                         />
-                                        
-                                        {/* Hidden fallback input for form validation if needed, though handled by component state usually */}
-                                    </div>
-                                    <div className="text-[0.8rem] text-muted-foreground">
                                         <FormField name="main_image_url" render={() => <FormMessage />} />
                                     </div>
                                 </div>
 
-                                 <div className="space-y-2">
+                                <div className="space-y-2">
                                     <FormLabel>Gallery Images</FormLabel>
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
                                         {watch('gallery_image_urls')?.map((url, idx) => (
                                             <div key={idx} className="relative aspect-square rounded-md overflow-hidden border group">
                                                 <img src={url} className="h-full w-full object-cover" alt="Gallery" />
@@ -254,7 +202,7 @@ export function ProductForm({ initialData, categories, isLoading, onSubmit, onCa
                                                 </div>
                                             </div>
                                         ))}
-                                        <div className="aspect-square rounded-md border-2 border-dashed flex items-center justify-center hover:bg-muted/20 cursor-pointer" onClick={() => document.getElementById('gallery-upload')?.click()}>
+                                        <div className="aspect-square rounded-md border-2 border-dashed flex items-center justify-center hover:bg-muted/20 cursor-pointer transition-colors" onClick={() => document.getElementById('gallery-upload')?.click()}>
                                             {isUploading ? <Loader2 className="h-6 w-6 animate-spin text-muted-foreground"/> : <Plus className="h-6 w-6 text-muted-foreground"/>}
                                             <Input 
                                                 type="file" accept="image/*" className="hidden" id="gallery-upload"
@@ -264,108 +212,226 @@ export function ProductForm({ initialData, categories, isLoading, onSubmit, onCa
                                         </div>
                                     </div>
                                 </div>
-                             </CardContent>
+                            </CardContent>
                         </Card>
-                    </TabsContent>
 
-                    {/* -- TAB: VARIANTS -- */}
-                    <TabsContent value="variants" className="space-y-4 mt-4">
+                        {/* 3. Variants */}
                         <Card>
-                            <CardContent className="space-y-4 pt-6">
-                                <div className="flex justify-between items-center">
-                                    <p className="text-sm text-muted-foreground">Manage stock for different variations.</p>
-                                    <Button type="button" size="sm" variant="outline" onClick={() => append({ size: 'M', color: 'Black', quantity: 0 })}>
-                                        <Plus className="mr-2 h-4 w-4"/> Add Variant
-                                    </Button>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <div>
+                                    <CardTitle>Variants & Stock</CardTitle>
+                                    <CardDescription>Manage available sizes and colors.</CardDescription>
                                 </div>
-                                
+                                <Button type="button" size="sm" variant="outline" onClick={() => append({ size: 'M', color: 'Black', quantity: 0 })}>
+                                    <Plus className="mr-2 h-4 w-4"/> Add Variant
+                                </Button>
+                            </CardHeader>
+                            <CardContent>
                                 {fields.length === 0 ? (
-                                    <div className="text-center py-8 text-muted-foreground border rounded-lg bg-muted/10">No variants added.</div>
-                                ) : (
-                                    <div className="space-y-2">
-                                        <div className="grid grid-cols-12 gap-2 text-xs font-semibold text-muted-foreground px-2">
-                                            <div className="col-span-4">Size</div>
-                                            <div className="col-span-4">Color</div>
-                                            <div className="col-span-3">Qty</div>
-                                            <div className="col-span-1"></div>
-                                        </div>
-                                        {fields.map((field, idx) => (
-                                            <div key={field.id} className="grid grid-cols-12 gap-2 items-center">
-                                                <div className="col-span-4">
-                                                    <FormField
-                                                        control={form.control}
-                                                        name={`variants.${idx}.size`}
-                                                        render={({ field }) => (
-                                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                                <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
-                                                                <SelectContent>
-                                                                    {SIZE_OPTIONS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                                                                </SelectContent>
-                                                            </Select>
-                                                        )}
-                                                    />
-                                                </div>
-                                                <div className="col-span-4">
-                                                    <FormField
-                                                        control={form.control}
-                                                        name={`variants.${idx}.color`}
-                                                        render={({ field }) => (
-                                                            <Select 
-                                                                defaultValue={COLOR_OPTIONS.includes(field.value) ? field.value : 'Custom'}
-                                                                onValueChange={(val) => {
-                                                                    if (val !== 'Custom') {
-                                                                        field.onChange(val)
-                                                                    }
-                                                                }}
-                                                            >
-                                                                <SelectTrigger className="h-8 text-xs">
-                                                                    <SelectValue placeholder={field.value} />
-                                                                </SelectTrigger>
-                                                                <SelectContent>
-                                                                     <SelectItem value="Custom" className="font-semibold text-primary focus:text-primary">
-                                                                        {COLOR_OPTIONS.includes(field.value) ? '✨ Custom Color' : field.value || 'Custom'}
-                                                                     </SelectItem>
-                                                                    {COLOR_OPTIONS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                                                                </SelectContent>
-                                                            </Select>
-                                                        )}
-                                                    />
-                                                    {/* If simple select isn't enough for custom, we can enhance later. For now, kept simple. */}
-                                                </div>
-                                                <div className="col-span-3">
-                                                    <FormField
-                                                        control={form.control}
-                                                        name={`variants.${idx}.quantity`}
-                                                        render={({ field }) => (
-                                                             <Input 
-                                                                type="number" className="h-9" 
-                                                                {...field}
-                                                                onChange={e => field.onChange(Number(e.target.value))}
-                                                            />
-                                                        )}
-                                                    />
-                                                </div>
-                                                <div className="col-span-1 text-right">
-                                                    <Button type="button" size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => remove(idx)}>
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        ))}
+                                    <div className="text-center py-10 text-muted-foreground border-2 border-dashed rounded-lg">
+                                        No variants added yet. Click "Add Variant" to start.
                                     </div>
+                                ) : (
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Size</TableHead>
+                                                <TableHead>Color</TableHead>
+                                                <TableHead className="w-[100px]">Quantity</TableHead>
+                                                <TableHead className="w-[50px]"></TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {fields.map((field, idx) => (
+                                                <TableRow key={field.id}>
+                                                    <TableCell>
+                                                        <FormField
+                                                            control={form.control}
+                                                            name={`variants.${idx}.size`}
+                                                            render={({ field }) => (
+                                                                <Select onValueChange={field.onChange} value={field.value}>
+                                                                    <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
+                                                                    <SelectContent className="bg-white dark:bg-neutral-950 border shadow-md relative z-[9999]">
+                                                                        {SIZE_OPTIONS.map(s => <SelectItem key={s} value={s} className="cursor-pointer bg-white dark:bg-neutral-950 hover:bg-zinc-100 dark:hover:bg-zinc-800">{s}</SelectItem>)}
+                                                                    </SelectContent>
+                                                                </Select>
+                                                            )}
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <FormField
+                                                            control={form.control}
+                                                            name={`variants.${idx}.color`}
+                                                            render={({ field }) => {
+                                                                const isCustom = !COLOR_OPTIONS.includes(field.value)
+                                                                return isCustom ? (
+                                                                    <div className="flex gap-2">
+                                                                        <Input 
+                                                                            {...field} 
+                                                                            placeholder="Color Name" 
+                                                                            className="h-8 text-xs"
+                                                                            autoFocus
+                                                                        />
+                                                                        <Button 
+                                                                            type="button" variant="ghost" size="icon" className="h-8 w-8 shrink-0 hover:text-destructive"
+                                                                            onClick={() => field.onChange('Black')} 
+                                                                        >
+                                                                            <X className="h-4 w-4" />
+                                                                        </Button>
+                                                                    </div>
+                                                                ) : (
+                                                                    <Select 
+                                                                        value={field.value} 
+                                                                        onValueChange={(val) => val === 'CUSTOM_TRIGGER' ? field.onChange('') : field.onChange(val)}
+                                                                    >
+                                                                        <SelectTrigger className="h-8 text-xs w-full">
+                                                                            <div className="flex items-center gap-2">
+                                                                                {field.value && COLOR_OPTIONS.includes(field.value) && (
+                                                                                    <div 
+                                                                                        className="h-3 w-3 rounded-full border border-muted-foreground/20 shadow-sm" 
+                                                                                        style={{ backgroundColor: field.value.toLowerCase() }} 
+                                                                                    />
+                                                                                )}
+                                                                                <SelectValue placeholder={field.value} />
+                                                                            </div>
+                                                                        </SelectTrigger>
+                                                                        <SelectContent className="bg-white dark:bg-neutral-950 border shadow-md relative z-[9999]">
+                                                                            {COLOR_OPTIONS.map(c => (
+                                                                                <SelectItem key={c} value={c} className="cursor-pointer bg-white dark:bg-neutral-950 hover:bg-zinc-100 dark:hover:bg-zinc-800 focus:bg-zinc-100 dark:focus:bg-zinc-800">
+                                                                                    <div className="flex items-center gap-2">
+                                                                                        <div 
+                                                                                            className="h-3 w-3 rounded-full border border-muted-foreground/20 shadow-sm" 
+                                                                                            style={{ backgroundColor: c.toLowerCase() }} 
+                                                                                        />
+                                                                                        {c}
+                                                                                    </div>
+                                                                                </SelectItem>
+                                                                            ))}
+                                                                             <SelectItem 
+                                                                                value="CUSTOM_TRIGGER" 
+                                                                                className="font-semibold text-primary focus:text-primary focus:bg-primary/5 border-t mt-1 cursor-pointer bg-white dark:bg-neutral-950"
+                                                                            >
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <Plus className="h-3 w-3" />
+                                                                                    Custom Color...
+                                                                                </div>
+                                                                             </SelectItem>
+                                                                        </SelectContent>
+                                                                    </Select>
+                                                                )
+                                                            }}
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <FormField
+                                                            control={form.control}
+                                                            name={`variants.${idx}.quantity`}
+                                                            render={({ field }) => (
+                                                                 <Input 
+                                                                    type="number" className="h-8" 
+                                                                    {...field}
+                                                                    onChange={e => field.onChange(Number(e.target.value))}
+                                                                />
+                                                            )}
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Button type="button" size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => remove(idx)}>
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
                                 )}
                             </CardContent>
                         </Card>
-                    </TabsContent>
-                </Tabs>
+                    </div>
 
-                <div className="flex justify-end gap-3 sticky bottom-0 bg-background/95 backdrop-blur p-4 border-t z-10">
-                    <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>Cancel</Button>
-                    <Button type="submit" disabled={isLoading || isUploading}>
-                        {isLoading ? <Loader2 className="animate-spin mr-2 h-4 w-4"/> : <Save className="mr-2 h-4 w-4"/>}
-                        Save Product
-                    </Button>
+                    {/* RIGHT COLUMN: Sidebar */}
+                    <div className="space-y-6">
+                        
+                        {/* Status */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-sm font-medium">Status</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <FormField
+                                    control={form.control}
+                                    name="is_active"
+                                    render={({ field }) => (
+                                        <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
+                                            <div className="space-y-0.5">
+                                                <FormLabel className="text-base">Active</FormLabel>
+                                                <FormDescription>Store visibility.</FormDescription>
+                                            </div>
+                                            <FormControl>
+                                                <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                            </FormControl>
+                                        </div>
+                                    )}
+                                />
+                            </CardContent>
+                        </Card>
+
+                        {/* Organization */}
+                        <Card>
+                             <CardHeader>
+                                <CardTitle className="text-sm font-medium">Organization</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <FormField
+                                    control={form.control}
+                                    name="price"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Price (₹)</FormLabel>
+                                            <FormControl><Input type="number" step="0.01" {...field} /></FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="category_id"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Category</FormLabel>
+                                            <Select onValueChange={field.onChange} value={field.value}>
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select..." />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent className="bg-white dark:bg-neutral-950 border shadow-md relative z-[9999]">
+                                                    {categories.map(c => (
+                                                        <SelectItem key={c.id} value={c.id} className="cursor-pointer bg-white dark:bg-neutral-950 hover:bg-zinc-100 dark:hover:bg-zinc-800">{c.name}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </CardContent>
+                        </Card>
+
+                        {/* Actions (Sticky for Mobile) */}
+                        <div className="sticky bottom-6 flex flex-col gap-2">
+                             <Button type="submit" size="lg" className="w-full" disabled={isLoading || isUploading}>
+                                {isLoading ? <Loader2 className="animate-spin mr-2 h-4 w-4"/> : <Save className="mr-2 h-4 w-4"/>}
+                                Save Changes
+                            </Button>
+                            <Button type="button" variant="outline" className="w-full" onClick={onCancel} disabled={isLoading}>
+                                Discard Changes
+                            </Button>
+                        </div>
+
+                    </div>
                 </div>
+
             </form>
         </Form>
     )
