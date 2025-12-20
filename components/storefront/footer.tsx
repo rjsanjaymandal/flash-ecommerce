@@ -28,7 +28,7 @@ export function Footer() {
                     {[
                         { Icon: Instagram, href: "https://www.instagram.com/flashhfashion/" },
                         { Icon: Twitter, href: "#" },
-                        { Icon: Facebook, href: "#" }
+                        { Icon: Facebook, href: "https://www.facebook.com/share/1Ec2dVLnh4/" }
                     ].map(({ Icon, href }, i) => (
                         <a key={i} href={href} target="_blank" rel="noopener noreferrer" className="h-10 w-10 rounded-full border border-input flex items-center justify-center hover:bg-foreground hover:text-background hover:border-foreground transition-all duration-300 cursor-pointer group">
                              <Icon className="h-5 w-5 group-hover:scale-110 transition-transform" />

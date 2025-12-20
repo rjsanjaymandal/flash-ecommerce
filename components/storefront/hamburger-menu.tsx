@@ -130,7 +130,7 @@ export function HamburgerMenu({ categories }: HamburgerMenuProps) {
                                 { Icon: Instagram, href: "https://www.instagram.com/flashhfashion/" },
                                 { Icon: Twitter, href: "#" },
                                 { Icon: Youtube, href: "#" },
-                                { Icon: Facebook, href: "#" }
+                                { Icon: Facebook, href: "https://www.facebook.com/share/1Ec2dVLnh4/" }
                             ].map(({ Icon, href }, i) => (
                                 <Button key={i} variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground hover:bg-accent rounded-full h-8 w-8" asChild>
                                     <a href={href} target="_blank" rel="noopener noreferrer">
