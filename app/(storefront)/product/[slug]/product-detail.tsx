@@ -14,6 +14,7 @@ import { ProductGallery } from '@/components/products/product-gallery'
 import { ProductSelectors } from '@/components/products/product-selectors'
 import { MobileStickyBar } from '@/components/storefront/mobile-sticky-bar'
 import { FAQJsonLd } from '@/components/seo/faq-json-ld'
+import { ShareButton } from '@/components/products/share-button'
 
 // Types
 type StockItem = {
@@ -225,9 +226,13 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
                     <div className="flex flex-col h-full pt-2">
                         {/* Title & Price */}
                         <div className="border-b border-border/60 pb-8 mb-8">
-                             <h1 className="text-4xl lg:text-6xl font-black tracking-tighter text-foreground uppercase mb-6 leading-[0.85]">
-                                <span className="text-gradient">{product.name}</span>
-                            </h1>
+                             <div className="flex justify-between items-start mb-6">
+                                <h1 className="text-4xl lg:text-6xl font-black tracking-tighter text-foreground uppercase leading-[0.85] max-w-[90%]">
+                                    <span className="text-gradient">{product.name}</span>
+                                </h1>
+                                <ShareButton title={product.name} />
+                             </div>
+                             
                             <div className="flex items-center justify-between">
                                 <p className="text-4xl font-black tracking-tighter italic">{formatCurrency(product.price)}</p>
                                 {initialReviews.count > 0 && (

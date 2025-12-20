@@ -2,6 +2,8 @@
 
 import { cn } from "@/lib/utils"
 import { Flame } from "lucide-react"
+import { useState } from "react"
+import { SizeGuideModal } from "@/components/products/size-guide-modal"
 
 interface ProductSelectorsProps {
     sizeOptions: string[]
@@ -26,6 +28,7 @@ export function ProductSelectors({
     isSizeAvailable,
     getStock
 }: ProductSelectorsProps) {
+    const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false)
     
     // Urgency Logic
     const currentStock = getStock(selectedSize, selectedColor)
@@ -33,11 +36,18 @@ export function ProductSelectors({
 
     return (
         <div className="space-y-10 mb-10">
+            <SizeGuideModal open={isSizeGuideOpen} onOpenChange={setIsSizeGuideOpen} />
+            
             {/* Size Selector */}
             <div className="space-y-6">
                 <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-[0.3em]">
                     <span className="text-primary italic">Select Size</span>
-                    <button className="underline hover:text-primary transition-colors opacity-60">Size Guide</button>
+                    <button 
+                        onClick={() => setIsSizeGuideOpen(true)}
+                        className="underline hover:text-primary transition-colors opacity-60"
+                    >
+                        Size Guide
+                    </button>
                 </div>
                 <div className="grid grid-cols-4 sm:grid-cols-6 gap-3">
                     {sizeOptions.map((size) => {

@@ -30,6 +30,8 @@ import { useRouter } from 'next/navigation'
 import { DataTablePagination } from '@/components/ui/data-table-pagination'
 import { useSearchParams } from 'next/navigation'
 import { Checkbox } from '@/components/ui/checkbox'
+import { ProductFilters } from '@/components/admin/products/product-filters'
+import { Download } from 'lucide-react'
 
 
 export function ProductsClient({ initialProducts, meta }: { initialProducts: any[], meta: { total: number, page: number, limit: number, totalPages: number } }) {
@@ -162,6 +164,35 @@ export function ProductsClient({ initialProducts, meta }: { initialProducts: any
     return total === 0
   })
 
+// ... existing code ...
+
+  const handleExportCSV = () => {
+    const headers = ['ID', 'Name', 'Price', 'Stock', 'Status', 'Waitlist']
+    const rows = initialProducts.map(p => [
+        p.id,
+        `"${p.name.replace(/"/g, '""')}"`, // Escape quotes
+        p.price,
+        p.product_stock?.reduce((acc: any, s: any) => acc + s.quantity, 0) || 0,
+        p.is_active ? 'Active' : 'Draft',
+        p.preorder_count || 0
+    ])
+    
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', `products_export_${new Date().toISOString().split('T')[0]}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+  
+  // Extract unique categories for filter
+  const categories = Array.from(new Set(initialProducts.map(p => JSON.stringify({id: p.category_id, name: p.categories?.name}))))
+        .map(s => JSON.parse(s))
+        .filter(c => c.id)
+
   return (
     <div className="space-y-6 relative">
       {(lowStockProducts.length > 0 || outOfStockProducts.length > 0) && (
@@ -186,12 +217,18 @@ export function ProductsClient({ initialProducts, meta }: { initialProducts: any
             <h2 className="text-2xl font-bold tracking-tight text-foreground">Products</h2>
             <p className="text-sm text-muted-foreground">Manage your clothing inventory and stock levels.</p>
         </div>
-        <Button asChild className="bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 rounded-lg h-9 text-sm font-medium">
-          <Link href="/admin/products/new">
-            <Plus className="mr-2 h-4 w-4" />
-            Add Product
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+            <Button variant="outline" size="sm" className="h-9 gap-2" onClick={handleExportCSV}>
+                <Download className="h-4 w-4" />
+                Export CSV
+            </Button>
+            <Button asChild className="bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 rounded-lg h-9 text-sm font-medium">
+            <Link href="/admin/products/new">
+                <Plus className="mr-2 h-4 w-4" />
+                Add Product
+            </Link>
+            </Button>
+        </div>
       </div>
 
       <div className="flex items-center gap-3 p-1">
@@ -204,16 +241,14 @@ export function ProductsClient({ initialProducts, meta }: { initialProducts: any
                 onChange={(e) => setSearch(e.target.value)}
             />
         </div>
+        
+        <ProductFilters categories={categories} />
+        
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="gap-2 h-9 text-xs font-medium text-muted-foreground hover:text-foreground">
-                    <Filter className="h-3.5 w-3.5" />
-                    Sort: {
-                        searchParams.get('sort') === 'waitlist_desc' ? 'Most Anticipated' : 
-                        searchParams.get('sort') === 'price_asc' ? 'Price: Low to High' : 
-                        searchParams.get('sort') === 'price_desc' ? 'Price: High to Low' : 
-                        searchParams.get('sort') === 'trending' ? 'Trending' : 'Newest'
-                    }
+                    <ArrowUpDown className="h-3.5 w-3.5" />
+                    Sort
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
