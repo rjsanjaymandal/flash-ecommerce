@@ -249,6 +249,32 @@ export async function getProductsSecure(filter: ProductFilter = {}, client: any)
     return fetchProducts(filter, client)
 }
 
+export async function getFeaturedProducts(): Promise<Product[]> {
+    return unstable_cache(
+        async () => {
+             const supabase = createStaticClient()
+             const { data } = await supabase
+                .from('products')
+                .select('*, categories(name), product_stock(*), reviews(rating)')
+                .eq('is_active', true)
+                .order('created_at', { ascending: false })
+                .limit(8)
+            
+             return (data || []).map((p: any) => {
+                const ratings = p.reviews?.map((r: any) => r.rating) || []
+                const avg = ratings.length > 0 ? ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length : 0
+                return {
+                    ...p,
+                    average_rating: avg,
+                    review_count: ratings.length
+                } as Product
+            })
+        },
+        ['featured-products'],
+        { tags: ['featured-products'], revalidate: 3600 } 
+    )()
+}
+
 async function fetchProductBySlug(slug: string): Promise<Product | null> {
     const supabase = createStaticClient()
     const { data, error } = await supabase
