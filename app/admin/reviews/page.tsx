@@ -1,6 +1,7 @@
 import { getReviews } from '@/lib/services/review-service'
 import { ReviewsClient } from './reviews-client'
 
+// Force rebuild. If "module factory" error persists, please RESTART NEXT.JS SERVER.
 export const revalidate = 0
 
 export default async function ReviewsPage({

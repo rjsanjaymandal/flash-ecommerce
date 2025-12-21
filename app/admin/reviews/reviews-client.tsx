@@ -57,10 +57,17 @@ export function ReviewsClient({ initialReviews, meta }: { initialReviews: any[],
     return () => clearTimeout(handler)
   }, [search, router, searchParams])
 
+  const [reviews, setReviews] = useState(initialReviews)
+
+  useEffect(() => {
+    setReviews(initialReviews)
+  }, [initialReviews])
+
   const deleteMutation = useMutation({
     mutationFn: deleteReview,
-    onSuccess: () => {
+    onSuccess: (_, id) => {
       toast.success('Review deleted')
+      setReviews(prev => prev.filter(r => r.id !== id))
       router.refresh()
     },
   })
@@ -79,32 +86,44 @@ export function ReviewsClient({ initialReviews, meta }: { initialReviews: any[],
   const handleReplySubmit = async () => {
       if (!selectedReview) return
       try {
+          // Optimistic Update
+          setReviews(prev => prev.map(r => r.id === selectedReview.id ? { ...r, reply_text: replyText } : r))
+          setReplyOpen(false)
+          
           await replyToReview(selectedReview.id, replyText)
           toast.success('Reply saved')
-          setReplyOpen(false)
           router.refresh()
       } catch (err: any) {
           toast.error('Failed to save reply')
+          router.refresh() // Revert on failure
       }
   }
 
   const handleToggleFeature = async (review: any) => {
       try {
-          await toggleReviewFeature(review.id, !review.is_featured)
-          toast.success(review.is_featured ? 'Removed from Featured' : 'Marked as Featured')
+          const newState = !review.is_featured
+          setReviews(prev => prev.map(r => r.id === review.id ? { ...r, is_featured: newState } : r))
+          
+          await toggleReviewFeature(review.id, newState)
+          toast.success(newState ? 'Marked as Featured' : 'Removed from Featured')
           router.refresh()
       } catch (err: any) {
           toast.error('Failed to update')
+          router.refresh()
       }
   }
 
   const handleApprove = async (review: any) => {
       try {
-          await approveReview(review.id, !review.is_approved)
-          toast.success(review.is_approved ? 'Review unapproved' : 'Review approved')
+          const newState = !review.is_approved
+          setReviews(prev => prev.map(r => r.id === review.id ? { ...r, is_approved: newState } : r))
+          
+          await approveReview(review.id, newState)
+          toast.success(newState ? 'Review approved' : 'Review unapproved')
           router.refresh()
       } catch (err: any) {
           toast.error('Failed to update')
+          router.refresh()
       }
   }
 
@@ -141,10 +160,10 @@ export function ReviewsClient({ initialReviews, meta }: { initialReviews: any[],
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {initialReviews.length === 0 ? (
+                {reviews.length === 0 ? (
                     <TableRow><TableCell colSpan={5} className="text-center py-12 text-muted-foreground">No reviews found.</TableCell></TableRow>
                 ) : (
-                    initialReviews.map((review) => (
+                    reviews.map((review) => (
                         <TableRow key={review.id} className="group hover:bg-muted/5">
                             <TableCell className="font-medium">
                                 <div className="flex items-center gap-3">
@@ -222,7 +241,7 @@ export function ReviewsClient({ initialReviews, meta }: { initialReviews: any[],
                                         </DropdownMenuItem>
                                         <DropdownMenuItem onClick={() => handleReplyClick(review)}>
                                             <Reply className="mr-2 h-4 w-4" />
-                                            Reply
+                                            {review.reply_text ? 'Edit Reply' : 'Reply'}
                                         </DropdownMenuItem>
                                         <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => deleteMutation.mutate(review.id)}>
                                             <Trash2 className="mr-2 h-4 w-4" />

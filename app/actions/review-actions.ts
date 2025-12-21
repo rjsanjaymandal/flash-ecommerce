@@ -37,33 +37,63 @@ export async function submitReview(formData: FormData) {
       finalName = user.email.split('@')[0]
   }
 
-  // Handle Image Uploads with Optimization
-  const mediaUrls: string[] = []
+  // 1. Check for Duplicate Review
+  const { data: existingReview } = await supabase
+      .from('reviews')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('product_id', productId)
+      .single()
+  
+  if (existingReview) {
+      return { error: 'You have already reviewed this product.' }
+  }
+
+  // 2. Verify Purchase
+  // We check if the user has an order with 'delivered', 'shipped', or 'paid' status that contains this product
+  let isVerified = false
+  const { data: orders } = await supabase
+      .from('orders')
+      .select('id, status, order_items!inner(product_id)')
+      .eq('user_id', user.id)
+      .in('status', ['delivered', 'shipped', 'paid'])
+      .eq('order_items.product_id', productId)
+      .limit(1)
+
+  if (orders && orders.length > 0) {
+      isVerified = true
+  }
+
+  // Optimize Images (Parallel Uploads)
+  let mediaUrls: string[] = []
   if (imageFiles.length > 0) {
-      for (const file of imageFiles) {
-          if (file.size > 0 && file.type.startsWith('image/')) {
+      const uploadPromises = imageFiles
+          .filter(file => file.size > 0 && file.type.startsWith('image/'))
+          .map(async (file) => {
               try {
                   const uploadFormData = new FormData()
                   uploadFormData.set('file', file)
-                  // Use 'reviews' bucket and get optimized versions
                   const { mobile } = await uploadOptimizedImage(uploadFormData, 'reviews')
-                  mediaUrls.push(mobile) // Store the 600px width version
+                  return mobile
               } catch (err) {
                   console.error('Image processing failed:', err)
-                  // Skip failed images but allow review submission
+                  return null
               }
-          }
-      }
+          })
+      
+      const results = await Promise.all(uploadPromises)
+      mediaUrls = results.filter(url => url !== null) as string[]
   }
 
-  const { error } = await (supabase as any).from('reviews').insert({
+  const { error } = await supabase.from('reviews').insert({
     product_id: productId,
     user_id: user.id,
     rating,
     comment,
     user_name: finalName,
     media_urls: mediaUrls,
-    is_approved: false // Default to false for moderation
+    is_approved: false, // Moderation first
+    is_verified: isVerified
   })
 
   if (error) {
@@ -78,12 +108,13 @@ export async function submitReview(formData: FormData) {
 export async function getReviews(productId: string) {
   const supabase = await createClient()
 
-  const { data: reviews } = await (supabase as any)
+  const { data: reviews } = await supabase
     .from('reviews')
     .select('*')
     .eq('product_id', productId)
     .eq('is_approved', true)
     .order('created_at', { ascending: false })
+    .limit(50)
 
   return reviews || []
 }

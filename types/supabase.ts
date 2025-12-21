@@ -574,6 +574,9 @@ export type Database = {
             user_name: string | null
             is_featured: boolean
             reply_text: string | null
+            media_urls: string[] | null
+            is_approved: boolean
+            is_verified: boolean
           }
           Insert: {
             id?: string
@@ -585,6 +588,9 @@ export type Database = {
             user_name?: string | null
             is_featured?: boolean
             reply_text?: string | null
+            media_urls?: string[] | null
+            is_approved?: boolean
+            is_verified?: boolean
           }
           Update: {
             id?: string
@@ -596,6 +602,9 @@ export type Database = {
             user_name?: string | null
             is_featured?: boolean
             reply_text?: string | null
+            media_urls?: string[] | null
+            is_approved?: boolean
+            is_verified?: boolean
           }
           Relationships: [
             {

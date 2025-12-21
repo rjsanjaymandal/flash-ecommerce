@@ -30,37 +30,63 @@ export function ReviewSection({ productId, reviews }: { productId: string, revie
     ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) 
     : '0.0'
    
+  // Calculate Rating Distribution
+  const ratingCounts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } as Record<number, number>
+  reviews.forEach(r => {
+      const rating = Math.round(r.rating)
+      if (rating >= 1 && rating <= 5) ratingCounts[rating]++
+  })
+  const totalReviews = reviews.length
+  
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxImage, setLightboxImage] = useState('')
 
   return (
     <div className="py-12 lg:py-24 border-t border-border/40">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
-        <div>
-          <h2 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl mb-6">Customer Vibes</h2>
+      <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-12 mb-12">
+        <div className="flex-1 space-y-8">
+          <div>
+              <h2 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl mb-4">Customer Vibes</h2>
+              <p className="text-muted-foreground max-w-lg">
+                  Real feedback from the community. We value authentic signals.
+              </p>
+          </div>
 
-          <div className="flex items-center gap-6 bg-muted/30 p-6 rounded-3xl border border-border/50 backdrop-blur-sm">
-             <div className="flex flex-col">
+          <div className="flex flex-col sm:flex-row gap-8 items-center bg-muted/30 p-8 rounded-[2rem] border border-border/50 backdrop-blur-sm">
+             <div className="flex flex-col items-center sm:items-start min-w-[140px]">
                  <span className="text-6xl font-black text-foreground leading-none tracking-tighter">{averageRating}</span>
                  <div className="flex items-center gap-1 mt-3 text-primary">
                      {[1, 2, 3, 4, 5].map((s) => (
                         <Star key={s} className={cn("h-4 w-4", s <= Math.round(Number(averageRating)) ? "fill-current" : "text-muted-foreground/30 fill-muted-foreground/30")} />
                      ))}
                  </div>
-                 <p className="text-[10px] font-bold text-muted-foreground mt-2 uppercase tracking-widest">{reviews.length} Verified Reviews</p>
+                 <p className="text-[10px] font-bold text-muted-foreground mt-2 uppercase tracking-widest">{totalReviews} Verified Reviews</p>
              </div>
-             <div className="hidden sm:block h-16 w-px bg-border/60"></div>
-             <div className="hidden sm:block text-xs font-medium text-muted-foreground max-w-[200px] leading-relaxed">
-                 VERIFIED PURCHASES ONLY.<br/>
-                 WE VALUE AUTHENTIC SIGNAL.
+             
+             {/* Rating Bars */}
+             <div className="flex-1 w-full space-y-2">
+                 {[5, 4, 3, 2, 1].map((star) => {
+                     const count = ratingCounts[star] || 0
+                     const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0
+                     return (
+                         <div key={star} className="flex items-center gap-3 text-xs">
+                             <span className="font-bold w-3">{star}</span>
+                             <Star className="h-3 w-3 text-foreground/40" />
+                             <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                                 <div className="h-full bg-primary rounded-full" style={{ width: `${percentage}%` }}></div>
+                             </div>
+                             <span className="w-8 text-right text-muted-foreground font-medium">{count}</span>
+                         </div>
+                     )
+                 })}
              </div>
           </div>
         </div>
         
-        <div suppressHydrationWarning>
+        <div className="lg:pt-2" suppressHydrationWarning>
           <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-               <Button size="lg" className="rounded-2xl px-8 h-12 font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-105 transition-transform">Drop a Review</Button>
+               <Button size="lg" className="rounded-2xl px-8 h-12 font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-105 transition-transform w-full sm:w-auto">Drop a Review</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md rounded-3xl border-border/50 bg-card/95 backdrop-blur-xl">
                <DialogHeader>
@@ -96,7 +122,14 @@ export function ReviewSection({ productId, reviews }: { productId: string, revie
                              {review.user_name.charAt(0)}
                         </div>
                         <div>
-                            <p className="font-bold text-foreground text-sm uppercase tracking-wide">{review.user_name}</p>
+                            <div className="flex items-center gap-2">
+                                <p className="font-bold text-foreground text-sm uppercase tracking-wide">{review.user_name}</p>
+                                {review.is_verified && (
+                                    <span className="text-[10px] bg-green-500/10 text-green-600 px-1.5 py-0.5 rounded font-bold uppercase flex items-center gap-0.5 border border-green-500/20">
+                                        <BadgeCheck className="h-3 w-3" /> Verified
+                                    </span>
+                                )}
+                            </div>
                             <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider" suppressHydrationWarning>{new Date(review.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
                         </div>
                       </div>
@@ -166,7 +199,7 @@ function ReviewForm({ productId, onSuccess }: { productId: string, onSuccess: ()
         if (res?.error) {
             toast.error(res.error)
         } else {
-            toast.success("Review Submitted!")
+            toast.success(res?.message || "Review submitted for approval!")
             onSuccess()
         }
     }
