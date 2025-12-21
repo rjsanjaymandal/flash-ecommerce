@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient, createStaticClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth/utils'
 import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache'
 import type { Tables, TablesInsert, TablesUpdate } from '@/types/supabase'
 import type { Category } from '@/types/store-types'
@@ -93,6 +94,7 @@ export async function getRootCategories(limit?: number): Promise<Tables<'categor
 }
 
 export async function createCategory(data: TablesInsert<'categories'>) {
+    await requireAdmin()
     const supabase = await createClient()
     const { error } = await supabase.from('categories').insert(data)
     if (error) throw error
@@ -103,6 +105,7 @@ export async function createCategory(data: TablesInsert<'categories'>) {
 }
 
 export async function updateCategory(id: string, data: TablesUpdate<'categories'>) {
+    await requireAdmin()
     const supabase = await createClient()
     const { error } = await supabase.from('categories').update(data).eq('id', id)
     if (error) throw error
@@ -113,6 +116,7 @@ export async function updateCategory(id: string, data: TablesUpdate<'categories'
 }
 
 export async function deleteCategory(id: string) {
+    await requireAdmin()
     const supabase = await createClient()
     const { error } = await supabase.from('categories').delete().eq('id', id)
     if (error) throw error

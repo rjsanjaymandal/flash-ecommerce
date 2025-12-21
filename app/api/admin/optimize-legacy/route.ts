@@ -14,6 +14,17 @@ async function downloadImage(url: string): Promise<Buffer> {
 export async function POST(req: Request) {
   const supabase = await createClient()
   
+  // 0. Security Check: Verify Admin
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (profile?.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+  
   // 1. Fetch products needing optimization (where images is null/empty but has main_image_url)
   // Note: We use raw query or filter in JS since JSONB null checks can be tricky in simple SDK
   const { data: products, error } = await supabase

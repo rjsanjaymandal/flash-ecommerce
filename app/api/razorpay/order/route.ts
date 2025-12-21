@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import Razorpay from 'razorpay'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 // Initialize inside handler or use a safe check if global
 // But simpler to just initialize it inside to avoid build errors if env vars missing
@@ -14,7 +14,8 @@ export async function POST(req: Request) {
   // Or use standard client if we trust the user is logged in/owns the order.
   // Standard client is better for RLS security, but if checkout is guest, we need to be careful.
   // Assuming 'createClient' handles cookie auth.
-  const supabase = await createClient()
+  // Use Service Role to allow guest checkout (fetching orders without user_id session match)
+  const supabase = createAdminClient()
 
   try {
     const { order_id } = await req.json()

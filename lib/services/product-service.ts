@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient, createStaticClient } from '@/lib/supabase/server'
-// import { createAdminClient } from '@/lib/supabase/admin' // Removed to prevent potential client bundle issues
+import { requireAdmin } from '@/lib/auth/utils'
 import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache'
 import type { Database, Tables, TablesInsert, TablesUpdate } from '@/types/supabase'
 
@@ -276,6 +276,7 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
 }
 
 export async function createProduct(productData: TablesInsert<'products'> & { variants?: TablesInsert<'product_stock'>[] }) {
+    await requireAdmin()
     const supabase = await getDb()
     const { variants, ...prod } = productData
     
@@ -310,6 +311,7 @@ export async function createProduct(productData: TablesInsert<'products'> & { va
 }
 
 export async function updateProduct(id: string, productData: TablesUpdate<'products'> & { variants?: TablesInsert<'product_stock'>[] }) {
+    await requireAdmin()
     const supabase = await getDb()
     const { variants, ...prod } = productData
 
@@ -401,6 +403,7 @@ export async function updateProduct(id: string, productData: TablesUpdate<'produ
 }
 
 export async function deleteProduct(id: string) {
+    await requireAdmin()
     const supabase = await getDb()
     const { error } = await supabase.from('products').delete().eq('id', id)
     if (error) throw error
@@ -467,6 +470,7 @@ export async function getRelatedProducts(currentProductId: string, categoryId: s
 }
 
 export async function bulkDeleteProducts(ids: string[]) {
+    await requireAdmin()
     if (!ids || ids.length === 0) return
     const supabase = await getDb()
     const { error } = await supabase.from('products').delete().in('id', ids)
@@ -478,6 +482,7 @@ export async function bulkDeleteProducts(ids: string[]) {
 }
 
 export async function bulkUpdateProductStatus(ids: string[], isActive: boolean) {
+    await requireAdmin()
     if (!ids || ids.length === 0) return
     const supabase = await getDb()
     const { error } = await supabase
@@ -491,37 +496,7 @@ export async function bulkUpdateProductStatus(ids: string[], isActive: boolean) 
     revalidatePath('/shop')
 }
 
-export async function decrementStock(productId: string, size: string, color: string, quantity: number) {
-    const supabase = await getDb()
-    
-    // Use an RPC call or a targeted update
-    // For simplicity with JS client, we'll do a decrement update
-    // Note: In highly concurrent environments, an RPC for "UPDATE ... SET quantity = quantity - X" is safer
-    const { data: currentStock, error: fetchError } = await supabase
-        .from('product_stock')
-        .select('quantity')
-        .eq('product_id', productId)
-        .eq('size', size)
-        .eq('color', color)
-        .single()
-
-    if (fetchError || !currentStock) {
-        throw new Error(`Stock record not found for ${productId} (${size}/${color})`)
-    }
-
-    if (currentStock.quantity! < quantity) {
-        throw new Error(`Insufficient stock for ${productId} (${size}/${color})`)
-    }
-
-    const { error: updateError } = await supabase
-        .from('product_stock')
-        .update({ quantity: (currentStock.quantity || 0) - quantity })
-        .eq('product_id', productId)
-        .eq('size', size)
-        .eq('color', color)
-
-    if (updateError) throw updateError
-}
+// decrementStock removed - unsafe public exposure. Use RPC 'decrement_stock' via Service Role instead.
 
 export async function getWaitlistedProducts(userId: string): Promise<Product[]> {
     const supabase = await getDb()
