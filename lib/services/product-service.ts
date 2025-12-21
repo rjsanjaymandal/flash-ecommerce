@@ -255,7 +255,7 @@ export async function getFeaturedProducts(): Promise<Product[]> {
              const supabase = createStaticClient()
              const { data } = await supabase
                 .from('products')
-                .select('*, categories(name), product_stock(*), reviews(rating)')
+                .select('id, name, price, main_image_url, images, slug, created_at, category_id, is_active, sale_count, categories(name), product_stock(*), reviews(rating)')
                 .eq('is_active', true)
                 .order('created_at', { ascending: false })
                 .limit(8)

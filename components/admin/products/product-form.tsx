@@ -1,5 +1,7 @@
 'use client'
 
+import dynamic from 'next/dynamic'
+
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -19,7 +21,13 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { ProductImageUpload } from '@/components/admin/product-image-upload'
 import { cn } from '@/lib/utils'
 import { Category } from '@/types/store-types'
-import { RichTextEditor } from '@/components/admin/products/rich-text-editor'
+const RichTextEditor = dynamic(
+  () => import('@/components/admin/products/rich-text-editor').then((mod) => mod.RichTextEditor),
+  { 
+    ssr: false,
+    loading: () => <div className="h-[200px] w-full rounded-md border border-input bg-muted/20 animate-pulse flex items-center justify-center text-muted-foreground text-sm">Loading Editor...</div>
+  }
+)
 
 const SIZE_OPTIONS = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Oversized']
 const COLOR_OPTIONS = ['Black', 'White', 'Navy', 'Beige', 'Red', 'Green', 'Blue', 'Pink', 'Grey', 'Yellow', 'Purple']
