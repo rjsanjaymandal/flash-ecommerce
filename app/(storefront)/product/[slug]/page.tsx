@@ -57,7 +57,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   // Fetch Reviews and Related in parallel
   const [reviews, relatedProducts] = await Promise.all([
       getReviews(product.id),
-      getRelatedProducts(product.id, product.category_id)
+      getRelatedProducts(product)
   ])
 
   // Calculate Review Stats

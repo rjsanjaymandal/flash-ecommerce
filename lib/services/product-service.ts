@@ -435,22 +435,45 @@ export async function getProductsByIds(ids: string[]): Promise<Product[]> {
     })
 }
 
-export async function getRelatedProducts(currentProductId: string, categoryId: string): Promise<Product[]> {
-    const key = `related-${currentProductId}-${categoryId}`
+export async function getRelatedProducts(product: Product): Promise<Product[]> {
+    const key = `related-${product.id}`
     return unstable_cache(
         async () => {
             const supabase = createStaticClient()
-            // Simple logic: Same category, not current product, limit 4
+            
+            // Logic:
+            // 1. Exclude current product
+            // 2. Prioritize: Same Category OR Shared Tags
+            // 3. Limit 8
+            
             let query = supabase
-            .from('products')
-            .select('*, reviews(rating)') // Fetch all fields for ProductCard + reviews
-            .eq('is_active', true)
-            .neq('id', currentProductId)
-            .limit(4)
-
-            if (categoryId) {
-                query = query.eq('category_id', categoryId)
+                .from('products')
+                .select('*, reviews(rating)')
+                .eq('is_active', true)
+                .neq('id', product.id)
+                .limit(8)
+            
+            // Build OR filter: category_id.eq.X,expression_tags.ov.{tag1,tag2}
+            const conditions = []
+            
+            if (product.category_id) {
+                conditions.push(`category_id.eq.${product.category_id}`)
             }
+            
+            if (product.expression_tags && product.expression_tags.length > 0) {
+                 // Postgres syntax for overlap: column.ov.{val1,val2}
+                 // We need to format array as {val1,val2}
+                 const tagString = `{${product.expression_tags.map(t => `"${t}"`).join(',')}}`
+                 conditions.push(`expression_tags.ov.${tagString}`)
+            }
+            
+            if (conditions.length > 0) {
+                query = query.or(conditions.join(','))
+            }
+            
+            // Optional: Order by something relevant? Random? 
+            // For now, let's just stick to default or random if possible (PostgREST random is tricky without extensions)
+            // We'll stick to DB default (likely insertion or ID) or add a sort if needed.
             
             const { data } = await query
             
