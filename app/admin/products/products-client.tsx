@@ -33,12 +33,17 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { ProductFilters } from '@/components/admin/products/product-filters'
 import { Download } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { useProductSearch } from '@/hooks/use-product-search'
 
 
 export function ProductsClient({ initialProducts, meta }: { initialProducts: any[], meta: { total: number, page: number, limit: number, totalPages: number } }) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [search, setSearch] = useState(searchParams.get('q') || '') 
+  const [searchQuery, setSearchQuery] = useState('') 
+  // Use hook for client-side fuzzy search on the INITIAL products (current page)
+  const { search } = useProductSearch({ products: initialProducts })
+  const filteredProducts = search(searchQuery)
+
   const [deleteId, setDeleteId] = useState<string | null>(null)
   
   // Bulk Selection State
@@ -53,9 +58,12 @@ export function ProductsClient({ initialProducts, meta }: { initialProducts: any
   // Clear selection on page change or search
   useEffect(() => {
     setSelectedIds(new Set())
-  }, [meta.page, search])
+  }, [meta.page, searchQuery])
   
-  // Debounce Search
+  // NOTE: Server-side search logic removed/disabled in favor of client-side fuzzy search request.
+  // If you wanted HYBRID (Client first, then Server), we'd keep this. 
+  // For now, we are isolating the "Fuzzy Search" requirement to be purely client-side on the loaded data.
+  /*
   useEffect(() => {
     const handler = setTimeout(() => {
         const params = new URLSearchParams(searchParams.toString())
@@ -69,6 +77,7 @@ export function ProductsClient({ initialProducts, meta }: { initialProducts: any
     }, 500)
     return () => clearTimeout(handler)
   }, [search, router, searchParams])
+  */
 
   const deleteMutation = useMutation({
       mutationFn: async (id: string) => {
@@ -236,10 +245,10 @@ export function ProductsClient({ initialProducts, meta }: { initialProducts: any
         <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input 
-                placeholder="Search products..." 
+                placeholder="Search loaded products..." 
                 className="pl-9 h-9 bg-background focus-visible:ring-offset-0 focus-visible:ring-1 border-input" 
-                value={search} 
-                onChange={(e) => setSearch(e.target.value)}
+                value={searchQuery} 
+                onChange={(e) => setSearchQuery(e.target.value)}
             />
         </div>
         
@@ -341,10 +350,10 @@ export function ProductsClient({ initialProducts, meta }: { initialProducts: any
             </TableRow>
           </TableHeader>
           <TableBody>
-            {initialProducts.length === 0 ? (
+            {filteredProducts.length === 0 ? (
                 <TableRow><TableCell colSpan={10} className="text-center py-24 text-muted-foreground">No products found.</TableCell></TableRow>
             ) : (
-                initialProducts.map((product: any) => {
+                filteredProducts.map((product: any) => {
                     const stockStatus = getStockStatus(product.product_stock)
                     const isSelected = selectedIds.has(product.id)
                     const preorderCount = product.preorder_count || 0
@@ -470,7 +479,7 @@ export function ProductsClient({ initialProducts, meta }: { initialProducts: any
         {/* Pagination Controls */}
         <div className="border-t p-4 bg-muted/5 flex items-center justify-between">
             <div className="text-xs text-muted-foreground">
-                Showing {initialProducts.length} of {meta.total} products
+                Showing {filteredProducts.length} results (from {initialProducts.length} loaded)
             </div>
             <DataTablePagination totalItems={meta.total} itemsPerPage={meta.limit} />
         </div>
