@@ -7,6 +7,8 @@ interface RecentProduct {
   price: number
   image: string
   slug: string
+  product_stock?: any[]
+  [key: string]: any
 }
 
 interface RecentStore {
@@ -23,8 +25,8 @@ export const useRecentStore = create<RecentStore>()(
         set((state) => {
           // Remove if exists to move to top
           const filtered = state.items.filter((i) => i.id !== newItem.id)
-          // Add to front, limit to 10
-          return { items: [newItem, ...filtered].slice(0, 10) }
+          // Add to front, limit to 12
+          return { items: [newItem, ...filtered].slice(0, 12) }
         }),
       clear: () => set({ items: [] }),
     }),
