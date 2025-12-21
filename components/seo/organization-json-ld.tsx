@@ -22,7 +22,9 @@ export function OrganizationJsonLd() {
 
   return (
     <script
+      id="org-json-ld"
       type="application/ld+json"
+      suppressHydrationWarning
       dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
     />
   )

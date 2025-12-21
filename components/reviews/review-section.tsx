@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Star, User, MessageSquare } from 'lucide-react'
+import { Star, User, MessageSquare, BadgeCheck, Reply } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
@@ -17,6 +17,9 @@ type Review = {
   rating: number
   comment: string
   created_at: string
+  is_featured: boolean
+  reply_text: string | null
+  media_urls?: string[]
 }
 
 export function ReviewSection({ productId, reviews }: { productId: string, reviews: Review[] }) {
@@ -26,6 +29,9 @@ export function ReviewSection({ productId, reviews }: { productId: string, revie
   const averageRating = reviews.length 
     ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) 
     : '0.0'
+   
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [lightboxImage, setLightboxImage] = useState('')
 
   return (
     <div className="py-12 lg:py-24 border-t border-border/40">
@@ -51,18 +57,20 @@ export function ReviewSection({ productId, reviews }: { productId: string, revie
           </div>
         </div>
         
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
-          <DialogTrigger asChild>
-             <Button size="lg" className="rounded-2xl px-8 h-12 font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-105 transition-transform">Drop a Review</Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-md rounded-3xl border-border/50 bg-card/95 backdrop-blur-xl">
-             <DialogHeader>
-                 <DialogTitle className="font-black uppercase tracking-tight text-xl">Review Specs</DialogTitle>
-                 <p className="text-xs text-muted-foreground">Upload a photo & get <span className="text-primary font-bold">10% OFF</span> your next order.</p>
-             </DialogHeader>
-             <ReviewForm productId={productId} onSuccess={() => setIsOpen(false)} />
-          </DialogContent>
-        </Dialog>
+        <div suppressHydrationWarning>
+          <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>
+               <Button size="lg" className="rounded-2xl px-8 h-12 font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-105 transition-transform">Drop a Review</Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md rounded-3xl border-border/50 bg-card/95 backdrop-blur-xl">
+               <DialogHeader>
+                   <DialogTitle className="font-black uppercase tracking-tight text-xl">Review Specs</DialogTitle>
+                   <p className="text-xs text-muted-foreground">Upload a photo & get <span className="text-primary font-bold">10% OFF</span> your next order.</p>
+               </DialogHeader>
+               <ReviewForm productId={productId} onSuccess={() => setIsOpen(false)} />
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
@@ -73,7 +81,16 @@ export function ReviewSection({ productId, reviews }: { productId: string, revie
               </div>
           ) : (
               reviews.map((review) => (
-                  <article key={review.id} className="rounded-[2rem] border border-border/50 bg-card/50 p-8 shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300">
+                  <article key={review.id} className={cn(
+                      "rounded-[2rem] border bg-card/50 p-8 shadow-sm hover:shadow-lg transition-all duration-300 relative overflow-hidden",
+                      review.is_featured ? "border-amber-400/30 bg-amber-50/10" : "border-border/50 hover:border-primary/20"
+                  )}>
+                      {review.is_featured && (
+                          <div className="absolute top-0 right-0 bg-amber-400 text-amber-950 text-[10px] font-black px-3 py-1 rounded-bl-xl flex items-center gap-1 shadow-sm">
+                              <BadgeCheck className="h-3 w-3" /> FEATURED
+                          </div>
+                      )}
+
                       <div className="flex items-center gap-4 mb-6">
                         <div className="h-12 w-12 text-white rounded-2xl bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center font-black text-lg uppercase shadow-lg shadow-primary/20">
                              {review.user_name.charAt(0)}
@@ -93,10 +110,47 @@ export function ReviewSection({ productId, reviews }: { productId: string, revie
                       <p className="text-muted-foreground leading-relaxed text-sm font-medium">
                         &quot;{review.comment}&quot;
                       </p>
+
+                      {review.media_urls && review.media_urls.length > 0 && (
+                          <div className="flex gap-2 mt-4 overflow-x-auto pb-2 scrollbar-hide">
+                              {review.media_urls.map((url, i) => (
+                                  <button key={i} type="button" onClick={() => { setLightboxImage(url); setLightboxOpen(true) }} className="relative shrink-0 h-20 w-20 rounded-lg overflow-hidden border border-border/50 hover:opacity-90 transition-opacity">
+                                      <img src={url} alt={`Review photo ${i + 1}`} className="h-full w-full object-cover" />
+                                  </button>
+                              ))}
+                          </div>
+                      )}
+
+                      {review.reply_text && (
+                          <div className="mt-6 pl-4 border-l-2 border-primary/30">
+                              <div className="flex items-center gap-2 mb-2">
+                                  <div className="bg-primary/10 p-1.5 rounded-lg">
+                                      <Reply className="h-3 w-3 text-primary" />
+                                  </div>
+                                  <span className="text-xs font-bold text-foreground uppercase tracking-wider">Response from Flash</span>
+                              </div>
+                              <p className="text-xs text-muted-foreground leading-relaxed">
+                                  {review.reply_text}
+                              </p>
+                          </div>
+                      )}
                   </article>
               ))
           )}
       </div>
+      {/* Lightbox */}
+       {lightboxOpen && (
+           <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 animate-in fade-in" onClick={() => setLightboxOpen(false)}>
+               <img src={lightboxImage} alt="Full size" className="max-w-full max-h-[90vh] rounded-lg shadow-2xl object-contain" />
+               <button 
+                 className="absolute top-4 right-4 text-white/50 hover:text-white"
+                 onClick={() => setLightboxOpen(false)}
+               >
+                   <span className="sr-only">Close</span>
+                   <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+               </button>
+           </div>
+       )}
     </div>
   )
 }
@@ -120,9 +174,9 @@ function ReviewForm({ productId, onSuccess }: { productId: string, onSuccess: ()
     return (
         <form action={action} className="space-y-4 pt-4">
              <div className="space-y-2">
-                 <Label htmlFor="rating-input">Rating</Label>
-                 <div className="flex gap-1 text-primary cursor-pointer" role="group" aria-label="Rating selection">
-                     <input type="hidden" name="rating" id="rating-input" value={rating} />
+                 <Label id="rating-label" className="cursor-default">Rating</Label>
+                 <div className="flex gap-1 text-primary cursor-pointer" role="group" aria-labelledby="rating-label">
+                     <input type="hidden" name="rating" value={rating} />
                      {[1, 2, 3, 4, 5].map((s) => (
                          <Star 
                             key={s} 
@@ -138,6 +192,11 @@ function ReviewForm({ productId, onSuccess }: { productId: string, onSuccess: ()
              <div className="space-y-2">
                  <Label htmlFor="comment">Review</Label>
                  <Textarea name="comment" id="comment" placeholder="What did you like or dislike?" required />
+             </div>
+
+             <div className="space-y-2">
+                 <Label htmlFor="images">Photos (Optional)</Label>
+                 <Input type="file" id="images" name="images" accept="image/*" multiple className="cursor-pointer file:text-primary file:font-bold" />
              </div>
              
              <Button type="submit" className="w-full">Submit</Button>

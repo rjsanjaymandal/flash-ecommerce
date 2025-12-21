@@ -81,12 +81,12 @@ export default async function RootLayout({
         <PostHogProvider>
           <Providers initialUser={user} initialSession={session} initialProfile={profile}>
         <NuqsAdapter>
-            <OrganizationJsonLd />
             {children}
             <Analytics />
           </NuqsAdapter>
         </Providers>
         </PostHogProvider>
+        <OrganizationJsonLd />
       </body>
     </html>
   )

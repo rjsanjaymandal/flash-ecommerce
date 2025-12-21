@@ -14,7 +14,7 @@ begin
     review_count = (select count(*) from public.reviews where product_id = pid)
   where id = pid;
 end;
-$$ language plpgsql security scraper;
+$$ language plpgsql security definer;
 
 -- Trigger to update product rating when reviews change
 create or replace function public.on_review_change()
@@ -32,7 +32,7 @@ begin
   end if;
   return null;
 end;
-$$ language plpgsql security scraper;
+$$ language plpgsql security definer;
 
 drop trigger if exists tr_review_change on public.reviews;
 create trigger tr_review_change

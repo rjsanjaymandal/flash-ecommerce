@@ -10,7 +10,7 @@ export type OptimizedImages = {
   desktop: string
 }
 
-export async function uploadOptimizedImage(formData: FormData): Promise<OptimizedImages> {
+export async function uploadOptimizedImage(formData: FormData, bucketName: string = 'products'): Promise<OptimizedImages> {
   const file = formData.get('file') as File
   if (!file) {
     throw new Error('No file provided')
@@ -55,7 +55,7 @@ export async function uploadOptimizedImage(formData: FormData): Promise<Optimize
   for (const upload of uploads) {
     const fileName = `${baseUuid}-${upload.name}.webp`
     const { error } = await supabase.storage
-      .from('products')
+      .from(bucketName)
       .upload(fileName, upload.buffer, {
         contentType: 'image/webp',
         cacheControl: '3600',
@@ -68,7 +68,7 @@ export async function uploadOptimizedImage(formData: FormData): Promise<Optimize
     }
 
     const { data: { publicUrl } } = supabase.storage
-      .from('products')
+      .from(bucketName)
       .getPublicUrl(fileName)
       
     urls[upload.name as keyof OptimizedImages] = publicUrl

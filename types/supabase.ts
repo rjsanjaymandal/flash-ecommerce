@@ -572,6 +572,8 @@ export type Database = {
             rating: number
             comment: string | null
             user_name: string | null
+            is_featured: boolean
+            reply_text: string | null
           }
           Insert: {
             id?: string
@@ -581,6 +583,8 @@ export type Database = {
             rating: number
             comment?: string | null
             user_name?: string | null
+            is_featured?: boolean
+            reply_text?: string | null
           }
           Update: {
             id?: string
@@ -590,6 +594,8 @@ export type Database = {
             rating?: number
             comment?: string | null
             user_name?: string | null
+            is_featured?: boolean
+            reply_text?: string | null
           }
           Relationships: [
             {

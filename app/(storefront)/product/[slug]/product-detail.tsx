@@ -362,7 +362,7 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
                             </div>
                             
                             {/* Short Description Accordion */}
-                            <div className="mt-8">
+                            <div className="mt-8" suppressHydrationWarning>
                                 <Accordion type="single" collapsible className="w-full">
                                     <AccordionItem value="details" className="border-border/60">
                                         <AccordionTrigger className="uppercase text-[11px] font-black tracking-widest text-muted-foreground hover:text-foreground">Product Description</AccordionTrigger>

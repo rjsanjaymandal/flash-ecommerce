@@ -38,3 +38,24 @@ export async function deleteReview(id: string) {
     if (error) throw error
     revalidatePath('/admin/reviews')
 }
+
+export async function toggleReviewFeature(id: string, isFeatured: boolean) {
+    const supabase = await createClient()
+    const { error } = await supabase.from('reviews').update({ is_featured: isFeatured } as any).eq('id', id)
+    if (error) throw error
+    revalidatePath('/admin/reviews')
+}
+
+export async function replyToReview(id: string, replyText: string) {
+    const supabase = await createClient()
+    const { error } = await supabase.from('reviews').update({ reply_text: replyText } as any).eq('id', id)
+    if (error) throw error
+    revalidatePath('/admin/reviews')
+}
+
+export async function approveReview(id: string, isApproved: boolean) {
+    const supabase = await createClient()
+    const { error } = await supabase.from('reviews').update({ is_approved: isApproved } as any).eq('id', id)
+    if (error) throw error
+    revalidatePath('/admin/reviews')
+}

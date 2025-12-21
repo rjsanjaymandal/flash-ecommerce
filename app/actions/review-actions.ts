@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { uploadOptimizedImage } from './upload-images'
 
 export async function submitReview(formData: FormData) {
   const supabase = await createClient()
@@ -10,6 +11,7 @@ export async function submitReview(formData: FormData) {
   const rating = Number(formData.get('rating'))
   const comment = formData.get('comment') as string
   const userName = formData.get('userName') as string
+  const imageFiles = formData.getAll('images') as File[]
 
   // Get current user
   const { data: { user } } = await supabase.auth.getUser()
@@ -35,12 +37,33 @@ export async function submitReview(formData: FormData) {
       finalName = user.email.split('@')[0]
   }
 
+  // Handle Image Uploads with Optimization
+  const mediaUrls: string[] = []
+  if (imageFiles.length > 0) {
+      for (const file of imageFiles) {
+          if (file.size > 0 && file.type.startsWith('image/')) {
+              try {
+                  const uploadFormData = new FormData()
+                  uploadFormData.set('file', file)
+                  // Use 'reviews' bucket and get optimized versions
+                  const { mobile } = await uploadOptimizedImage(uploadFormData, 'reviews')
+                  mediaUrls.push(mobile) // Store the 600px width version
+              } catch (err) {
+                  console.error('Image processing failed:', err)
+                  // Skip failed images but allow review submission
+              }
+          }
+      }
+  }
+
   const { error } = await (supabase as any).from('reviews').insert({
     product_id: productId,
     user_id: user.id,
     rating,
     comment,
-    user_name: finalName
+    user_name: finalName,
+    media_urls: mediaUrls,
+    is_approved: false // Default to false for moderation
   })
 
   if (error) {
@@ -49,7 +72,7 @@ export async function submitReview(formData: FormData) {
   }
 
   revalidatePath(`/product/${productId}`)
-  return { success: true }
+  return { success: true, message: "Review submitted for approval!" }
 }
 
 export async function getReviews(productId: string) {
@@ -59,6 +82,7 @@ export async function getReviews(productId: string) {
     .from('reviews')
     .select('*')
     .eq('product_id', productId)
+    .eq('is_approved', true)
     .order('created_at', { ascending: false })
 
   return reviews || []

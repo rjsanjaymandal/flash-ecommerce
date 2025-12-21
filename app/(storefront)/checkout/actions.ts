@@ -1,8 +1,8 @@
-'use server'
-
 import { createClient } from '@supabase/supabase-js'
 import { Database } from '@/types/supabase'
 import { CartItem } from '@/store/use-cart-store'
+import { resend } from '@/lib/email/client'
+import { OrderConfirmationEmail } from '@/lib/email/templates/order-confirmation'
 
 export async function createOrder(data: {
     user_id: string | null,
@@ -19,7 +19,8 @@ export async function createOrder(data: {
     payment_reference: string,
     items: CartItem[],
     coupon_code?: string,
-    discount_amount?: number
+    discount_amount?: number,
+    email?: string
 }) {
     // Initialize Admin Client
     const supabase = createClient<Database>(
@@ -127,12 +128,10 @@ export async function createOrder(data: {
     }
 
     // --- INVENTORY: Deduct Stock & Increment Sales ---
+    // --- INVENTORY: Deduct Stock & Increment Sales ---
     for (const item of data.items) {
         try {
-            // 1. Increment sale_count
-            await (supabase as any).rpc('increment_product_sale', { pid: item.productId, qty: item.quantity })
-            
-            // 2. Deduct Stock using Atomic RPC
+            // 1. Deduct Stock using Atomic RPC
             const { error: rpcError } = await (supabase as any).rpc('decrement_stock', { 
                 p_product_id: item.productId, 
                 p_size: item.size, 
@@ -141,15 +140,26 @@ export async function createOrder(data: {
             })
 
             if (rpcError) {
-                // Determine if it's an insufficient stock error or something else
+                console.error(`Inventory Sync Error for ${item.productId}:`, rpcError)
+                
+                // COMPENSATION LOGIC: Cancel the order immediately
+                await supabase.from('orders').update({ status: 'cancelled' }).eq('id', order.id)
+                
                 if (rpcError.message.includes('Insufficient stock')) {
-                    throw new Error(`Insufficient stock for item. Please verify availability.`)
+                    throw new Error(`Item ${item.name} is out of stock. Order cancelled.`)
                 }
-                throw rpcError
+                throw new Error("Inventory sync failed. Order cancelled.")
             }
-        } catch (stockErr) {
-            console.error(`Inventory Sync Error for ${item.productId}:`, stockErr)
-            // We don't fail the whole order if stock update fails, but we should log it
+
+            // 2. Increment sale_count (Fire & Forget, rarely critical)
+            await (supabase as any).rpc('increment_product_sale', { pid: item.productId, qty: item.quantity })
+            
+        } catch (stockErr: any) {
+            console.error(`CRITICAL: Stock deduction failed for order ${order.id}`, stockErr)
+            // Ensure we propagate the error so the client knows
+            // COMPENSATION: Double check cancellation
+            await supabase.from('orders').update({ status: 'cancelled' }).eq('id', order.id)
+            throw new Error(stockErr.message || "Stock reservation failed. Order cancelled.")
         }
     }
 
@@ -158,6 +168,31 @@ export async function createOrder(data: {
         const { data: coupon } = await supabase.from('coupons').select('id, used_count').eq('code', data.coupon_code.toUpperCase()).single()
         if (coupon) {
             await supabase.from('coupons').update({ used_count: (coupon.used_count || 0) + 1 }).eq('id', coupon.id)
+        }
+    }
+
+    // 4. Send Confirmation Email (Async/Fire & Forget)
+    if (data.email) {
+        try {
+            await resend.emails.send({
+                from: 'Flash <orders@yourdomain.com>', // Update this with verified domain
+                to: data.email,
+                subject: `Order Confirmed #${order.id.slice(0,8).toUpperCase()}`,
+                react: OrderConfirmationEmail({
+                    orderId: order.id,
+                    customerName: data.shipping_name,
+                    items: data.items.map(i => ({
+                        name: i.name,
+                        quantity: i.quantity,
+                        price: i.price
+                    })),
+                    total: data.total
+                })
+            })
+            console.log(`Email sent to ${data.email}`)
+        } catch (emailErr) {
+            console.error('Failed to send email:', emailErr)
+            // Don't fail the order for this
         }
     }
 

@@ -22,21 +22,8 @@ export default async function AccountPage() {
 
   const profile = profileData.data
   const orders = ordersData.data || []
-
   const addresses = addressesData.data || []
-  // Fix: We already awaited Promise.all above. The result array is destructured.
-  // waitlistData is the result of getWaitlistedProducts(user.id)
   const waitlistedProducts = waitlistData || []
-  
-  // Wait, I messed up the destructuring above in the previous step because I added it to the array but didn't update the destructuring var name in line 16.
-  // I need to correct the destructuring in the previous Logic or just use the array index.
-  // Actually, I can just fix the Promise.all line in a cleaner way.
-  // Let me re-do the Promise.all logic in one go with proper naming.
-  
-  // Actually the previous tool call replaced lines 19-21. 
-  // Line 16 is: const [profileData, ordersData, trendingData, addressesData] = ...
-  // So the 5th element is ignored.
-  // I should update line 16 as well. I'll do that now.
 
   return (
     <AccountClient 

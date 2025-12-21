@@ -6,6 +6,7 @@ import { StoreSync } from '@/components/store-sync'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Toaster } from 'sonner'
+import { TooltipProvider } from '@/components/ui/tooltip'
 
 export function Providers({ 
   children,
@@ -23,10 +24,12 @@ export function Providers({
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider initialUser={initialUser} initialSession={initialSession} initialProfile={initialProfile}>
-        <StoreSync />
-        {children}
-        <Toaster position="top-center" richColors />
-        <CartDrawer />
+        <TooltipProvider>
+            <StoreSync />
+            {children}
+            <Toaster position="top-center" richColors />
+            <CartDrawer />
+        </TooltipProvider>
       </AuthProvider>
     </QueryClientProvider>
   )

@@ -8,6 +8,7 @@ export const checkoutSchema = z.object({
   state: z.string().min(2, "State is required"),
   zip: z.string().min(5, "Valid postal code is required"),
   country: z.string().min(2, "Country is required"),
+  email: z.string().email("Valid email is required"),
   phone: z.string().min(10, "Valid phone number is required").regex(/^\+?[0-9\s-]{10,}$/, "Invalid phone format"),
 })
 

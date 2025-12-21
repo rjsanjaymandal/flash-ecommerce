@@ -32,6 +32,7 @@ import { useSearchParams } from 'next/navigation'
 import { Checkbox } from '@/components/ui/checkbox'
 import { ProductFilters } from '@/components/admin/products/product-filters'
 import { Download } from 'lucide-react'
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 
 export function ProductsClient({ initialProducts, meta }: { initialProducts: any[], meta: { total: number, page: number, limit: number, totalPages: number } }) {
@@ -330,7 +331,12 @@ export function ProductsClient({ initialProducts, meta }: { initialProducts: any
               <TableHead className="py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground/80">Price</TableHead>
               <TableHead className="py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground/80">Waitlist</TableHead>
               <TableHead className="py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground/80">Status</TableHead>
-              <TableHead className="py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground/80">Created</TableHead>
+              <TableHead className="py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
+                  <div className="flex items-center gap-2 cursor-pointer hover:text-primary transition-colors" onClick={() => router.push(`?sort=newest`)}> 
+                     {/* Note: Simply sorting by newest/created for now as detailed asc/desc toggle requires URL state mgmt complexity. Defaulting to a quick 'Newest' sort trigger for UX */}
+                    Created <ArrowUpDown className="h-3 w-3" />
+                  </div>
+              </TableHead>
               <TableHead className="text-right py-4 pr-4 text-xs font-bold uppercase tracking-wider text-muted-foreground/80">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -371,23 +377,27 @@ export function ProductsClient({ initialProducts, meta }: { initialProducts: any
                             <Badge variant="secondary" className="font-medium rounded-md text-[10px] bg-secondary/50 text-secondary-foreground hover:bg-secondary/70">{product.categories?.name || 'Uncategorized'}</Badge>
                         </TableCell>
                         <TableCell className="align-middle">
-                            <div className="relative group/stock w-fit">
-                                <div className="flex items-center gap-2 cursor-help">
-                                    <Badge variant={stockStatus.variant} className={cn("px-2 py-0.5 rounded-full text-[10px] font-semibold border shadow-sm", stockStatus.className)}>
-                                        {stockStatus.label}
-                                    </Badge>
-                                    <span className="text-xs text-muted-foreground font-mono">{stockStatus.count}</span>
-                                </div>
-                                {/* Simple CSS Tooltip */}
-                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-popover text-popover-foreground text-xs rounded-md border shadow-xl opacity-0 invisible group-hover/stock:opacity-100 group-hover/stock:visible transition-all whitespace-nowrap z-50 pointer-events-none">
-                                    <div className="font-semibold mb-1 border-b pb-1 border-border/50">Stock Breakdown</div>
-                                    <div className="text-muted-foreground max-w-[200px] flex flex-wrap gap-2">
-                                        {product.product_stock?.map((s: any) => (
-                                            <span key={s.id} className="bg-secondary/30 px-1.5 rounded">{s.size}: <span className={s.quantity < 3 ? "text-red-500 font-bold" : ""}>{s.quantity}</span></span>
-                                        ))}
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <div className="flex items-center gap-2 cursor-help w-fit">
+                                        <Badge variant={stockStatus.variant} className={cn("px-2 py-0.5 rounded-full text-[10px] font-semibold border shadow-sm", stockStatus.className)}>
+                                            {stockStatus.label}
+                                        </Badge>
+                                        <span className="text-xs text-muted-foreground font-mono">{stockStatus.count}</span>
                                     </div>
-                                </div>
-                            </div>
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-popover text-popover-foreground text-xs rounded-md border shadow-xl p-3 z-50">
+                                    <div className="font-semibold mb-2 border-b pb-1 border-border/50">Stock Breakdown</div>
+                                    <div className="grid grid-cols-2 gap-2 min-w-[150px]">
+                                        {product.product_stock?.length ? product.product_stock.map((s: any) => (
+                                            <div key={s.id} className="flex justify-between items-center bg-secondary/30 px-2 py-1 rounded">
+                                                <span className="font-medium text-[10px] uppercase">{s.size}</span>
+                                                <span className={cn("font-mono font-bold", s.quantity < 3 ? "text-red-500" : "")}>{s.quantity}</span>
+                                            </div>
+                                        )) : <span className="col-span-2 text-muted-foreground italic">No breakdown available</span>}
+                                    </div>
+                                </TooltipContent>
+                            </Tooltip>
                         </TableCell>
                         <TableCell className="font-semibold align-middle text-foreground">{formatCurrency(product.price)}</TableCell>
                          <TableCell className="align-middle">
@@ -416,7 +426,7 @@ export function ProductsClient({ initialProducts, meta }: { initialProducts: any
                         <TableCell className="align-middle">
                             <div className="flex items-center gap-1 text-xs text-muted-foreground/70">
                                 <Clock className="h-3 w-3" />
-                                {new Date(product.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                {new Date(product.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                             </div>
                         </TableCell>
                         <TableCell className="text-right align-middle pr-4">

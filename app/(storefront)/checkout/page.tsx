@@ -52,8 +52,16 @@ export default function CheckoutPage() {
       state: '',
       zip: '',
       country: '',
+      email: '',
       phone: ''
     }
+  })
+
+  // Pre-fill email if logged in
+  useState(() => {
+      if (user?.email) {
+          form.setValue('email', user.email)
+      }
   })
 
   // Calculations
@@ -127,7 +135,8 @@ export default function CheckoutPage() {
               payment_reference: '',
               items: items,
               coupon_code: appliedCoupon?.code,
-              discount_amount: discountAmount
+              discount_amount: discountAmount,
+              email: data.email
           } as any)
 
           // 3. Create Razorpay Order
@@ -286,6 +295,27 @@ export default function CheckoutPage() {
                              <div className="flex items-center gap-3 border-b border-border/50 pb-4">
                                 <span className="flex items-center justify-center w-8 h-8 rounded-full bg-foreground text-background font-bold text-sm">1</span>
                                 <h2 className="text-xl font-black uppercase tracking-tight italic text-foreground">Shipping Coordinates</h2>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-5 mb-5">
+                                <FormField
+                                    control={form.control}
+                                    name="email"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="font-bold text-xs uppercase tracking-widest text-muted-foreground">Email Address</FormLabel>
+                                            <FormControl>
+                                                <Input 
+                                                    placeholder="you@example.com" 
+                                                    {...field} 
+                                                    className="h-12 bg-muted/50 border-transparent focus:border-primary/50 rounded-xl focus:ring-primary/20" 
+                                                    disabled={!!user?.email}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
