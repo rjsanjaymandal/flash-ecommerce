@@ -138,6 +138,18 @@ export function StoreSync() {
                }
             }
 
+            // 1b. Merge Guest Wishlist
+            const localWishlist = useWishlistStore.getState().items
+            if (localWishlist.length > 0) {
+                console.log('[StoreSync] Found guest wishlist items. Merging to DB...')
+                for (const item of localWishlist) {
+                    await supabase.from('wishlist_items').upsert({
+                        user_id: user.id,
+                        product_id: item.productId
+                    }, { onConflict: 'user_id, product_id' })
+                }
+            }
+
             // 2. Load Final Full Cart from DB
             const { data: cartData, error: cartError } = await supabase
                 .from('cart_items')
