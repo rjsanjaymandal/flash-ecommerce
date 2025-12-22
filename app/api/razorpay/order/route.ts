@@ -41,6 +41,41 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'Order is already paid' }, { status: 400 })
     }
 
+    // 3. STRICT GUARD: Validate Product Availability & Status
+    // Fetch order items and their related products to ensure they are still active and (optional) in stock.
+    const { data: orderItems, error: itemsError } = await supabase
+        .from('order_items')
+        .select(`
+            *,
+            product:products (
+                id,
+                name,
+                is_active
+            )
+        `)
+        .eq('order_id', order_id)
+    
+    if (itemsError || !orderItems || orderItems.length === 0) {
+        console.error('Failed to validate order items:', itemsError)
+        return NextResponse.json({ error: 'Could not validate order items.' }, { status: 500 })
+    }
+
+    // Check for any invalid product
+    const invalidItem = orderItems.find((item: any) => {
+        // Product explicitly deleted (null) or set to inactive
+        if (!item.product) return true 
+        if (item.product.is_active === false) return true
+        return false
+    })
+
+    if (invalidItem) {
+        const name = invalidItem.product?.name || 'A product in your cart'
+        console.warn(`Blocked payment for invalid item: ${name}`)
+        return NextResponse.json({ 
+            error: `${name} is no longer available. Please update your cart.` 
+        }, { status: 400 })
+    }
+
     const razorpay = new Razorpay({
       key_id: process.env.RAZORPAY_KEY_ID,
       key_secret: process.env.RAZORPAY_KEY_SECRET,

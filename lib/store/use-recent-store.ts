@@ -13,8 +13,10 @@ interface RecentProduct {
 
 interface RecentStore {
   items: RecentProduct[]
+  lastValidated: number
   addItem: (item: RecentProduct) => void
   setItems: (items: RecentProduct[]) => void
+  setLastValidated: (time: number) => void
   clear: () => void
 }
 
@@ -22,6 +24,7 @@ export const useRecentStore = create<RecentStore>()(
   persist(
     (set) => ({
       items: [],
+      lastValidated: 0,
       addItem: (newItem) =>
         set((state) => {
           // Remove if exists to move to top
@@ -30,10 +33,13 @@ export const useRecentStore = create<RecentStore>()(
           return { items: [newItem, ...filtered].slice(0, 12) }
         }),
       setItems: (items) => set({ items }),
-      clear: () => set({ items: [] }),
+      setLastValidated: (time) => set({ lastValidated: time }),
+      clear: () => set({ items: [], lastValidated: 0 }),
     }),
     {
       name: 'recently-viewed-storage',
+      // Ensure we persist validation time
+      partialize: (state) => ({ items: state.items, lastValidated: state.lastValidated }),
     }
   )
 )

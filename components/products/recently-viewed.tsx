@@ -49,6 +49,19 @@ export function RecentlyViewed({ currentProduct }: { currentProduct?: any }) {
         if (!mounted || items.length === 0) return
 
         const validate = async () => {
+             // Optimization: Time-based Cache (15 minutes)
+             // If we validated less than 15 mins ago, skip server call.
+             // 15 mins = 15 * 60 * 1000 = 900,000 ms
+             const CACHE_DURATION = 15 * 60 * 1000
+             const now = Date.now()
+             const { lastValidated, setLastValidated } = useRecentStore.getState() // Access fresh state
+
+             if (lastValidated && (now - lastValidated < CACHE_DURATION)) {
+                 // Cache is valid, rely on local store
+                 setValidatedItems(items)
+                 return
+             }
+
             try {
                 // Import dynamically to avoid server action issues in client initially? 
                 // No, standard import is fine for server actions.
@@ -75,8 +88,16 @@ export function RecentlyViewed({ currentProduct }: { currentProduct?: any }) {
                     })
                 
                 setValidatedItems(orderedValidItems)
+                
+                // Update Timestamp
+                setLastValidated(now)
 
-                // Self-Heal: Update store if length changed
+                // Self-Heal: Update store if length changed or data refreshed
+                // We technically should always update to save fresh prices etc, but 'setItems' might trigger re-render loops if not careful?
+                // zustand persist handles it. 
+                // Let's only 'setItems' if content actually changed (length) OR deep compare? 
+                // For "Recently Viewed", just removing deleted is enough. Updating price is a bonus.
+                // Let's safe update if length differs.
                 if (orderedValidItems.length !== items.length) {
                     console.log('Sanitizing Recently Viewed: Removed invalid items.')
                     setItems(orderedValidItems)
