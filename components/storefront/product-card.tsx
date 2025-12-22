@@ -11,16 +11,31 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { useState, useEffect } from 'react'
+import { useAuth } from '@/context/auth-context'
 import { motion } from 'framer-motion'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { QuickView } from '@/components/products/quick-view'
 import type { Product } from '@/lib/services/product-service'
 import { checkPreorderStatus, togglePreorder } from '@/app/actions/preorder'
+import imageLoader from '@/lib/image-loader'
+import { WaitlistDialog } from '@/components/products/waitlist-dialog'
 
 interface ProductCardProps {
     product: Product
     showRating?: boolean
     priority?: boolean
+    onWaitlistChange?: (isJoined: boolean) => void
 }
+// Force rebuild for waitlist logic update
 
 export function ProductCard({ product, showRating = true, priority = false }: ProductCardProps) {
   // Use optimized images if available, starting with thumbnail for grid, or mobile for slightly larger cards
@@ -32,6 +47,7 @@ export function ProductCard({ product, showRating = true, priority = false }: Pr
   // Pre-order state
   const [isOnWaitlist, setIsOnWaitlist] = useState(false)
   const [isLoadingWaitlist, setIsLoadingWaitlist] = useState(false)
+  const [isWaitlistDialogOpen, setIsWaitlistDialogOpen] = useState(false)
 
   const router = useRouter()
   
@@ -53,12 +69,6 @@ export function ProductCard({ product, showRating = true, priority = false }: Pr
   const reviewCount = product.review_count || 0
 
   // Check waitlist status on mount if OOS
-  useEffect(() => {
-      if (isOutOfStock) {
-          checkPreorderStatus(product.id).then(setIsOnWaitlist)
-      }
-  }, [isOutOfStock, product.id])
-
   const handleWishlistClick = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
@@ -75,77 +85,119 @@ export function ProductCard({ product, showRating = true, priority = false }: Pr
         toast.success("Added to Wishlist")
     }
   }
-
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-
-    if (hasMultipleOptions) {
-        router.push(`/product/${product.slug}`)
-        return
-    }
-
-    const variant = stock[0]
-    if (variant) {
-         addToCart({
-            productId: product.id,
-            name: product.name,
-            price: product.price,
-            image: product.main_image_url || '',
-            size: variant.size,
-            color: variant.color,
-            maxQuantity: variant.quantity || 0,
-            quantity: 1
-        })
-        toast.success("Added to Bag")
-        setIsCartOpen(true)
-    } else {
-         router.push(`/product/${product.slug}`)
-    }
+  
+  const { user } = useAuth()
+  const [savedGuestEmail, setSavedGuestEmail] = useState('')
+  const [isUnjoinDialogOpen, setIsUnjoinDialogOpen] = useState(false)
+  
+    const handleAddToCart = (e: React.MouseEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+      // ... logic for quick add or redirect
+      router.push(`/product/${product.slug || product.id}`)
   }
 
-  const handleBuyNow = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-
-    if (hasMultipleOptions) {
-        router.push(`/product/${product.slug}`)
-        return
-    }
-
-     const variant = stock[0]
-     if (variant) {
-         addToCart({
-            productId: product.id,
-            name: product.name,
-            price: product.price,
-            image: product.main_image_url || '',
-            size: variant.size,
-            color: variant.color,
-            maxQuantity: variant.quantity || 0,
-            quantity: 1
-        })
-        router.push('/checkout')
-    } else {
-         router.push(`/product/${product.slug}`)
-    }
+    const handleBuyNow = (e: React.MouseEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+      router.push(`/product/${product.slug || product.id}`)
   }
+
+  // Helper to get or create guest ID
+  const getGuestId = () => {
+    if (typeof window === 'undefined') return undefined
+    let id = localStorage.getItem('guest_id')
+    if (!id) {
+        id = crypto.randomUUID()
+        localStorage.setItem('guest_id', id)
+    }
+    return id
+  }
+
+  // Check waitlist status on mount if OOS
+  // Check localStorage for guest status & email preference
+  useEffect(() => {
+      // 1. Load Email Preference
+      const savedEmail = localStorage.getItem('user_email_preference')
+      if (savedEmail) setSavedGuestEmail(savedEmail)
+
+      // 2. Determine Waitlist Status (Server > Local)
+      if (isOutOfStock) {
+          setIsLoadingWaitlist(true)
+          const guestId = getGuestId()
+          // Pass savedEmail and guestId to check if this specific guest is on the list
+          checkPreorderStatus(product.id, savedEmail || undefined, guestId).then((serverStatus) => {
+              if (serverStatus) {
+                  // Confirmed by server (User OR Guest with matching email OR GuestID)
+                  setIsOnWaitlist(true)
+                  // ensure local storage is in sync
+                  localStorage.setItem(`waitlist_${product.id}`, 'true')
+              } else {
+                 // Server says 'not joined'
+                 setIsOnWaitlist(false)
+                 localStorage.removeItem(`waitlist_${product.id}`) 
+              }
+              setIsLoadingWaitlist(false)
+          })
+      }
+  }, [isOutOfStock, product.id])
 
   const handlePreOrder = async (e: React.MouseEvent) => {
       e.preventDefault()
-      e.stopPropagation()
+      e.stopPropagation() 
+      
+      // OPTIMISTIC UI: If we think we are joined...
+      if (isOnWaitlist) {
+           // GUEST HANDLING: No optimistic toggle. Just remind them.
+           if (!user) {
+               toast.info("You are already on the waitlist! (Guest)")
+               return
+           }
+
+           // AUTH USER HANDLING: Optimistic Remove
+           const previousState = true
+           setIsOnWaitlist(false) // Optimistically remove
+           toast.success("Removed from waitlist.") // Optimistic success
+
+           try {
+               const result = await togglePreorder(product.id)
+               
+               if (result.error) {
+                   // Error -> Revert
+                   setIsOnWaitlist(previousState)
+                   toast.dismiss()
+                   toast.error(result.error)
+               } else {
+                   // Success confirmed
+                   localStorage.removeItem(`waitlist_${product.id}`) 
+               }
+           } catch (error) {
+               setIsOnWaitlist(previousState)
+               toast.dismiss()
+               toast.error("Something went wrong.")
+           }
+           return
+      }
+
+      // If NOT joined...
       
       setIsLoadingWaitlist(true)
       try {
+          // Attempt 1: Try as logged in / existing session
           const result = await togglePreorder(product.id)
-          if (result.error) {
+          
+          // Updated Error Check for Guest (check if it asks for identifying info)
+          if (result.error && (result.error.includes("sign in") || result.error.includes("identifying"))) {
+               // Not logged in -> Open Dialog
+               setIsWaitlistDialogOpen(true)
+          } else if (result.error) {
               toast.error(result.error)
-              if (result.error.includes("logged in")) {
-                  router.push('/login')
-              }
           } else {
-              setIsOnWaitlist(result.status === 'added')
-              toast.success(result.status === 'added' ? "Added to waitlist!" : "Removed from waitlist.")
+              // Logged in success
+              setIsOnWaitlist(true) 
+              onWaitlistChange?.(true)
+              toast.success("Added to waitlist!")
+              if (result.status === 'added') localStorage.setItem(`waitlist_${product.id}`, 'true')
           }
       } catch (error) {
           toast.error("Something went wrong.")
@@ -153,6 +205,32 @@ export function ProductCard({ product, showRating = true, priority = false }: Pr
           setIsLoadingWaitlist(false)
       }
   }
+
+  const handleWaitlistSubmit = async (email: string) => {
+      setIsLoadingWaitlist(true)
+      try {
+          const guestId = getGuestId()
+          const result = await togglePreorder(product.id, email, guestId)
+          if (result.error) {
+              toast.error(result.error)
+          } else if (result.status === 'already_joined') {
+              setIsOnWaitlist(true)
+              toast.info(result.message)
+              localStorage.setItem(`waitlist_${product.id}`, 'true')
+              if (email) localStorage.setItem('user_email_preference', email)
+          } else {
+              setIsOnWaitlist(true)
+              toast.success("You've been added to the waitlist!")
+              localStorage.setItem(`waitlist_${product.id}`, 'true')
+              if (email) localStorage.setItem('user_email_preference', email)
+          }
+      } catch (error) {
+           toast.error("Failed to join waitlist.")
+      } finally {
+          setIsLoadingWaitlist(false)
+      }
+  }
+
 
   useEffect(() => {
     if (product.created_at) {
@@ -162,6 +240,7 @@ export function ProductCard({ product, showRating = true, priority = false }: Pr
   }, [product.created_at])
 
   return (
+    <>
     <motion.div 
         whileHover={{ y: -4 }}
         className="group relative flex flex-col gap-2"
@@ -175,9 +254,6 @@ export function ProductCard({ product, showRating = true, priority = false }: Pr
                  ) : isNew ? (
                      <Badge className="bg-white text-black hover:bg-white/90 uppercase tracking-wider text-[9px] font-bold px-2 py-0.5 rounded-sm border-none shadow-sm backdrop-blur-md">New</Badge>
                  ) : null}
-                 
-                 {/* Sale Badge Example (Logic can be added later) */}
-                 {/* <Badge className="bg-red-600 text-white uppercase tracking-wider text-[9px] font-bold px-2 py-0.5 rounded-sm border-none">-20%</Badge> */}
             </div>
 
             {/* Wishlist Button */}
@@ -194,6 +270,7 @@ export function ProductCard({ product, showRating = true, priority = false }: Pr
             {/* Main Image */}
             <div className="relative h-full w-full bg-zinc-100 overflow-hidden">
                 <Image 
+                    loader={imageLoader}
                     src={imageSrc} 
                     alt={product.name}
                     fill
@@ -201,7 +278,6 @@ export function ProductCard({ product, showRating = true, priority = false }: Pr
                     sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                     onError={() => setImageSrc('/placeholder.svg')}
                     priority={priority}
-                    unoptimized
                 />
             </div>
 
@@ -246,7 +322,6 @@ export function ProductCard({ product, showRating = true, priority = false }: Pr
                     <p className="font-bold text-xs lg:text-sm text-foreground tracking-tight tabular-nums whitespace-nowrap">{formatCurrency(product.price)}</p>
                 </div>
                 
-                {/* Variant Hint or Metadata */}
                 <div className="flex items-center justify-between text-[10px] text-muted-foreground/70 uppercase tracking-wider font-medium">
                     <span>{product.categories?.name || 'Collection'}</span>
                     {hasMultipleOptions && (
@@ -291,6 +366,40 @@ export function ProductCard({ product, showRating = true, priority = false }: Pr
             )}
         </div>
     </motion.div>
+
+    <WaitlistDialog 
+        open={isWaitlistDialogOpen}
+        onOpenChange={(open) => {
+            // Prevent interaction if submitting
+            if (!isLoadingWaitlist) setIsWaitlistDialogOpen(open)
+        }}
+        onSubmit={handleWaitlistSubmit}
+        isSubmitting={isLoadingWaitlist}
+        initialEmail={savedGuestEmail}
+    />
+
+    <AlertDialog open={isUnjoinDialogOpen} onOpenChange={setIsUnjoinDialogOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Remove from Waitlist?</AlertDialogTitle>
+          <AlertDialogDescription>
+            You will no longer receive notifications when this product is back in stock. You can always join again later.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Cancel</AlertDialogCancel>
+          <AlertDialogAction 
+            onClick={(e) => {
+                e.stopPropagation()
+                handleConfirmUnjoin()
+            }}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            Remove
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   )
 }
-

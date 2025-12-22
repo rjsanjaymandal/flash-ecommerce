@@ -7,6 +7,7 @@ import { ArrowRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { BrandGlow } from './brand-glow'
 import { BrandBadge } from './brand-badge'
+import imageLoader from '@/lib/image-loader'
 
 interface Category {
   id: string
@@ -82,6 +83,7 @@ export function CategoryVibes({ categories }: CategoryVibesProps) {
                 <div className={`absolute inset-0 bg-linear-to-br ${gradient} z-10 opacity-60 group-hover:opacity-100 transition-opacity duration-700`} />
                 {cat.image_url && (
                     <NextImage 
+                        loader={imageLoader}
                         src={cat.image_url} 
                         className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000 ease-out" 
                         alt={cat.name} 

@@ -17,6 +17,18 @@ import { FAQJsonLd } from '@/components/seo/faq-json-ld'
 import { ShareButton } from '@/components/products/share-button'
 import { motion } from 'framer-motion'
 import { useRealTimeStock, StockItem } from '@/hooks/use-real-time-stock'
+import { useAuth } from '@/context/auth-context'
+import { WaitlistDialog } from '@/components/products/waitlist-dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 // Types
 // type StockItem = { ... } // Replaced by import or compatible shape
@@ -59,8 +71,17 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
     const [selectedSize, setSelectedSize] = useState<string>('')
     const [selectedColor, setSelectedColor] = useState<string>('')
     const [quantity, setQuantity] = useState(1)
+    
+    // Waitlist State
     const [isOnWaitlist, setIsOnWaitlist] = useState(false)
+    const [isLoadingWaitlist, setIsLoadingWaitlist] = useState(false)
+    const [isWaitlistDialogOpen, setIsWaitlistDialogOpen] = useState(false)
+    const [savedGuestEmail, setSavedGuestEmail] = useState('')
+    const [isUnjoinDialogOpen, setIsUnjoinDialogOpen] = useState(false)
+
     const [showStickyBar, setShowStickyBar] = useState(false)
+
+    const { user } = useAuth()
 
     // Real-time Stock Check
     const { stock: realTimeStock, loading: loadingStock } = useRealTimeStock(product.id, product.product_stock)
@@ -68,9 +89,35 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
     // Ref for the main action button to sticky bar intersection
     const mainActionRef = useRef<HTMLDivElement>(null)
 
-    // Check Waitlist Status
+    // Helper to get or create guest ID
+    const getGuestId = () => {
+        if (typeof window === 'undefined') return undefined
+        let id = localStorage.getItem('guest_id')
+        if (!id) {
+            id = crypto.randomUUID()
+            localStorage.setItem('guest_id', id)
+        }
+        return id
+    }
+
+    // Check Waitlist Status & Sync
     useEffect(() => {
-         checkPreorderStatus(product.id).then(setIsOnWaitlist)
+         const savedEmail = localStorage.getItem('user_email_preference')
+         if (savedEmail) setSavedGuestEmail(savedEmail)
+
+         setIsLoadingWaitlist(true)
+         const guestId = getGuestId()
+         
+         checkPreorderStatus(product.id, savedEmail || undefined, guestId).then((serverStatus) => {
+            if (serverStatus) {
+                setIsOnWaitlist(true)
+                localStorage.setItem(`waitlist_${product.id}`, 'true')
+            } else {
+                setIsOnWaitlist(false)
+                localStorage.removeItem(`waitlist_${product.id}`)
+            }
+            setIsLoadingWaitlist(false)
+         })
     }, [product.id])
 
     // Scroll Observer for Sticky Bar
@@ -124,27 +171,106 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
         return map
     }, [realTimeStock])
 
+    const totalStock = useMemo(() => {
+        return realTimeStock?.reduce((acc: number, item: any) => acc + (item.quantity || 0), 0) ?? 0
+    }, [realTimeStock])
+
     const getStock = (size: string, color: string) => stockMap[`${size}-${color}`] || 0
     const isAvailable = (size: string, color: string) => (stockMap[`${size}-${color}`] || 0) > 0
     const isSizeAvailable = (size: string) => realTimeStock?.some(s => s.size === size && s.quantity > 0)
 
     const maxQty = getStock(selectedSize, selectedColor)
-    const isOutOfStock = maxQty === 0 && selectedSize && selectedColor
+    
+    // Logic: OOS if Global stock is 0 OR if specific selection is 0
+    const isGlobalOutOfStock = totalStock === 0 && !loadingStock
+    const isSelectionOutOfStock = maxQty === 0 && selectedSize && selectedColor
+    const isOutOfStock = isGlobalOutOfStock || isSelectionOutOfStock
 
     // Handlers
+    // Handlers
     const handlePreOrder = async () => {
-        try {
-            const result = await togglePreorder(product.id)
-            if (result.error) {
-                toast.error(result.error)
-            } else {
-                const isAdded = result.status === 'added'
-                setIsOnWaitlist(isAdded)
-                toast.success(isAdded ? "Added to waitlist" : "Removed from waitlist")
-            }
-        } catch (error) {
-            toast.error("Please login first")
-        }
+      // OPTIMISTIC UI: If we think we are joined...
+      if (isOnWaitlist) {
+           // GUEST HANDLING: No optimistic toggle. Just remind them.
+           if (!user) {
+               toast.info("You are already on the waitlist! (Guest)")
+               return
+           }
+
+           // AUTH USER HANDLING: Ask for confirmation
+           setIsUnjoinDialogOpen(true)
+           return
+      }
+
+      // If NOT joined, proceed to join flow
+      setIsLoadingWaitlist(true)
+      try {
+          // Attempt 1: Try as logged in / existing session
+          const result = await togglePreorder(product.id)
+          
+          if (result.error && (result.error.includes("sign in") || result.error.includes("identifying"))) {
+               // Not logged in -> Open Dialog
+               setIsWaitlistDialogOpen(true)
+          } else if (result.error) {
+              toast.error(result.error)
+          } else {
+              // Logged in success
+              setIsOnWaitlist(true) 
+              toast.success("Added to waitlist!")
+              if (result.status === 'added') localStorage.setItem(`waitlist_${product.id}`, 'true')
+          }
+      } catch (error) {
+          toast.error("Something went wrong.")
+      } finally {
+          setIsLoadingWaitlist(false)
+      }
+    }
+
+    const handleConfirmUnjoin = async () => {
+       const previousState = true
+       setIsOnWaitlist(false) // Optimistic remove
+       toast.success("Removed from waitlist.") 
+
+       try {
+           const result = await togglePreorder(product.id)
+           
+           if (result.error) {
+               setIsOnWaitlist(previousState) // Revert
+               toast.dismiss()
+               toast.error(result.error)
+           } else {
+               localStorage.removeItem(`waitlist_${product.id}`) 
+           }
+       } catch (error) {
+           setIsOnWaitlist(previousState)
+           toast.dismiss()
+           toast.error("Something went wrong.")
+       }
+    }
+
+    const handleWaitlistSubmit = async (email: string) => {
+       setIsLoadingWaitlist(true)
+       try {
+           const guestId = getGuestId()
+           const result = await togglePreorder(product.id, email, guestId)
+           if (result.error) {
+               toast.error(result.error)
+           } else if (result.status === 'already_joined') {
+               setIsOnWaitlist(true)
+               toast.info(result.message)
+               localStorage.setItem(`waitlist_${product.id}`, 'true')
+               if (email) localStorage.setItem('user_email_preference', email)
+           } else {
+               setIsOnWaitlist(true)
+               toast.success("You've been added to the waitlist!")
+               localStorage.setItem(`waitlist_${product.id}`, 'true')
+               if (email) localStorage.setItem('user_email_preference', email)
+           }
+       } catch (error) {
+            toast.error("Failed to join waitlist.")
+       } finally {
+           setIsLoadingWaitlist(false)
+       }
     }
 
     const handleAddToCart = () => {
@@ -198,7 +324,7 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
                 price={formatCurrency(product.price)}
                 isOutOfStock={Boolean(isOutOfStock)}
                 isOnWaitlist={isOnWaitlist}
-                disabled={!selectedSize || !selectedColor}
+                disabled={isOutOfStock ? isLoadingWaitlist : (!selectedSize || !selectedColor)}
                 onAddToCart={handleAddToCart}
                 onPreOrder={handlePreOrder}
             />
@@ -320,13 +446,19 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
                                                     ? "bg-amber-400 text-amber-950 hover:bg-amber-500" 
                                                     : "bg-foreground text-background hover:bg-foreground/90 hover:scale-[1.01]"
                                             )}
-                                            disabled={Boolean(!selectedSize || !selectedColor)}
+                                            disabled={isOutOfStock ? isLoadingWaitlist : (!selectedSize || !selectedColor)}
                                             onClick={isOutOfStock ? handlePreOrder : handleAddToCart}
                                         >
                                             {isOutOfStock ? (
                                                 <span className="flex items-center gap-2">
-                                                    <Clock className="h-4 w-4" />
-                                                    {isOnWaitlist ? "On Waitlist" : "Join Waitlist"}
+                                                    {isLoadingWaitlist ? (
+                                                        <span className="animate-pulse">Checking...</span>
+                                                    ) : (
+                                                        <>
+                                                        <Clock className="h-4 w-4" />
+                                                        {isOnWaitlist ? "On Waitlist" : "Join Waitlist"}
+                                                        </>
+                                                    )}
                                                 </span>
                                             ) : (
                                                 <span className="flex items-center gap-2">
@@ -393,6 +525,39 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
                     </div>
                 </div>
             </div>
+        
+        <WaitlistDialog 
+            open={isWaitlistDialogOpen}
+            onOpenChange={(open) => {
+                if (!isLoadingWaitlist) setIsWaitlistDialogOpen(open)
+            }}
+            onSubmit={handleWaitlistSubmit}
+            isSubmitting={isLoadingWaitlist}
+            initialEmail={savedGuestEmail}
+        />
+
+        <AlertDialog open={isUnjoinDialogOpen} onOpenChange={setIsUnjoinDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Remove from Waitlist?</AlertDialogTitle>
+              <AlertDialogDescription>
+                You will no longer receive notifications when this product is back in stock. You can always join again later.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Cancel</AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={(e) => {
+                    e.stopPropagation()
+                    handleConfirmUnjoin()
+                }}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Remove
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
         </div>
     )
 }

@@ -16,6 +16,8 @@ export function useRealTimeStock(productId: string, initialStock: StockItem[] = 
         let mounted = true
 
         async function fetchStock() {
+            if (!productId) return
+
             try {
                 const res = await fetch(`/api/stock/${productId}`)
                 if (!res.ok) throw new Error('Failed to fetch stock')

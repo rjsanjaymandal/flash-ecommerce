@@ -21,6 +21,7 @@ export async function getWaitlistUsers(productId: string) {
         .select(`
             created_at,
             user_id,
+            email,
             profiles (
                 name
             )
@@ -32,15 +33,23 @@ export async function getWaitlistUsers(productId: string) {
     if (!preorders) return { data: [] }
 
     // Enrich with Emails using Admin Client
-    // Enrich with Emails using Admin Client
-    // adminClient already initiated above
     
     // Process in parallel
     const enrichedData = await Promise.all(preorders.map(async (item: any) => {
-        const { data: { user: authUser }, error: authError } = await adminClient.auth.admin.getUserById(item.user_id)
+        let userEmail = item.email
+        let userName = item.profiles?.name
+
+        if (item.user_id) {
+            const { data: { user: authUser } } = await adminClient.auth.admin.getUserById(item.user_id)
+            if (authUser?.email) userEmail = authUser.email
+        } else {
+             userName = 'Guest'
+        }
+
         return {
-            ...item,
-            email: authUser?.email || 'N/A'
+             ...item,
+             user_name: userName, // Ensure this property exists for consistency if used elsewhere, though usually profiles.name is used directly
+             email: userEmail || null
         }
     }))
 
@@ -67,6 +76,7 @@ export async function getAllPreorders() {
             created_at,
             user_id,
             product_id,
+            email,
             profiles (name),
             products (name, main_image_url, slug, product_stock(quantity))
         `)
@@ -76,20 +86,28 @@ export async function getAllPreorders() {
     if (!preorders) return { data: [] }
 
     // Enrich with Emails using Admin Client
-    // Enrich with Emails using Admin Client
-    // adminClient already initiated above
     
     // We can optimize by fetching unique user IDs first if many duplicates, but parallel map is fine for MVP scale
     const enrichedData = await Promise.all(preorders.map(async (item: any) => {
-        const { data: { user: authUser } } = await adminClient.auth.admin.getUserById(item.user_id)
+        let userEmail = item.email
+        let userName = item.profiles?.name
+
+        if (item.user_id) {
+            const { data: { user: authUser } } = await adminClient.auth.admin.getUserById(item.user_id)
+            if (authUser?.email) userEmail = authUser.email
+            userName = userName || 'Unknown User'
+        } else {
+            userName = 'Guest'
+        }
+
         return {
             ...item,
-            email: authUser?.email || 'N/A',
+            email: userEmail || null,
             product_name: item.products?.name || 'Unknown Product',
             product_image: item.products?.main_image_url || '',
             product_slug: item.products?.slug,
             product_stock: item.products?.product_stock?.reduce((a: number, c: any) => a + (c.quantity || 0), 0) || 0,
-            user_name: item.profiles?.name || 'Unknown User'
+            user_name: userName
         }
     }))
 
@@ -119,4 +137,32 @@ export async function getWaitlistStats() {
     }, 0)
 
     return { count: preorders?.length || 0, potentialRevenue }
+}
+
+export async function deletePreorder(id: string) {
+    const supabase = await createClient()
+
+    // Verify Admin
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Unauthorized' }
+    
+    // Check role from profiles
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    if (profile?.role !== 'admin') return { error: 'Unauthorized' }
+
+    const adminClient = createAdminClient()
+
+    const { error } = await adminClient
+        .from('preorders' as any)
+        .delete()
+        .eq('id', id)
+
+    if (error) {
+        console.error("Delete Waitlist Error:", error)
+        return { error: `Delete failed: ${error.message}` }
+    }
+    
+    const { revalidatePath } = await import('next/cache')
+    revalidatePath('/admin/waitlist')
+    return { success: true }
 }

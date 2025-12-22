@@ -7,11 +7,23 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Product } from "@/lib/services/product-service"
 
+import { useState } from "react"
+import { AnimatePresence } from "framer-motion"
+
 interface WaitlistTabProps {
     products: Product[]
 }
 
-export function WaitlistTab({ products }: WaitlistTabProps) {
+export function WaitlistTab({ products: initialProducts }: WaitlistTabProps) {
+    const [products, setProducts] = useState(initialProducts)
+
+    const handleWaitlistChange = (productId: string, isJoined: boolean) => {
+        if (!isJoined) {
+            // Remove from list if unjoined (with a slight delay for better UX if needed, or instant)
+            // Instant for now to feel "responsive"
+            setProducts(current => current.filter(p => p.id !== productId))
+        }
+    }
 
     if (products.length === 0) {
         return (
@@ -42,9 +54,22 @@ export function WaitlistTab({ products }: WaitlistTabProps) {
 
     return (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 animate-in slide-in-from-bottom-2 duration-500">
-            {products.map((product) => (
-                <ProductCard key={product.id} product={product} />
-            ))}
+            <AnimatePresence mode="popLayout">
+                {products.map((product) => (
+                    <motion.div 
+                        key={product.id}
+                        layout
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.2 } }}
+                    >
+                        <ProductCard 
+                            product={product} 
+                            onWaitlistChange={(joined) => handleWaitlistChange(product.id, joined)}
+                        />
+                    </motion.div>
+                ))}
+            </AnimatePresence>
         </div>
     )
 }

@@ -42,6 +42,9 @@ export const metadata: Metadata = {
     title: 'FLASH | Queer & Inclusive Fashion',
     description: 'Bold, affirming fashion for everyone.',
   },
+  verification: {
+    google: 'CqVr1TGrfamesut-wOLLkyz2PQUjYb-ihMDqj9zL2X0',
+  },
 }
 
 import { createClient } from '@/lib/supabase/server'
@@ -73,10 +76,9 @@ export default async function RootLayout({
   }
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`antialiased overflow-x-hidden`}
-        suppressHydrationWarning
       >
         <PostHogProvider>
           <Providers initialUser={user} initialSession={session} initialProfile={profile}>

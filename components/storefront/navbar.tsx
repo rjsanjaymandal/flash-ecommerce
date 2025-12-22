@@ -86,6 +86,8 @@ export function StorefrontNavbar() {
                             fill 
                             sizes="36px"
                             className="object-cover" 
+                            loader={({ src }) => src}
+                            unoptimized
                         />
                     </div>
                     <span className="hidden lg:block text-xl font-black tracking-tighter text-gradient">FLASH</span>

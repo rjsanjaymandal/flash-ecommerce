@@ -7,6 +7,7 @@ import { ArrowRight } from 'lucide-react'
 import Image from 'next/image'
 import { BrandBadge } from './brand-badge'
 import { BrandGlow } from './brand-glow'
+import imageLoader from '@/lib/image-loader'
 
 export function Hero() {
   return (
@@ -86,6 +87,7 @@ export function Hero() {
               className="relative w-full h-full"
           >
               <Image 
+                  loader={imageLoader}
                   src="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2070&auto=format&fit=crop" 
                   alt="Premium Fashion" 
                   fill

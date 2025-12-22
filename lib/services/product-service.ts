@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient, createStaticClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { requireAdmin } from '@/lib/auth/utils'
 import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache'
 import type { Database, Tables, TablesInsert, TablesUpdate } from '@/types/supabase'
@@ -252,10 +253,10 @@ export async function getProductsSecure(filter: ProductFilter = {}, client: any)
 export async function getFeaturedProducts(): Promise<Product[]> {
     return unstable_cache(
         async () => {
-             const supabase = createStaticClient()
+             const supabase = createAdminClient()
              const { data } = await supabase
                 .from('products')
-                .select('id, name, price, main_image_url, images, slug, created_at, category_id, is_active, sale_count, categories(name), product_stock(*), reviews(rating)')
+                .select('id, name, price, main_image_url, slug, created_at, category_id, is_active, sale_count, categories(name), product_stock(*), reviews(rating)')
                 .eq('is_active', true)
                 .order('created_at', { ascending: false })
                 .limit(8)

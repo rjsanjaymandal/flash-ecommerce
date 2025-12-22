@@ -8,6 +8,7 @@ import { Suspense } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
 
 export const revalidate = 60
+// Force rebuild
 
 function GridSkeleton() {
     return (
