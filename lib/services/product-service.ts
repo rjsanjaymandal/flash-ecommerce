@@ -461,6 +461,33 @@ export async function getProductsByIds(ids: string[]): Promise<Product[]> {
     })
 }
 
+export async function getValidProducts(ids: string[]): Promise<Product[]> {
+    if (!ids || ids.length === 0) return []
+    const supabase = await getDb()
+    
+    // Only fetch ACTIVE products
+    const { data, error } = await supabase
+      .from('products')
+      .select('*, categories(name), product_stock(*), reviews(rating)')
+      .in('id', ids)
+      .eq('is_active', true)
+    
+    if (error) {
+        console.error('Error validating products:', error)
+        return []
+    }
+
+    return (data || []).map((p: any) => {
+        const ratings = p.reviews?.map((r: any) => r.rating) || []
+        const avg = ratings.length > 0 ? ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length : 0
+        return {
+            ...p,
+            average_rating: avg,
+            review_count: ratings.length
+        } as Product
+    })
+}
+
 export async function getRelatedProducts(product: Product): Promise<Product[]> {
     const key = `related-${product.id}`
     return unstable_cache(

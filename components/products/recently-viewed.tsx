@@ -9,7 +9,10 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 
 export function RecentlyViewed({ currentProduct }: { currentProduct?: any }) {
-    const { items, addItem, clear } = useRecentStore()
+    // State for validated items
+    const [validatedItems, setValidatedItems] = useState<any[]>([])
+    // Store access
+    const { items, addItem, setItems, clear } = useRecentStore()
     const [mounted, setMounted] = useState(false)
     const scrollContainerRef = useRef<HTMLDivElement>(null)
 
@@ -18,6 +21,7 @@ export function RecentlyViewed({ currentProduct }: { currentProduct?: any }) {
         setMounted(true)
     }, [])
 
+    // Add current product to store on mount/change
     useEffect(() => {
         if (currentProduct) {
             addItem({
@@ -39,10 +43,70 @@ export function RecentlyViewed({ currentProduct }: { currentProduct?: any }) {
         }
     }, [currentProduct, addItem])
 
+    // Validate items against DB (Self-Healing)
+    useEffect(() => {
+        // Only run if mounted and we have items
+        if (!mounted || items.length === 0) return
+
+        const validate = async () => {
+            try {
+                // Import dynamically to avoid server action issues in client initially? 
+                // No, standard import is fine for server actions.
+                const { getValidProducts } = await import('@/lib/services/product-service')
+                
+                // Get all IDs from store
+                const ids = items.map(i => i.id)
+                
+                // Fetch valid ones
+                const validProducts = await getValidProducts(ids)
+                
+                // If count mismatch, it means some were deleted/inactive
+                // We update the store with ONLY the valid ones (preserving order is tricky, getValidProducts validation order?)
+                // getValidProducts uses .in() which doesn't guarantee order.
+                // We should re-sort validProducts based on original 'items' order.
+                
+                const validMap = new Map(validProducts.map(p => [p.id, p]))
+                
+                const orderedValidItems = items
+                    .filter(i => validMap.has(i.id))
+                    .map(i => {
+                        const fresh = validMap.get(i.id)
+                        return { ...i, ...fresh } // Merge to keep store props but update fresh data (price/stock)
+                    })
+                
+                setValidatedItems(orderedValidItems)
+
+                // Self-Heal: Update store if length changed
+                if (orderedValidItems.length !== items.length) {
+                    console.log('Sanitizing Recently Viewed: Removed invalid items.')
+                    setItems(orderedValidItems)
+                }
+            } catch (err) {
+                console.error('Failed to validate recently viewed:', err)
+                // Fallback: show what we have in store, or nothing?
+                // Better to show nothing if validation fails to avoid glitches?
+                // Or show store items? Let's show store items as fallback to avoid empty section on network error.
+                setValidatedItems(items)
+            }
+        }
+
+        validate()
+    }, [mounted, items.length, setItems]) // Re-run if length changes (add/remove)
+
     if (!mounted || items.length === 0) return null
     
-    // Filter out current product from display list
-    const displayItems = items.filter(i => i.id !== currentProduct?.id)
+    // Filter out current product from display list (using validated items)
+    // If validation hasn't run yet, validatedItems is empty?
+    // We can show 'items' while validating? Or wait? 
+    // Showing 'items' might flash deleted content. 
+    // Let's wait for validation (validatedItems has content or we handle loading state).
+    // Actually, on first load validatedItems is empty.
+    
+    const listToUse = validatedItems.length > 0 ? validatedItems : [] // Don't show anything until validated to be safe against deleted?
+    // Or show items locally and then update? 
+    // User requested: "recently viewed shwos the deleted products" -> so we MUST validate before showing.
+    
+    const displayItems = listToUse.filter(i => i.id !== currentProduct?.id)
 
     if (displayItems.length === 0) return null
 

@@ -14,6 +14,7 @@ interface RecentProduct {
 interface RecentStore {
   items: RecentProduct[]
   addItem: (item: RecentProduct) => void
+  setItems: (items: RecentProduct[]) => void
   clear: () => void
 }
 
@@ -28,6 +29,7 @@ export const useRecentStore = create<RecentStore>()(
           // Add to front, limit to 12
           return { items: [newItem, ...filtered].slice(0, 12) }
         }),
+      setItems: (items) => set({ items }),
       clear: () => set({ items: [] }),
     }),
     {
