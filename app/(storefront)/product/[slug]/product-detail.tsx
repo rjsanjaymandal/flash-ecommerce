@@ -16,13 +16,11 @@ import { MobileStickyBar } from '@/components/storefront/mobile-sticky-bar'
 import { FAQJsonLd } from '@/components/seo/faq-json-ld'
 import { ShareButton } from '@/components/products/share-button'
 import { motion } from 'framer-motion'
+import { useRealTimeStock, StockItem } from '@/hooks/use-real-time-stock'
 
 // Types
-type StockItem = {
-    size: string
-    color: string
-    quantity: number
-}
+// type StockItem = { ... } // Replaced by import or compatible shape
+
 
 type ProductDetailProps = {
     product: {
@@ -63,6 +61,9 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
     const [quantity, setQuantity] = useState(1)
     const [isOnWaitlist, setIsOnWaitlist] = useState(false)
     const [showStickyBar, setShowStickyBar] = useState(false)
+
+    // Real-time Stock Check
+    const { stock: realTimeStock, loading: loadingStock } = useRealTimeStock(product.id, product.product_stock)
     
     // Ref for the main action button to sticky bar intersection
     const mainActionRef = useRef<HTMLDivElement>(null)
@@ -96,7 +97,7 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
     const sizeOptions = useMemo(() => {
         const sizes = product.size_options?.length 
             ? [...product.size_options]
-            : (product.product_stock?.length ? Array.from(new Set(product.product_stock.map((s: any) => s.size))) : [...STANDARD_SIZES])
+            : (realTimeStock?.length ? Array.from(new Set(realTimeStock.map((s: any) => s.size))) : [...STANDARD_SIZES])
       
         return sizes.sort((a, b) => {
             const indexA = STANDARD_SIZES.indexOf(a)
@@ -106,26 +107,26 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
             if (indexB !== -1) return 1
             return a.localeCompare(b)
         })
-    }, [product.size_options, product.product_stock])
+    }, [product.size_options, realTimeStock])
 
     const colorOptions = product.color_options?.length 
         ? product.color_options 
-        : Array.from(new Set(product.product_stock?.map((s: any) => s.color) || ['Standard'])).sort() as string[]
+        : Array.from(new Set(realTimeStock?.map((s: any) => s.color) || ['Standard'])).sort() as string[]
 
     // Stock Logic
     const stockMap = useMemo(() => {
         const map: Record<string, number> = {}
-        if (!product.product_stock) return map
-        product.product_stock.forEach(item => {
+        if (!realTimeStock) return map
+        realTimeStock.forEach(item => {
             const key = `${item.size}-${item.color}`
             map[key] = item.quantity
         })
         return map
-    }, [product.product_stock])
+    }, [realTimeStock])
 
     const getStock = (size: string, color: string) => stockMap[`${size}-${color}`] || 0
     const isAvailable = (size: string, color: string) => (stockMap[`${size}-${color}`] || 0) > 0
-    const isSizeAvailable = (size: string) => product.product_stock?.some(s => s.size === size && s.quantity > 0)
+    const isSizeAvailable = (size: string) => realTimeStock?.some(s => s.size === size && s.quantity > 0)
 
     const maxQty = getStock(selectedSize, selectedColor)
     const isOutOfStock = maxQty === 0 && selectedSize && selectedColor

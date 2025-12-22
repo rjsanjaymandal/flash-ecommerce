@@ -127,7 +127,33 @@ export async function createOrder(data: {
         throw new Error(`Order items creation failed: ${itemsError.message}`)
     }
 
-    // --- INVENTORY: Deduct Stock & Increment Sales ---
+    // --- SECURITY: Strict Inventory Check (Hybrid Cache Guard) ---
+    // Before we even try to decrement, we MUST verify stock strictly from DB
+    // This catches the case where the 15m cache said "In Stock" but it's actually 0.
+    const { data: stockItems, error: stockCheckError } = await supabase
+        .from('product_stock')
+        .select('product_id, size, color, quantity')
+        .in('product_id', productIds)
+
+    if (stockCheckError) throw new Error("Inventory check failed. Please try again.")
+
+    // Map for easy lookup: productId-size-color -> quantity
+    const stockMap = new Map<string, number>()
+    stockItems?.forEach(item => {
+        stockMap.set(`${item.product_id}-${item.size}-${item.color}`, item.quantity || 0)
+    })
+
+    // Validate every item
+    for (const item of data.items) {
+        const key = `${item.productId}-${item.size}-${item.color}`
+        const available = stockMap.get(key) || 0
+        
+        if (available < item.quantity) {
+             throw new Error(`Sold Out: ${item.name} (${item.size}/${item.color}) is no longer available.`)
+        }
+    }
+    // -----------------------------------------------------------
+
     // --- INVENTORY: Deduct Stock & Increment Sales ---
     for (const item of data.items) {
         try {

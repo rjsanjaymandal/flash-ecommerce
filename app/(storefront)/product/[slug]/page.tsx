@@ -1,5 +1,6 @@
 // Imports
-import { getProductBySlug, getRelatedProducts } from '@/lib/services/product-service'
+import { getCachedProduct } from '@/lib/data/get-product'
+import { getRelatedProducts } from '@/lib/services/product-service'
 import { getReviews } from '@/app/actions/review-actions'
 import { ProductDetailClient } from './product-detail'
 import { ReviewSection } from '@/components/reviews/review-section'
@@ -13,7 +14,7 @@ export const revalidate = 60 // Revalidate every minute
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const product = await getProductBySlug(slug)
+  const product = await getCachedProduct(slug)
 
   if (!product) return { title: 'Product Not Found' }
 
@@ -45,7 +46,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const { slug } = await params
 
   // Parallel Fetching for performance
-  const productData = getProductBySlug(slug)
+  const productData = getCachedProduct(slug)
   
   // We need product logic to get ID for reviews/related, so wait for product first
   const product = (await productData) as any
