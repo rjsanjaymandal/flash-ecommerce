@@ -399,7 +399,7 @@ export function ProductCard({ product, showRating = true, priority = false, onWa
                     alt={product.name}
                     fill
                     className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                    sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                    sizes="(max-width: 768px) 75vw, (max-width: 1200px) 33vw, 25vw"
                     onError={() => setImageSrc('/placeholder.svg')}
                     priority={priority}
                 />

@@ -151,7 +151,10 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
         }
     }
 
+    if (!products || products.length === 0) return null
+
     const currentProduct = products[currentIndex]
+    if (!currentProduct) return null
 
     const handleBuyNow = (e: React.MouseEvent) => {
         e.preventDefault()
@@ -214,7 +217,11 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                                 transition={{ delay: 0.2, duration: 0.8, ease: "easeOut" }}
                             >
                                 <BrandBadge variant="primary" className="mb-4">
-                                    New Arrival
+                                    {currentIndex === 0 ? (
+                                        <span className="animate-pulse">✨ JUST DROPPED</span>
+                                    ) : (
+                                        "New Arrival"
+                                    )}
                                 </BrandBadge>
                                 <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tighter leading-[0.9] text-foreground uppercase italic line-clamp-2 lg:line-clamp-3 drop-shadow-lg lg:drop-shadow-none">
                                     {currentProduct.name}
@@ -282,12 +289,10 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                                     src={currentProduct.main_image_url} 
                                     alt={currentProduct.name} 
                                     fill
-                                    priority // Correct LCP
-                                    loading="eager"
-                                    fetchPriority="high"
+                                    priority={currentIndex === 0}
                                     quality={100}
                                     className="object-cover lg:object-contain object-center" 
-                                    sizes="(max-width: 768px) 300vw, (max-width: 1200px) 100vw, 100vw"
+                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 55vw"
                                 />
                             </motion.div>
                          ) : (

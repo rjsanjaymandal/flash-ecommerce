@@ -6,7 +6,6 @@ import { AsyncPersonalizedPicks } from "@/components/storefront/async-personaliz
 import { Suspense } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
 
-export const revalidate = 60
 // Force rebuild
 
 function GridSkeleton() {
@@ -30,35 +29,15 @@ function GridSkeleton() {
     )
 }
 
+import { getSmartCarouselData } from "@/lib/data/get-smart-carousel"
 import { HeroCarousel } from "@/components/storefront/hero-carousel"
-import { createClient } from "@/lib/supabase/client" // Need server client logic locally or import service
 
-// Helper to fetch Hero Products
-async function getHeroProducts() {
-  const supabase = createClient()
-  // Fetch active products with their stock
-  const { data } = await supabase
-    .from('products')
-    .select('*, product_stock(quantity)')
-    .eq('is_active', true)
-    .order('created_at', { ascending: false })
-    .limit(20) // Fetch more to filter down
-
-  if (!data) return []
-
-  // Filter for products that actually have stock
-  // and limit to 5
-  return data
-    .filter(p => {
-        const totalStock = p.product_stock?.reduce((sum: number, s: any) => sum + s.quantity, 0) || 0
-        return totalStock > 0
-    })
-    .slice(0, 5)
-}
+// Cache for 15 minutes (900 seconds) as requested
+export const revalidate = 900
 
 export default async function Home() {
   const categories = await getRootCategories(4)
-  const heroProducts = await getHeroProducts()
+  const heroProducts = await getSmartCarouselData()
 
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-black selection:text-white pb-12">
