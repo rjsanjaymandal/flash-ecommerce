@@ -193,16 +193,12 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: any): Promi
             if (error.code === '42703') {
                 console.warn('Sort column missing (likely in_stock or sale_count), retrying with simplified sort', error.message)
                 
-                // Determine what failed
-                if (filter.sort === 'trending' && !filter.ignoreStockSort) {
-                    // Try removing trending first, keeping stock
-                     return fetchProducts({ ...filter, sort: 'newest' }, supabase)
-                } else if (!filter.ignoreStockSort) {
-                    // Start over without stock sort
-                    return fetchProducts({ ...filter, ignoreStockSort: true })
+                // Determine what failed - avoiding infinite recursion by checking if already retrying
+                if (!filter.ignoreStockSort) {
+                    return fetchProducts({ ...filter, ignoreStockSort: true }, supabase)
                 } else if (filter.sort === 'trending') {
-                     // Last resort: remove trending
-                     return fetchProducts({ ...filter, sort: 'newest', ignoreStockSort: true }, supabase)
+                    // If even without stock sort it fails, it must be trending
+                    return fetchProducts({ ...filter, sort: 'newest', ignoreStockSort: true }, supabase)
                 }
             }
             throw error
@@ -225,11 +221,10 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: any): Promi
             }
         }
     } catch (err: any) {
-        if (err.code === '42703') {
-             // Fallback for unexpected recursive fails
-             if (!filter.ignoreStockSort) {
-                return fetchProducts({ ...filter, ignoreStockSort: true }, supabase)
-             }
+        console.error('fetchProducts failed:', err)
+        // If it's a known missing column error and we haven't already retried, try one last time with 'newest'
+        if (err.code === '42703' && filter.sort !== 'newest') {
+             return fetchProducts({ ...filter, sort: 'newest', ignoreStockSort: true }, supabase)
         }
         throw err
     }
@@ -386,7 +381,13 @@ export async function updateProduct(id: string, productData: TablesUpdate<'produ
 
     // 4. Update Stock (Full Replace Strategy)
     if (variants) {
-        await supabase.from('product_stock').delete().eq('product_id', id)
+        // We use a small delay or ensure this happens after the product update
+        const { error: deleteError } = await supabase.from('product_stock').delete().eq('product_id', id)
+        if (deleteError) {
+            console.error('Failed to clear old variants:', deleteError)
+            throw new Error("Failed to update product variants: Clear step failed")
+        }
+
         if (variants.length > 0) {
              const stockData = variants.map((v) => ({
                 product_id: id,
@@ -395,7 +396,10 @@ export async function updateProduct(id: string, productData: TablesUpdate<'produ
                 quantity: v.quantity
               }))
               const { error: stockError } = await supabase.from('product_stock').insert(stockData as any)
-              if (stockError) throw stockError
+              if (stockError) {
+                  console.error('Failed to insert new variants:', stockError)
+                  throw new Error("Failed to update product variants: Sync step failed. Some variants may be missing.")
+              }
         }
     }
 

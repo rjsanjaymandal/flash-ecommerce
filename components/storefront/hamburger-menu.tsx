@@ -39,8 +39,9 @@ export function HamburgerMenu({ categories }: HamburgerMenuProps) {
                                 <NextImage 
                                     src="/flash-logo.jpg" 
                                     alt="Flash Logo" 
-                                    fill 
-                                    className="object-cover" 
+                                    width={60}
+                                    height={60}
+                                    quality={80}
                                 />
                             </div>
                             <span className="text-2xl font-black tracking-tighter text-foreground italic">FLASH</span>

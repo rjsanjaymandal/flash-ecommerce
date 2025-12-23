@@ -19,9 +19,9 @@ export function StoreSync() {
   // Wishlist Store Actions
   const setWishlistItems = useWishlistStore((state) => state.setItems)
   
-  // Refs to track previous state for syncing *changes*
+  // Refs to track state
   const prevCartItemsRef = useRef(cartItems)
-  // const prevWishlistItemsRef = useRef(wishlistItems)
+  const isSyncingRef = useRef(false)
 
   // Helper to validate stock
   async function validateStock(items: CartItem[]) {
@@ -115,98 +115,104 @@ export function StoreSync() {
   // 1. Load Initial Data on Auth Change
   useEffect(() => {
     async function loadData() {
+        if (isSyncingRef.current) return
+        
         console.log('[StoreSync] Auth status change. User:', user?.email)
+        isSyncingRef.current = true
         setIsLoading(true)
         
-        // Hydrate from localStorage first
-        useCartStore.persist.rehydrate()
-        useWishlistStore.persist.rehydrate()
-        const localCart = useCartStore.getState().items
+        try {
+            // Hydrate from localStorage first
+            useCartStore.persist.rehydrate()
+            useWishlistStore.persist.rehydrate()
+            const localCart = useCartStore.getState().items
 
-        if (user) {
-            console.log('[StoreSync] Logged in. Syncing DB data...')
-            
-            // 1. If we have local guest items, we should ideally push them to DB
-            // 1. If we have local guest items, we should ideally push them to DB
-            // FIX: Only push items that don't have an ID (genuine guest items). 
-            // Existing items (with UUIDs) are assumed to be already synced or stale.
-            if (localCart.length > 0) {
-               const guestItems = localCart.filter(i => !i.id)
-               
-               if (guestItems.length > 0) {
-                   console.log('[StoreSync] Found guest items. Merging to DB...', guestItems.length)
-                   for (const item of guestItems) {
-                      await supabase.from('cart_items').upsert({
-                          user_id: user.id,
-                          product_id: item.productId,
-                          size: item.size,
-                          color: item.color,
-                          quantity: item.quantity
-                      }, { onConflict: 'user_id, product_id, size, color' })
+            if (user) {
+                console.log('[StoreSync] Logged in. Syncing DB data...')
+                
+                // 1. Merge Guest Items
+                if (localCart.length > 0) {
+                   const guestItems = localCart.filter(i => !i.id)
+                   
+                   if (guestItems.length > 0) {
+                       console.log('[StoreSync] Found guest items. Merging to DB...', guestItems.length)
+                       for (const item of guestItems) {
+                          await supabase.from('cart_items').upsert({
+                              user_id: user.id,
+                              product_id: item.productId,
+                              size: item.size,
+                              color: item.color,
+                              quantity: item.quantity
+                          }, { onConflict: 'user_id, product_id, size, color' })
+                       }
                    }
-               }
-            }
-
-            // 1b. Merge Guest Wishlist
-            const localWishlist = useWishlistStore.getState().items
-            if (localWishlist.length > 0) {
-                console.log('[StoreSync] Found guest wishlist items. Merging to DB...')
-                for (const item of localWishlist) {
-                    await supabase.from('wishlist_items').upsert({
-                        user_id: user.id,
-                        product_id: item.productId
-                    }, { onConflict: 'user_id, product_id', ignoreDuplicates: true })
                 }
-            }
 
-            // 2. Load Final Full Cart from DB
-            const { data: cartData, error: cartError } = await supabase
-                .from('cart_items')
-                .select(`*, product:products(name, price, main_image_url)`)
-                .eq('user_id', user.id)
+                // 1b. Merge Guest Wishlist
+                const localWishlist = useWishlistStore.getState().items
+                if (localWishlist.length > 0) {
+                    console.log('[StoreSync] Found guest wishlist items. Merging to DB...')
+                    for (const item of localWishlist) {
+                        await supabase.from('wishlist_items').upsert({
+                            user_id: user.id,
+                            product_id: item.productId
+                        }, { onConflict: 'user_id, product_id', ignoreDuplicates: true })
+                    }
+                }
 
-            if (cartError) {
-                console.error('[StoreSync] Cart fetch error:', cartError)
-            } else if (cartData) {
-                console.log('[StoreSync] Cart items fetched:', cartData.length)
-                const mappedCart: CartItem[] = cartData.map((d: any) => ({
-                    id: d.id,
-                    productId: d.product_id,
-                    name: d.product?.name || 'Unknown Product',
-                    price: d.product?.price || 0,
-                    image: d.product?.main_image_url || null,
-                    size: d.size,
-                    color: d.color,
-                    quantity: d.quantity,
-                    maxQuantity: 10
-                }))
-                setCartItems(mappedCart)
-                validateStock(mappedCart)
-            }
+                // 2. Load Final Full Cart from DB
+                const { data: cartData, error: cartError } = await supabase
+                    .from('cart_items')
+                    .select(`*, product:products(name, price, main_image_url)`)
+                    .eq('user_id', user.id)
 
-            // 3. Load Wishlist
-            const { data: wishlistData, error: wishError } = await supabase
-                .from('wishlist_items')
-                .select(`*, product:products(name, price, slug, main_image_url)`)
-                .eq('user_id', user.id)
-            
-            if (wishError) {
-                console.error('[StoreSync] Wishlist fetch error:', wishError)
-            } else if (wishlistData) {
-                const mappedWishlist: WishlistItem[] = wishlistData.map((d: any) => ({
-                    id: d.id,
-                    productId: d.product_id,
-                    name: d.product?.name || 'Unknown',
-                    price: d.product?.price || 0,
-                    image: d.product?.main_image_url || null,
-                    slug: d.product?.slug || '#'
-                }))
-                setWishlistItems(mappedWishlist)
+                if (cartError) {
+                    console.error('[StoreSync] Cart fetch error:', cartError)
+                } else if (cartData) {
+                    console.log('[StoreSync] Cart items fetched:', cartData.length)
+                    const mappedCart: CartItem[] = cartData.map((d: any) => ({
+                        id: d.id,
+                        productId: d.product_id,
+                        name: d.product?.name || 'Unknown Product',
+                        price: d.product?.price || 0,
+                        image: d.product?.main_image_url || null,
+                        size: d.size,
+                        color: d.color,
+                        quantity: d.quantity,
+                        maxQuantity: 10
+                    }))
+                    setCartItems(mappedCart)
+                    validateStock(mappedCart)
+                }
+
+                // 3. Load Wishlist
+                const { data: wishlistData, error: wishError } = await supabase
+                    .from('wishlist_items')
+                    .select(`*, product:products(name, price, slug, main_image_url)`)
+                    .eq('user_id', user.id)
+                
+                if (wishError) {
+                    console.error('[StoreSync] Wishlist fetch error:', wishError)
+                } else if (wishlistData) {
+                    const mappedWishlist: WishlistItem[] = wishlistData.map((d: any) => ({
+                        id: d.id,
+                        productId: d.product_id,
+                        name: d.product?.name || 'Unknown',
+                        price: d.product?.price || 0,
+                        image: d.product?.main_image_url || null,
+                        slug: d.product?.slug || '#'
+                    }))
+                    setWishlistItems(mappedWishlist)
+                }
+            } else {
+                console.log('[StoreSync] Logged out or guest mode.')
             }
-        } else {
-            console.log('[StoreSync] Logged out or guest mode.')
+        } catch (error) {
+            console.error('[StoreSync] Sync error:', error)
+        } finally {
+            setIsLoading(false)
+            isSyncingRef.current = false
         }
-        setIsLoading(false)
     }
 
     loadData()

@@ -162,8 +162,6 @@ export const useCartStore = create<CartState>()(
          set({ items: [] })
          if (user) {
              await supabase.from('cart_items').delete().eq('user_id', user.id)
-         } else {
-             localStorage.removeItem('flash-cart-storage')
          }
       },
 

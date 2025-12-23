@@ -107,6 +107,12 @@ export async function createCategory(data: TablesInsert<'categories'>) {
 export async function updateCategory(id: string, data: TablesUpdate<'categories'>) {
     await requireAdmin()
     const supabase = await createClient()
+
+    // 1. Prevent circular dependency (self-parenting)
+    if (data.parent_id === id) {
+        throw new Error("A category cannot be its own parent.")
+    }
+
     const { error } = await supabase.from('categories').update(data).eq('id', id)
     if (error) throw error
     // @ts-expect-error: revalidateTag expects 1 arg
@@ -118,6 +124,17 @@ export async function updateCategory(id: string, data: TablesUpdate<'categories'
 export async function deleteCategory(id: string) {
     await requireAdmin()
     const supabase = await createClient()
+
+    // Check if it has children first
+    const { count } = await supabase
+        .from('categories')
+        .select('*', { count: 'exact', head: true })
+        .eq('parent_id', id)
+    
+    if (count && count > 0) {
+        throw new Error("Cannot delete a category that has subcategories. Please delete or move children first.")
+    }
+
     const { error } = await supabase.from('categories').delete().eq('id', id)
     if (error) throw error
     // @ts-expect-error: revalidateTag expects 1 arg

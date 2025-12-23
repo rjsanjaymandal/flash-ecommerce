@@ -83,11 +83,10 @@ export function StorefrontNavbar() {
                         <NextImage 
                             src="/flash-logo.jpg" 
                             alt="Flash Logo" 
-                            fill 
-                            sizes="36px"
-                            className="object-cover" 
-                            loader={({ src }) => src}
-                            unoptimized
+                            width={60}
+                            height={60}
+                            quality={80}
+                            className="bg-background"
                         />
                     </div>
                     <span className="hidden lg:block text-xl font-black tracking-tighter text-gradient">FLASH</span>
