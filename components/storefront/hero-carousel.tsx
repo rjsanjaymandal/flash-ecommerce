@@ -151,7 +151,18 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
         }
     }
 
-    if (!products || products.length === 0) return null
+    if (!products || products.length === 0) {
+        return (
+            <section className="relative w-full h-[85vh] lg:h-[90vh] bg-background overflow-hidden animate-pulse">
+                <div className="absolute inset-x-0 bottom-0 top-0 bg-zinc-100 lg:w-[55%] lg:right-0 lg:left-auto" />
+                <div className="relative z-20 w-full lg:w-[45%] h-full flex flex-col justify-center px-6 lg:px-16 space-y-6">
+                    <div className="h-8 w-32 bg-muted rounded-full" />
+                    <div className="h-16 w-3/4 bg-muted rounded-xl" />
+                    <div className="h-24 w-full bg-muted rounded-xl" />
+                </div>
+            </section>
+        )
+    }
 
     const currentProduct = products[currentIndex]
     if (!currentProduct) return null
@@ -176,7 +187,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
         return stripHtml(desc)
     }
 
-    if (!products || products.length === 0) return null
+
 
     return (
         <section 
@@ -212,7 +223,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                             transition={{ type: "spring", stiffness: 75, damping: 15 }}
                          >
                             <motion.div 
-                                initial={{ opacity: 0, x: -50, filter: 'blur(10px)' }}
+                                initial={currentIndex === 0 ? false : { opacity: 0, x: -50, filter: 'blur(10px)' }}
                                 animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
                                 transition={{ delay: 0.2, duration: 0.8, ease: "easeOut" }}
                             >
@@ -229,7 +240,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                             </motion.div>
 
                             <motion.p 
-                                initial={{ opacity: 0, y: 20 }}
+                                initial={currentIndex === 0 ? false : { opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.3, duration: 0.8 }}
                                 className="text-base sm:text-lg text-muted-foreground font-medium line-clamp-2 leading-relaxed"
@@ -238,7 +249,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                             </motion.p>
                             
                             <motion.div 
-                                initial={{ opacity: 0, scale: 0.8 }}
+                                initial={currentIndex === 0 ? false : { opacity: 0, scale: 0.8 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ delay: 0.4, duration: 0.5 }}
                                 className="flex items-baseline gap-4"
@@ -249,7 +260,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                             </motion.div>
 
                             <motion.div
-                                initial={{ opacity: 0, y: 40 }}
+                                initial={currentIndex === 0 ? false : { opacity: 0, y: 40 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.5, type: "spring", bounce: 0.4 }}
                                 className="flex flex-row items-center gap-3 pt-4"
@@ -280,21 +291,22 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                          {currentProduct.main_image_url ? (
                             <motion.div
                                 className="w-full h-full relative"
-                                initial={{ scale: 1.1, opacity: 0.8 }}
+                                initial={currentIndex === 0 ? false : { scale: 1.1, opacity: 0.8 }}
                                 animate={{ scale: 1, opacity: 1 }}
                                 transition={{ duration: 6, ease: "linear" }}
                             >
-                                <Image 
-                                    loader={imageLoader}
-                                    src={currentProduct.main_image_url} 
-                                    alt={currentProduct.name} 
-                                    fill
-                                    priority={currentIndex === 0}
-                                    loading={currentIndex === 0 ? "eager" : "lazy"}
-                                    quality={80}
-                                    className="object-cover lg:object-contain object-center" 
-                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1400px"
-                                />
+                                    <Image 
+                                        loader={imageLoader}
+                                        src={currentProduct.main_image_url} 
+                                        alt={currentProduct.name} 
+                                        fill
+                                        priority={currentIndex === 0}
+                                        loading={currentIndex === 0 ? "eager" : "lazy"}
+                                        quality={80}
+                                        decoding="sync"
+                                        className="object-cover lg:object-contain object-center" 
+                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1400px"
+                                    />
                             </motion.div>
                          ) : (
                              <div className="w-full h-full bg-muted flex items-center justify-center">
