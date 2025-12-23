@@ -127,16 +127,23 @@ export function StoreSync() {
             console.log('[StoreSync] Logged in. Syncing DB data...')
             
             // 1. If we have local guest items, we should ideally push them to DB
+            // 1. If we have local guest items, we should ideally push them to DB
+            // FIX: Only push items that don't have an ID (genuine guest items). 
+            // Existing items (with UUIDs) are assumed to be already synced or stale.
             if (localCart.length > 0) {
-               console.log('[StoreSync] Found guest items. Merging to DB...')
-               for (const item of localCart) {
-                  await supabase.from('cart_items').upsert({
-                      user_id: user.id,
-                      product_id: item.productId,
-                      size: item.size,
-                      color: item.color,
-                      quantity: item.quantity
-                  }, { onConflict: 'user_id, product_id, size, color' })
+               const guestItems = localCart.filter(i => !i.id)
+               
+               if (guestItems.length > 0) {
+                   console.log('[StoreSync] Found guest items. Merging to DB...', guestItems.length)
+                   for (const item of guestItems) {
+                      await supabase.from('cart_items').upsert({
+                          user_id: user.id,
+                          product_id: item.productId,
+                          size: item.size,
+                          color: item.color,
+                          quantity: item.quantity
+                      }, { onConflict: 'user_id, product_id, size, color' })
+                   }
                }
             }
 

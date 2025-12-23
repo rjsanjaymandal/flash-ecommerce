@@ -76,7 +76,14 @@ export function ProductCard({ product, showRating = true, priority = false, onWa
   
   // Dynamic stock calculation
   const stock = realTimeStock || []
-  const hasMultipleOptions = (product.size_options && product.size_options.length > 0) || (product.color_options && product.color_options.length > 0)
+  
+  // Determine if product has multiple options.
+  // We check metadata AND actual stock variations to be safe.
+  const hasMultipleOptions = 
+      (product.size_options && product.size_options.length > 0) || 
+      (product.color_options && product.color_options.length > 0) ||
+      (stock.length > 1) || 
+      (stock.length === 1 && (stock[0].size !== 'Standard' && stock[0].size !== 'One Size'))
   
   // Calculate total stock
   const totalStock = stock.reduce((acc: number, item: any) => acc + (item.quantity || 0), 0)
@@ -110,34 +117,44 @@ export function ProductCard({ product, showRating = true, priority = false, onWa
   
     const [isQuickAddOpen, setIsQuickAddOpen] = useState(false)
 
-    const handleAddToCart = (e: React.MouseEvent) => {
+    const handleAddToCart = async (e: React.MouseEvent) => {
       e.preventDefault()
       e.stopPropagation()
       
       if (hasMultipleOptions) {
           setIsQuickAddOpen(true)
       } else {
-          // Standard add to cart for single variant products
+           // Standard add to cart for single variant products
            const defaultStock = stock[0]
            const maxQty = defaultStock?.quantity || 0 // Default to 0 if no stock info
            
            if (maxQty === 0) {
-               togglePreorder(product.id) // Fallback to waitlist logic if somehow triggered
+               togglePreorder(product.id)
                return
            }
 
-           addToCart({
-                productId: product.id,
-                name: product.name,
-                price: product.price,
-                image: product.main_image_url || '',
-                size: defaultStock?.size || 'Standard',
-                color: defaultStock?.color || 'Standard',
-                quantity: 1,
-                maxQuantity: maxQty
-            })
-            toast.success("Added to Cart")
-            setIsCartOpen(true)
+           // Prevent double clicks
+           if (isAddingToCart) return
+
+           setIsAddingToCart(true)
+           try {
+               await addToCart({
+                    productId: product.id,
+                    name: product.name,
+                    price: product.price,
+                    image: product.main_image_url || '',
+                    size: defaultStock?.size || 'Standard',
+                    color: defaultStock?.color || 'Standard',
+                    quantity: 1,
+                    maxQuantity: maxQty
+                })
+                toast.success("Added to Cart")
+                setIsCartOpen(true)
+           } catch (error) {
+               // Store handles toast errors usually, but good to be safe
+           } finally {
+               setIsAddingToCart(false)
+           }
       }
   }
 
@@ -396,8 +413,9 @@ export function ProductCard({ product, showRating = true, priority = false, onWa
                             size="sm" 
                             className="flex-1 bg-white text-black hover:bg-neutral-100 shadow-md font-bold h-9 rounded-sm transition-all duration-200 uppercase text-[10px] tracking-widest border border-transparent"
                             onClick={handleAddToCart}
+                            disabled={isAddingToCart}
                         >
-                             Add to Cart
+                             {isAddingToCart ? 'Adding...' : 'Add to Cart'}
                         </Button>
                         <div onClick={(e) => e.preventDefault()} className="shrink-0">
                             <QuickView product={product} /> 
@@ -447,8 +465,9 @@ export function ProductCard({ product, showRating = true, priority = false, onWa
                         size="sm" 
                         className="h-9 rounded-sm text-[10px] font-bold uppercase tracking-widest border-zinc-200 shadow-sm hover:bg-zinc-50"
                         onClick={handleAddToCart}
+                        disabled={isAddingToCart}
                     >
-                        Add
+                        {isAddingToCart ? '...' : 'Add'}
                     </Button>
                     <Button 
                         size="sm" 
