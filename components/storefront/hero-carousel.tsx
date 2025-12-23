@@ -290,9 +290,10 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                                     alt={currentProduct.name} 
                                     fill
                                     priority={currentIndex === 0}
+                                    loading={currentIndex === 0 ? "eager" : "lazy"}
                                     quality={100}
                                     className="object-cover lg:object-contain object-center" 
-                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 55vw"
+                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1400px"
                                 />
                             </motion.div>
                          ) : (
