@@ -80,10 +80,9 @@ export async function POST(req: Request) {
                 if (updateError) console.error('Webhook: Failed to update order', updateError)
                 else console.log(`Webhook: Order ${receipt} marked paid`)
                 
-                // TODO: Award points here too if not done by client? 
-                // Client side verify helps immediate feedback, Webhook is safety net. 
-                // We can stick to just updating status for now to avoid double-crediting points race condition, 
-                // or use a stricter "award_points" RPC that checks if points were already given.
+                // NOTE: Loyalty points are awarded by the client-side 'verify' call for immediate user feedback.
+                // We rely on the database constraints (idempotency) or a separate 'award_points' RPC to prevent double-crediting if we were to add it here.
+                // For now, this webhook ensures the order status is ultimately consistent (PAID) even if the client disconnects.
             } else {
                  console.warn('Webhook: No receipt found in payload to match order')
             }

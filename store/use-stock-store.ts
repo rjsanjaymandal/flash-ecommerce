@@ -29,7 +29,7 @@ export const useStockStore = create<StockStore>((set) => ({
       (item) => item.size === size && item.color === color
     )
     
-    let newProductStock = [...currentProductStock]
+    const newProductStock = [...currentProductStock]
     
     if (existingIndex >= 0) {
         // Update existing

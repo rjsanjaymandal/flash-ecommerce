@@ -141,10 +141,43 @@ export function ProductCard({ product, showRating = true, priority = false, onWa
       }
   }
 
+    const [isBuyNowMode, setIsBuyNowMode] = useState(false)
+    const [isAddingToCart, setIsAddingToCart] = useState(false)
+
     const handleBuyNow = (e: React.MouseEvent) => {
       e.preventDefault()
       e.stopPropagation()
-      router.push(`/product/${product.slug || product.id}`)
+      
+      if (hasMultipleOptions) {
+          setIsBuyNowMode(true)
+          setIsQuickAddOpen(true)
+      } else {
+           // Single Variant Buy Now
+           const defaultStock = stock[0]
+           const maxQty = defaultStock?.quantity || 0
+           
+           if (maxQty === 0) {
+               togglePreorder(product.id)
+               return
+           }
+
+           setIsAddingToCart(true)
+           addToCart({
+                productId: product.id,
+                name: product.name,
+                price: product.price,
+                image: product.main_image_url || '',
+                size: defaultStock?.size || 'Standard',
+                color: defaultStock?.color || 'Standard',
+                quantity: 1,
+                maxQuantity: maxQty
+            }).then(() => {
+                router.push('/checkout')
+            }).finally(() => {
+                // Keep loading until redirect happens for smoother feel, or reset if error logic existed
+                // setIsAddingToCart(false) 
+            })
+      }
   }
 
   // Helper to get or create guest ID
@@ -421,8 +454,9 @@ export function ProductCard({ product, showRating = true, priority = false, onWa
                         size="sm" 
                         className="h-9 rounded-sm text-[10px] font-bold uppercase tracking-widest shadow-sm bg-neutral-900 text-white hover:bg-neutral-800"
                         onClick={handleBuyNow}
+                        disabled={isAddingToCart}
                     >
-                        Buy Now
+                        {isAddingToCart ? '...' : 'Buy Now'}
                     </Button>
                 </>
             ) : (
@@ -478,7 +512,11 @@ export function ProductCard({ product, showRating = true, priority = false, onWa
     <QuickAddDialog 
         product={product} 
         open={isQuickAddOpen} 
-        onOpenChange={setIsQuickAddOpen} 
+        onOpenChange={(open) => {
+            setIsQuickAddOpen(open)
+            if (!open) setIsBuyNowMode(false) // Reset mode on close
+        }}
+        buyNowMode={isBuyNowMode}
     />
     </>
   )
