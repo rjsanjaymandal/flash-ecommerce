@@ -86,7 +86,7 @@ export function CartDrawer() {
                                 exit={{ opacity: 0, x: -100, height: 0 }}
                                 className="flex gap-4 group"
                             >
-                                <div className="h-28 w-24 bg-muted rounded-xl overflow-hidden shrink-0 border border-border/50 relative">
+                                <div className="h-28 w-24 bg-secondary/5 rounded-xl overflow-hidden shrink-0 border border-border/40 relative group/img">
                                     {item.image ? (
                                         <NextImage 
                                             loader={imageLoader}
@@ -94,10 +94,12 @@ export function CartDrawer() {
                                             alt={item.name} 
                                             width={96} 
                                             height={112} 
-                                            className={cn("h-full w-full object-cover", item.maxQuantity === 0 && "opacity-50 grayscale")} 
+                                            quality={80}
+                                            sizes="96px"
+                                            className={cn("h-full w-full object-contain p-2 transition-all duration-500 group-hover/img:scale-105", item.maxQuantity === 0 && "opacity-50 grayscale")} 
                                         />
                                     ) : (
-                                        <div className="h-full w-full flex items-center justify-center bg-secondary/30 text-xs">NO IMG</div>
+                                        <div className="h-full w-full flex items-center justify-center bg-secondary/10 text-xs text-muted-foreground font-bold uppercase tracking-widest">No Image</div>
                                     )}
                                     {item.maxQuantity === 0 && (
                                         <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">

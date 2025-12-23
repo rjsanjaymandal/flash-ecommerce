@@ -79,5 +79,11 @@
     "supabase": "^2.67.1",
     "tailwindcss": "^4",
     "typescript": "^5"
-  }
+  },
+  "browserslist": [
+    "defaults",
+    "not ie 11",
+    "not dead",
+    "> 0.2% in IN"
+  ]
 }

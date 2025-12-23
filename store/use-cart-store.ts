@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 export interface CartItem {
   id?: string // UUID for DB items
   productId: string
+  categoryId?: string
   name: string
   price: number
   image: string | null

@@ -15,10 +15,15 @@ export function CartUpsell() {
     const cartItems = useCartStore((state) => state.items)
     const addItem = useCartStore((state) => state.addItem)
 
+    // Extract unique category IDs from cart items to pass to upsell engine
+    // Since we don't have categoryId in cartItems, we'll suggest based on items or just use general trending
+    // Extract unique category IDs from cart items
+    const categoryIds = Array.from(new Set(cartItems.map(i => i.categoryId).filter(Boolean))) as string[]
+
     const { data: products = [], isLoading } = useQuery({
-        queryKey: ['cart-upsell'],
-        queryFn: getUpsellProducts,
-        staleTime: 1000 * 60 * 5 // 5 minutes
+        queryKey: ['cart-upsell', categoryIds.join(',')], 
+        queryFn: () => getUpsellProducts(categoryIds, cartItems.map(i => i.productId)),
+        staleTime: 1000 * 60 * 5 
     })
 
     // Filter out items already in cart
@@ -83,7 +88,8 @@ export function CartUpsell() {
                                     src={product.main_image_url} 
                                     alt={product.name} 
                                     fill 
-                                    className="object-cover transition-transform duration-500 group-hover:scale-110" 
+                                    quality={80}
+                                    className="object-contain p-2 transition-transform duration-500 group-hover:scale-110" 
                                     sizes="128px"
                                 />
                              ) : (
