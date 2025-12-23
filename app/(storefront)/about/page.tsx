@@ -88,10 +88,17 @@ export default function AboutPage() {
                     <div className="p-8 rounded-3xl bg-linear-to-br from-primary/10 to-purple-500/10 border border-primary/20">
                         <h3 className="text-xl font-black uppercase italic mb-2">Join the Movement</h3>
                         <p className="text-sm text-muted-foreground mb-4">Be the first to know about new drops.</p>
-                        <ul className="space-y-2 text-sm font-bold">
+                        <ul className="space-y-2 text-sm font-bold mb-6">
                             <li>• Instagram: @flashhfashion</li>
                             <li>• Twitter: @flashhfashion</li>
                         </ul>
+                        
+                        <div className="pt-6 border-t border-primary/10">
+                             <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">Careers</p>
+                             <a href="/careers" className="text-sm font-bold hover:text-primary transition-colors flex items-center gap-2 group">
+                                View Openings <span className="group-hover:translate-x-1 transition-transform">→</span>
+                             </a>
+                        </div>
                     </div>
                 </aside>
             </div>
