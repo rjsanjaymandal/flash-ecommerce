@@ -39,7 +39,7 @@ export function WishlistTab() {
 
     return (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 animate-in slide-in-from-bottom-2 duration-500">
-            {items.map((item) => (
+            {items.map((item, index) => (
                 // Reconstruct a minimal product object for ProductCard
                 <ProductCard key={item.productId} product={{
                     id: item.productId,
@@ -47,7 +47,7 @@ export function WishlistTab() {
                     price: item.price,
                     main_image_url: item.image,
                     slug: item.slug
-                } as any} />
+                } as any} priority={index < 4} />
             ))}
         </div>
     )

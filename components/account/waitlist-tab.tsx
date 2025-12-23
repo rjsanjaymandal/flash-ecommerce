@@ -55,7 +55,7 @@ export function WaitlistTab({ products: initialProducts }: WaitlistTabProps) {
     return (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 animate-in slide-in-from-bottom-2 duration-500">
             <AnimatePresence mode="popLayout">
-                {products.map((product) => (
+                {products.map((product, index) => (
                     <motion.div 
                         key={product.id}
                         layout
@@ -65,6 +65,7 @@ export function WaitlistTab({ products: initialProducts }: WaitlistTabProps) {
                     >
                         <ProductCard 
                             product={product} 
+                            priority={index < 4}
                             onWaitlistChange={(joined) => handleWaitlistChange(product.id, joined)}
                         />
                     </motion.div>

@@ -155,7 +155,7 @@ export function StoreSync() {
                     await supabase.from('wishlist_items').upsert({
                         user_id: user.id,
                         product_id: item.productId
-                    }, { onConflict: 'user_id, product_id' })
+                    }, { onConflict: 'user_id, product_id', ignoreDuplicates: true })
                 }
             }
 
