@@ -11,6 +11,8 @@ import { Image as ImageIcon, Loader2, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import NextImage from 'next/image'
+import imageLoader from '@/lib/image-loader'
 
 export type CategoryFormData = {
     name: string
@@ -151,7 +153,13 @@ export function CategoryForm({ initialData, categories, isEditing, isLoading, on
                     <div className="flex items-center gap-4 rounded-lg border p-3 border-dashed hover:bg-muted/50 transition-colors">
                         {formData.image_url ? (
                             <div className="relative h-16 w-16 rounded overflow-hidden border group">
-                                <img src={formData.image_url} className="h-full w-full object-cover" alt="Preview"/>
+                                <NextImage 
+                                    loader={imageLoader}
+                                    src={formData.image_url} 
+                                    className="object-cover" 
+                                    fill
+                                    alt="Preview"
+                                />
                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                     <Button type="button" variant="destructive" size="icon" className="h-6 w-6" onClick={() => setFormData(prev => ({ ...prev, image_url: '' }))}>
                                         <X className="h-3 w-3" />

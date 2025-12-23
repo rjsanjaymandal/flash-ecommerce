@@ -1,6 +1,6 @@
 'use client'
 
-import { AuthProvider } from '../context/auth-context'
+import { AuthProvider } from '@/context/auth-context'
 import { CartDrawer } from '@/components/storefront/cart-drawer'
 import { StoreSync } from '@/components/store-sync'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'

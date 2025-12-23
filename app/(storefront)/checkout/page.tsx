@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/context/auth-context"
 import { createClient } from "@/lib/supabase/client"
-import { useState, useTransition } from "react"
+import { useState, useTransition, useEffect } from "react"
 import { Loader2, CheckCircle2, Ticket, ShieldCheck, Lock, CreditCard } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
 import Script from 'next/script'
@@ -21,6 +21,8 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { checkoutSchema, CheckoutFormData } from "@/lib/validations/checkout"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import Link from 'next/link'
+import NextImage from "next/image"
+import imageLoader from "@/lib/image-loader"
 
 declare global {
     interface Window {
@@ -57,12 +59,12 @@ export default function CheckoutPage() {
     }
   })
 
-  // Pre-fill email if logged in
-  useState(() => {
+  // Pre-fill email if logged in (Client Side Only)
+  useEffect(() => {
       if (user?.email) {
           form.setValue('email', user.email)
       }
-  })
+  }, [user, form])
 
   // Calculations
   const discountAmount = appliedCoupon 
@@ -497,7 +499,16 @@ export default function CheckoutPage() {
                             {items.map(item => (
                                 <div key={`${item.productId}-${item.size}`} className="flex gap-4 items-start group/item">
                                     <div className="relative h-16 w-16 rounded-xl overflow-hidden bg-muted border border-border/50 shrink-0">
-                                        {item.image && <img src={item.image} className="h-full w-full object-cover group-hover/item:scale-110 transition-transform duration-500" alt={item.name} />}
+                                        {item.image && (
+                                            <NextImage 
+                                                src={item.image} 
+                                                layout="fill"
+                                                objectFit="cover"
+                                                loader={imageLoader}
+                                                className="group-hover/item:scale-110 transition-transform duration-500" 
+                                                alt={item.name} 
+                                            />
+                                        )}
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <p className="font-bold text-sm truncate pr-4 text-foreground">{item.name}</p>

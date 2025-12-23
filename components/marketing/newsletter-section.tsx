@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { subscribeToNewsletter } from '@/app/actions/marketing-actions'
 import { toast } from 'sonner'
 import { Send } from 'lucide-react'
+import NextImage from 'next/image'
 
 export function NewsletterSection() {
     async function action(formData: FormData) {
@@ -62,10 +63,11 @@ export function NewsletterSection() {
                 
                  {/* Decorative Image Side */}
                 <div className="hidden md:block absolute right-0 top-0 bottom-0 w-1/2 bg-muted">
-                     <img 
+                     <NextImage 
                         src="https://images.unsplash.com/photo-1555529733-0e670560f7e1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
                         alt="Newsletter exclusive" 
-                        className="h-full w-full object-cover opacity-90 transition hover:opacity-100 duration-700 mix-blend-overlay" 
+                        fill
+                        className="object-cover opacity-90 transition hover:opacity-100 duration-700 mix-blend-overlay" 
                     />
                      <div className="absolute inset-0 bg-gradient-to-r from-card via-card/20 to-transparent" />
                 </div>

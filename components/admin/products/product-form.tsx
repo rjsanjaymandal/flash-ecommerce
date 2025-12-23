@@ -14,6 +14,8 @@ import { Loader2, Save, X, Plus, Trash2, ArrowLeft } from 'lucide-react'
 import { uploadImage } from '@/lib/services/upload-service'
 import { slugify } from '@/lib/slugify'
 import { toast } from 'sonner'
+import NextImage from 'next/image'
+import imageLoader from '@/lib/image-loader'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { productSchema, ProductFormValues } from '@/lib/validations/product'
@@ -202,7 +204,13 @@ export function ProductForm({ initialData, categories, isLoading, onSubmit, onCa
                                     <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
                                         {watch('gallery_image_urls')?.map((url, idx) => (
                                             <div key={idx} className="relative aspect-square rounded-md overflow-hidden border group">
-                                                <img src={url} className="h-full w-full object-cover" alt="Gallery" />
+                                                <NextImage 
+                                                    loader={imageLoader}
+                                                    src={url} 
+                                                    className="object-cover" 
+                                                    alt="Gallery" 
+                                                    fill
+                                                />
                                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                                     <Button type="button" variant="destructive" size="icon" className="h-6 w-6" onClick={() => removeGalleryImage(idx)}>
                                                         <X className="h-3 w-3" />

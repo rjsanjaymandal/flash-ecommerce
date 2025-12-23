@@ -12,6 +12,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Loader2, Save, X, Plus, Image as ImageIcon, Trash2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
+import NextImage from 'next/image'
+import imageLoader from '@/lib/image-loader'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
 const SIZE_OPTIONS = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Oversized']
@@ -223,7 +225,13 @@ export function ProductForm({ initialData, categories, isLoading, onSubmit, onCa
                                 <div className="border-2 border-dashed rounded-lg p-4 flex flex-col items-center justify-center min-h-[200px] bg-muted/10 hover:bg-muted/20 transition-colors">
                                     {formData.main_image_url ? (
                                         <div className="relative h-48 w-full max-w-xs group">
-                                            <img src={formData.main_image_url} className="h-full w-full object-cover rounded-md shadow-sm" />
+                                            <NextImage 
+                                                loader={imageLoader}
+                                                src={formData.main_image_url} 
+                                                className="object-cover rounded-md shadow-sm" 
+                                                fill
+                                                alt="Main preview"
+                                            />
                                             <Button 
                                                 variant="destructive" size="icon" className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
                                                 onClick={() => setFormData({ ...formData, main_image_url: '' })}
@@ -253,7 +261,13 @@ export function ProductForm({ initialData, categories, isLoading, onSubmit, onCa
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                     {formData.gallery_image_urls.map((url, idx) => (
                                         <div key={idx} className="relative aspect-square rounded-md overflow-hidden border group">
-                                            <img src={url} className="h-full w-full object-cover" />
+                                            <NextImage 
+                                                loader={imageLoader}
+                                                src={url} 
+                                                className="object-cover" 
+                                                fill
+                                                alt={`Gallery ${idx}`}
+                                            />
                                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                                 <Button variant="destructive" size="icon" className="h-6 w-6" onClick={() => removeGalleryImage(idx)}>
                                                     <X className="h-3 w-3" />

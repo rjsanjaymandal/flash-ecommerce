@@ -12,6 +12,9 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { checkPreorderStatus, togglePreorder } from '@/app/actions/preorder'
 import { ProductGallery } from '@/components/products/product-gallery'
 import { ProductSelectors } from '@/components/products/product-selectors'
+import dynamic from 'next/dynamic'
+
+const SizeGuideModal = dynamic(() => import("@/components/products/size-guide-modal").then(mod => mod.SizeGuideModal), { ssr: false })
 import { MobileStickyBar } from '@/components/storefront/mobile-sticky-bar'
 import { FAQJsonLd } from '@/components/seo/faq-json-ld'
 import { ShareButton } from '@/components/products/share-button'
@@ -80,6 +83,7 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
     const [isUnjoinDialogOpen, setIsUnjoinDialogOpen] = useState(false)
 
     const [showStickyBar, setShowStickyBar] = useState(false)
+    const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false)
 
     const { user } = useAuth()
 
@@ -405,17 +409,18 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
                             </div>
 
                             {/* Selectors */}
-                            <ProductSelectors 
-                                sizeOptions={sizeOptions}
-                                colorOptions={colorOptions}
-                                selectedSize={selectedSize}
-                                selectedColor={selectedColor}
-                                onSelectSize={(s) => { setSelectedSize(s); setQuantity(1); setSelectedColor('') }}
-                                onSelectColor={(c) => { setSelectedColor(c); setQuantity(1) }}
-                                isAvailable={isAvailable}
-                                isSizeAvailable={isSizeAvailable}
-                                getStock={getStock}
-                            />
+                                <ProductSelectors 
+                                    sizeOptions={sizeOptions}
+                                    colorOptions={colorOptions}
+                                    selectedSize={selectedSize}
+                                    selectedColor={selectedColor}
+                                    onSelectSize={(s) => { setSelectedSize(s); setQuantity(1); setSelectedColor('') }}
+                                    onSelectColor={(c) => { setSelectedColor(c); setQuantity(1) }}
+                                    onOpenSizeGuide={() => setIsSizeGuideOpen(true)}
+                                    isAvailable={isAvailable}
+                                    isSizeAvailable={isSizeAvailable}
+                                    getStock={getStock}
+                                />
 
                             {/* Low Stock Warning */}
                             {maxQty > 0 && maxQty < 5 && selectedSize && selectedColor && (
@@ -535,6 +540,8 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
             isSubmitting={isLoadingWaitlist}
             initialEmail={savedGuestEmail}
         />
+
+        <SizeGuideModal open={isSizeGuideOpen} onOpenChange={setIsSizeGuideOpen} />
 
         <AlertDialog open={isUnjoinDialogOpen} onOpenChange={setIsUnjoinDialogOpen}>
           <AlertDialogContent>

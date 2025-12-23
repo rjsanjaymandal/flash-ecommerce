@@ -23,11 +23,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { QuickView } from '@/components/products/quick-view'
+import dynamic from 'next/dynamic'
+
+const QuickView = dynamic(() => import('@/components/products/quick-view').then(mod => mod.QuickView), { ssr: false })
+const QuickAddDialog = dynamic(() => import('@/components/products/quick-add-dialog').then(mod => mod.QuickAddDialog), { ssr: false })
+const WaitlistDialog = dynamic(() => import('@/components/products/waitlist-dialog').then(mod => mod.WaitlistDialog), { ssr: false })
+
 import type { Product } from '@/lib/services/product-service'
 import { checkPreorderStatus, togglePreorder } from '@/app/actions/preorder'
+import { useRealTimeStock } from '@/hooks/use-real-time-stock'
 import imageLoader from '@/lib/image-loader'
-import { WaitlistDialog } from '@/components/products/waitlist-dialog'
 
 interface ProductCardProps {
     product: Product
@@ -37,12 +42,24 @@ interface ProductCardProps {
 }
 // Force rebuild for waitlist logic update
 
-export function ProductCard({ product, showRating = true, priority = false }: ProductCardProps) {
+export function ProductCard({ product, showRating = true, priority = false, onWaitlistChange }: ProductCardProps) {
   // Use optimized images if available, starting with thumbnail for grid, or mobile for slightly larger cards
   // Fallback to main_image_url
   const optimizedSrc = product.images?.thumbnail || product.images?.mobile || product.main_image_url
   const [imageSrc, setImageSrc] = useState(optimizedSrc || '/placeholder.svg')
   const [isNew, setIsNew] = useState(false)
+  
+  // Real-time Stock
+  // Type sanitation: DB types map product_id as string | null, but we need string for strict state
+  const initialStock = (product.product_stock || [])
+    .filter((item): item is typeof item & { product_id: string } => Boolean(item.product_id))
+    .map(item => ({
+        ...item,
+        product_id: item.product_id,
+        quantity: item.quantity ?? 0 // Ensure number
+    }))
+
+  const { stock: realTimeStock } = useRealTimeStock(product.id, initialStock)
   
   // Pre-order state
   const [isOnWaitlist, setIsOnWaitlist] = useState(false)
@@ -57,7 +74,8 @@ export function ProductCard({ product, showRating = true, priority = false }: Pr
   const removeFromWishlist = useWishlistStore((state) => state.removeItem)
   const isWishlisted = useWishlistStore((state) => selectIsInWishlist(state, product.id))
   
-  const stock = product.product_stock || []
+  // Dynamic stock calculation
+  const stock = realTimeStock || []
   const hasMultipleOptions = (product.size_options && product.size_options.length > 0) || (product.color_options && product.color_options.length > 0)
   
   // Calculate total stock
@@ -90,11 +108,37 @@ export function ProductCard({ product, showRating = true, priority = false }: Pr
   const [savedGuestEmail, setSavedGuestEmail] = useState('')
   const [isUnjoinDialogOpen, setIsUnjoinDialogOpen] = useState(false)
   
+    const [isQuickAddOpen, setIsQuickAddOpen] = useState(false)
+
     const handleAddToCart = (e: React.MouseEvent) => {
       e.preventDefault()
       e.stopPropagation()
-      // ... logic for quick add or redirect
-      router.push(`/product/${product.slug || product.id}`)
+      
+      if (hasMultipleOptions) {
+          setIsQuickAddOpen(true)
+      } else {
+          // Standard add to cart for single variant products
+           const defaultStock = stock[0]
+           const maxQty = defaultStock?.quantity || 0 // Default to 0 if no stock info
+           
+           if (maxQty === 0) {
+               togglePreorder(product.id) // Fallback to waitlist logic if somehow triggered
+               return
+           }
+
+           addToCart({
+                productId: product.id,
+                name: product.name,
+                price: product.price,
+                image: product.main_image_url || '',
+                size: defaultStock?.size || 'Standard',
+                color: defaultStock?.color || 'Standard',
+                quantity: 1,
+                maxQuantity: maxQty
+            })
+            toast.success("Added to Cart")
+            setIsCartOpen(true)
+      }
   }
 
     const handleBuyNow = (e: React.MouseEvent) => {
@@ -231,6 +275,36 @@ export function ProductCard({ product, showRating = true, priority = false }: Pr
       }
   }
 
+
+
+  const handleConfirmUnjoin = async () => {
+       // Optimistic Remove
+       const previousState = true
+       setIsOnWaitlist(false) 
+       toast.success("Removed from waitlist.")
+       setIsUnjoinDialogOpen(false)
+
+       try {
+           const guestId = getGuestId()
+           const savedEmail = localStorage.getItem('user_email_preference')
+           
+           const result = await togglePreorder(product.id, savedEmail || undefined, guestId)
+           
+           if (result.error) {
+               // Error -> Revert
+               setIsOnWaitlist(previousState)
+               toast.dismiss()
+               toast.error(result.error)
+           } else {
+               // Success confirmed
+               localStorage.removeItem(`waitlist_${product.id}`) 
+           }
+       } catch (error) {
+           setIsOnWaitlist(previousState)
+           toast.dismiss()
+           toast.error("Something went wrong.")
+       }
+  }
 
   useEffect(() => {
     if (product.created_at) {
@@ -400,6 +474,12 @@ export function ProductCard({ product, showRating = true, priority = false }: Pr
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+
+    <QuickAddDialog 
+        product={product} 
+        open={isQuickAddOpen} 
+        onOpenChange={setIsQuickAddOpen} 
+    />
     </>
   )
 }

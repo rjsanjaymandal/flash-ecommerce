@@ -9,6 +9,8 @@ import { getSearchIndex } from '@/app/actions/search-products'
 import { cn, formatCurrency } from '@/lib/utils'
 import { useProductSearch } from '@/hooks/use-product-search'
 import { motion, AnimatePresence } from 'framer-motion'
+import NextImage from 'next/image'
+import imageLoader from '@/lib/image-loader'
 
 interface SearchOverlayProps {
     isOpen: boolean
@@ -173,17 +175,19 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                                     {results.map((product) => (
                                         <Link 
                                             key={product.id} 
-                                            href={`/product/${product.id}`}
+                                            href={`/product/${product.slug || product.id}`}
                                             onClick={onClose}
                                             className="group flex items-center gap-4 p-2 rounded-xl hover:bg-secondary/50 transition-colors sm:block sm:p-0 sm:hover:bg-transparent"
                                         >
                                             {/* Image: Small on mobile, Aspect Ratio on Desktop */}
                                             <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md border border-border/50 bg-secondary sm:aspect-3/4 sm:h-auto sm:w-full sm:rounded-xl">
                                                 {product.display_image ? (
-                                                    <img 
+                                                    <NextImage 
+                                                        loader={imageLoader}
                                                         src={product.display_image} 
                                                         alt={product.name}
-                                                        className="object-cover w-full h-full sm:group-hover:scale-105 transition-transform duration-500"
+                                                        fill
+                                                        className="object-cover sm:group-hover:scale-105 transition-transform duration-500"
                                                     />
                                                 ) : (
                                                     <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-muted">

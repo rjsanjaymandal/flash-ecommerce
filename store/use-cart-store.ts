@@ -51,9 +51,19 @@ export const useCartStore = create<CartState>()(
         let newQuantity = item.quantity
 
         if (existingIndex > -1) {
+          const currentQty = newItems[existingIndex].quantity
+          // Update maxQuantity with fresh data from payload
+          newItems[existingIndex].maxQuantity = item.maxQuantity
+          const maxQty = item.maxQuantity || 10
+          
+          if (currentQty >= maxQty) {
+              toast.error("Max available stock reached")
+              return
+          }
+
           newQuantity = Math.min(
-              newItems[existingIndex].quantity + item.quantity,
-              newItems[existingIndex].maxQuantity || 10
+              currentQty + item.quantity,
+              maxQty
           )
           newItems[existingIndex] = {
             ...newItems[existingIndex],
@@ -107,6 +117,27 @@ export const useCartStore = create<CartState>()(
 
       updateQuantity: async (productId, size, color, quantity) => {
         const { data: { user } } = await supabase.auth.getUser()
+        const state = get()
+        const itemIndex = state.items.findIndex(
+            (i) => i.productId === productId && i.size === size && i.color === color
+        )
+
+        if (itemIndex === -1) return
+
+        // Auto-remove if quantity <= 0
+        if (quantity <= 0) {
+            get().removeItem(productId, size, color)
+            return
+        }
+
+        // Enforce max quantity limit
+        const item = state.items[itemIndex]
+        const maxQty = item.maxQuantity || 10
+        
+        if (quantity > maxQty) {
+            toast.error(`Sorry, we only have ${maxQty} in stock`)
+            return
+        }
 
         set((state) => ({
             items: state.items.map((i) =>

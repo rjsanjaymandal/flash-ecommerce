@@ -1,44 +1,21 @@
-'use client'
+import { useEffect } from 'react'
+import { useStockStore, StockItem } from '@/store/use-stock-store'
 
-import { useState, useEffect } from 'react'
-
-export type StockItem = {
-    size: string
-    color: string
-    quantity: number
-}
+export type { StockItem }
 
 export function useRealTimeStock(productId: string, initialStock: StockItem[] = []) {
-    const [stock, setStock] = useState<StockItem[]>(initialStock)
-    const [loading, setLoading] = useState(true)
-
+    const { stocks, setProductStock } = useStockStore()
+    
+    // 1. Initialize store with initial data on mount (if not already present)
     useEffect(() => {
-        let mounted = true
-
-        async function fetchStock() {
-            if (!productId) return
-
-            try {
-                const res = await fetch(`/api/stock/${productId}`)
-                if (!res.ok) throw new Error('Failed to fetch stock')
-                const data = await res.json()
-                
-                if (mounted) {
-                    setStock(data)
-                    setLoading(false)
-                }
-            } catch (error) {
-                console.error("Stock check failed, using initial/cached data", error)
-                if (mounted) setLoading(false)
-            }
+        if (initialStock.length > 0 && !stocks[productId]) {
+            setProductStock(productId, initialStock)
         }
+    }, [productId, initialStock, setProductStock, stocks])
 
-        fetchStock()
-
-        return () => {
-            mounted = false
-        }
-    }, [productId])
+    // 2. Select from store
+    const stock = stocks[productId] || initialStock
+    const loading = false // Instant access now
 
     return { stock, loading }
 }

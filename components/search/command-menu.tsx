@@ -25,6 +25,8 @@ import { searchProducts } from '@/app/actions/search-actions'
 import { useSearchStore } from '@/store/use-search-store'
 import { formatCurrency } from '@/lib/utils'
 import { useDebounce } from '@/hooks/use-debounce'
+import NextImage from 'next/image'
+import imageLoader from '@/lib/image-loader'
 
 export function CommandMenu() {
   const { isOpen, setOpen, toggle } = useSearchStore()
@@ -103,7 +105,13 @@ export function CommandMenu() {
                         className="group rounded-2xl mx-1 mb-2 cursor-pointer py-3 hover:bg-white/5 aria-selected:bg-white/10 transition-colors"
                     >
                         <div className="relative h-14 w-14 rounded-xl overflow-hidden border border-white/10 group-hover:border-primary/50 transition-colors mr-4 shrink-0 bg-white/5">
-                            {item.main_image_url && <img src={item.main_image_url} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" alt={item.name} />}
+                            {item.main_image_url && <NextImage 
+                                loader={imageLoader}
+                                src={item.main_image_url} 
+                                className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                                alt={item.name} 
+                                fill
+                            />}
                         </div>
                         <div className="flex flex-col flex-1 gap-0.5 min-w-0">
                             <span className="font-black uppercase tracking-tight text-white group-hover:text-primary transition-colors truncate text-sm md:text-base">{item.name}</span>

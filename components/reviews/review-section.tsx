@@ -10,6 +10,8 @@ import { Input } from '@/components/ui/input'
 import { submitReview } from '@/app/actions/review-actions'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import NextImage from 'next/image'
+import imageLoader from '@/lib/image-loader'
 
 type Review = {
   id: string
@@ -148,7 +150,13 @@ export function ReviewSection({ productId, reviews }: { productId: string, revie
                           <div className="flex gap-2 mt-4 overflow-x-auto pb-2 scrollbar-hide">
                               {review.media_urls.map((url, i) => (
                                   <button key={i} type="button" onClick={() => { setLightboxImage(url); setLightboxOpen(true) }} className="relative shrink-0 h-20 w-20 rounded-lg overflow-hidden border border-border/50 hover:opacity-90 transition-opacity">
-                                      <img src={url} alt={`Review photo ${i + 1}`} className="h-full w-full object-cover" />
+                                      <NextImage 
+                                        loader={imageLoader}
+                                        src={url} 
+                                        alt={`Review photo ${i + 1}`} 
+                                        fill
+                                        className="object-cover" 
+                                      />
                                   </button>
                               ))}
                           </div>
@@ -174,7 +182,15 @@ export function ReviewSection({ productId, reviews }: { productId: string, revie
       {/* Lightbox */}
        {lightboxOpen && (
            <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 animate-in fade-in" onClick={() => setLightboxOpen(false)}>
-               <img src={lightboxImage} alt="Full size" className="max-w-full max-h-[90vh] rounded-lg shadow-2xl object-contain" />
+               <div className="relative w-full max-w-4xl h-[90vh]">
+                   <NextImage 
+                        loader={imageLoader}
+                        src={lightboxImage} 
+                        alt="Full size" 
+                        fill
+                        className="object-contain" 
+                    />
+               </div>
                <button 
                  className="absolute top-4 right-4 text-white/50 hover:text-white"
                  onClick={() => setLightboxOpen(false)}

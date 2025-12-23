@@ -50,14 +50,16 @@ export function StoreSync() {
           if (item.quantity > available) {
               changed = true
               if (available === 0) {
-                  changes.push(`Removed ${item.name} (${item.size}/${item.color}) - Out of Stock`)
+                  changes.push(`Marked ${item.name} as Sold Out`)
+                  // Keep item but mark maxQuantity as 0 so UI can show OOS
+                  return { ...item, maxQuantity: 0 }
               } else {
                   changes.push(`Adjusted ${item.name} quantity to ${available}`)
+                  return { ...item, quantity: available, maxQuantity: available }
               }
-              return { ...item, quantity: available, maxQuantity: available }
           }
           return { ...item, maxQuantity: available }
-      }).filter(i => i.quantity > 0)
+      }) // Removed .filter(i => i.quantity > 0) to allow OOS items to persist visually
 
       if (changed) {
           // Show specific changes or a summary
@@ -212,6 +214,15 @@ export function StoreSync() {
           { event: 'UPDATE', schema: 'public', table: 'product_stock' },
           (payload) => {
               const { product_id, size, color, quantity } = payload.new as any
+              
+              // 1. Update Global Stock Store (UI will react immediately)
+              // Dynamically import to avoid circular dep issues during initialization if any, 
+              // though importing at top level is fine usually.
+              // We'll use the imported function.
+              const updateStock = require('@/store/use-stock-store').useStockStore.getState().updateStock
+              updateStock(product_id, size, color, quantity)
+
+              // 2. Check Cart (Existing Logic)
               const currentItems = useCartStore.getState().items
               
               const needsUpdate = currentItems.some(i => 
@@ -220,11 +231,20 @@ export function StoreSync() {
 
               if (needsUpdate) {
                   toast.error("Item stock updated in your cart!")
-                  setCartItems(currentItems.map(i => 
-                      (i.productId === product_id && i.size === size && i.color === color && i.quantity > quantity)
-                          ? { ...i, quantity: Math.max(0, quantity), maxQuantity: quantity }
-                          : i
-                   ).filter(i => i.quantity > 0))
+                  setCartItems(currentItems.map(i => {
+                      if (i.productId === product_id && i.size === size && i.color === color) {
+                          // If stock is 0, mark maxQuantity as 0 but keep item quantity for UI warning
+                          if (quantity === 0) {
+                              return { ...i, maxQuantity: 0 }
+                          }
+                          // If stock simply reduced, cap quantity
+                          // Actually, if stock reduced to 2, and we have 5, we should probably cap it?
+                          // Or should we warn?
+                          // Standard behavior: cap it to available.
+                          return { ...i, quantity: Math.min(i.quantity, quantity), maxQuantity: quantity }
+                      }
+                      return i
+                   })) // Removed .filter here too
               }
           }
         )
