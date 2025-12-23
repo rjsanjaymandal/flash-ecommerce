@@ -73,7 +73,10 @@ export default function CheckoutPage() {
           : appliedCoupon.value)
       : 0
   
-  const finalTotal = Math.max(0, cartTotal - discountAmount)
+  // Shipping Logic
+  const shippingFee = cartTotal >= 1000 ? 0 : 50
+  
+  const finalTotal = Math.max(0, cartTotal - discountAmount + shippingFee)
 
   // Address Selection Handler
   const handleAddressSelect = (addr: Address) => {
@@ -556,7 +559,9 @@ export default function CheckoutPage() {
                             </div>
                              <div className="flex justify-between text-muted-foreground text-sm font-medium">
                                 <span>Shipping</span>
-                                <span className="text-green-500">Free</span>
+                                <span className={shippingFee === 0 ? "text-green-500" : "text-foreground"}>
+                                    {shippingFee === 0 ? "Free" : formatCurrency(shippingFee)}
+                                </span>
                             </div>
                              
                              <div className="flex justify-between font-black text-3xl pt-4 border-t border-border/50 items-baseline">

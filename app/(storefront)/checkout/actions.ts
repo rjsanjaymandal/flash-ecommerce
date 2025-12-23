@@ -77,10 +77,15 @@ export async function createOrder(data: {
     }
 
     const serverTotal = Math.max(0, serverSubtotal - serverDiscount)
+    
+    // --- SHIPPING LOGIC ---
+    // Free shipping for orders >= 1000, else 50
+    const shippingFee = serverSubtotal >= 1000 ? 0 : 50
+    const finalServerTotal = serverTotal + shippingFee
 
     // Allow for minor floating point differences (e.g., 1.00 because of JS math)
-    if (Math.abs(serverTotal - data.total) > 1) {
-        console.error(`[Security] Price mismatch! Server: ${serverTotal}, Client: ${data.total}`)
+    if (Math.abs(finalServerTotal - data.total) > 1) {
+        console.error(`[Security] Price mismatch! Server: ${finalServerTotal} (Sub: ${serverSubtotal} - Disc: ${serverDiscount} + Ship: ${shippingFee}), Client: ${data.total}`)
         throw new Error("Security check failed: Price mismatch detected. Please refresh your cart.")
     }
 
@@ -91,7 +96,8 @@ export async function createOrder(data: {
             user_id: data.user_id,
             status: 'pending',
             subtotal: serverSubtotal,
-            total: serverTotal,
+            total: finalServerTotal,
+            shipping_fee: shippingFee,
             shipping_name: data.shipping_name,
             phone: data.phone,
             address_line1: data.address_line1,

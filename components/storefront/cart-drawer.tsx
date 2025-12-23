@@ -175,7 +175,9 @@ export function CartDrawer() {
                     </div>
                      <div className="flex items-center justify-between text-muted-foreground text-sm">
                         <span>Shipping</span>
-                        <span className="text-emerald-500 font-bold">Calculated at checkout</span>
+                        <span className={cartTotal >= 1000 ? "text-emerald-500 font-bold" : "text-foreground"}>
+                            {cartTotal >= 1000 ? 'Free' : formatCurrency(50)}
+                        </span>
                     </div>
                     <div className="flex items-center justify-between text-xl font-black italic uppercase pt-2 border-t border-dashed border-border/50">
                         <span>Total</span>

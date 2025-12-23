@@ -87,14 +87,14 @@ export function QuickAddDialog({ product, open, onOpenChange, buyNowMode = false
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[400px]">
-                <DialogHeader>
-                    <DialogTitle className="flex items-center justify-between">
-                        <span className="truncate pr-4">{product.name}</span>
-                        <span className="font-medium text-muted-foreground text-sm">{formatCurrency(product.price)}</span>
+            <DialogContent className="w-[90vw] max-w-[425px] rounded-[1.5rem] sm:rounded-[2rem] p-6 gap-6">
+                <DialogHeader className="space-y-4">
+                    <DialogTitle className="flex flex-col gap-2">
+                        <span className="text-xl font-black uppercase italic tracking-tight leading-none">{product.name}</span>
+                        <span className="text-lg font-bold text-primary">{formatCurrency(product.price)}</span>
                     </DialogTitle>
-                    <DialogDescription>
-                        Select your options to add to cart
+                    <DialogDescription className="text-base font-medium text-muted-foreground">
+                        Select your preferred configuration.
                     </DialogDescription>
                 </DialogHeader>
                 
@@ -116,17 +116,17 @@ export function QuickAddDialog({ product, open, onOpenChange, buyNowMode = false
                                             setSelectedColor('') // Reset color on size change
                                         }}
                                         className={cn(
-                                            "h-12 rounded-xl border text-sm font-bold transition-all relative overflow-hidden",
+                                            "h-14 rounded-xl border-2 text-sm font-bold transition-all relative overflow-hidden active:scale-95",
                                             isSelected 
                                                 ? "border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-[1.02]" 
-                                                : "border-input hover:bg-muted/50 text-foreground",
-                                            !isAvailable && "opacity-40 cursor-not-allowed bg-muted/20"
+                                                : "border-input hover:bg-muted/50 text-foreground hover:border-foreground/20",
+                                            !isAvailable && "opacity-40 cursor-not-allowed bg-muted/20 border-transparent"
                                         )}
                                     >
                                         {size}
                                         {!isAvailable && (
                                             <div className="absolute inset-0 flex items-center justify-center">
-                                                <div className="w-full h-px bg-current -rotate-45 opacity-50" />
+                                                <div className="w-full h-0.5 bg-current -rotate-45 opacity-50" />
                                             </div>
                                         )}
                                     </button>
@@ -138,8 +138,8 @@ export function QuickAddDialog({ product, open, onOpenChange, buyNowMode = false
                     {/* Color Selection (Only if colors exist and vary) */}
                     {(product.color_options?.length > 0 || availableColorsForSize.length > 1) && (
                         <div className="space-y-3">
-                            <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Select Color</div>
-                            <div className="flex flex-wrap gap-2">
+                            <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">Select Color</div>
+                            <div className="flex flex-wrap gap-3">
                                 {Array.from(new Set([...(product.color_options || []), ...availableColorsForSize])).map((color: string) => {
                                     // Check if this color is valid for the selected size (if size selected)
                                     // If no size selected, check if color exists in ANY stock
@@ -154,9 +154,9 @@ export function QuickAddDialog({ product, open, onOpenChange, buyNowMode = false
                                             disabled={!isValidForSize}
                                             onClick={() => setSelectedColor(color)}
                                             className={cn(
-                                                "h-10 px-4 min-w-[3rem] rounded-lg border text-sm font-medium transition-all relative",
+                                                "h-10 px-4 min-w-[3rem] rounded-lg border-2 text-sm font-bold transition-all relative active:scale-95",
                                                 isSelected 
-                                                    ? "border-primary bg-primary text-primary-foreground shadow-md" 
+                                                    ? "border-primary bg-primary text-primary-foreground shadow-md scale-105" 
                                                     : "border-input hover:bg-muted/50",
                                                 !isValidForSize && "opacity-40 cursor-not-allowed"
                                             )}
@@ -171,7 +171,7 @@ export function QuickAddDialog({ product, open, onOpenChange, buyNowMode = false
 
                     <Button 
                         size="lg" 
-                        className="w-full h-12 rounded-xl font-bold uppercase tracking-widest" 
+                        className="w-full h-14 text-base rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all" 
                         onClick={handleAddToCart}
                         disabled={!selectedSize || (product.color_options?.length > 1 && !selectedColor && availableColorsForSize.length > 1)}
                     >
