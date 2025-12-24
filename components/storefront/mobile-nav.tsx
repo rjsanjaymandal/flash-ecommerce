@@ -2,20 +2,30 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Grid, User, ShoppingBag, FlaskConical } from 'lucide-react'
+import { Home, Grid, User, ShoppingBag, FlaskConical, Heart } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useCartStore, selectCartCount } from '@/store/use-cart-store'
+import { useWishlistStore } from '@/store/use-wishlist-store'
 import { motion } from 'framer-motion'
 import { useScrollDirection } from '@/hooks/use-scroll-direction'
+
+interface NavLink {
+  href: string
+  label: string
+  icon: any
+  count?: number
+}
 
 export function MobileNav() {
   const pathname = usePathname()
   const cartCount = useCartStore(selectCartCount)
+  const wishlistCount = useWishlistStore((state) => state.items.length)
   const setIsCartOpen = useCartStore((state) => state.setIsCartOpen)
 
-  const links = [
+  const links: NavLink[] = [
     { href: '/', label: 'Home', icon: Home },
     { href: '/shop', label: 'Shop', icon: Grid },
+    { href: '/wishlist', label: 'Wishlist', icon: Heart, count: wishlistCount },
     { href: '/lab', label: 'Lab', icon: FlaskConical },
     { href: '/account', label: 'You', icon: User },
   ]

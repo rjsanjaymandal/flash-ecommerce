@@ -1,5 +1,7 @@
 'use client'
 
+import { useState } from "react"
+
 import { useCartStore, selectCartTotal } from "@/store/use-cart-store"
 import { X, Minus, Plus, ShoppingBag, ArrowRight, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -19,6 +21,17 @@ export function CartDrawer() {
   const removeItem = useCartStore((state) => state.removeItem)
   const updateQuantity = useCartStore((state) => state.updateQuantity)
   const cartTotal = useCartStore(selectCartTotal)
+  const [loadingStates, setLoadingStates] = (useCartStore as any).loadingStates || useState<Record<string, boolean>>({})
+  
+  const handleUpdateQuantity = async (productId: string, size: string, color: string, newQty: number) => {
+      const key = `${productId}-${size}-${color}`
+      setLoadingStates((prev: any) => ({ ...prev, [key]: true }))
+      try {
+          await updateQuantity(productId, size, color, newQty)
+      } finally {
+          setLoadingStates((prev: any) => ({ ...prev, [key]: false }))
+      }
+  }
 
   const hasOutOfStockItems = items.some(i => i.maxQuantity === 0 || i.quantity > i.maxQuantity)
 
@@ -126,18 +139,25 @@ export function CartDrawer() {
                                     
                                     <div className="flex items-center justify-between mt-2">
                                         {item.maxQuantity > 0 ? (
-                                            <div className="flex items-center bg-muted/30 border border-border/50 rounded-lg h-8">
+                                            <div className="flex items-center bg-muted/30 border border-border/50 rounded-lg h-8 relative overflow-hidden">
                                                 <button 
                                                     className={cn("h-full px-2 rounded-l-lg transition-colors", item.quantity === 1 ? "hover:bg-destructive/10 hover:text-destructive" : "hover:bg-muted/50")}
-                                                    onClick={() => updateQuantity(item.productId, item.size, item.color, item.quantity - 1)}
+                                                    onClick={() => handleUpdateQuantity(item.productId, item.size, item.color, item.quantity - 1)}
+                                                    disabled={loadingStates[`${item.productId}-${item.size}-${item.color}`]}
                                                 >
                                                     {item.quantity === 1 ? <Trash2 className="h-3 w-3" /> : <Minus className="h-3 w-3" />}
                                                 </button>
-                                                <span className="w-8 text-center text-xs font-bold">{item.quantity}</span>
+                                                <div className="w-8 text-center text-xs font-bold relative">
+                                                     {loadingStates[`${item.productId}-${item.size}-${item.color}`] ? (
+                                                         <div className="absolute inset-0 flex items-center justify-center bg-muted">
+                                                             <div className="h-3 w-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                                                         </div>
+                                                     ) : item.quantity}
+                                                </div>
                                                 <button 
                                                     className="h-full px-2 hover:bg-muted/50 rounded-r-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                                                    disabled={item.quantity >= item.maxQuantity}
-                                                    onClick={() => updateQuantity(item.productId, item.size, item.color, item.quantity + 1)}
+                                                    disabled={item.quantity >= item.maxQuantity || loadingStates[`${item.productId}-${item.size}-${item.color}`]}
+                                                    onClick={() => handleUpdateQuantity(item.productId, item.size, item.color, item.quantity + 1)}
                                                 >
                                                     <Plus className="h-3 w-3" />
                                                 </button>

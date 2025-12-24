@@ -40,7 +40,6 @@ export const useCartStore = create<CartState>()(
       isLoading: true,
       
   addItem: async (item, options = { openCart: true, showToast: true }) => {
-        const { data: { user } } = await supabase.auth.getUser()
         const currentItems = get().items
         const existingIndex = currentItems.findIndex(
           (i) =>
@@ -51,11 +50,10 @@ export const useCartStore = create<CartState>()(
 
         const newItems = [...currentItems]
         let newQuantity = item.quantity
+        const maxQty = item.maxQuantity || 10
 
         if (existingIndex > -1) {
           const currentQty = newItems[existingIndex].quantity
-          newItems[existingIndex].maxQuantity = item.maxQuantity
-          const maxQty = item.maxQuantity || 10
           
           if (currentQty >= maxQty) {
               if (options.showToast) toast.error("Max available stock reached")
@@ -68,7 +66,8 @@ export const useCartStore = create<CartState>()(
           )
           newItems[existingIndex] = {
             ...newItems[existingIndex],
-            quantity: newQuantity
+            quantity: newQuantity,
+            maxQuantity: maxQty // Sync maxQuantity too
           }
         } else {
           newItems.push(item)
@@ -84,48 +83,61 @@ export const useCartStore = create<CartState>()(
             toast.success("Added to cart")
         }
 
-        if (user) {
-            const finalIndex = existingIndex > -1 ? existingIndex : newItems.length - 1
-            const dbItem = {
-                user_id: user.id,
-                product_id: item.productId,
-                size: item.size,
-                color: item.color,
-                quantity: newItems[finalIndex].quantity
+        // Sync to DB
+        try {
+            const { data: { user } } = await supabase.auth.getUser()
+            if (user) {
+                const dbItem = {
+                    user_id: user.id,
+                    product_id: item.productId,
+                    size: item.size,
+                    color: item.color,
+                    quantity: newQuantity
+                }
+                const { error } = await supabase
+                    .from('cart_items')
+                    .upsert(dbItem, { onConflict: 'user_id, product_id, size, color' })
+                
+                if (error) throw error
             }
-            const { error } = await supabase
-                .from('cart_items')
-                .upsert(dbItem, { onConflict: 'user_id, product_id, size, color' })
-            
-            if (error) {
-                console.error("Failed to sync cart item", error)
-            }
+        } catch (error) {
+            console.error("[CartStore] Sync error (addItem):", error)
+            // Revert on failure
+            set({ items: currentItems })
+            toast.error("Failed to sync with account. Reverting changes.")
         }
       },
 
       removeItem: async (productId, size, color) => {
-        const { data: { user } } = await supabase.auth.getUser()
+        const currentItems = get().items
         
+        // Optimistic
         set((state) => ({
             items: state.items.filter(
                 (i) => !(i.productId === productId && i.size === size && i.color === color)
             )
         }))
 
-        if (user) {
-             const { error } = await supabase
-                .from('cart_items')
-                .delete()
-                .match({ user_id: user.id, product_id: productId, size, color })
-            
-            if (error) console.error("Error deleting remote item", error)
+        try {
+            const { data: { user } } = await supabase.auth.getUser()
+            if (user) {
+                 const { error } = await supabase
+                    .from('cart_items')
+                    .delete()
+                    .match({ user_id: user.id, product_id: productId, size, color })
+                
+                if (error) throw error
+            }
+        } catch (error) {
+            console.error("[CartStore] Sync error (removeItem):", error)
+            set({ items: currentItems })
+            toast.error("Failed to sync removal. Reverting.")
         }
       },
 
       updateQuantity: async (productId, size, color, quantity) => {
-        const { data: { user } } = await supabase.auth.getUser()
-        const state = get()
-        const itemIndex = state.items.findIndex(
+        const currentItems = get().items
+        const itemIndex = currentItems.findIndex(
             (i) => i.productId === productId && i.size === size && i.color === color
         )
 
@@ -137,8 +149,7 @@ export const useCartStore = create<CartState>()(
             return
         }
 
-        // Enforce max quantity limit
-        const item = state.items[itemIndex]
+        const item = currentItems[itemIndex]
         const maxQty = item.maxQuantity || 10
         
         if (quantity > maxQty) {
@@ -146,6 +157,7 @@ export const useCartStore = create<CartState>()(
             return
         }
 
+        // Optimistic
         set((state) => ({
             items: state.items.map((i) =>
                 i.productId === productId && i.size === size && i.color === color
@@ -154,13 +166,20 @@ export const useCartStore = create<CartState>()(
             )
         }))
 
-        if (user) {
-            const { error } = await supabase
-                .from('cart_items')
-                .update({ quantity })
-                .match({ user_id: user.id, product_id: productId, size, color })
-            
-            if (error) console.error("Error updating remote quantity", error)
+        try {
+            const { data: { user } } = await supabase.auth.getUser()
+            if (user) {
+                const { error } = await supabase
+                    .from('cart_items')
+                    .update({ quantity })
+                    .match({ user_id: user.id, product_id: productId, size, color })
+                
+                if (error) throw error
+            }
+        } catch (error) {
+            console.error("[CartStore] Sync error (updateQuantity):", error)
+            set({ items: currentItems })
+            toast.error("Failed to sync quantity. Reverting.")
         }
       },
 

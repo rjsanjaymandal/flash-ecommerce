@@ -27,89 +27,76 @@ export function StoreSync() {
   // Helper to validate stock
   async function validateStock(items: CartItem[]) {
       if (items.length === 0) return
-      const { data: stocks } = await supabase
-          .from('product_stock')
-          .select('product_id, size, color, quantity')
-          .in('product_id', items.map(i => i.productId))
       
-      // Edge Case: If stocks query fails or returns nothing, we shouldn't assume OOS for everything unless we are sure.
-      // But if we get an empty array and we asked for specific IDs, it means they might be deleted. 
-      // Safe bet: if !stocks, do nothing.
-      if (!stocks) return
-
-      let changed = false
-      const changes: string[] = []
-
-      const newItems = items.map(item => {
-          const stockEntry = stocks.find(s => 
-              s.product_id === item.productId && s.size === item.size && s.color === item.color
-          )
+      try {
+          const { data: stocks } = await supabase
+              .from('product_stock')
+              .select('product_id, size, color, quantity')
+              .in('product_id', items.map(i => i.productId))
           
-          // If stock entry is missing, it implies 0 stock (or product deleted).
-          const available = stockEntry?.quantity ?? 0
-          
-          if (item.quantity > available) {
-              changed = true
-              if (available === 0) {
-                  changes.push(`Marked ${item.name} as Sold Out`)
-                  // Keep item but mark maxQuantity as 0 so UI can show OOS
-                  return { ...item, maxQuantity: 0 }
-              } else {
-                  changes.push(`Adjusted ${item.name} quantity to ${available}`)
-                  return { ...item, quantity: available, maxQuantity: available }
-              }
-          }
-          return { ...item, maxQuantity: available }
-      }) // Removed .filter(i => i.quantity > 0) to allow OOS items to persist visually
+          if (!stocks) return
 
-      if (changed) {
-          // Show specific changes or a summary
-          if (changes.length === 1) {
-             toast.warning(changes[0])
-          } else {
-             toast.warning("Some items were updated due to stock changes.")
-          }
-          setCartItems(newItems)
-          
-          // SYNC BACK TO DB
-          if (user) {
-              // 1. Identify removed items to DELETE
-              const removedItems = items.filter(oldItem => 
-                  !newItems.some(newItem => 
-                      newItem.productId === oldItem.productId && 
-                      newItem.size === oldItem.size && 
-                      newItem.color === oldItem.color
-                  )
+          // Also fetch current prices to detect changes
+          const { data: products } = await supabase
+              .from('products')
+              .select('id, price')
+              .in('id', items.map(i => i.productId))
+
+          let changed = false
+          const changes: string[] = []
+
+          const newItems = items.map(item => {
+              const stockEntry = stocks.find(s => 
+                  s.product_id === item.productId && s.size === item.size && s.color === item.color
               )
+              const productEntry = products?.find(p => p.id === item.productId)
+              
+              const available = stockEntry?.quantity ?? 0
+              let updatedItem = { ...item, maxQuantity: available }
 
-              for (const removed of removedItems) {
-                  await supabase.from('cart_items').delete().match({ 
-                      user_id: user.id, 
-                      product_id: removed.productId, 
-                      size: removed.size, 
-                      color: removed.color 
-                  })
+              // 1. Stock Check
+              if (item.quantity > available) {
+                  changed = true
+                  if (available === 0) {
+                      changes.push(`Marked ${item.name} as Sold Out`)
+                      updatedItem = { ...updatedItem, maxQuantity: 0 }
+                  } else {
+                      changes.push(`Adjusted ${item.name} quantity to ${available}`)
+                      updatedItem = { ...updatedItem, quantity: available, maxQuantity: available }
+                  }
               }
 
-              // 2. Identify modified items to UPDATE
-              const modifiedItems = newItems.filter(newItem => {
-                  const oldItem = items.find(i => 
-                      i.productId === newItem.productId && 
-                      i.size === newItem.size && 
-                      i.color === newItem.color
-                  )
-                  return oldItem && oldItem.quantity !== newItem.quantity
-              })
+              // 2. Price Check
+              if (productEntry && productEntry.price !== item.price) {
+                  changed = true
+                  changes.push(`Price for ${item.name} updated to ${productEntry.price}`)
+                  updatedItem = { ...updatedItem, price: productEntry.price }
+              }
 
-              for (const modified of modifiedItems) {
-                  await supabase.from('cart_items').update({ quantity: modified.quantity }).match({
-                      user_id: user.id,
-                      product_id: modified.productId,
-                      size: modified.size,
-                      color: modified.color
-                  })
+              return updatedItem
+          })
+
+          if (changed) {
+              if (changes.length > 0) {
+                 toast.info("Your bag was updated with latest prices and stock.")
+              }
+              setCartItems(newItems)
+              
+              if (user) {
+                  // Sync adjustments back to DB
+                  for (const updated of newItems) {
+                      await supabase.from('cart_items').upsert({
+                          user_id: user.id,
+                          product_id: updated.productId,
+                          size: updated.size,
+                          color: updated.color,
+                          quantity: updated.quantity
+                      }, { onConflict: 'user_id, product_id, size, color' })
+                  }
               }
           }
+      } catch (error) {
+          console.error("[StoreSync] Stock validation failed:", error)
       }
   }
 
@@ -137,13 +124,23 @@ export function StoreSync() {
                    
                    if (guestItems.length > 0) {
                        console.log('[StoreSync] Found guest items. Merging to DB...', guestItems.length)
+                       
+                       // Fetch existing items to handle quantity summing
+                       const { data: dbItems } = await supabase.from('cart_items').select('*').eq('user_id', user.id)
+                       
                        for (const item of guestItems) {
+                          const existing = dbItems?.find(d => 
+                              d.product_id === item.productId && d.size === item.size && d.color === item.color
+                          )
+                          
+                          const finalQty = existing ? existing.quantity + item.quantity : item.quantity
+
                           await supabase.from('cart_items').upsert({
                               user_id: user.id,
                               product_id: item.productId,
                               size: item.size,
                               color: item.color,
-                              quantity: item.quantity
+                              quantity: finalQty
                           }, { onConflict: 'user_id, product_id, size, color' })
                        }
                    }
@@ -234,36 +231,48 @@ export function StoreSync() {
               // 1. Update Global Stock Store (UI will react immediately)
               useStockStore.getState().updateStock(product_id, size, color, quantity)
 
-              // 2. Check Cart (Existing Logic)
+              // 2. Check Cart
               const currentItems = useCartStore.getState().items
-              
-              const needsUpdate = currentItems.some(i => 
-                  i.productId === product_id && i.size === size && i.color === color && i.quantity > quantity
+              const relevantItem = currentItems.find(i => 
+                  i.productId === product_id && i.size === size && i.color === color
               )
 
-              if (needsUpdate) {
-                  toast.error("Item stock updated in your cart!")
-                  setCartItems(currentItems.map(i => {
-                      if (i.productId === product_id && i.size === size && i.color === color) {
-                          // If stock is 0, mark maxQuantity as 0 but keep item quantity for UI warning
-                          if (quantity === 0) {
-                              return { ...i, maxQuantity: 0 }
+              if (relevantItem) {
+                  // If quantity reduced below what we have, adjust it
+                  if (relevantItem.quantity > quantity) {
+                      toast.error(`${relevantItem.name} stock updated.`)
+                      setCartItems(currentItems.map(i => {
+                          if (i.productId === product_id && i.size === size && i.color === color) {
+                              return { ...i, quantity: Math.min(i.quantity, quantity), maxQuantity: quantity }
                           }
-                          // If stock simply reduced, cap quantity
-                          // Actually, if stock reduced to 2, and we have 5, we should probably cap it?
-                          // Or should we warn?
-                          // Standard behavior: cap it to available.
-                          return { ...i, quantity: Math.min(i.quantity, quantity), maxQuantity: quantity }
-                      }
-                      return i
-                   })) // Removed .filter here too
+                          return i
+                       }))
+                  } else {
+                      // Just update maxQuantity silently
+                      setCartItems(currentItems.map(i => {
+                        if (i.productId === product_id && i.size === size && i.color === color) {
+                            return { ...i, maxQuantity: quantity }
+                        }
+                        return i
+                     }))
+                  }
               }
           }
         )
         .subscribe()
 
-      return () => { supabase.removeChannel(channel) }
-  }, [setCartItems])
+      // 3. Tab Focus Re-validation
+      const handleFocus = () => {
+          const currentItems = useCartStore.getState().items
+          if (currentItems.length > 0) validateStock(currentItems)
+      }
+
+      window.addEventListener('focus', handleFocus)
+      return () => { 
+          supabase.removeChannel(channel)
+          window.removeEventListener('focus', handleFocus)
+      }
+  }, [setCartItems, user])
 
 
   // 3. Sync Changes TO Supabase (Debounced or effect-based)

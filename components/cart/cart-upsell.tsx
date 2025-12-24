@@ -54,6 +54,7 @@ export function CartUpsell() {
         
         addItem({
             productId: product.id,
+            categoryId: product.category_id,
             name: product.name,
             price: product.price,
             image: product.main_image_url,
