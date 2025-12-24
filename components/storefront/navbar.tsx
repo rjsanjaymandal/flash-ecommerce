@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { ShoppingBag, Menu, Heart, ChevronDown, Search } from 'lucide-react'
 import { useState } from 'react'
-import NextImage from 'next/image'
+import FlashImage from '@/components/ui/flash-image'
 import { useWishlistStore } from '@/store/use-wishlist-store'
 import { useCartStore, selectCartCount } from '@/store/use-cart-store'
 import { useAuth } from '@/context/auth-context'
@@ -80,12 +80,12 @@ export function StorefrontNavbar() {
                     title="Home"
                 >
                     <div className="relative h-9 w-9 overflow-hidden rounded-full border border-border group-hover:scale-105 transition-all duration-300 shadow-lg">
-                        <NextImage 
+                        <FlashImage 
                             src="/flash-logo.jpg" 
                             alt="Flash Logo" 
                             width={60}
                             height={60}
-                            quality={80}
+                            unoptimized
                             className="bg-background"
                         />
                     </div>

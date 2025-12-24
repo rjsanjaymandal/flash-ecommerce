@@ -8,8 +8,7 @@ import { formatCurrency } from '@/lib/utils'
 import { useCartStore } from '@/store/use-cart-store'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import NextImage from 'next/image'
-import imageLoader from '@/lib/image-loader'
+import FlashImage from '@/components/ui/flash-image'
 
 // Can accept a subset of product data
 interface QuickViewProps {
@@ -57,8 +56,7 @@ export function QuickView({ product }: QuickViewProps) {
                 <DialogTitle className="sr-only">Product Quick View: {product.name}</DialogTitle>
                 <div className="grid md:grid-cols-2 gap-0">
                     <div className="relative h-[300px] md:h-[500px] bg-gray-100">
-                        <NextImage 
-                            loader={imageLoader}
+                        <FlashImage 
                             src={product.main_image_url} 
                             alt={product.name} 
                             fill

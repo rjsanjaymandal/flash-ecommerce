@@ -1,10 +1,8 @@
-'use client'
-
 import type { ImageLoaderProps } from 'next/image'
 
 export default function myImageLoader({ src, width, quality }: ImageLoaderProps) {
   // 1. Handle Supabase Storage Images
-  // Transform: .../storage/v1/object/public/... -> .../storage/v1/render/image/public/...
+  // Transform: .../storage/v1/object/public/bucket/file.webp -> .../storage/v1/render/image/public/bucket/file.webp
   if (src.includes('supabase.co/storage/v1/object/public')) {
     const newSrc = src.replace('/object/public', '/render/image/public')
     return `${newSrc}?width=${width}&quality=${quality || 75}`
@@ -12,20 +10,17 @@ export default function myImageLoader({ src, width, quality }: ImageLoaderProps)
 
   // 2. Handle Unsplash Images
   if (src.includes('unsplash.com')) {
-    // Unsplash uses '&' or '?' depending on existing params, but standard unmodified unsplash links often have ?auto=format
-    // We'll safe-append.
-    const separator = src.includes('?') ? '&' : '?'
-    return `${src}${separator}w=${width}&q=${quality || 75}&auto=format`
+    const url = new URL(src)
+    url.searchParams.set('w', width.toString())
+    url.searchParams.set('q', (quality || 75).toString())
+    url.searchParams.set('auto', 'format')
+    return url.toString()
   }
 
-  // 3. Fallback for Local or Other Images
-  // If the src starts with '/', it's a local asset. 
-  // We can just return it. Next.js optimization won't run on it with a custom loader 
-  // unless we use a service, but for static assets like logos, this is fine.
+  // 3. Keep local images as-is
   if (src.startsWith('/')) {
     return src
   }
   
-  // 4. Default fallback
-  return `${src}?width=${width}`
+  return src
 }

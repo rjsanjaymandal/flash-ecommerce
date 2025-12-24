@@ -4,7 +4,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescri
 import { Button } from "@/components/ui/button"
 import { Menu, ChevronRight, Facebook, Instagram, Twitter, Youtube, User } from "lucide-react"
 import Link from "next/link"
-import NextImage from "next/image"
+import FlashImage from "@/components/ui/flash-image"
 import { useState } from "react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/context/auth-context"
@@ -36,12 +36,12 @@ export function HamburgerMenu({ categories }: HamburgerMenuProps) {
                     <div className="p-6 border-b border-border bg-muted/20">
                         <Link href="/" onClick={() => setOpen(false)} className="flex items-center gap-3 w-fit">
                             <div className="relative h-10 w-10 overflow-hidden rounded-full border border-border shadow-lg">
-                                <NextImage 
+                                <FlashImage 
                                     src="/flash-logo.jpg" 
                                     alt="Flash Logo" 
                                     width={60}
                                     height={60}
-                                    quality={80}
+                                    unoptimized
                                 />
                             </div>
                             <span className="text-2xl font-black tracking-tighter text-foreground italic">FLASH</span>

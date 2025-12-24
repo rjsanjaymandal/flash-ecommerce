@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { cn, formatCurrency } from '@/lib/utils'
 import { ShoppingBag, Heart, Star } from 'lucide-react'
-import Image from 'next/image'
 import { useWishlistStore, selectIsInWishlist } from '@/store/use-wishlist-store'
 import { useCartStore } from '@/store/use-cart-store'
 import { useRouter } from 'next/navigation'
@@ -24,6 +23,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import dynamic from 'next/dynamic'
+import FlashImage from '@/components/ui/flash-image'
 
 const QuickView = dynamic(() => import('@/components/products/quick-view').then(mod => mod.QuickView), { ssr: false })
 const QuickAddDialog = dynamic(() => import('@/components/products/quick-add-dialog').then(mod => mod.QuickAddDialog), { ssr: false })
@@ -32,7 +32,6 @@ const WaitlistDialog = dynamic(() => import('@/components/products/waitlist-dial
 import type { Product } from '@/lib/services/product-service'
 import { checkPreorderStatus, togglePreorder } from '@/app/actions/preorder'
 import { useRealTimeStock } from '@/hooks/use-real-time-stock'
-import imageLoader from '@/lib/image-loader'
 
 interface ProductCardProps {
     product: Product
@@ -48,6 +47,7 @@ export function ProductCard({ product, showRating = true, priority = false, onWa
   const optimizedSrc = product.images?.thumbnail || product.images?.mobile || product.main_image_url
   const [imageSrc, setImageSrc] = useState(optimizedSrc || '/placeholder.svg')
   const [isNew, setIsNew] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
   
   // Real-time Stock
   // Type sanitation: DB types map product_id as string | null, but we need string for strict state
@@ -368,6 +368,8 @@ export function ProductCard({ product, showRating = true, priority = false, onWa
     <motion.div 
         whileHover={{ y: -4 }}
         className="group relative flex flex-col gap-2"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
     >
         {/* Image Container */}
         <Link href={`/product/${product.slug || product.id}`} className="block relative aspect-[3/4] overflow-hidden rounded-md bg-muted/20 border border-transparent group-hover:border-border/50 transition-all duration-300">
@@ -393,16 +395,17 @@ export function ProductCard({ product, showRating = true, priority = false, onWa
 
             {/* Main Image */}
             <div className="relative h-full w-full bg-zinc-100 overflow-hidden">
-                <Image 
-                    loader={imageLoader}
-                    src={imageSrc} 
-                    alt={product.name}
-                    fill
-                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                    sizes="(max-width: 768px) 75vw, (max-width: 1200px) 33vw, 25vw"
-                    quality={80}
-                    onError={() => setImageSrc('/placeholder.svg')}
-                    priority={priority}
+                <FlashImage
+                  src={imageSrc}
+                  alt={product.name}
+                  fill
+                  className={cn(
+                    "object-cover transition-transform duration-700 ease-out",
+                    isHovered ? "scale-105" : "scale-100"
+                  )}
+                  sizes="(max-width: 768px) 50vw, (max-width: 1210px) 33vw, 25vw"
+                  priority={priority}
+                  onError={() => setImageSrc('/placeholder.svg')}
                 />
             </div>
 

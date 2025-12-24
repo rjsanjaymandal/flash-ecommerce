@@ -3,8 +3,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
-import NextImage from 'next/image'
-import imageLoader from '@/lib/image-loader'
+import FlashImage from '@/components/ui/flash-image'
 
 interface ProductGalleryProps {
     images: string[]
@@ -36,12 +35,12 @@ export function ProductGallery({ images, name, mainImage }: ProductGalleryProps)
                             )}
                         >
                             <div className="relative w-full h-full">
-                                <NextImage 
-                                    loader={imageLoader}
+                                <FlashImage 
                                     src={img} 
                                     alt={`View ${i + 1}`} 
                                     fill
                                     className="object-cover" 
+                                    sizes="100px"
                                 />
                             </div>
                             {activeImage === img && <div className="absolute inset-0 bg-primary/10" />}
@@ -61,13 +60,13 @@ export function ProductGallery({ images, name, mainImage }: ProductGalleryProps)
                                 transition={{ duration: 0.4, ease: "easeOut" }}
                                 className="h-full w-full relative"
                             >
-                                <NextImage 
-                                    loader={imageLoader}
-                                    src={activeImage} 
-                                    alt={name} 
+                                <FlashImage
+                                    src={activeImage}
+                                    alt={name}
                                     fill
-                                    className="object-cover"
                                     priority
+                                    className="object-cover transition-all duration-500 scale-100 group-hover:scale-105"
+                                    sizes="(max-width: 1024px) 100vw, 600px"
                                 />
                             </motion.div>
                         </AnimatePresence>
@@ -80,13 +79,13 @@ export function ProductGallery({ images, name, mainImage }: ProductGalleryProps)
                 <div className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide gap-2 px-4 sm:px-0 pb-6">
                     {allImages.map((img, i) => (
                         <div key={i} className="snap-center shrink-0 w-[85vw] sm:w-[400px] aspect-[3/4] rounded-2xl overflow-hidden bg-muted/20 border border-border/50 relative shadow-sm">
-                             <NextImage 
-                                loader={imageLoader} 
-                                src={img} 
-                                alt={`${name} ${i + 1}`} 
+                             <FlashImage
+                                src={img}
+                                alt={`${name} view ${i + 1}`}
                                 fill
-                                className="object-cover" 
+                                className="object-cover"
                                 priority={i === 0}
+                                sizes="(max-width: 640px) 85vw, 400px"
                             />
                              <div className="absolute bottom-4 right-4 bg-black/60 text-white text-[10px] px-3 py-1.5 rounded-full backdrop-blur-md font-black tracking-widest border border-white/10">
                                  {i + 1} / {allImages.length}

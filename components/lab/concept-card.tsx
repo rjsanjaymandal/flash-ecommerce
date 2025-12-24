@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useOptimistic, useTransition, useEffect } from 'react'
-import Image from 'next/image'
+import FlashImage from '@/components/ui/flash-image'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -92,7 +92,7 @@ export function ConceptCard({ concept, isLoggedIn, hasVoted: initiallyVoted }: C
         >
             {/* Image Section */}
             <div className="relative aspect-[4/5] w-full overflow-hidden">
-                <Image
+                <FlashImage
                     src={concept.image_url || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1000&auto=format&fit=crop'}
                     alt={concept.title}
                     fill
@@ -140,9 +140,9 @@ export function ConceptCard({ concept, isLoggedIn, hasVoted: initiallyVoted }: C
                 </div>
             </div>
             
-            <CardHeader className="space-y-3 pb-4 relative">
+            <CardHeader className="space-y-2 md:space-y-3 pb-3 md:pb-4 relative">
                 <div className="flex items-center justify-between">
-                    <CardTitle className="text-2xl font-black tracking-tight uppercase leading-none">{concept.title}</CardTitle>
+                    <CardTitle className="text-xl md:text-2xl font-black tracking-tight uppercase leading-none">{concept.title}</CardTitle>
                 </div>
                 <p className="text-sm text-muted-foreground font-medium leading-relaxed line-clamp-2 min-h-[40px]">
                     {concept.description}
@@ -156,13 +156,13 @@ export function ConceptCard({ concept, isLoggedIn, hasVoted: initiallyVoted }: C
                         <div className="space-y-1">
                             <p className="text-[10px] uppercase font-black tracking-tighter text-muted-foreground">Community Backing</p>
                             <div className="flex items-baseline gap-1">
-                                <span className="text-2xl font-black text-primary leading-none">{progress}%</span>
+                                <span className="text-xl md:text-2xl font-black text-primary leading-none">{progress}%</span>
                                 <span className="text-xs font-bold text-muted-foreground uppercase">Goal</span>
                             </div>
                         </div>
                         <div className="text-right">
                              <p className="text-[10px] uppercase font-black tracking-tighter text-muted-foreground text-right">Remaining</p>
-                             <p className="text-sm font-bold">{Math.max(0, concept.vote_goal - optimisticVotes)} <span className="text-[10px] opacity-70">Votes</span></p>
+                             <p className="text-xs md:text-sm font-bold">{Math.max(0, concept.vote_goal - optimisticVotes)} <span className="text-[10px] opacity-70">Votes</span></p>
                         </div>
                     </div>
                     <div className="h-3 w-full bg-primary/5 rounded-full overflow-hidden border border-primary/10">
@@ -184,7 +184,7 @@ export function ConceptCard({ concept, isLoggedIn, hasVoted: initiallyVoted }: C
             <CardFooter className="pt-2 pb-6 px-6">
                 <Button 
                     className={cn(
-                        "w-full h-14 gap-3 font-black text-[12px] uppercase tracking-widest transition-all duration-500 rounded-2xl relative overflow-hidden",
+                        "w-full h-12 md:h-14 gap-2 md:gap-3 font-black text-[10px] md:text-[12px] uppercase tracking-widest transition-all duration-500 rounded-xl md:rounded-2xl relative overflow-hidden",
                         hasVoted 
                             ? "bg-emerald-500/10 text-emerald-500 border-2 border-emerald-500/20 hover:bg-emerald-500/20" 
                             : "gradient-primary text-white shadow-xl shadow-primary/20 hover:shadow-primary/40 hover:scale-[1.02] active:scale-95 border-0"

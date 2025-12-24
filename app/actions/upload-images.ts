@@ -10,39 +10,91 @@ export type OptimizedImages = {
   desktop: string
 }
 
-export async function uploadOptimizedImage(formData: FormData, bucketName: string = 'products'): Promise<OptimizedImages> {
+/**
+ * Standardized Image Upload Utility
+ * 
+ * Automatically:
+ * 1. Converts to WebP
+ * 2. Strips Metadata
+ * 3. Resizes to predefined breakpoints
+ * 4. Uploads to Supabase Storage
+ */
+export async function uploadOptimizedImage(
+    formData: FormData, 
+    bucketName: string = 'products',
+    options: {
+        quality?: number,
+        maxWidth?: number,
+        generateVariants?: boolean
+    } = {}
+): Promise<OptimizedImages> {
   const file = formData.get('file') as File
   if (!file) {
     throw new Error('No file provided')
   }
 
+  const {
+      quality = 85,
+      maxWidth = 1600,
+      generateVariants = true
+  } = options
+
   const arrayBuffer = await file.arrayBuffer()
   const buffer = Buffer.from(arrayBuffer)
   const baseUuid = uuidv4()
   
-  // Create 3 variants
+  const supabase = await createClient()
+  
+  if (!generateVariants) {
+      // Single Optimized Upload
+      const optimizedBuffer = await sharp(buffer)
+          .resize(maxWidth, null, { withoutEnlargement: true })
+          .webp({ quality })
+          .toBuffer()
+      
+      const fileName = `${baseUuid}.webp`
+      const { error } = await supabase.storage
+          .from(bucketName)
+          .upload(fileName, optimizedBuffer, {
+              contentType: 'image/webp',
+              cacheControl: '31536000', // 1 year
+              upsert: false
+          })
+
+      if (error) throw error
+
+      const { data: { publicUrl } } = supabase.storage
+          .from(bucketName)
+          .getPublicUrl(fileName)
+
+      return {
+          thumbnail: publicUrl,
+          mobile: publicUrl,
+          desktop: publicUrl
+      }
+  }
+
+  // Create 3 standard variants
   const [thumbnailBuffer, mobileBuffer, desktopBuffer] = await Promise.all([
-    // Thumbnail: 200x200 cover
+    // Thumbnail: 300x300 center-cropped
     sharp(buffer)
-      .resize(200, 200, { fit: 'cover' })
+      .resize(300, 300, { fit: 'cover', position: 'center' })
       .webp({ quality: 80 })
       .toBuffer(),
       
-    // Mobile: 600px width
+    // Mobile: 750px width (standard for modern mobile displays)
     sharp(buffer)
-      .resize(600, null, { withoutEnlargement: true })
+      .resize(750, null, { withoutEnlargement: true })
       .webp({ quality: 80 })
       .toBuffer(),
 
-    // Desktop: 1200px width
+    // Desktop: 1600px width (standard high-res)
     sharp(buffer)
-      .resize(1200, null, { withoutEnlargement: true })
+      .resize(1600, null, { withoutEnlargement: true })
       .webp({ quality: 85 })
       .toBuffer()
   ])
 
-  const supabase = await createClient()
-  
   // Upload all 3
   const uploads = [
     { name: 'thumbnail', buffer: thumbnailBuffer },
@@ -58,7 +110,7 @@ export async function uploadOptimizedImage(formData: FormData, bucketName: strin
       .from(bucketName)
       .upload(fileName, upload.buffer, {
         contentType: 'image/webp',
-        cacheControl: '3600',
+        cacheControl: '31536000',
         upsert: false
       })
 
