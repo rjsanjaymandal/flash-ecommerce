@@ -85,7 +85,7 @@ export async function POST(req: Request) {
     const options = {
       amount: Math.round(order.total * 100), // Convert to paisa
       currency: 'INR',
-      receipt: `rcpt_${order_id.slice(0, 8)}`,
+      receipt: order_id, // Use full UUID for reliable matching
       notes: {
           order_id: order_id
       }
