@@ -4,6 +4,7 @@ import { createClient, createStaticClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requireAdmin } from '@/lib/auth/utils'
 import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache'
+import { productSchema } from '@/lib/validations/product'
 import type { Database, Tables, TablesInsert, TablesUpdate } from '@/types/supabase'
 
 export type Product = Tables<'products'> & {
@@ -19,10 +20,7 @@ export type Product = Tables<'products'> & {
     preorder_count?: number
 }
 
-// Helper to get DB client
-async function getDb() {
-    return await createClient()
-}
+
 
 export type ProductFilter = {
   category_id?: string
@@ -303,143 +301,174 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
     )()
 }
 
-export async function createProduct(productData: TablesInsert<'products'> & { variants?: TablesInsert<'product_stock'>[] }) {
-    await requireAdmin()
-    const supabase = await getDb()
-    const { variants, ...prod } = productData
-    
-    const { data, error } = await supabase
-      .from('products')
-      .insert(prod as any) // Type assertion until DB types are regenerated
-      .select()
-      .single()
+// Helper to clean up product data and sync options
+function prepareProductData(data: any) {
+  // STRICT WHITELIST of database columns
+  const cleanData: any = {
+    name: data.name,
+    slug: data.slug,
+    description: data.description || null,
+    price: data.price ? Number(data.price) : 0,
+    category_id: data.category_id || null, // Critical: Prevent "" for UUID
+    main_image_url: data.main_image_url,
+    gallery_image_urls: data.gallery_image_urls || [],
+    expression_tags: data.expression_tags || [],
+    is_active: data.is_active ?? true,
+  }
 
-    if (error) throw error
-
-    if (variants && variants.length > 0) {
-      const stockData = variants.map((v) => ({
-        product_id: data.id,
-        size: v.size,
-        color: v.color,
-        quantity: v.quantity
-      }))
-
-      const { error: stockError } = await supabase
-        .from('product_stock')
-        .insert(stockData as any)
-      
-      if (stockError) throw stockError
-    }
-    
-    // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
-    revalidateTag('products')
-    // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
-    revalidateTag('featured-products')
-    revalidatePath('/admin/products')
-    revalidatePath('/shop')
-    return data
+  // Derive options from variants
+  if (data.variants && Array.isArray(data.variants)) {
+    const variants = data.variants
+    cleanData.size_options = Array.from(new Set(variants.map((v: any) => v.size).filter(Boolean)))
+    cleanData.color_options = Array.from(new Set(variants.map((v: any) => v.color).filter(Boolean)))
+  }
+  
+  return cleanData
 }
 
-export async function updateProduct(id: string, productData: TablesUpdate<'products'> & { variants?: TablesInsert<'product_stock'>[] }) {
-    await requireAdmin()
-    const supabase = await getDb()
-    const { variants, ...prod } = productData
+export async function createProduct(productData: any) {
+    try {
+        // 1. Core Security Check (Required even with Admin Client)
+        await requireAdmin()
 
-    // 1. Fetch existing product to compare data and get old slug
-    const { data: existing, error: fetchError } = await supabase
-        .from('products')
-        .select('slug, name')
-        .eq('id', id)
-        .single()
-    
-    if (fetchError || !existing) {
-        throw new Error("Product not found")
-    }
-
-    // 2. Check for slug collision if slug is changing
-    if (prod.slug && prod.slug !== existing.slug) {
-        // Validation: lowercase alphanumeric
-        if (!/^[a-z0-9-]+$/.test(prod.slug)) {
-            throw new Error("Slug must be lowercase, alphanumeric, and contain only dashes.")
+        if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+            return { success: false, error: "System Configuration Error: Service Role Key is missing." }
         }
-
-        const { data: collision } = await supabase
-            .from('products')
-            .select('id')
-            .eq('slug', prod.slug)
-            .neq('id', id) // Exclude self
-            .single()
         
-        if (collision) {
-            throw new Error(`The slug "${prod.slug}" is already taken by another product.`)
-        }
-    }
-
-    // 3. Perform Update
-    const { error } = await supabase
-        .from('products')
-        .update(prod as any)
-        .eq('id', id)
-    
-    if (error) {
-        // Fallback catch for DB constraints
-        if (error.code === '23505') throw new Error("This slug or name is already in use.")
-        throw error
-    }
-
-    // 4. Update Stock (Full Replace Strategy)
-    if (variants) {
-        // We use a small delay or ensure this happens after the product update
-        const { error: deleteError } = await supabase.from('product_stock').delete().eq('product_id', id)
-        if (deleteError) {
-            console.error('Failed to clear old variants:', deleteError)
-            throw new Error("Failed to update product variants: Clear step failed")
+        // 2. Server-side Validation
+        const validated = productSchema.safeParse(productData)
+        if (!validated.success) {
+            return { success: false, error: `Invalid data: ${validated.error.errors[0].message}` }
         }
 
+        // 3. Prep Data & Admin Client
+        const insertData = prepareProductData(validated.data)
+        const variants = validated.data.variants || []
+        const supabase = createAdminClient() // Use Service Role for reliability
+        
+        // 4. Insert Product
+        const { data: prodJson, error: prodErr } = await supabase
+            .from('products')
+            .insert(insertData)
+            .select('id')
+            .single()
+
+        if (prodErr || !prodJson) {
+            console.error('[createProduct] DB Error:', prodErr || 'No data returned')
+            return { success: false, error: `Database Error: ${prodErr?.message || 'Empty response'}` }
+        }
+
+        const productId = prodJson.id
+
+        // 5. Insert Variants (Stock)
         if (variants.length > 0) {
-             const stockData = variants.map((v) => ({
-                product_id: id,
+            const stockData = variants.map((v: any) => ({
+                product_id: productId,
                 size: v.size,
                 color: v.color,
-                quantity: v.quantity
-              }))
-              const { error: stockError } = await supabase.from('product_stock').insert(stockData as any)
-              if (stockError) {
-                  console.error('Failed to insert new variants:', stockError)
-                  throw new Error("Failed to update product variants: Sync step failed. Some variants may be missing.")
-              }
+                quantity: Number(v.quantity) || 0
+            }))
+
+            const { error: stockErr } = await supabase
+                .from('product_stock')
+                .insert(stockData)
+
+            if (stockErr) {
+                console.error('[createProduct] Stock Sync Error:', stockErr)
+                // Cleanup on failure
+                await supabase.from('products').delete().eq('id', productId)
+                return { success: false, error: `Stock Sync Failed: ${stockErr.message}` }
+            }
         }
+
+        // 6. Revalidation (Safe Closure)
+        try {
+            revalidatePath('/admin/products')
+            revalidatePath('/shop')
+            revalidateTag('products')
+            revalidateTag('featured-products')
+        } catch (revErr) {
+            console.warn('[createProduct] Revalidation skipped:', revErr)
+        }
+
+        return { success: true, id: productId }
+    } catch (err: any) {
+        console.error('[createProduct] Action Crash:', err)
+        return { success: false, error: `Action Crash: ${err.message || 'Unknown'}` }
     }
+}
 
-    // 5. Revalidation with Robustness
-    console.log(`Update successful for ${id}. Revalidating...`)
-
+export async function updateProduct(id: string, productData: any) {
     try {
-        // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
-        revalidateTag('products')
-        // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
-        revalidateTag('featured-products')
+        // 1. Core Security Check
+        await requireAdmin()
+
+        // 2. Server-side Validation
+        const validated = productSchema.safeParse(productData)
+        if (!validated.success) {
+            return { success: false, error: `Invalid data: ${validated.error.errors[0].message}` }
+        }
+
+        // 3. Prep Data & Admin Client
+        const updateData = prepareProductData(validated.data)
+        const variants = validated.data.variants
+        const supabase = createAdminClient()
+
+        // 4. Fetch existing for slug check
+        const { data: existing, error: fetchErr } = await supabase
+            .from('products')
+            .select('slug')
+            .eq('id', id)
+            .single()
         
-        // Revalidate NEW slug
-        if (prod.slug) { 
-            // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
-            revalidateTag(`product-${prod.slug}`)
-        }
-    
-        // Revalidate OLD slug (if different) to clear stale cache
-        if (existing.slug && existing.slug !== prod.slug) {
-            // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
-            revalidateTag(`product-${existing.slug}`)
-            console.log(`Cleared cache for old slug: ${existing.slug}`)
+        if (fetchErr || !existing) return { success: false, error: "Product not found" }
+
+        // 5. Perform Update
+        const { error: updateErr } = await supabase
+            .from('products')
+            .update(updateData)
+            .eq('id', id)
+
+        if (updateErr) {
+             console.error('[updateProduct] DB Error:', updateErr)
+             return { success: false, error: `Update Error [${updateErr.code}]: ${updateErr.message}` }
         }
 
-        revalidatePath('/admin/products')
-        revalidatePath('/shop')
-        // Also revalidate the specific product page just in case
-        revalidatePath(`/product/${prod.slug || existing.slug}`)
+        // 6. Sync Variants (Stock)
+        if (variants && Array.isArray(variants)) {
+            // Clear old
+            await supabase.from('product_stock').delete().eq('product_id', id)
+            
+            // Insert new
+            if (variants.length > 0) {
+                const stockData = variants.map((v: any) => ({
+                    product_id: id,
+                    size: v.size,
+                    color: v.color,
+                    quantity: Number(v.quantity) || 0
+                }))
+                const { error: stockErr } = await supabase.from('product_stock').insert(stockData)
+                if (stockErr) return { success: false, error: `Stock Sync Failed: ${stockErr.message}` }
+            }
+        }
 
-    } catch (e) {
-        console.error('Revalidation failed:', e)
+        // 7. Revalidation
+        try {
+            revalidatePath('/admin/products')
+            revalidatePath('/shop')
+            revalidatePath(`/product/${updateData.slug || existing.slug}`)
+            revalidateTag('products')
+            revalidateTag('featured-products')
+            if (updateData.slug) revalidateTag(`product-${updateData.slug}`)
+            if (existing.slug && existing.slug !== updateData.slug) revalidateTag(`product-${existing.slug}`)
+        } catch (revErr) {
+            console.warn('[updateProduct] Revalidation skipped:', revErr)
+        }
+
+        return { success: true }
+    } catch (err: any) {
+        console.error('[updateProduct] Action Crash:', err)
+        return { success: false, error: `Action Crash: ${err.message || 'Unknown'}` }
     }
 }
 

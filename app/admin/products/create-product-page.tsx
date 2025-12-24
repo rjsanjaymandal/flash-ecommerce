@@ -18,15 +18,20 @@ export default function CreateProductPageClient({ categories }: { categories: Ca
   const handleSubmit = (data: ProductFormValues) => {
     startTransition(async () => {
         try {
-            await createProduct({
+            const result = await createProduct({
                 ...data,
                 slug: data.slug || slugify(data.name),
-                price: data.price // Already a number from Zod
+                price: data.price
             })
-            toast.success('Product created successfully')
-            router.push('/admin/products')
+            
+            if (result.success) {
+                toast.success('Product created successfully')
+                router.push('/admin/products')
+            } else {
+                toast.error('Failed to create product: ' + result.error)
+            }
         } catch (error: any) {
-            toast.error('Failed to create product: ' + error.message)
+            toast.error('System error occurred. Please check logs.')
         }
     })
   }

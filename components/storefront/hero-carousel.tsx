@@ -173,17 +173,18 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
         setIsQuickAddOpen(true)
     }
 
-    // Helper to strip HTML tags
-    const stripHtml = (html: string) => {
-        const tmp = document.createElement("DIV");
-        tmp.innerHTML = html;
-        return tmp.textContent || tmp.innerText || "";
-    }
-
-    // SSR Safe Strip
-    const cleanDescription = (desc: string) => {
-        if (typeof window === 'undefined') return desc.replace(/<[^>]*>?/gm, '')
-        return stripHtml(desc)
+    // Hydration-safe HTML stripping and entity decoding
+    const cleanDescription = (html: string) => {
+        if (!html) return ""
+        return html
+            .replace(/<[^>]*>?/gm, '') // Remove HTML tags
+            .replace(/&amp;/g, '&')    // Decode common entities
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&quot;/g, '"')
+            .replace(/&#39;/g, "'")
+            .replace(/&nbsp;/g, ' ')
+            .trim()
     }
 
 

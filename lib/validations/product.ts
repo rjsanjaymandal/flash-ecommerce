@@ -19,6 +19,7 @@ export const productSchema = z.object({
     mobile: z.string(),
     desktop: z.string()
   }).optional(),
+  expression_tags: z.array(z.string()).default([]),
   is_active: z.boolean().default(true),
   variants: z.array(variantSchema).default([])
 })

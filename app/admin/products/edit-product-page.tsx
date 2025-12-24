@@ -25,6 +25,7 @@ export default function EditProductPageClient({ product, stock, categories }: { 
       category_id: product.category_id || '',
       main_image_url: product.main_image_url || '',
       gallery_image_urls: product.gallery_image_urls || [],
+      expression_tags: product.expression_tags || [],
       is_active: product.is_active ?? true,
       variants: stock.map((s) => ({
           size: s.size,
@@ -36,15 +37,20 @@ export default function EditProductPageClient({ product, stock, categories }: { 
   const handleSubmit = (data: ProductFormValues) => {
     startTransition(async () => {
         try {
-            await updateProduct(product.id, {
+            const result = await updateProduct(product.id, {
                 ...data,
                 slug: data.slug || slugify(data.name),
                 price: data.price
             })
-            toast.success('Product updated successfully')
-            router.push('/admin/products')
-        } catch (error) {
-            toast.error('Failed to update product: ' + (error as Error).message)
+            
+            if (result.success) {
+                toast.success('Product updated successfully')
+                router.push('/admin/products')
+            } else {
+                toast.error('Failed to update product: ' + result.error)
+            }
+        } catch (error: any) {
+            toast.error('System error occurred. Please check logs.')
         }
     })
   }
