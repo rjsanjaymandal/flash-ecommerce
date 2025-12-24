@@ -45,9 +45,13 @@ BEGIN
       RAISE EXCEPTION 'Insufficient stock for product % (size %, color %)', 
         v_item.product_id, COALESCE(v_item.size, 'N/A'), COALESCE(v_item.color, 'N/A');
     END IF;
+    -- 4. Increment sale_count on product
+    UPDATE public.products 
+    SET sale_count = sale_count + v_item.quantity
+    WHERE id = v_item.product_id;
   END LOOP;
 
-  -- 4. Update Order Status
+  -- 5. Update Order Status
   UPDATE public.orders 
   SET 
     status = 'paid', 
@@ -55,7 +59,7 @@ BEGIN
     updated_at = now()
   WHERE id = p_order_id;
 
-  -- 5. Award Loyalty Points
+  -- 6. Award Loyalty Points
   -- 1 point per 100 currency units (e.g. INR)
   IF v_order.user_id IS NOT NULL AND v_order.total >= 100 THEN
     v_points := floor(v_order.total / 100);

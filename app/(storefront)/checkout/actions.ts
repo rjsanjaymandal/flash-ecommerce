@@ -1,4 +1,6 @@
-import { createClient } from '@supabase/supabase-js'
+'use server'
+
+import { createAdminClient } from '@/lib/supabase/admin'
 import { Database } from '@/types/supabase'
 import { CartItem } from '@/store/use-cart-store'
 import { resend } from '@/lib/email/client'
@@ -22,11 +24,8 @@ export async function createOrder(data: {
     discount_amount?: number,
     email?: string
 }) {
-    // Initialize Admin Client
-    const supabase = createClient<Database>(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
+    // Initialize Admin Client (Safe because 'use server' prevents client-side leaks)
+    const supabase = createAdminClient()
 
     // --- SECURITY: Rate Limiting ---
     if (data.user_id) {
@@ -83,13 +82,13 @@ export async function createOrder(data: {
     const shippingFee = serverSubtotal >= 1000 ? 0 : 50
     const finalServerTotal = serverTotal + shippingFee
 
-    // Allow for minor floating point differences (e.g., 1.00 because of JS math)
+    // Allow for minor floating point differences
     if (Math.abs(finalServerTotal - data.total) > 1) {
-        console.error(`[Security] Price mismatch! Server: ${finalServerTotal} (Sub: ${serverSubtotal} - Disc: ${serverDiscount} + Ship: ${shippingFee}), Client: ${data.total}`)
+        console.error(`[Security] Price mismatch! Server: ${finalServerTotal}, Client: ${data.total}`)
         throw new Error("Security check failed: Price mismatch detected. Please refresh your cart.")
     }
 
-    // 1. Create Order
+    // 1. Create Order (Status PENDING)
     const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert({
@@ -115,14 +114,15 @@ export async function createOrder(data: {
 
     if (orderError) throw new Error(`Order creation failed: ${orderError.message}`)
 
-    // 2. Create Order Items & Deduct Stock
+    // 2. Create Order Items
     const orderItems = data.items.map(item => ({
         order_id: order.id,
         product_id: item.productId,
         quantity: item.quantity,
-        unit_price: priceMap[item.productId], // Use server-verified price
+        unit_price: priceMap[item.productId],
         size: item.size,
-        color: item.color
+        color: item.color,
+        name_snapshot: item.name // Ensure snapshot is preserved
     }))
 
     const { error: itemsError } = await supabase
@@ -133,9 +133,8 @@ export async function createOrder(data: {
         throw new Error(`Order items creation failed: ${itemsError.message}`)
     }
 
-    // --- SECURITY: Strict Inventory Check (Hybrid Cache Guard) ---
-    // Before we even try to decrement, we MUST verify stock strictly from DB
-    // This catches the case where the 15m cache said "In Stock" but it's actually 0.
+    // --- SECURITY: Strict Inventory Integrity Check ---
+    // Fast fail if stock is already zero before proceeding to payment
     const { data: stockItems, error: stockCheckError } = await supabase
         .from('product_stock')
         .select('product_id, size, color, quantity')
@@ -143,73 +142,42 @@ export async function createOrder(data: {
 
     if (stockCheckError) throw new Error("Inventory check failed. Please try again.")
 
-    // Map for easy lookup: productId-size-color -> quantity
     const stockMap = new Map<string, number>()
     stockItems?.forEach(item => {
         stockMap.set(`${item.product_id}-${item.size}-${item.color}`, item.quantity || 0)
     })
 
-    // Validate every item
     for (const item of data.items) {
         const key = `${item.productId}-${item.size}-${item.color}`
         const available = stockMap.get(key) || 0
-        
         if (available < item.quantity) {
              throw new Error(`Sold Out: ${item.name} (${item.size}/${item.color}) is no longer available.`)
         }
     }
-    // -----------------------------------------------------------
 
-    // --- INVENTORY: Deduct Stock & Increment Sales ---
-    for (const item of data.items) {
-        try {
-            // 1. Deduct Stock using Atomic RPC
-            const { error: rpcError } = await (supabase as any).rpc('decrement_stock', { 
-                p_product_id: item.productId, 
-                p_size: item.size, 
-                p_color: item.color, 
-                p_quantity: item.quantity 
-            })
+    // NOTE: We NO LONGER decrement stock here. 
+    // Stock decrement is handled ATOMICALLY by the 'process_payment' RPC during verification.
+    // This avoids double-decrements and ensures stock is only reduced for paid orders.
 
-            if (rpcError) {
-                console.error(`Inventory Sync Error for ${item.productId}:`, rpcError)
-                
-                // COMPENSATION LOGIC: Cancel the order immediately
-                await supabase.from('orders').update({ status: 'cancelled' }).eq('id', order.id)
-                
-                if (rpcError.message.includes('Insufficient stock')) {
-                    throw new Error(`Item ${item.name} is out of stock. Order cancelled.`)
-                }
-                throw new Error("Inventory sync failed. Order cancelled.")
-            }
-
-            // 2. Increment sale_count (Fire & Forget, rarely critical)
-            await (supabase as any).rpc('increment_product_sale', { pid: item.productId, qty: item.quantity })
-            
-        } catch (stockErr: any) {
-            console.error(`CRITICAL: Stock deduction failed for order ${order.id}`, stockErr)
-            // Ensure we propagate the error so the client knows
-            // COMPENSATION: Double check cancellation
-            await supabase.from('orders').update({ status: 'cancelled' }).eq('id', order.id)
-            throw new Error(stockErr.message || "Stock reservation failed. Order cancelled.")
-        }
-    }
-
-    // 3. Update Coupon Usage if applicable
+    // 3. Update Coupon Usage count (informational/soft-reserve)
     if (data.coupon_code) {
-        const { data: coupon } = await supabase.from('coupons').select('id, used_count').eq('code', data.coupon_code.toUpperCase()).single()
-        if (coupon) {
-            await supabase.from('coupons').update({ used_count: (coupon.used_count || 0) + 1 }).eq('id', coupon.id)
+        try {
+            const { data: coupon } = await supabase.from('coupons').select('id, used_count').eq('code', data.coupon_code.toUpperCase()).single()
+            if (coupon) {
+                await supabase.from('coupons').update({ used_count: (coupon.used_count || 0) + 1 }).eq('id', coupon.id)
+            }
+        } catch (e) {
+            console.error('Failed to increment coupon usage:', e)
         }
     }
 
-    // 4. Send Confirmation Email (Async/Fire & Forget)
+    // 4. Send Confirmation Email (Async)
     if (data.email) {
         try {
             await resend.emails.send({
-                from: 'Flash <orders@yourdomain.com>', // Update this with verified domain
+                from: 'Flash <orders@flashhfashion.in>', // Using the domain from sitemap
                 to: data.email,
-                subject: `Order Confirmed #${order.id.slice(0,8).toUpperCase()}`,
+                subject: `Order Created #${order.id.slice(0,8).toUpperCase()} - Action Required`,
                 react: OrderConfirmationEmail({
                     orderId: order.id,
                     customerName: data.shipping_name,
@@ -221,10 +189,8 @@ export async function createOrder(data: {
                     total: data.total
                 })
             })
-            console.log(`Email sent to ${data.email}`)
         } catch (emailErr) {
             console.error('Failed to send email:', emailErr)
-            // Don't fail the order for this
         }
     }
 
@@ -232,10 +198,7 @@ export async function createOrder(data: {
 }
 
 export async function validateCoupon(code: string, orderTotal: number) {
-    const supabase = createClient<Database>(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
+    const supabase = createAdminClient()
     
     const { data: coupon, error } = await supabase
         .from('coupons')
