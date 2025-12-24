@@ -8,10 +8,14 @@ import type { Category } from '@/types/store-types'
 
 export type { Category }
 
+/**
+ * Robust Tree Builder
+ * Handles orphan nodes (active categories with inactive parents) 
+ * by treating them as roots.
+ */
 async function fetchCategoriesTree(): Promise<Category[]> {
     const supabase = createStaticClient()
     
-    // 1. Fetch ALL active categories in one flat O(1) query
     const { data: allCategories, error } = await supabase
       .from('categories')
       .select('*')
@@ -21,24 +25,20 @@ async function fetchCategoriesTree(): Promise<Category[]> {
     if (error) throw error
     if (!allCategories) return []
 
-    // 2. Build Tree in O(n) using Map (DSA Optimization)
     const categoryMap = new Map<string, Category>()
     const rootCategories: Category[] = []
 
-    // Initialize Map
     allCategories.forEach((cat) => {
       categoryMap.set(cat.id, { ...cat, children: [] })
     })
 
-    // Link Children to Parents
     allCategories.forEach((cat) => {
       const node = categoryMap.get(cat.id)!
-      if (cat.parent_id) {
-        const parent = categoryMap.get(cat.parent_id)
-        if (parent) {
-          parent.children?.push(node)
-        }
+      // If parent exists and is also in the map (meaning it is active), link it.
+      if (cat.parent_id && categoryMap.has(cat.parent_id)) {
+        categoryMap.get(cat.parent_id)!.children?.push(node)
       } else {
+        // Otherwise, it's a root (or an orphan of an inactive parent)
         rootCategories.push(node)
       }
     })
@@ -50,22 +50,33 @@ export async function getCategoriesTree(): Promise<Category[]> {
     return unstable_cache(
         async () => fetchCategoriesTree(),
         ['categories-tree'],
-        { tags: ['categories'], revalidate: 3600 } // Cache for 1 hour
+        { tags: ['categories'], revalidate: 2592000 } // 30 days, manual clear
     )()
 }
 
-export async function getLinearCategories(): Promise<Category[]> {
-    const supabase = await createClient()
-    const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .order('name')
-    if (error) throw error
-    
-    return (data || []).map((d) => ({
-        ...d,
-        children: []
-    })) as Category[]
+/**
+ * Cached Linear Categories
+ * Used in Admin and Shop views. 
+ */
+export async function getLinearCategories(activeOnly = false): Promise<Category[]> {
+    return unstable_cache(
+        async () => {
+            const supabase = createStaticClient()
+            let query = supabase.from('categories').select('*').order('name')
+            if (activeOnly) {
+                query = query.eq('is_active', true)
+            }
+            const { data, error } = await query
+            if (error) throw error
+            
+            return (data || []).map((d) => ({
+                ...d,
+                children: []
+            })) as Category[]
+        },
+        [`categories-linear-${activeOnly}`],
+        { tags: ['categories'], revalidate: 2592000 }
+    )()
 }
 
 export async function getRootCategories(limit?: number): Promise<Tables<'categories'>[]> {
@@ -89,8 +100,32 @@ export async function getRootCategories(limit?: number): Promise<Tables<'categor
           return data || []
       },
       ['root-categories', key],
-      { tags: ['categories'], revalidate: 3600 }
+      { tags: ['categories'], revalidate: 2592000 }
   )()
+}
+
+/**
+ * Ancestry Check
+ * Ensures 'childId' is not an ancestor of 'parentId' to prevent cycles
+ */
+async function wouldCreateCycle(childId: string, newParentId: string | null): Promise<boolean> {
+    if (!newParentId) return false
+    if (childId === newParentId) return true
+
+    const supabase = createStaticClient()
+    const { data } = await supabase.from('categories').select('id, parent_id')
+    if (!data) return false
+
+    const map = new Map<string, string | null>()
+    data.forEach(c => map.set(c.id, c.parent_id))
+
+    let current: string | null = newParentId
+    while (current) {
+        if (current === childId) return true
+        current = map.get(current) || null
+    }
+
+    return false
 }
 
 export async function createCategory(data: TablesInsert<'categories'>) {
@@ -98,6 +133,7 @@ export async function createCategory(data: TablesInsert<'categories'>) {
     const supabase = await createClient()
     const { error } = await supabase.from('categories').insert(data)
     if (error) throw error
+    
     // @ts-expect-error: revalidateTag expects 1 arg
     revalidateTag('categories')
     revalidatePath('/admin/categories')
@@ -108,13 +144,14 @@ export async function updateCategory(id: string, data: TablesUpdate<'categories'
     await requireAdmin()
     const supabase = await createClient()
 
-    // 1. Prevent circular dependency (self-parenting)
-    if (data.parent_id === id) {
-        throw new Error("A category cannot be its own parent.")
+    // Robust circular dependency check
+    if (data.parent_id !== undefined && await wouldCreateCycle(id, data.parent_id)) {
+        throw new Error("Cannot set parent: This would create a circular dependency loop.")
     }
 
     const { error } = await supabase.from('categories').update(data).eq('id', id)
     if (error) throw error
+    
     // @ts-expect-error: revalidateTag expects 1 arg
     revalidateTag('categories')
     revalidatePath('/admin/categories')
@@ -137,6 +174,7 @@ export async function deleteCategory(id: string) {
 
     const { error } = await supabase.from('categories').delete().eq('id', id)
     if (error) throw error
+    
     // @ts-expect-error: revalidateTag expects 1 arg
     revalidateTag('categories')
     revalidatePath('/admin/categories')

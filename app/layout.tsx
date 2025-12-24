@@ -48,33 +48,14 @@ export const metadata: Metadata = {
   },
 }
 
-import { createClient } from '@/lib/supabase/server'
-
+import { getUnifiedAuth } from '@/lib/supabase/auth-helper'
 
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const supabase = await createClient()
-  
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
-
-  let profile = null
-  if (user) {
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single()
-    profile = data
-  }
+  const { user, session, profile } = await getUnifiedAuth()
 
   return (
     <html lang="en" suppressHydrationWarning>

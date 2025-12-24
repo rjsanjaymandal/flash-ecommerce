@@ -21,20 +21,47 @@ import {
     Loader2
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { searchProducts } from '@/app/actions/search-actions'
+import { searchProducts, getSearchIndex } from '@/app/actions/search-actions'
 import { useSearchStore } from '@/store/use-search-store'
 import { formatCurrency } from '@/lib/utils'
 import { useDebounce } from '@/hooks/use-debounce'
-import NextImage from 'next/image'
-import imageLoader from '@/lib/image-loader'
+import FlashImage from '@/components/ui/flash-image'
 
 export function CommandMenu() {
   const { isOpen, setOpen, toggle } = useSearchStore()
   const [query, setQuery] = useState('')
   const debouncedQuery = useDebounce(query, 300)
   const [items, setItems] = useState<any[]>([])
+  const [initialIndex, setInitialIndex] = useState<any[]>([])
   const [isPending, startTransition] = useTransition()
   const router = useRouter()
+
+  // Pre-warm the search index on open
+  useEffect(() => {
+    if (isOpen && initialIndex.length === 0) {
+        getSearchIndex().then(setInitialIndex)
+    }
+  }, [isOpen, initialIndex.length])
+
+  // Instant Local Search Effect
+  useEffect(() => {
+    if (query.length === 0) {
+      setItems([])
+      return
+    }
+
+    // Phase 1: Local Search (Instant)
+    if (initialIndex.length > 0) {
+        const local = initialIndex.filter(p => 
+            p.name.toLowerCase().includes(query.toLowerCase()) || 
+            p.description?.toLowerCase().includes(query.toLowerCase())
+        ).slice(0, 5)
+        
+        if (local.length > 0) {
+            setItems(local)
+        }
+    }
+  }, [query, initialIndex])
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -105,8 +132,7 @@ export function CommandMenu() {
                         className="group rounded-2xl mx-1 mb-2 cursor-pointer py-3 hover:bg-white/5 aria-selected:bg-white/10 transition-colors"
                     >
                         <div className="relative h-14 w-14 rounded-xl overflow-hidden border border-white/10 group-hover:border-primary/50 transition-colors mr-4 shrink-0 bg-white/5">
-                            {item.main_image_url && <NextImage 
-                                loader={imageLoader}
+                            {item.main_image_url && <FlashImage 
                                 src={item.main_image_url} 
                                 className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" 
                                 alt={item.name} 

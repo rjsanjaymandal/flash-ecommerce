@@ -1,10 +1,13 @@
-import { CategoryVibes } from "@/components/storefront/category-vibes"
 import { getRootCategories } from "@/lib/services/category-service"
-import { NewsletterSection } from "@/components/marketing/newsletter-section"
-import { AsyncFeaturedGrid } from "@/components/storefront/async-featured-grid"
-import { AsyncPersonalizedPicks } from "@/components/storefront/async-personalized-picks"
 import { Suspense } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
+import dynamic from "next/dynamic"
+
+// Lazy load non-ATF (Above The Fold) components
+const CategoryVibes = dynamic(() => import("@/components/storefront/category-vibes").then(mod => mod.CategoryVibes))
+const NewsletterSection = dynamic(() => import("@/components/marketing/newsletter-section").then(mod => mod.NewsletterSection))
+const AsyncFeaturedGrid = dynamic(() => import("@/components/storefront/async-featured-grid").then(mod => mod.AsyncFeaturedGrid))
+const AsyncPersonalizedPicks = dynamic(() => import("@/components/storefront/async-personalized-picks").then(mod => mod.AsyncPersonalizedPicks))
 
 // Force rebuild
 

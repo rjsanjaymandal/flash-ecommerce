@@ -236,7 +236,7 @@ export async function getProducts(filter: ProductFilter = {}): Promise<Paginated
     return unstable_cache(
         async () => fetchProducts(filter),
         ['products-list', key],
-        { tags: ['products'], revalidate: 60 } // Cache for 60s
+        { tags: ['products'], revalidate: 2592000 } // Cache for 30 days
     )()
 }
 
@@ -267,7 +267,7 @@ export async function getFeaturedProducts(): Promise<Product[]> {
             })
         },
         ['featured-products'],
-        { tags: ['featured-products'], revalidate: 3600 } 
+        { tags: ['featured-products'], revalidate: 2592000 } 
     )()
 }
 
@@ -293,7 +293,7 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
     return unstable_cache(
         async () => fetchProductBySlug(slug),
         ['product-slug', slug],
-        { tags: [`product-${slug}`, 'products'], revalidate: 60 }
+        { tags: [`product-${slug}`, 'products'], revalidate: 2592000 }
     )()
 }
 
@@ -327,6 +327,8 @@ export async function createProduct(productData: TablesInsert<'products'> & { va
     
     // @ts-expect-error: revalidateTag expects 1 arg
     revalidateTag('products')
+    // @ts-expect-error: revalidateTag expects 1 arg
+    revalidateTag('featured-products')
     revalidatePath('/admin/products')
     revalidatePath('/shop')
     return data
@@ -409,6 +411,8 @@ export async function updateProduct(id: string, productData: TablesUpdate<'produ
     try {
         // @ts-expect-error: revalidateTag expects 1 arg
         revalidateTag('products')
+        // @ts-expect-error: revalidateTag expects 1 arg
+        revalidateTag('featured-products')
         
         // Revalidate NEW slug
         if (prod.slug) { 
@@ -440,6 +444,8 @@ export async function deleteProduct(id: string) {
     if (error) throw error
     // @ts-expect-error: revalidateTag expects 1 arg
     revalidateTag('products')
+    // @ts-expect-error: revalidateTag expects 1 arg
+    revalidateTag('featured-products')
     revalidatePath('/admin/products')
     revalidatePath('/shop')
 }
@@ -546,7 +552,7 @@ export async function getRelatedProducts(product: Product): Promise<Product[]> {
             })
         },
         ['related-products', key],
-        { tags: ['products'], revalidate: 60 }
+        { tags: ['products', 'related-products'], revalidate: 2592000 }
     )()
 }
 

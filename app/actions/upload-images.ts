@@ -104,7 +104,8 @@ export async function uploadOptimizedImage(
 
   const urls: Partial<OptimizedImages> = {}
 
-  for (const upload of uploads) {
+  // Parallelize Uploads (Cost & Performance Optimization)
+  await Promise.all(uploads.map(async (upload) => {
     const fileName = `${baseUuid}-${upload.name}.webp`
     const { error } = await supabase.storage
       .from(bucketName)
@@ -124,7 +125,7 @@ export async function uploadOptimizedImage(
       .getPublicUrl(fileName)
       
     urls[upload.name as keyof OptimizedImages] = publicUrl
-  }
+  }))
 
   return urls as OptimizedImages
 }

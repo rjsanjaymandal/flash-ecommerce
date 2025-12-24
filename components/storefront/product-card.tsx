@@ -31,6 +31,7 @@ const WaitlistDialog = dynamic(() => import('@/components/products/waitlist-dial
 
 import type { Product } from '@/lib/services/product-service'
 import { checkPreorderStatus, togglePreorder } from '@/app/actions/preorder'
+import { prefetchProductAction } from '@/app/actions/prefetch-product'
 import { useRealTimeStock } from '@/hooks/use-real-time-stock'
 
 interface ProductCardProps {
@@ -363,12 +364,20 @@ export function ProductCard({ product, showRating = true, priority = false, onWa
     }
   }, [product.created_at])
 
+    const handleMouseEnter = () => {
+        setIsHovered(true)
+        if (product.slug) {
+            // Predictively warm the cache
+            prefetchProductAction(product.slug)
+        }
+    }
+
   return (
     <>
     <motion.div 
         whileHover={{ y: -4 }}
         className="group relative flex flex-col gap-2"
-        onMouseEnter={() => setIsHovered(true)}
+        onMouseEnter={handleMouseEnter}
         onMouseLeave={() => setIsHovered(false)}
     >
         {/* Image Container */}

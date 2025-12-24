@@ -23,7 +23,7 @@ export default async function ShopPage({
   const params = await searchParams
   
   // Categories are cached (fast)
-  const categories = await getLinearCategories()
+  const categories = await getLinearCategories(true)
 
   return (
     <div className="min-h-screen bg-background pt-4 pb-20">
