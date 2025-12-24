@@ -4,8 +4,7 @@ import { useQuery } from "@tanstack/react-query"
 import { getUpsellProducts } from "@/app/actions/cart-upsell"
 import { useCartStore } from "@/store/use-cart-store"
 import { Loader2, Plus, ShoppingBag } from "lucide-react"
-import NextImage from "next/image"
-import imageLoader from "@/lib/image-loader"
+import FlashImage from "@/components/ui/flash-image"
 import { formatCurrency } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { motion } from "framer-motion"
@@ -83,8 +82,7 @@ export function CartUpsell() {
                     >
                         <div className="aspect-[3/4] rounded-xl overflow-hidden bg-secondary/5 border border-border/40 relative mb-2 group/img">
                              {product.main_image_url ? (
-                                <NextImage 
-                                    loader={imageLoader}
+                                <FlashImage 
                                     src={product.main_image_url} 
                                     alt={product.name} 
                                     fill 

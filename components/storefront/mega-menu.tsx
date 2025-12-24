@@ -2,8 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
-import NextImage from 'next/image'
-import imageLoader from '@/lib/image-loader'
+import FlashImage from '@/components/ui/flash-image'
 import { NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuTrigger } from '@/components/ui/navigation-menu'
 import { cn } from '@/lib/utils'
 
@@ -53,8 +52,7 @@ export function MegaMenu({ category }: MegaMenuProps) {
             <div className="col-span-8">
                 <Link href={`/shop?category=${category.id}`} className="group/card block relative h-full w-full overflow-hidden rounded-lg bg-muted">
                     {category.image_url ? (
-                        <NextImage 
-                            loader={imageLoader}
+                        <FlashImage 
                             src={category.image_url} 
                             alt={category.name} 
                             fill

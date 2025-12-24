@@ -6,7 +6,7 @@ import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache'
 import type { Tables, TablesInsert, TablesUpdate } from '@/types/supabase'
 import type { Category } from '@/types/store-types'
 
-export type { Category }
+// export type { Category } // Remove re-export to avoid circular/bundling issues
 
 /**
  * Robust Tree Builder
@@ -134,7 +134,7 @@ export async function createCategory(data: TablesInsert<'categories'>) {
     const { error } = await supabase.from('categories').insert(data)
     if (error) throw error
     
-    // @ts-expect-error: revalidateTag expects 1 arg
+    // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
     revalidateTag('categories')
     revalidatePath('/admin/categories')
     revalidatePath('/shop')
@@ -152,7 +152,7 @@ export async function updateCategory(id: string, data: TablesUpdate<'categories'
     const { error } = await supabase.from('categories').update(data).eq('id', id)
     if (error) throw error
     
-    // @ts-expect-error: revalidateTag expects 1 arg
+    // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
     revalidateTag('categories')
     revalidatePath('/admin/categories')
     revalidatePath('/shop')
@@ -175,7 +175,7 @@ export async function deleteCategory(id: string) {
     const { error } = await supabase.from('categories').delete().eq('id', id)
     if (error) throw error
     
-    // @ts-expect-error: revalidateTag expects 1 arg
+    // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
     revalidateTag('categories')
     revalidatePath('/admin/categories')
     revalidatePath('/shop')

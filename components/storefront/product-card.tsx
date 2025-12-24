@@ -116,87 +116,88 @@ export function ProductCard({ product, showRating = true, priority = false, onWa
   const [savedGuestEmail, setSavedGuestEmail] = useState('')
   const [isUnjoinDialogOpen, setIsUnjoinDialogOpen] = useState(false)
   
-    const [isQuickAddOpen, setIsQuickAddOpen] = useState(false)
-
-    const handleAddToCart = async (e: React.MouseEvent) => {
-      e.preventDefault()
-      e.stopPropagation()
-      
-      if (hasMultipleOptions) {
-          setIsQuickAddOpen(true)
-      } else {
-           // Standard add to cart for single variant products
-           const defaultStock = stock[0]
-           const maxQty = defaultStock?.quantity || 0 // Default to 0 if no stock info
-           
-           if (maxQty === 0) {
-               togglePreorder(product.id)
-               return
-           }
-
-           // Prevent double clicks
-           if (isAddingToCart) return
-
-           setIsAddingToCart(true)
-           try {
-               await addToCart({
-                    productId: product.id,
-                    name: product.name,
-                    price: product.price,
-                    image: product.main_image_url || '',
-                    size: defaultStock?.size || 'Standard',
-                    color: defaultStock?.color || 'Standard',
-                    quantity: 1,
-                    maxQuantity: maxQty
-                })
-                toast.success("Added to Cart")
-                setIsCartOpen(true)
-           } catch (error) {
-               // Store handles toast errors usually, but good to be safe
-           } finally {
-               setIsAddingToCart(false)
-           }
-      }
-  }
-
-    const [isBuyNowMode, setIsBuyNowMode] = useState(false)
+  const [isQuickAddOpen, setIsQuickAddOpen] = useState(false)
+  const [isBuyNowMode, setIsBuyNowMode] = useState(false)
     const [isAddingToCart, setIsAddingToCart] = useState(false)
 
-    const handleBuyNow = (e: React.MouseEvent) => {
-      e.preventDefault()
-      e.stopPropagation()
-      
-      if (hasMultipleOptions) {
-          setIsBuyNowMode(true)
-          setIsQuickAddOpen(true)
-      } else {
-           // Single Variant Buy Now
-           const defaultStock = stock[0]
-           const maxQty = defaultStock?.quantity || 0
-           
-           if (maxQty === 0) {
-               togglePreorder(product.id)
-               return
-           }
+    const handleBuyNow = async (e: React.MouseEvent) => {
+        e.preventDefault()
+        e.stopPropagation()
+        
+        if (hasMultipleOptions) {
+            setIsBuyNowMode(true)
+            setIsQuickAddOpen(true)
+            return
+        }
 
-           setIsAddingToCart(true)
-           addToCart({
+        // Pick first available variant
+        const firstStock = realTimeStock.find((s: any) => s.quantity > 0)
+        if (!firstStock) {
+            toast.error("No stock available")
+            return
+        }
+
+        setIsAddingToCart(true)
+        try {
+            await addToCart({
                 productId: product.id,
                 name: product.name,
                 price: product.price,
                 image: product.main_image_url || '',
-                size: defaultStock?.size || 'Standard',
-                color: defaultStock?.color || 'Standard',
+                size: firstStock.size || 'Standard',
+                color: firstStock.color || 'Standard',
                 quantity: 1,
-                maxQuantity: maxQty
-            }).then(() => {
-                router.push('/checkout')
-            }).finally(() => {
-                // Keep loading until redirect happens for smoother feel, or reset if error logic existed
-                // setIsAddingToCart(false) 
+                maxQuantity: firstStock.quantity
+            }, { openCart: false, showToast: false })
+            
+            router.push('/checkout')
+        } catch (error) {
+            toast.error("Failed to proceed to checkout")
+        } finally {
+            setIsAddingToCart(false)
+        }
+    }
+    
+    const handleAddToCart = async (e: React.MouseEvent) => {
+        e.preventDefault()
+        e.stopPropagation()
+        
+        if (hasMultipleOptions) {
+            setIsBuyNowMode(false)
+            setIsQuickAddOpen(true)
+            return
+        }
+
+        // Pick first available variant
+        const firstStock = realTimeStock.find((s: any) => s.quantity > 0)
+        if (!firstStock) {
+            togglePreorder(product.id) // If no stock, offer preorder
+            return
+        }
+
+        // Prevent double clicks
+        if (isAddingToCart) return
+
+        setIsAddingToCart(true)
+        try {
+            await addToCart({
+                productId: product.id,
+                name: product.name,
+                price: product.price,
+                image: product.main_image_url || '',
+                size: firstStock.size || 'Standard',
+                color: firstStock.color || 'Standard',
+                quantity: 1,
+                maxQuantity: firstStock.quantity
             })
-      }
-  }
+            toast.success("Added to Cart")
+            setIsCartOpen(true)
+        } catch (error) {
+            // Error handled by store
+        } finally {
+            setIsAddingToCart(false)
+        }
+    }
 
   // Helper to get or create guest ID
   const getGuestId = () => {

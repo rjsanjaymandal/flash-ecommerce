@@ -9,8 +9,7 @@ import { getSearchIndex } from '@/app/actions/search-products'
 import { cn, formatCurrency } from '@/lib/utils'
 import { useProductSearch } from '@/hooks/use-product-search'
 import { motion, AnimatePresence } from 'framer-motion'
-import NextImage from 'next/image'
-import imageLoader from '@/lib/image-loader'
+import FlashImage from '@/components/ui/flash-image'
 
 interface SearchOverlayProps {
     isOpen: boolean
@@ -182,8 +181,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                                             {/* Image: Small on mobile, Aspect Ratio on Desktop */}
                                             <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md border border-border/50 bg-secondary sm:aspect-3/4 sm:h-auto sm:w-full sm:rounded-xl">
                                                 {product.display_image ? (
-                                                    <NextImage 
-                                                        loader={imageLoader}
+                                                    <FlashImage 
                                                         src={product.display_image} 
                                                         alt={product.name}
                                                         fill

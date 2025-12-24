@@ -8,9 +8,7 @@ import { Suspense } from 'react'
 // Force dynamic to ensure stock status is always fresh for the user
 export const dynamic = 'force-dynamic'
 
-export default async function ShopPage({
-  searchParams,
-}: {
+export default async function ShopPage(props: {
   searchParams: Promise<{ 
     category?: string; 
     sort?: string; 
@@ -20,9 +18,7 @@ export default async function ShopPage({
     color?: string;
   }>
 }) {
-  const params = await searchParams
-  
-  // Categories are cached (fast)
+  const searchParams = await props.searchParams
   const categories = await getLinearCategories(true)
 
   return (
@@ -42,7 +38,7 @@ export default async function ShopPage({
 
             {/* Product Grid Area with Suspense Streaming */}
             <Suspense fallback={<ProductGridSkeleton />}>
-                <ProductGrid params={params} />
+                <ProductGrid params={searchParams} />
             </Suspense>
         </div>
       </div>

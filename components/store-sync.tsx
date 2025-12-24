@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/context/auth-context'
 import { useCartStore, CartItem } from '@/store/use-cart-store'
 import { useWishlistStore, WishlistItem } from '@/store/use-wishlist-store'
+import { useStockStore } from '@/store/use-stock-store'
 import { toast } from 'sonner'
 
 export function StoreSync() {
@@ -231,11 +232,7 @@ export function StoreSync() {
               const { product_id, size, color, quantity } = payload.new as any
               
               // 1. Update Global Stock Store (UI will react immediately)
-              // Dynamically import to avoid circular dep issues during initialization if any, 
-              // though importing at top level is fine usually.
-              // We'll use the imported function.
-              const updateStock = require('@/store/use-stock-store').useStockStore.getState().updateStock
-              updateStock(product_id, size, color, quantity)
+              useStockStore.getState().updateStock(product_id, size, color, quantity)
 
               // 2. Check Cart (Existing Logic)
               const currentItems = useCartStore.getState().items

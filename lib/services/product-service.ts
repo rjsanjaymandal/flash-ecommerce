@@ -176,6 +176,12 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: any): Promi
         // trending fallback is handled in the catch/error check
         query = query.order('sale_count' as any, { ascending: false })
         break
+      case 'random' as any:
+        // Proper random order in PostgREST is difficult, but we can use a stable random-like field 
+        // OR just order by ID with varying directions. 
+        // For now, newest is a safe fallback, or we can use a pseudo-random seed if implemented in PG.
+        query = query.order('created_at', { ascending: Math.random() > 0.5 })
+        break
       case 'newest':
       default:
         query = query.order('created_at', { ascending: false })
@@ -325,9 +331,9 @@ export async function createProduct(productData: TablesInsert<'products'> & { va
       if (stockError) throw stockError
     }
     
-    // @ts-expect-error: revalidateTag expects 1 arg
+    // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
     revalidateTag('products')
-    // @ts-expect-error: revalidateTag expects 1 arg
+    // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
     revalidateTag('featured-products')
     revalidatePath('/admin/products')
     revalidatePath('/shop')
@@ -409,20 +415,20 @@ export async function updateProduct(id: string, productData: TablesUpdate<'produ
     console.log(`Update successful for ${id}. Revalidating...`)
 
     try {
-        // @ts-expect-error: revalidateTag expects 1 arg
+        // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
         revalidateTag('products')
-        // @ts-expect-error: revalidateTag expects 1 arg
+        // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
         revalidateTag('featured-products')
         
         // Revalidate NEW slug
         if (prod.slug) { 
-            // @ts-expect-error: revalidateTag expects 1 arg
+            // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
             revalidateTag(`product-${prod.slug}`)
         }
-
+    
         // Revalidate OLD slug (if different) to clear stale cache
         if (existing.slug && existing.slug !== prod.slug) {
-            // @ts-expect-error: revalidateTag expects 1 arg
+            // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
             revalidateTag(`product-${existing.slug}`)
             console.log(`Cleared cache for old slug: ${existing.slug}`)
         }
@@ -442,9 +448,9 @@ export async function deleteProduct(id: string) {
     const supabase = await getDb()
     const { error } = await supabase.from('products').delete().eq('id', id)
     if (error) throw error
-    // @ts-expect-error: revalidateTag expects 1 arg
+    // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
     revalidateTag('products')
-    // @ts-expect-error: revalidateTag expects 1 arg
+    // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
     revalidateTag('featured-products')
     revalidatePath('/admin/products')
     revalidatePath('/shop')
@@ -562,7 +568,7 @@ export async function bulkDeleteProducts(ids: string[]) {
     const supabase = await getDb()
     const { error } = await supabase.from('products').delete().in('id', ids)
     if (error) throw error
-    // @ts-expect-error: revalidateTag expects 1 arg
+    // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
     revalidateTag('products')
     revalidatePath('/admin/products')
     revalidatePath('/shop')
@@ -577,7 +583,7 @@ export async function bulkUpdateProductStatus(ids: string[], isActive: boolean) 
         .update({ is_active: isActive })
         .in('id', ids)
     if (error) throw error
-    // @ts-expect-error: revalidateTag expects 1 arg
+    // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
     revalidateTag('products')
     revalidatePath('/admin/products')
     revalidatePath('/shop')

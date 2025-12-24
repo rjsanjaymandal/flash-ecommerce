@@ -21,7 +21,7 @@ interface CartState {
   items: CartItem[]
   isCartOpen: boolean
   isLoading: boolean
-  addItem: (item: CartItem) => Promise<void>
+  addItem: (item: CartItem, options?: { openCart?: boolean, showToast?: boolean }) => Promise<void>
   removeItem: (productId: string, size: string, color: string) => Promise<void>
   updateQuantity: (productId: string, size: string, color: string, quantity: number) => Promise<void>
   clearCart: () => Promise<void>
@@ -39,7 +39,7 @@ export const useCartStore = create<CartState>()(
       isCartOpen: false,
       isLoading: true,
       
-      addItem: async (item) => {
+  addItem: async (item, options = { openCart: true, showToast: true }) => {
         const { data: { user } } = await supabase.auth.getUser()
         const currentItems = get().items
         const existingIndex = currentItems.findIndex(
@@ -54,12 +54,11 @@ export const useCartStore = create<CartState>()(
 
         if (existingIndex > -1) {
           const currentQty = newItems[existingIndex].quantity
-          // Update maxQuantity with fresh data from payload
           newItems[existingIndex].maxQuantity = item.maxQuantity
           const maxQty = item.maxQuantity || 10
           
           if (currentQty >= maxQty) {
-              toast.error("Max available stock reached")
+              if (options.showToast) toast.error("Max available stock reached")
               return
           }
 
@@ -76,16 +75,23 @@ export const useCartStore = create<CartState>()(
         }
         
         // Optimistic Update
-        set({ items: newItems, isCartOpen: true })
-        toast.success("Added to cart")
+        set({ 
+            items: newItems, 
+            isCartOpen: options.openCart ?? true 
+        })
+        
+        if (options.showToast) {
+            toast.success("Added to cart")
+        }
 
         if (user) {
+            const finalIndex = existingIndex > -1 ? existingIndex : newItems.length - 1
             const dbItem = {
                 user_id: user.id,
                 product_id: item.productId,
                 size: item.size,
                 color: item.color,
-                quantity: newItems[existingIndex > -1 ? existingIndex : newItems.length - 1].quantity
+                quantity: newItems[finalIndex].quantity
             }
             const { error } = await supabase
                 .from('cart_items')
@@ -93,7 +99,6 @@ export const useCartStore = create<CartState>()(
             
             if (error) {
                 console.error("Failed to sync cart item", error)
-                toast.error("Failed to save cart remotely")
             }
         }
       },

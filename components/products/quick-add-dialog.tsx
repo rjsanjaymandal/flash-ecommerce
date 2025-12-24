@@ -73,7 +73,7 @@ export function QuickAddDialog({ product, open, onOpenChange, buyNowMode = false
             color: finalColor,
             quantity: 1,
             maxQuantity: maxQuantity
-        })
+        }, { openCart: !buyNowMode, showToast: !buyNowMode })
         
         if (buyNowMode) {
              router.push('/checkout')

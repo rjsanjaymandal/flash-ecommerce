@@ -4,10 +4,9 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence, PanInfo, useMotionValue, useTransform } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import Image from 'next/image'
 import { BrandBadge } from './brand-badge'
 import { BrandGlow } from './brand-glow'
-import imageLoader from '@/lib/image-loader'
+import FlashImage from '@/components/ui/flash-image'
 import { ChevronLeft, ChevronRight, ShoppingBag, ArrowRight } from 'lucide-react'
 import { cn, formatCurrency } from '@/lib/utils'
 import { useCartStore } from '@/store/use-cart-store'
@@ -295,8 +294,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                                 animate={{ scale: 1, opacity: 1 }}
                                 transition={{ duration: 6, ease: "linear" }}
                             >
-                                    <Image 
-                                        loader={imageLoader}
+                                    <FlashImage 
                                         src={currentProduct.main_image_url} 
                                         alt={currentProduct.name} 
                                         fill
@@ -350,8 +348,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                          )}
 
                          {p.main_image_url && (
-                             <Image 
-                                loader={imageLoader}
+                             <FlashImage 
                                 src={p.main_image_url}
                                 alt={p.name}
                                 fill

@@ -4,14 +4,13 @@ import { useCartStore, selectCartTotal } from "@/store/use-cart-store"
 import { X, Minus, Plus, ShoppingBag, ArrowRight, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import NextImage from "next/image"
+import FlashImage from "@/components/ui/flash-image"
 import { cn, formatCurrency } from "@/lib/utils"
 import { FreeShippingBar } from "@/components/cart/free-shipping-bar"
 import { CartUpsell } from "@/components/cart/cart-upsell"
 import { AnimatePresence, motion } from "framer-motion"
 import { AlertCircle } from "lucide-react"
 import { toast } from "sonner"
-import imageLoader from "@/lib/image-loader"
 
 export function CartDrawer() {
   const items = useCartStore((state) => state.items)
@@ -88,8 +87,7 @@ export function CartDrawer() {
                             >
                                 <div className="h-28 w-24 bg-secondary/5 rounded-xl overflow-hidden shrink-0 border border-border/40 relative group/img">
                                     {item.image ? (
-                                        <NextImage 
-                                            loader={imageLoader}
+                                        <FlashImage 
                                             src={item.image} 
                                             alt={item.name} 
                                             width={96} 

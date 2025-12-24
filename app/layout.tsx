@@ -6,6 +6,7 @@ import './globals.css'
 import { Providers } from './providers'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
 import { OrganizationJsonLd } from '@/components/seo/organization-json-ld'
+import { getUnifiedAuth } from '@/lib/supabase/auth-helper'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -48,7 +49,7 @@ export const metadata: Metadata = {
   },
 }
 
-import { getUnifiedAuth } from '@/lib/supabase/auth-helper'
+
 
 export default async function RootLayout({
   children,

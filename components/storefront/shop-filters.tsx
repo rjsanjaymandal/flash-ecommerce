@@ -21,7 +21,7 @@ const COLORS = [
     { name: "Beige", value: "beige", class: "bg-[#F5F5DC] border border-border" },
 ]
 
-export function ShopFilters({ categories }: { categories: any[] }) {
+export function ShopFilters({ categories }: { categories: Category[] }) {
     return (
         <>
             {/* Mobile: Floating Filter Action Button */}
@@ -56,7 +56,7 @@ export function ShopFilters({ categories }: { categories: any[] }) {
     )
 }
 
-function FilterContent({ categories }: { categories: any[] }) {
+function FilterContent({ categories }: { categories: Category[] }) {
     // State
     const [minPrice, setMinPrice] = useQueryState('min_price', parseAsInteger)
     const [maxPrice, setMaxPrice] = useQueryState('max_price', parseAsInteger)

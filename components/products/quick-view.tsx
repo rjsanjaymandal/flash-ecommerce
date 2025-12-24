@@ -9,6 +9,7 @@ import { useCartStore } from '@/store/use-cart-store'
 import { toast } from 'sonner'
 import Link from 'next/link'
 import FlashImage from '@/components/ui/flash-image'
+import { useRouter } from 'next/navigation'
 
 // Can accept a subset of product data
 interface QuickViewProps {
@@ -17,6 +18,7 @@ interface QuickViewProps {
 
 export function QuickView({ product }: QuickViewProps) {
     const [isOpen, setIsOpen] = useState(false)
+    const router = useRouter()
     const addItem = useCartStore((state) => state.addItem)
     const [selectedSize, setSelectedSize] = useState(product.size_options?.[0] || 'M')
     const [selectedColor, setSelectedColor] = useState(product.color_options?.[0] || 'Standard')
@@ -91,12 +93,36 @@ export function QuickView({ product }: QuickViewProps) {
                              </div>
                         </div>
 
-                        <div className="flex gap-4 pt-4">
-                            <Button size="lg" className="flex-1 rounded-full text-base h-12" onClick={handleAddToCart}>
-                                <ShoppingCart className="mr-2 h-4 w-4" /> Add to Cart
-                            </Button>
-                            <Button size="lg" variant="outline" className="flex-1 rounded-full text-base h-12" asChild>
-                                <Link href={`/product/${product.slug || product.id}`}>View Details</Link>
+                        <div className="flex flex-col gap-3 pt-4">
+                            <div className="flex gap-3">
+                                <Button size="lg" className="flex-1 rounded-xl text-sm font-black uppercase tracking-widest h-12" onClick={handleAddToCart}>
+                                    <ShoppingCart className="mr-2 h-4 w-4" /> Add to Cart
+                                </Button>
+                                <Button size="lg" variant="outline" className="flex-1 rounded-xl text-sm font-black uppercase tracking-widest h-12" asChild>
+                                    <Link href={`/product/${product.slug || product.id}`}>Details</Link>
+                                </Button>
+                            </div>
+                            <Button 
+                                size="lg" 
+                                className="w-full rounded-xl text-sm font-black uppercase tracking-widest h-12 gradient-primary shadow-lg shadow-primary/20" 
+                                onClick={async () => {
+                                    const stockItem = product.product_stock?.find((item: any) => item.size === selectedSize && item.color === selectedColor)
+                                    const maxQuantity = stockItem?.quantity || 10
+                                    await addItem({
+                                        productId: product.id,
+                                        name: product.name,
+                                        price: product.price,
+                                        image: product.main_image_url,
+                                        size: selectedSize,
+                                        color: selectedColor,
+                                        quantity: 1,
+                                        maxQuantity: maxQuantity
+                                    }, { openCart: false, showToast: false })
+                                    setIsOpen(false)
+                                    router.push('/checkout')
+                                }}
+                            >
+                                Buy Now
                             </Button>
                         </div>
                     </div>

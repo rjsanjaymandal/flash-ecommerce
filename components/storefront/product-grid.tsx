@@ -56,6 +56,11 @@ export async function ProductGrid({ params }: { params: any }) {
                             Price High
                         </Button>
                     </Link>
+                    <Link href={{ query: { ...params, sort: 'random' } }}>
+                        <Button variant={params.sort === 'random' ? "secondary" : "ghost"} size="sm" className={cn("h-8 rounded-full text-xs font-bold transition-all", params.sort === 'random' && "bg-primary text-primary-foreground hover:bg-primary/90 shadow-md")}>
+                            Shuffle
+                        </Button>
+                    </Link>
                 </div>
             </div>
 

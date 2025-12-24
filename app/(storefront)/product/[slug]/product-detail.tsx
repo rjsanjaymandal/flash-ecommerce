@@ -22,6 +22,7 @@ import { motion } from 'framer-motion'
 import { useRealTimeStock, StockItem } from '@/hooks/use-real-time-stock'
 import { useAuth } from '@/context/auth-context'
 import { WaitlistDialog } from '@/components/products/waitlist-dialog'
+import { useRouter } from 'next/navigation'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -66,6 +67,7 @@ type ProductDetailProps = {
 }
 
 export function ProductDetailClient({ product, initialReviews }: ProductDetailProps) {
+    const router = useRouter()
     const addToCart = useCartStore((state) => state.addItem)
     const addItem = useWishlistStore((state) => state.addItem)
     const removeItem = useWishlistStore((state) => state.removeItem)
@@ -234,7 +236,7 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
        const previousState = true
        setIsOnWaitlist(false) // Optimistic remove
        toast.success("Removed from waitlist.") 
-
+ 
        try {
            const result = await togglePreorder(product.id)
            
@@ -276,18 +278,17 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
            setIsLoadingWaitlist(false)
        }
     }
-
-    const handleAddToCart = () => {
+    const handleAddToCart = async (options = { openCart: true, showToast: true }) => {
         if (!selectedSize || !selectedColor) {
             toast.error("Please select a size and color")
-            return
+            return false
         }
         if (maxQty <= 0) {
             toast.error("Selected combination is out of stock")
-            return
+            return false
         }
         try {
-            addToCart({
+            await addToCart({
                 productId: product.id,
                 name: product.name,
                 price: product.price,
@@ -296,20 +297,19 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
                 color: selectedColor,
                 quantity: quantity,
                 maxQuantity: maxQty
-            })
-            toast.success("Added to Bag")
+            }, options)
+            return true
         } catch (err) {
-            toast.error("Failed to add to cart")
+            toast.error("Failed to add to bag")
+            return false
         }
     }
 
-    const handleBuyNow = () => {
-        if (!selectedSize || !selectedColor) {
-            toast.error("Please select a size and color")
-            return
+    const handleBuyNow = async () => {
+        const success = await handleAddToCart({ openCart: false, showToast: false })
+        if (success) {
+            router.push('/checkout')
         }
-        handleAddToCart()
-        window.location.href = '/checkout'
     }
 
     // FAQ Data
@@ -330,6 +330,7 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
                 isOnWaitlist={isOnWaitlist}
                 disabled={isOutOfStock ? isLoadingWaitlist : (!selectedSize || !selectedColor)}
                 onAddToCart={handleAddToCart}
+                onBuyNow={handleBuyNow}
                 onPreOrder={handlePreOrder}
             />
 
