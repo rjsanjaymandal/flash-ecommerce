@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
+import { format } from 'date-fns'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Trash2, Search, ArrowUpDown, Clock, ExternalLink, Mail, Users, DollarSign, ShoppingBag, TrendingUp, Bell } from 'lucide-react'
@@ -70,7 +71,7 @@ export function WaitlistClient({ initialPreorders, stats }: { initialPreorders: 
         const csvContent = [
             headers.join(","),
             ...filtered.map(p => [
-                new Date(p.created_at).toLocaleDateString(),
+                format(new Date(p.created_at), 'MMM dd, yyyy'),
                 `"${p.product_name.replace(/"/g, '""')}"`,
                 p.product_stock,
                 `"${p.user_name.replace(/"/g, '""')}"`,
@@ -319,7 +320,7 @@ export function WaitlistClient({ initialPreorders, stats }: { initialPreorders: 
                                         <TableCell className="text-muted-foreground font-medium text-xs">
                                             <div className="flex items-center gap-1" suppressHydrationWarning>
                                                 <Clock className="h-3 w-3 opacity-50" />
-                                                {new Date(item.created_at).toLocaleDateString()}
+                                                {format(new Date(item.created_at), 'MMM dd, yyyy')}
                                             </div>
                                         </TableCell>
                                         <TableCell>
@@ -365,7 +366,7 @@ export function WaitlistClient({ initialPreorders, stats }: { initialPreorders: 
                                         <TableCell>
                                             {item.notified_at ? (
                                                 <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-[10px]">
-                                                    Notified {new Date(item.notified_at).toLocaleDateString()}
+                                                    Notified {format(new Date(item.notified_at), 'MMM dd, yyyy')}
                                                 </Badge>
                                             ) : (
                                                 <Badge variant="secondary" className="text-[10px] text-muted-foreground">Pending</Badge>

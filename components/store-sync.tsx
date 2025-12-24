@@ -163,7 +163,7 @@ export function StoreSync() {
                 // 2. Load Final Full Cart from DB
                 const { data: cartData, error: cartError } = await supabase
                     .from('cart_items')
-                    .select(`*, product:products(name, price, main_image_url, category_id)`)
+                    .select(`*, product:products(name, price, main_image_url, category_id, slug)`)
                     .eq('user_id', user.id)
 
                 if (cartError) {
@@ -174,6 +174,7 @@ export function StoreSync() {
                         id: d.id,
                         productId: d.product_id,
                         categoryId: d.product?.category_id,
+                        slug: d.product?.slug,
                         name: d.product?.name || 'Unknown Product',
                         price: d.product?.price || 0,
                         image: d.product?.main_image_url || null,

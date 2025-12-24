@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { format } from 'date-fns'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -208,7 +209,7 @@ export function ReviewsClient({ initialReviews, meta }: { initialReviews: any[],
                             <TableCell>
                                 <div className="space-y-1">
                                     <div className="text-xs text-muted-foreground">
-                                        {new Date(review.created_at).toLocaleDateString('en-US')}
+                                        {format(new Date(review.created_at), 'MMM dd, yyyy')}
                                     </div>
                                     <div className="flex gap-1 flex-wrap">
                                         <Badge variant={review.is_approved ? "default" : "secondary"} className={cn("text-[10px] font-bold px-1.5 py-0 h-5", !review.is_approved && "bg-yellow-100 text-yellow-800 border-yellow-200")}>

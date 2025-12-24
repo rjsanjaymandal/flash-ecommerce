@@ -16,15 +16,23 @@ export async function getUpsellProducts(categoryIds: string[] = [], inCartIds: s
             .in('category_id', categoryIds)
             .eq('is_active', true)
             .not('id', 'in', `(${inCartIds.join(',')})`)
-            .limit(10)
+            .limit(20) // Fetch more to allow for stock filtering
         
-        products = data || []
+        products = (data || []).filter(p => {
+            const hasStock = p.product_stock?.some((s: any) => s.quantity > 0)
+            return hasStock
+        }).slice(0, 10)
     }
 
-    // 2. Fallback to featured if not enough category matches
+    // 2. Fallback to featured if not enough category matches or for initial list
     if (products.length < 4) {
         const featured = await getFeaturedProducts()
-        const additional = featured.filter(p => !inCartIds.includes(p.id) && !products.some(prev => prev.id === p.id))
+        const additional = featured.filter(p => {
+            const isInCart = inCartIds.includes(p.id)
+            const isAlreadySuggested = products.some(prev => prev.id === p.id)
+            const hasStock = p.product_stock?.some((s: any) => s.quantity > 0)
+            return !isInCart && !isAlreadySuggested && hasStock
+        })
         products = [...products, ...additional].slice(0, 10)
     }
     

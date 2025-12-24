@@ -81,7 +81,7 @@ export function CartUpsell() {
                         animate={{ opacity: 1, x: 0 }}
                         className="snap-start shrink-0 w-32 group relative"
                     >
-                        <div className="aspect-[3/4] rounded-lg overflow-hidden bg-muted relative mb-2">
+                        <div className="aspect-[3/4] rounded-xl overflow-hidden bg-secondary/5 border border-border/40 relative mb-2 group/img">
                              {product.main_image_url ? (
                                 <NextImage 
                                     loader={imageLoader}
@@ -89,11 +89,11 @@ export function CartUpsell() {
                                     alt={product.name} 
                                     fill 
                                     quality={80}
-                                    className="object-contain p-2 transition-transform duration-500 group-hover:scale-110" 
+                                    className="object-contain p-2 transition-transform duration-500 group-hover/img:scale-105" 
                                     sizes="128px"
                                 />
                              ) : (
-                                <div className="h-full w-full flex items-center justify-center bg-secondary/30 text-[10px]">NO IMG</div>
+                                <div className="h-full w-full flex items-center justify-center bg-secondary/10 text-[10px] text-muted-foreground font-bold uppercase tracking-widest">No Image</div>
                              )}
                              
                              <button

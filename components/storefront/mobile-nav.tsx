@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Grid, Heart, User, ShoppingBag } from 'lucide-react'
+import { Home, Grid, Heart, User, ShoppingBag, FlaskConical } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useCartStore, selectCartCount } from '@/store/use-cart-store'
 import { useWishlistStore } from '@/store/use-wishlist-store'
@@ -18,6 +18,7 @@ export function MobileNav() {
   const links = [
     { href: '/', label: 'Home', icon: Home },
     { href: '/shop', label: 'Shop', icon: Grid },
+    { href: '/lab', label: 'Lab', icon: FlaskConical },
     { href: '/wishlist', label: 'Wishlist', icon: Heart, count: wishlistCount },
     { href: '/account', label: 'You', icon: User },
   ]

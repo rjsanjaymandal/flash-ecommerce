@@ -114,8 +114,20 @@ export function StorefrontNavbar() {
                     </div>
                 ))}
                 <Link 
+                    href="/lab"
+                    className={cn(
+                        "text-[13px] font-bold uppercase tracking-wider transition-all px-4 py-2 rounded-full",
+                        pathname === '/lab' ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-primary hover:bg-primary/5"
+                    )}
+                >
+                    Lab
+                </Link>
+                <Link 
                     href="/contact"
-                    className="text-[13px] font-bold uppercase tracking-wider text-muted-foreground hover:text-primary transition-all px-4 py-2 hover:bg-primary/5 rounded-full"
+                    className={cn(
+                        "text-[13px] font-bold uppercase tracking-wider transition-all px-4 py-2 rounded-full",
+                        pathname === '/contact' ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-primary hover:bg-primary/5"
+                    )}
                 >
                     Contact
                 </Link>

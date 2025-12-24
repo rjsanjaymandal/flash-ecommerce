@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { format } from 'date-fns'
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
@@ -435,7 +436,7 @@ export function ProductsClient({ initialProducts, meta }: { initialProducts: any
                         <TableCell className="align-middle">
                             <div className="flex items-center gap-1 text-xs text-muted-foreground/70">
                                 <Clock className="h-3 w-3" />
-                                {new Date(product.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                {format(new Date(product.created_at), 'MMM dd, yyyy')}
                             </div>
                         </TableCell>
                         <TableCell className="text-right align-middle pr-4">
