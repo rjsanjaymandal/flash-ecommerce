@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ShoppingBag, Menu, Heart, ChevronDown, Search } from 'lucide-react'
+import { ShoppingBag, Menu, Heart, ChevronDown, Search, Gift } from 'lucide-react'
 import { useState } from 'react'
 import FlashImage from '@/components/ui/flash-image'
 import { useWishlistStore } from '@/store/use-wishlist-store'
@@ -88,8 +88,12 @@ export function StorefrontNavbar() {
                             unoptimized
                             className="bg-background"
                         />
+                         {/* Santa Hat Overlay */}
+                         <div className="absolute -top-1 -right-1 text-base rotate-12 z-20">🎅</div>
                     </div>
-                    <span className="hidden lg:block text-xl font-black tracking-tighter text-gradient">FLASH</span>
+                    <span className="hidden lg:block text-xl font-black tracking-tighter text-gradient flex items-center gap-1">
+                        FLASH <span className="text-[10px] animate-pulse">🎄</span>
+                    </span>
                 </Link>
             </div>
 
@@ -200,8 +204,8 @@ export function StorefrontNavbar() {
                 </div>
                 ) : (
                 <Link href="/login">
-                    <Button size="sm" className="rounded-full px-8 font-black uppercase tracking-[0.15em] text-[10px] gradient-primary shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all duration-300">
-                        Join
+                    <Button size="sm" className="rounded-full px-6 font-black uppercase tracking-[0.15em] text-[10px] gradient-christmas shadow-lg shadow-red-500/20 hover:scale-105 active:scale-95 transition-all duration-300 gap-2">
+                        <Gift className="h-3.5 w-3.5" /> Festive Join
                     </Button>
                 </Link>
                 )}

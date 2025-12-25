@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { cn, formatCurrency } from '@/lib/utils'
-import { ShoppingBag, Heart, Star } from 'lucide-react'
+import { ShoppingBag, Heart, Star, Gift } from 'lucide-react'
 import { useWishlistStore, selectIsInWishlist } from '@/store/use-wishlist-store'
 import { useCartStore } from '@/store/use-cart-store'
 import { useRouter } from 'next/navigation'
@@ -387,9 +387,16 @@ export function ProductCard({ product, showRating = true, priority = false, onWa
             <div className="absolute top-2 left-2 z-10 flex flex-col gap-1.5">
                  {isOutOfStock ? (
                      <Badge className="bg-neutral-900 text-white hover:bg-neutral-800 uppercase tracking-wider text-[9px] font-bold px-2 py-0.5 rounded-sm border-none shadow-sm">Sold Out</Badge>
-                 ) : isNew ? (
-                     <Badge className="bg-white text-black hover:bg-white/90 uppercase tracking-wider text-[9px] font-bold px-2 py-0.5 rounded-sm border-none shadow-sm backdrop-blur-md">New</Badge>
-                 ) : null}
+                 ) : (
+                     <>
+                        <Badge className="bg-[#b91c1c] text-white hover:bg-[#991b1b] uppercase tracking-wider text-[9px] font-bold px-2 py-0.5 rounded-sm border-none shadow-sm flex items-center gap-1">
+                            <Gift className="h-2.5 w-2.5" /> Holiday
+                        </Badge>
+                        {isNew && (
+                            <Badge className="bg-white text-black hover:bg-white/90 uppercase tracking-wider text-[9px] font-bold px-2 py-0.5 rounded-sm border-none shadow-sm backdrop-blur-md">New</Badge>
+                        )}
+                     </>
+                 )}
             </div>
 
             {/* Wishlist Button */}

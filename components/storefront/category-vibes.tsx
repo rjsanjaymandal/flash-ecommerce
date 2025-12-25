@@ -36,9 +36,10 @@ export function CategoryVibes({ categories }: CategoryVibesProps) {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                className="text-5xl md:text-7xl font-black tracking-tighter text-foreground leading-[0.8] uppercase italic"
+                className="text-5xl md:text-7xl font-black tracking-tighter text-foreground leading-[0.8] uppercase italic flex items-center justify-center gap-4 flex-wrap"
             >
                 PICK YOUR <span className="text-gradient drop-shadow-[0_0_30px_rgba(var(--primary),0.3)]">VIBES</span>
+                <span className="text-4xl md:text-6xl not-italic">🎄</span>
             </motion.h2>
             <motion.p 
                 initial={{ opacity: 0 }}
@@ -75,7 +76,8 @@ export function CategoryVibes({ categories }: CategoryVibesProps) {
                 className={cn(
                   "group relative min-w-[280px] w-[80vw] md:min-w-0 md:w-auto h-[450px] md:h-[550px] overflow-hidden rounded-[2.5rem] bg-zinc-900 transition-all duration-700 snap-center",
                   "flex-shrink-0 border border-white/5",
-                  shadow 
+                  shadow,
+                  "hover:border-[#b91c1c]/50 hover:shadow-[0_0_30px_rgba(185,28,28,0.2)]"
                 )}
               >
                 {/* Background Image / Gradient */}

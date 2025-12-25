@@ -338,7 +338,7 @@ export async function createProduct(productData: any) {
         // 2. Server-side Validation
         const validated = productSchema.safeParse(productData)
         if (!validated.success) {
-            return { success: false, error: `Invalid data: ${validated.error.errors[0].message}` }
+            return { success: false, error: `Invalid data: ${validated.error.issues[0].message}` }
         }
 
         // 3. Prep Data & Admin Client
@@ -385,7 +385,9 @@ export async function createProduct(productData: any) {
         try {
             revalidatePath('/admin/products')
             revalidatePath('/shop')
+            // @ts-expect-error: Next.js types incorrectly require a second 'profile' argument
             revalidateTag('products')
+            // @ts-expect-error: Next.js types incorrectly require a second 'profile' argument
             revalidateTag('featured-products')
         } catch (revErr) {
             console.warn('[createProduct] Revalidation skipped:', revErr)
@@ -406,7 +408,7 @@ export async function updateProduct(id: string, productData: any) {
         // 2. Server-side Validation
         const validated = productSchema.safeParse(productData)
         if (!validated.success) {
-            return { success: false, error: `Invalid data: ${validated.error.errors[0].message}` }
+            return { success: false, error: `Invalid data: ${validated.error.issues[0].message}` }
         }
 
         // 3. Prep Data & Admin Client
@@ -457,9 +459,13 @@ export async function updateProduct(id: string, productData: any) {
             revalidatePath('/admin/products')
             revalidatePath('/shop')
             revalidatePath(`/product/${updateData.slug || existing.slug}`)
+            // @ts-expect-error: Next.js types incorrectly require a second 'profile' argument
             revalidateTag('products')
+            // @ts-expect-error: Next.js types incorrectly require a second 'profile' argument
             revalidateTag('featured-products')
+            // @ts-expect-error: Next.js types incorrectly require a second 'profile' argument
             if (updateData.slug) revalidateTag(`product-${updateData.slug}`)
+            // @ts-expect-error: Next.js types incorrectly require a second 'profile' argument
             if (existing.slug && existing.slug !== updateData.slug) revalidateTag(`product-${existing.slug}`)
         } catch (revErr) {
             console.warn('[updateProduct] Revalidation skipped:', revErr)
@@ -474,7 +480,7 @@ export async function updateProduct(id: string, productData: any) {
 
 export async function deleteProduct(id: string) {
     await requireAdmin()
-    const supabase = await getDb()
+    const supabase = createAdminClient()
     const { error } = await supabase.from('products').delete().eq('id', id)
     if (error) throw error
     // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
@@ -487,7 +493,7 @@ export async function deleteProduct(id: string) {
 
 export async function getProductsByIds(ids: string[]): Promise<Product[]> {
     if (!ids || ids.length === 0) return []
-    const supabase = await getDb()
+    const supabase = createAdminClient()
     
     const { data, error } = await supabase
       .from('products')
@@ -509,7 +515,7 @@ export async function getProductsByIds(ids: string[]): Promise<Product[]> {
 
 export async function getValidProducts(ids: string[]): Promise<Product[]> {
     if (!ids || ids.length === 0) return []
-    const supabase = await getDb()
+    const supabase = createAdminClient()
     
     // Only fetch ACTIVE products
     const { data, error } = await supabase
@@ -594,7 +600,7 @@ export async function getRelatedProducts(product: Product): Promise<Product[]> {
 export async function bulkDeleteProducts(ids: string[]) {
     await requireAdmin()
     if (!ids || ids.length === 0) return
-    const supabase = await getDb()
+    const supabase = createAdminClient()
     const { error } = await supabase.from('products').delete().in('id', ids)
     if (error) throw error
     // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
@@ -606,7 +612,7 @@ export async function bulkDeleteProducts(ids: string[]) {
 export async function bulkUpdateProductStatus(ids: string[], isActive: boolean) {
     await requireAdmin()
     if (!ids || ids.length === 0) return
-    const supabase = await getDb()
+    const supabase = createAdminClient()
     const { error } = await supabase
         .from('products')
         .update({ is_active: isActive })
@@ -621,7 +627,7 @@ export async function bulkUpdateProductStatus(ids: string[], isActive: boolean) 
 // decrementStock removed - unsafe public exposure. Use RPC 'decrement_stock' via Service Role instead.
 
 export async function getWaitlistedProducts(userId: string): Promise<Product[]> {
-    const supabase = await getDb()
+    const supabase = createAdminClient()
     
     // 1. Get Preorders
     const { data: preorders, error } = await supabase

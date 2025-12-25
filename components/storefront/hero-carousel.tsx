@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { BrandBadge } from './brand-badge'
 import { BrandGlow } from './brand-glow'
 import FlashImage from '@/components/ui/flash-image'
-import { ChevronLeft, ChevronRight, ShoppingBag, ArrowRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ShoppingBag, ArrowRight, Gift } from 'lucide-react'
 import { cn, formatCurrency } from '@/lib/utils'
 import { useCartStore } from '@/store/use-cart-store'
 import { useRouter } from 'next/navigation'
@@ -227,12 +227,10 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                                 animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
                                 transition={{ delay: 0.2, duration: 0.8, ease: "easeOut" }}
                             >
-                                <BrandBadge variant="primary" className="mb-4">
-                                    {currentIndex === 0 ? (
-                                        <span className="animate-pulse">✨ JUST DROPPED</span>
-                                    ) : (
-                                        "New Arrival"
-                                    )}
+                                <BrandBadge variant="primary" className="mb-4 bg-[#b91c1c] text-white border-none shadow-lg shadow-red-500/20 christmas-glow">
+                                    <span className="animate-pulse flex items-center gap-1.5">
+                                         <Gift className="h-3 w-3" /> FESTIVE DROP 🎅
+                                    </span>
                                 </BrandBadge>
                                 <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tighter leading-[0.9] text-foreground uppercase italic line-clamp-2 lg:line-clamp-3 drop-shadow-lg lg:drop-shadow-none">
                                     {currentProduct.name}

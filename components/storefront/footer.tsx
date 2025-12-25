@@ -37,17 +37,22 @@ export function Footer() {
                 </div>
             </div>
 
-            <div className="w-full max-w-md bg-muted/30 p-6 rounded-2xl border border-border/50">
-                <h4 className="font-bold text-lg mb-2">Stay in the Loop</h4>
+            <div className="w-full max-w-md bg-muted/30 p-6 rounded-2xl border border-border/50 relative overflow-hidden group">
+                {/* Festive Glow Background */}
+                <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#b91c1c]/10 blur-3xl group-hover:bg-[#b91c1c]/20 transition-all duration-700" />
+                
+                <h4 className="font-bold text-lg mb-2 flex items-center gap-2">
+                    Stay in the Loop <span className="text-xl">🎁</span>
+                </h4>
                 <p className="text-sm text-muted-foreground mb-4">
-                    Subscribe for exclusive drops, early access, and 10% off your first order.
+                    Subscribe for exclusive drops, early access, and <span className="text-[#b91c1c] font-black">10% HOLIDAY DISCOUNT</span> on your first order.
                 </p>
                 <form className="flex gap-2" onSubmit={(e) => e.preventDefault()}>
                     <Input 
                         placeholder="Enter your email" 
-                        className="bg-background border-border/50 h-12 focus-visible:ring-primary" 
+                        className="bg-background border-border/50 h-12 focus-visible:ring-[#b91c1c]" 
                     />
-                    <Button size="icon" className="h-12 w-12 shrink-0 rounded-lg">
+                    <Button size="icon" className="h-12 w-12 shrink-0 rounded-lg bg-[#b91c1c] hover:bg-[#991b1b] text-white">
                         <ArrowRight className="h-5 w-5" />
                     </Button>
                 </form>
