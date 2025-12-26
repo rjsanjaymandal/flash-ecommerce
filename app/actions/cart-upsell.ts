@@ -10,13 +10,18 @@ export async function getUpsellProducts(categoryIds: string[] = [], inCartIds: s
 
     if (categoryIds.length > 0) {
         // 1. Suggest items from the same category
-        const { data } = await supabase
+        const query = supabase
             .from('products')
             .select('*, categories(name), product_stock(*)')
             .in('category_id', categoryIds)
             .eq('is_active', true)
-            .not('id', 'in', `(${inCartIds.join(',')})`)
             .limit(20) // Fetch more to allow for stock filtering
+
+        if (inCartIds.length > 0) {
+            query.not('id', 'in', `(${inCartIds.join(',')})`)
+        }
+
+        const { data } = await query
         
         products = (data || []).filter(p => {
             const hasStock = p.product_stock?.some((s: any) => s.quantity > 0)

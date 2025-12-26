@@ -301,7 +301,8 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                                         loading={currentIndex === 0 ? "eager" : "lazy"}
                                         quality={80}
                                         decoding="sync"
-                                        className="object-cover lg:object-contain object-center" 
+                                        fetchPriority={currentIndex === 0 ? "high" : "auto"}
+                                        className="object-cover lg:object-contain object-center"
                                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1400px"
                                     />
                             </motion.div>
