@@ -10,6 +10,7 @@ import { cn, formatCurrency } from '@/lib/utils'
 import { useProductSearch } from '@/hooks/use-product-search'
 import { motion, AnimatePresence } from 'framer-motion'
 import FlashImage from '@/components/ui/flash-image'
+import { SearchableProduct } from '@/hooks/use-product-search'
 
 interface SearchOverlayProps {
     isOpen: boolean
@@ -19,7 +20,7 @@ interface SearchOverlayProps {
 export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
   const [term, setTerm] = useState('')
   const [query] = useDebounce(term, 300)
-  const [results, setResults] = useState<any[]>([])
+  const [results, setResults] = useState<SearchableProduct[]>([])
   const [loading, setLoading] = useState(false)
   
   const inputRef = useRef<HTMLInputElement>(null)
@@ -42,7 +43,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
 
   // Search Effect
   // Index State
-  const [index, setIndex] = useState<any[]>([])
+  const [index, setIndex] = useState<SearchableProduct[]>([])
   const [isIndexLoaded, setIsIndexLoaded] = useState(false)
   
   // Logic: Fetch index once on first open

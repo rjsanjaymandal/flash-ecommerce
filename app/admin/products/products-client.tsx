@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import FlashImage from '@/components/ui/flash-image'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,8 +37,38 @@ import { Download } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { useProductSearch } from '@/hooks/use-product-search'
 
+interface AdminProduct {
+    id: string
+    name: string
+    price: number
+    main_image_url: string | null
+    slug: string | null
+    is_active: boolean
+    created_at: string
+    category_id?: string
+    categories?: {
+        name: string
+    } | null
+    product_stock?: {
+        id: string
+        size: string
+        color: string
+        quantity: number
+    }[]
+    preorder_count?: number
+}
 
-export function ProductsClient({ initialProducts, meta }: { initialProducts: any[], meta: { total: number, page: number, limit: number, totalPages: number } }) {
+interface WaitlistUser {
+    user_id: string
+    email: string
+    created_at: string
+    profiles?: {
+        name: string | null
+    }
+}
+
+
+export function ProductsClient({ initialProducts, meta }: { initialProducts: AdminProduct[], meta: { total: number, page: number, limit: number, totalPages: number } }) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [searchQuery, setSearchQuery] = useState('') 
@@ -52,8 +83,8 @@ export function ProductsClient({ initialProducts, meta }: { initialProducts: any
   const [isBulkDeleting, setIsBulkDeleting] = useState(false)
 
   // Waitlist Modal State
-  const [waitlistProduct, setWaitlistProduct] = useState<any>(null)
-  const [waitlistUsers, setWaitlistUsers] = useState<any[]>([])
+  const [waitlistProduct, setWaitlistProduct] = useState<AdminProduct | null>(null)
+  const [waitlistUsers, setWaitlistUsers] = useState<WaitlistUser[]>([])
   const [isWaitlistLoading, setIsWaitlistLoading] = useState(false)
 
   // Clear selection on page change or search
@@ -158,8 +189,8 @@ export function ProductsClient({ initialProducts, meta }: { initialProducts: any
   }
 
   // Helper to calculate total stock
-  const getStockStatus = (stock: any[]) => {
-      const total = stock?.reduce((acc: number, curr: any) => acc + (curr.quantity || 0), 0) || 0
+  const getStockStatus = (stock: AdminProduct['product_stock']) => {
+      const total = stock?.reduce((acc: number, curr) => acc + (curr.quantity || 0), 0) || 0
       if (total === 0) return { label: 'Out of Stock', variant: 'destructive' as const, count: 0 }
       if (total < 10) return { label: 'Low Stock', variant: 'secondary' as const, count: total, className: "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100" }
       return { label: 'In Stock', variant: 'outline' as const, count: total, className: "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100" }
@@ -375,7 +406,14 @@ export function ProductsClient({ initialProducts, meta }: { initialProducts: any
                         </TableCell>
                         <TableCell className="p-4 pl-0 align-middle">
                             {product.main_image_url ? (
-                                <img src={product.main_image_url} alt="" className="h-12 w-12 rounded-lg object-cover border shadow-sm transition-transform hover:scale-105" />
+                                <div className="h-12 w-12 relative rounded-lg overflow-hidden border shadow-sm transition-transform hover:scale-105">
+                                    <FlashImage 
+                                        src={product.main_image_url} 
+                                        alt={product.name} 
+                                        fill
+                                        className="object-cover" 
+                                    />
+                                </div>
                             ) : (
                                 <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center text-muted-foreground text-xs border border-dashed"><Package className="h-4 w-4 opacity-50"/></div>
                             )}
@@ -399,7 +437,7 @@ export function ProductsClient({ initialProducts, meta }: { initialProducts: any
                                 <TooltipContent className="bg-popover text-popover-foreground text-xs rounded-md border shadow-xl p-3 z-50">
                                     <div className="font-semibold mb-2 border-b pb-1 border-border/50">Stock Breakdown</div>
                                     <div className="grid grid-cols-2 gap-2 min-w-[150px]">
-                                        {product.product_stock?.length ? product.product_stock.map((s: any) => (
+                                        {product.product_stock?.length ? product.product_stock.map((s: { id: string, size: string, color: string, quantity: number }) => (
                                             <div key={s.id} className="flex justify-between items-center bg-secondary/30 px-2 py-1 rounded">
                                                 <span className="font-medium text-[10px] uppercase">{s.size}</span>
                                                 <span className={cn("font-mono font-bold", s.quantity < 3 ? "text-red-500" : "")}>{s.quantity}</span>

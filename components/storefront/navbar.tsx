@@ -19,6 +19,20 @@ import { SearchOverlay } from '@/components/site/search-bar'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useScrollDirection } from '@/hooks/use-scroll-direction'
 
+interface NavCategory {
+  id: string
+  name: string
+  slug: string
+  children?: NavCategory[]
+}
+
+interface NavLink {
+  href: string
+  label: string
+  children?: NavCategory[]
+  category: NavCategory
+}
+
 export function StorefrontNavbar() {
 
   const cartCount = useCartStore(selectCartCount)
@@ -56,7 +70,7 @@ export function StorefrontNavbar() {
   })
 
   // Dynamic Nav Links
-  const navLinks = categories.map((cat: any) => ({
+  const navLinks: NavLink[] = categories.map((cat: NavCategory) => ({
     href: `/shop?category=${cat.id}`,
     label: cat.name,
     children: cat.children,
@@ -91,7 +105,7 @@ export function StorefrontNavbar() {
                          {/* Santa Hat Overlay */}
                          <div className="absolute -top-1 -right-1 text-base rotate-12 z-20">🎅</div>
                     </div>
-                    <span className="hidden lg:block text-xl font-black tracking-tighter text-gradient flex items-center gap-1">
+                    <span className="hidden lg:flex text-xl font-black tracking-tighter text-gradient items-center gap-1">
                         FLASH <span className="text-[10px] animate-pulse">🎄</span>
                     </span>
                 </Link>
@@ -99,7 +113,7 @@ export function StorefrontNavbar() {
 
             {/* Desktop Nav */}
             <nav className="hidden lg:flex items-center gap-2">
-                {navLinks.map((link: any) => (
+                {navLinks.map((link: NavLink) => (
                     <div key={link.href} className="group relative">
                         <Link 
                             href={link.href}

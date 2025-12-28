@@ -11,6 +11,40 @@ import { formatCurrency } from '@/lib/utils'
 import { Loader2, Trash2, ArrowLeft, ShoppingCart, Heart, Package } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
+import FlashImage from '@/components/ui/flash-image'
+
+interface CustomerProfile {
+    id: string
+    name: string | null
+    email?: string | null
+    role: string | null
+    created_at: string | null
+    fit_preference?: string | null
+    orders: any[]
+}
+
+interface CartDbItem {
+    id: string
+    product_id: string
+    size: string
+    color: string
+    quantity: number
+    product: {
+        name: string
+        price: number
+        main_image_url: string | null
+    } | null
+}
+
+interface WishlistDbItem {
+    id: string
+    product_id: string
+    product: {
+        name: string
+        price: number
+        main_image_url: string | null
+    } | null
+}
 
 export default function CustomerDetailPage() {
     const params = useParams()
@@ -18,9 +52,9 @@ export default function CustomerDetailPage() {
     const supabase = createClient()
     const router = useRouter()
     
-    const [profile, setProfile] = useState<any>(null)
-    const [cart, setCart] = useState<any[]>([])
-    const [wishlist, setWishlist] = useState<any[]>([])
+    const [profile, setProfile] = useState<CustomerProfile | null>(null)
+    const [cart, setCart] = useState<CartDbItem[]>([])
+    const [wishlist, setWishlist] = useState<WishlistDbItem[]>([])
     const [orders, setOrders] = useState<any[]>([])
     const [isLoading, setIsLoading] = useState(true)
 
@@ -89,7 +123,9 @@ export default function CustomerDetailPage() {
                 <Button variant="ghost" size="icon" asChild><Link href="/admin/customers"><ArrowLeft className="h-4 w-4" /></Link></Button>
                 <div>
                    <h1 className="text-3xl font-black tracking-tight">{profile.name || 'Anonymous User'}</h1>
-                   <p className="text-muted-foreground text-sm">{profile.email} • Joined {new Date(profile.created_at).toLocaleDateString()}</p>
+                    <p className="text-muted-foreground text-sm">
+                        {profile.email} {profile.created_at && `• Joined ${new Date(profile.created_at).toLocaleDateString()}`}
+                    </p>
                 </div>
             </div>
 
@@ -110,7 +146,7 @@ export default function CustomerDetailPage() {
                         <CardContent className="grid gap-4">
                             <div className="flex justify-between border-b pb-2">
                                 <span className="text-muted-foreground">Total Spent</span>
-                                <span className="font-bold font-mono">{formatCurrency(orders.reduce((acc, o) => acc + (o.status === 'paid' ? o.total : 0), 0))}</span>
+                                <span className="font-bold font-mono">{formatCurrency(orders.reduce((acc, o) => acc + (o.status === 'paid' ? (o.total || 0) : 0), 0))}</span>
                             </div>
                             <div className="flex justify-between border-b pb-2">
                                 <span className="text-muted-foreground">Total Orders</span>
@@ -142,14 +178,23 @@ export default function CustomerDetailPage() {
                                     {cart.map(item => (
                                         <div key={item.id} className="flex items-center justify-between p-3 bg-card rounded-xl border border-border/50 shadow-sm">
                                             <div className="flex items-center gap-3">
-                                                {item.product?.main_image_url && <img src={item.product.main_image_url} className="h-12 w-12 object-cover rounded-md" />}
+                                                {item.product?.main_image_url && (
+                                                    <div className="h-12 w-12 relative overflow-hidden rounded-md">
+                                                        <FlashImage 
+                                                            src={item.product.main_image_url} 
+                                                            alt={item.product.name}
+                                                            fill
+                                                            className="object-cover"
+                                                        />
+                                                    </div>
+                                                )}
                                                 <div>
                                                     <p className="font-medium text-sm">{item.product?.name}</p>
                                                     <p className="text-xs text-muted-foreground">{item.size} • {item.color} • x{item.quantity}</p>
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-4">
-                                                <span className="font-mono text-sm">{formatCurrency(item.product?.price * item.quantity)}</span>
+                                                <span className="font-mono text-sm">{formatCurrency((item.product?.price || 0) * item.quantity)}</span>
                                                 <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-red-500" onClick={() => removeItem(item.id, 'cart')}>
                                                     <Trash2 className="h-4 w-4" />
                                                 </Button>
@@ -174,10 +219,19 @@ export default function CustomerDetailPage() {
                                 <div className="grid grid-cols-2 gap-4">
                                     {wishlist.map(item => (
                                         <div key={item.id} className="flex items-center gap-3 p-3 bg-card rounded-xl border">
-                                            {item.product?.main_image_url && <img src={item.product.main_image_url} className="h-10 w-10 object-cover rounded-md" />}
+                                            {item.product?.main_image_url && (
+                                                <div className="h-10 w-10 relative overflow-hidden rounded-md">
+                                                    <FlashImage 
+                                                        src={item.product.main_image_url} 
+                                                        alt={item.product.name}
+                                                        fill
+                                                        className="object-cover"
+                                                    />
+                                                </div>
+                                            )}
                                             <div className="flex-1 min-w-0">
                                                 <p className="font-medium text-sm truncate">{item.product?.name}</p>
-                                                <p className="text-xs text-muted-foreground font-mono">{formatCurrency(item.product?.price)}</p>
+                                                <p className="text-xs text-muted-foreground font-mono">{formatCurrency(item.product?.price || 0)}</p>
                                             </div>
                                             <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeItem(item.id, 'wishlist')}><Trash2 className="h-3 w-3" /></Button>
                                         </div>

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Loader2, ArrowRight, Mail, Lock, Clock, User } from "lucide-react"
@@ -175,7 +176,7 @@ export default function LoginPage() {
 
             toast.success(isSignup ? "Account created! Welcome." : "Welcome back!")
             router.refresh() 
-            window.location.href = next
+            router.push(next)
         }
       } catch (err) {
          toast.error("Failed to verify code")
@@ -203,7 +204,7 @@ export default function LoginPage() {
       ? "Enter your details to get started" 
       : "Enter your email to access your account"
   const buttonText = isSignup ? "Sign Up with Email" : "Continue with Email"
-  const switchModeText = isSignup ? "Already have an account?" : "Don't have an account?"
+  const switchModeText = isSignup ? "Already have an account?" : "Don&apos;t have an account?"
   const switchModeLinkText = isSignup ? "Log in" : "Sign up"
   const switchModeUrl = isSignup ? "/login" : "/login?view=signup"
 
@@ -211,11 +212,13 @@ export default function LoginPage() {
     <div className="min-h-screen flex w-full">
       {/* Left Side - Image (Desktop Only) */}
       <div className="hidden lg:flex w-1/2 relative bg-black items-center justify-center overflow-hidden">
-         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10" />
-         <img 
+         <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent z-10" />
+         <Image 
             src="https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&q=80&w=2000" 
             alt="Fashion Editorial" 
-            className="w-full h-full object-cover object-center opacity-80"
+            fill
+            priority
+            className="object-cover object-center opacity-80"
          />
          <div className="absolute bottom-20 left-12 z-20 max-w-lg">
             <h1 className="text-5xl font-black text-white mb-4 tracking-tighter loading-none">
@@ -240,7 +243,7 @@ export default function LoginPage() {
            <div className="w-full max-w-md space-y-8">
                 <div className="text-center space-y-2">
                     <Link href="/" className="inline-block mb-8 hover:opacity-80 transition-opacity">
-                         <span className="text-3xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-500 to-pink-500 hover:scale-105 transition-transform">
+                         <span className="text-3xl font-black tracking-tighter bg-clip-text text-transparent bg-linear-to-r from-primary via-purple-500 to-pink-500 hover:scale-105 transition-transform">
                              FLASH
                          </span>
                     </Link>
@@ -250,7 +253,7 @@ export default function LoginPage() {
                     <p className="text-muted-foreground">
                         {step === 'email' 
                             ? subtitle
-                            : `We've sent a 6-digit code to ${emailForm.getValues("email")}`
+                            : `We&apos;ve sent a 6-digit code to ${emailForm.getValues("email")}`
                         }
                     </p>
                 </div>

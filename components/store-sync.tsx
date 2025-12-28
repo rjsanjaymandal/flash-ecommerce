@@ -1,12 +1,38 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/context/auth-context'
 import { useCartStore, CartItem } from '@/store/use-cart-store'
 import { useWishlistStore, WishlistItem } from '@/store/use-wishlist-store'
 import { useStockStore } from '@/store/use-stock-store'
 import { toast } from 'sonner'
+
+interface CartDbItem {
+    id: string
+    product_id: string
+    size: string
+    color: string
+    quantity: number
+    product: {
+        name: string
+        price: number
+        main_image_url: string
+        category_id: string
+        slug: string
+    } | null
+}
+
+interface WishlistDbItem {
+    id: string
+    product_id: string
+    product: {
+        name: string
+        price: number
+        main_image_url: string
+        slug: string
+    } | null
+}
 
 export function StoreSync() {
   const { user } = useAuth()
@@ -25,7 +51,7 @@ export function StoreSync() {
   const isSyncingRef = useRef(false)
 
   // Helper to validate stock
-  async function validateStock(items: CartItem[]) {
+  const validateStock = useCallback(async (items: CartItem[]) => {
       if (items.length === 0) return
       
       try {
@@ -98,7 +124,7 @@ export function StoreSync() {
       } catch (error) {
           console.error("[StoreSync] Stock validation failed:", error)
       }
-  }
+  }, [supabase, user, setCartItems])
 
   // 1. Load Initial Data on Auth Change
   useEffect(() => {
@@ -168,7 +194,7 @@ export function StoreSync() {
                     console.error('[StoreSync] Cart fetch error:', cartError)
                 } else if (cartData) {
                     console.log('[StoreSync] Cart items fetched:', cartData.length)
-                    const mappedCart: CartItem[] = cartData.map((d: any) => ({
+                    const mappedCart: CartItem[] = (cartData as unknown as CartDbItem[]).map((d) => ({
                         id: d.id,
                         productId: d.product_id,
                         categoryId: d.product?.category_id,
@@ -182,7 +208,7 @@ export function StoreSync() {
                         maxQuantity: 10
                     }))
                     setCartItems(mappedCart)
-                    validateStock(mappedCart)
+                    await validateStock(mappedCart)
                 }
 
                 // 3. Load Wishlist
@@ -194,7 +220,7 @@ export function StoreSync() {
                 if (wishError) {
                     console.error('[StoreSync] Wishlist fetch error:', wishError)
                 } else if (wishlistData) {
-                    const mappedWishlist: WishlistItem[] = wishlistData.map((d: any) => ({
+                    const mappedWishlist: WishlistItem[] = (wishlistData as unknown as WishlistDbItem[]).map((d) => ({
                         id: d.id,
                         productId: d.product_id,
                         name: d.product?.name || 'Unknown',
@@ -216,7 +242,7 @@ export function StoreSync() {
     }
 
     loadData()
-  }, [user, setCartItems, setWishlistItems, setIsLoading])
+  }, [user, setCartItems, setWishlistItems, setIsLoading, supabase, validateStock])
 
   // 2. Real-time Stock Subscription
   useEffect(() => {
@@ -272,7 +298,7 @@ export function StoreSync() {
           supabase.removeChannel(channel)
           window.removeEventListener('focus', handleFocus)
       }
-  }, [setCartItems, user])
+  }, [setCartItems, user, supabase, validateStock])
 
 
   // 3. Sync Changes TO Supabase (Debounced or effect-based)

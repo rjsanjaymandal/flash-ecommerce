@@ -150,7 +150,7 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
     const sizeOptions = useMemo(() => {
         const sizes = product.size_options?.length 
             ? [...product.size_options]
-            : (realTimeStock?.length ? Array.from(new Set(realTimeStock.map((s: any) => s.size))) : [...STANDARD_SIZES])
+            : (realTimeStock?.length ? Array.from(new Set(realTimeStock.map((s) => s.size))) : [...STANDARD_SIZES])
       
         return sizes.sort((a, b) => {
             const indexA = STANDARD_SIZES.indexOf(a)
@@ -164,7 +164,7 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
 
     const colorOptions = product.color_options?.length 
         ? product.color_options 
-        : Array.from(new Set(realTimeStock?.map((s: any) => s.color) || ['Standard'])).sort() as string[]
+        : Array.from(new Set(realTimeStock?.map((s) => s.color) || ['Standard'])).sort() as string[]
 
     // Stock Logic
     const stockMap = useMemo(() => {
@@ -178,7 +178,7 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
     }, [realTimeStock])
 
     const totalStock = useMemo(() => {
-        return realTimeStock?.reduce((acc: number, item: any) => acc + (item.quantity || 0), 0) ?? 0
+        return realTimeStock?.reduce((acc: number, item) => acc + (item.quantity || 0), 0) ?? 0
     }, [realTimeStock])
 
     const getStock = (size: string, color: string) => stockMap[`${size}-${color}`] || 0
@@ -337,11 +337,11 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
             <div className="container mx-auto px-4 lg:px-8">
                 {/* Refined Breadcrumbs */}
                 <nav className="flex items-center text-xs lg:text-sm text-muted-foreground mb-8 lg:mb-12 overflow-x-auto whitespace-nowrap pb-2 scrollbar-hide">
-                    <Link href="/" className="hover:text-primary transition-colors flex-shrink-0">
+                    <Link href="/" className="hover:text-primary transition-colors shrink-0">
                         Home
                     </Link>
                     <span className="mx-2 text-muted-foreground/40">/</span>
-                    <Link href="/shop" className="hover:text-primary transition-colors flex-shrink-0">
+                    <Link href="/shop" className="hover:text-primary transition-colors shrink-0">
                         Shop
                     </Link>
                     
@@ -350,7 +350,7 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
                             <span className="mx-2 text-muted-foreground/40">/</span>
                             <Link 
                                 href={`/shop?category=${product.category_id}`} 
-                                className="hover:text-primary transition-colors flex-shrink-0 font-medium text-foreground/80 hover:text-primary"
+                                className="hover:text-primary transition-colors shrink-0 font-medium text-foreground/80"
                             >
                                 {product.categories.name}
                             </Link>
@@ -453,7 +453,7 @@ export function ProductDetailClient({ product, initialReviews }: ProductDetailPr
                                                     : "bg-foreground text-background hover:bg-foreground/90 hover:scale-[1.01]"
                                             )}
                                             disabled={isOutOfStock ? isLoadingWaitlist : (!selectedSize || !selectedColor)}
-                                            onClick={isOutOfStock ? handlePreOrder : handleAddToCart}
+                                            onClick={() => isOutOfStock ? handlePreOrder() : handleAddToCart()}
                                         >
                                             {isOutOfStock ? (
                                                 <span className="flex items-center gap-2">

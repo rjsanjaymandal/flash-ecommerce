@@ -12,14 +12,52 @@ import { cn } from "@/lib/utils"
 import { formatDistanceToNow } from "date-fns"
 import { motion } from "framer-motion"
 import { useState, useEffect } from "react"
+import Image from "next/image"
+
+interface DashboardStats {
+  totalRevenue: number
+  revenueGrowth: number
+  averageOrderValue: number
+  totalOrders: number
+  orderGrowth: number
+  totalProducts: number
+}
+
+interface DashboardOrder {
+  id: string
+  total: number
+  status: string
+  shipping_name?: string
+  profiles?: {
+    name: string | null
+  }
+}
+
+interface DashboardActivity {
+  id: string
+  type: 'order' | 'review' | 'newsletter'
+  title: string
+  description: string
+  time: string
+}
+
+interface DashboardProduct {
+  id: string
+  name: string
+  sale_count: number
+  main_image_url: string | null
+  categories?: {
+    name: string
+  }
+}
 
 interface DashboardClientProps {
-  stats: any
-  recentOrders: any[]
-  chartData: any[]
-  categoryData: any[]
-  activity?: any[]
-  topProducts?: any[]
+  stats: DashboardStats
+  recentOrders: DashboardOrder[]
+  chartData: { name: string, total: number }[]
+  categoryData: { name: string, value: number }[]
+  activity?: DashboardActivity[]
+  topProducts?: DashboardProduct[]
   waitlistStats?: { count: number, potentialRevenue: number }
 }
 
@@ -81,7 +119,11 @@ export function DashboardClient({ stats, recentOrders, chartData, categoryData, 
                 <Card className="border-2 hover:border-primary/20 transition-all duration-500 group relative overflow-hidden h-full">
                     <div className={cn(
                         "absolute top-0 right-0 w-24 h-24 -mr-12 -mt-12 rounded-full opacity-[0.03] group-hover:scale-150 transition-transform duration-700",
-                        `bg-${item.color}-500`
+                        item.color === 'emerald' && "bg-emerald-500",
+                        item.color === 'blue' && "bg-blue-500",
+                        item.color === 'violet' && "bg-violet-500",
+                        item.color === 'amber' && "bg-amber-500",
+                        item.color === 'rose' && "bg-rose-500"
                     )} />
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">{item.title}</CardTitle>
@@ -158,7 +200,7 @@ export function DashboardClient({ stats, recentOrders, chartData, categoryData, 
                         <p className="text-sm font-bold uppercase tracking-widest italic">Monitoring in Progress...</p>
                     </div>
                 ) : (
-                    activity.map((item: any, i: number) => (
+                    activity.map((item, i) => (
                         <motion.div 
                             key={item.id} 
                             initial={{ opacity: 0, x: 20 }}
@@ -263,9 +305,14 @@ export function DashboardClient({ stats, recentOrders, chartData, categoryData, 
                     ) : (
                         topProducts.map((product, i) => (
                             <div key={product.id} className="flex items-center gap-3 group">
-                                <div className="h-10 w-10 shrink-0 rounded-lg overflow-hidden border-2 group-hover:border-primary transition-colors">
+                                <div className="h-10 w-10 shrink-0 rounded-lg overflow-hidden border-2 group-hover:border-primary transition-colors relative">
                                     {product.main_image_url ? (
-                                        <img src={product.main_image_url} alt="" className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                        <Image 
+                                            src={product.main_image_url} 
+                                            alt={product.name} 
+                                            fill
+                                            className="object-cover group-hover:scale-110 transition-transform duration-500" 
+                                        />
                                     ) : (
                                         <div className="h-full w-full bg-muted flex items-center justify-center"><Package className="h-4 w-4 opacity-20" /></div>
                                     )}
@@ -276,7 +323,7 @@ export function DashboardClient({ stats, recentOrders, chartData, categoryData, 
                                         <span className="text-[10px] font-bold text-muted-foreground">{product.sale_count} Sales</span>
                                     </div>
                                     <div className="flex items-center gap-2 mt-1">
-                                        <Badge variant="secondary" className="text-[8px] h-4 py-0 font-black uppercase tracking-[0.1em]">{product.categories?.name}</Badge>
+                                        <Badge variant="secondary" className="text-[8px] h-4 py-0 font-black uppercase tracking-widest">{product.categories?.name}</Badge>
                                         <div className="flex-1 h-1 bg-zinc-100 rounded-full overflow-hidden">
                                             <div 
                                                 className="h-full bg-primary transition-all duration-1000 ease-out" 

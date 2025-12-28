@@ -13,7 +13,25 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { DataTablePagination } from '@/components/ui/data-table-pagination'
 import { useRouter, useSearchParams } from 'next/navigation'
 
-export function CustomersClient({ initialCustomers, meta }: { initialCustomers: any[], meta: any }) {
+interface AdminCustomer {
+    id: string
+    name: string | null
+    created_at: string
+    stats: {
+        totalOrders: number
+        totalSpent: number
+        cartCount: number
+        wishlistCount: number
+    }
+}
+
+interface CustomerMeta {
+    total: number
+    page: number
+    limit: number
+}
+
+export function CustomersClient({ initialCustomers, meta }: { initialCustomers: AdminCustomer[], meta: CustomerMeta }) {
     const router = useRouter()
     const searchParams = useSearchParams()
     const [search, setSearch] = useState(searchParams.get('q') || '')
@@ -85,7 +103,7 @@ export function CustomersClient({ initialCustomers, meta }: { initialCustomers: 
                         {initialCustomers.length === 0 ? (
                             <TableRow><TableCell colSpan={8} className="text-center py-24 text-muted-foreground">No customers found.</TableCell></TableRow>
                         ) : (
-                            initialCustomers.map((customer: any) => (
+                            initialCustomers.map((customer) => (
                                 <TableRow key={customer.id} className="group hover:bg-muted/30 transition-colors">
                                     <TableCell>
                                         <div className="flex items-center gap-3">
@@ -129,7 +147,7 @@ export function CustomersClient({ initialCustomers, meta }: { initialCustomers: 
                                         {formatCurrency(customer.stats.totalSpent)}
                                     </TableCell>
                                     <TableCell className="text-muted-foreground text-sm">
-                                        {mounted ? new Date(customer.created_at).toLocaleDateString('en-US') : null}
+                                        {mounted ? new Date(customer.created_at).toLocaleDateString('en-US') : '-'}
                                     </TableCell>
                                     <TableCell className="text-right">
                                         {mounted ? (

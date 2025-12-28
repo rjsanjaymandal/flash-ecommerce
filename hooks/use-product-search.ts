@@ -5,10 +5,9 @@ export interface SearchableProduct {
     id: string
     name: string
     price: number
-    category?: {
-        name: string
-    } | null
-    [key: string]: any
+    category_name?: string
+    display_image?: string | null
+    slug?: string | null
 }
 
 interface UseProductSearchProps<T extends SearchableProduct> {

@@ -15,7 +15,24 @@ import { DataTablePagination } from '@/components/ui/data-table-pagination'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 
-export function OrdersClient({ initialOrders, meta, status }: { initialOrders: any[], meta: any, status: string }) {
+interface Order {
+    id: string
+    status: string
+    total: number
+    created_at: string
+    shipping_name?: string
+    profiles?: {
+        name: string | null
+    }
+}
+
+interface OrderMeta {
+    total: number
+    page: number
+    limit: number
+}
+
+export function OrdersClient({ initialOrders, meta, status }: { initialOrders: Order[], meta: OrderMeta, status: string }) {
     const router = useRouter()
     const searchParams = useSearchParams()
     const [search, setSearch] = useState(searchParams.get('q') || '')
@@ -162,7 +179,7 @@ export function OrdersClient({ initialOrders, meta, status }: { initialOrders: a
                         {initialOrders.length === 0 ? (
                             <TableRow><TableCell colSpan={6} className="text-center py-24 text-muted-foreground">No orders found.</TableCell></TableRow>
                         ) : (
-                            initialOrders.map((order: any) => (
+                            initialOrders.map((order) => (
                                 <TableRow key={order.id} className="group hover:bg-muted/50 transition-colors border-b last:border-0 text-sm">
                                     <TableCell className="font-mono text-xs pl-4 text-muted-foreground">#{order.id.slice(0, 8)}</TableCell>
                                     <TableCell className="font-medium">
@@ -172,7 +189,7 @@ export function OrdersClient({ initialOrders, meta, status }: { initialOrders: a
                                         </div>
                                     </TableCell>
                                     <TableCell className="text-muted-foreground">
-                                        {mounted ? new Date(order.created_at).toLocaleDateString('en-US') : null}
+                                        {mounted ? new Date(order.created_at).toLocaleDateString('en-US') : '-'}
                                     </TableCell>
                                     <TableCell className="font-medium">{formatCurrency(order.total)}</TableCell>
                                     <TableCell>

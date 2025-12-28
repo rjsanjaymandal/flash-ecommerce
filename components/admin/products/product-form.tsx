@@ -47,7 +47,7 @@ export function ProductForm({ initialData, categories, isLoading, onSubmit, onCa
 
     // Form Initialization
     const form = useForm<ProductFormValues>({
-        resolver: zodResolver(productSchema) as any,
+        resolver: zodResolver(productSchema),
         defaultValues: initialData || {
             name: '',
             slug: '',
@@ -97,8 +97,9 @@ export function ProductForm({ initialData, categories, isLoading, onSubmit, onCa
                 setValue('gallery_image_urls', [...currentGallery, publicUrl])
             }
             toast.success('Image uploaded')
-        } catch (err: any) {
-            toast.error('Upload failed: ' + err.message)
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Unknown error'
+            toast.error('Upload failed: ' + message)
         } finally {
             setIsUploading(false)
             if (e.target) e.target.value = ''
@@ -267,7 +268,7 @@ export function ProductForm({ initialData, categories, isLoading, onSubmit, onCa
                                                             render={({ field }) => (
                                                                 <Select onValueChange={field.onChange} value={field.value}>
                                                                     <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
-                                                                    <SelectContent className="bg-white dark:bg-neutral-950 border shadow-md relative z-[9999]">
+                                                                    <SelectContent className="bg-white dark:bg-neutral-950 border shadow-md relative z-9999">
                                                                         {SIZE_OPTIONS.map(s => <SelectItem key={s} value={s} className="cursor-pointer bg-white dark:bg-neutral-950 hover:bg-zinc-100 dark:hover:bg-zinc-800">{s}</SelectItem>)}
                                                                     </SelectContent>
                                                                 </Select>
@@ -311,7 +312,7 @@ export function ProductForm({ initialData, categories, isLoading, onSubmit, onCa
                                                                                 <SelectValue placeholder={field.value} />
                                                                             </div>
                                                                         </SelectTrigger>
-                                                                        <SelectContent className="bg-white dark:bg-neutral-950 border shadow-md relative z-[9999]">
+                                                                        <SelectContent className="bg-white dark:bg-neutral-950 border shadow-md relative z-9999">
                                                                             {COLOR_OPTIONS.map(c => (
                                                                                 <SelectItem key={c} value={c} className="cursor-pointer bg-white dark:bg-neutral-950 hover:bg-zinc-100 dark:hover:bg-zinc-800 focus:bg-zinc-100 dark:focus:bg-zinc-800">
                                                                                     <div className="flex items-center gap-2">

@@ -13,7 +13,7 @@ export default function NotFound() {
                 Lost in the Void
             </h2>
             <p className="text-muted-foreground max-w-md mx-auto text-lg font-medium">
-                The page you're searching for has vanished into the digital abyss.
+                The page you&apos;re searching for has vanished into the digital abyss.
             </p>
             <div className="flex gap-4 justify-center pt-4">
                 <Link href="/">

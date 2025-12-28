@@ -13,7 +13,20 @@ import { Loader2 } from "lucide-react"
 import { motion } from "framer-motion"
 import { BrandBadge } from "@/components/storefront/brand-badge"
 
-export function ProfileTab({ user, profile }: { user: any, profile: any }) {
+interface ProfileTabProps {
+  user: {
+    id: string
+    email?: string
+  }
+  profile: {
+    name: string | null
+    role?: string
+    fit_preference?: string
+    pronouns?: string
+  }
+}
+
+export function ProfileTab({ user, profile }: ProfileTabProps) {
     const [loading, setLoading] = useState(false)
 
     async function onSubmit(formData: FormData) {
@@ -49,7 +62,7 @@ export function ProfileTab({ user, profile }: { user: any, profile: any }) {
             animate="visible"
             className="space-y-10"
         >
-            <motion.div variants={itemVariants} className="flex flex-col md:flex-row items-center gap-6 md:gap-8 p-5 md:p-8 rounded-[2.5rem] bg-card border-2 border-border/50 relative overflow-hidden group">
+            <motion.div variants={itemVariants} className="flex flex-col md:flex-row items-center gap-6 md:gap-8 p-5 md:p-8 rounded-4xl bg-card border-2 border-border/50 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors" />
                 
                 <div className="relative">
@@ -114,7 +127,7 @@ export function ProfileTab({ user, profile }: { user: any, profile: any }) {
                             <SelectItem value="fitted">Fitted</SelectItem>
                         </SelectContent>
                      </Select>
-                     <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider ml-1 opacity-60">We'll use this to calibrate your style recommendations.</p>
+                     <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider ml-1 opacity-60">We&apos;ll use this to calibrate your style recommendations.</p>
                 </motion.div>
 
                 <motion.div variants={itemVariants} className="pt-4">

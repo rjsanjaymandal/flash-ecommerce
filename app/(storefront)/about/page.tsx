@@ -30,8 +30,8 @@ export default function AboutPage() {
                         <h2 className="text-3xl font-black uppercase tracking-wide">Our Story</h2>
                         <p>
                             <strong>FLASH</strong> was established in <strong>2025</strong> with a singular mission: to dismantle the binary in fashion. 
-                            Born in the vibrant streets of India, we recognized a gap between "high fashion" and "authentic self-expression."
-                            Too often, "unisex" meant "shapeless." FLASH rejects that.
+                            Born in the vibrant streets of India, we recognized a gap between &quot;high fashion&quot; and &quot;authentic self-expression.&quot;
+                            Too often, &quot;unisex&quot; meant &quot;shapeless.&quot; FLASH rejects that.
                         </p>
                         <p>
                             We design <strong>gender-inclusive streetwear</strong> that fits diverse bodies, celebrates queer identity, and refuses to compromise on quality.
@@ -40,23 +40,23 @@ export default function AboutPage() {
                     </section>
 
                     <section className="prose prose-lg dark:prose-invert max-w-none">
-                        <h2 className="text-3xl font-black uppercase tracking-wide">The "Queermade" Promise</h2>
+                        <h2 className="text-3xl font-black uppercase tracking-wide">The &quot;Queermade&quot; Promise</h2>
                         <p>
                             When we say <strong>Queermade</strong>, we mean it. FLASH is proudly queer-owned and operated. 
-                            This isn't just a marketing tag; it's our DNA. We prioritize:
+                            This isn&apos;t just a marketing tag; it&apos;s our DNA. We prioritize:
                         </p>
                         <ul className="list-disc pl-6 space-y-2 marker:text-primary">
                             <li><strong>Ethical Manufacturing:</strong> We partner exclusively with factories that ensure fair wages and safe conditions.</li>
                             <li><strong>Inclusive Sizing:</strong> Our patterns are graded for a spectrum of body types, not just the industry standard.</li>
-                            <li><strong>Community First:</strong> A percentage of every "Pride Collection" sale goes directly to local LGBTQ+ support groups in India.</li>
+                            <li><strong>Community First:</strong> A percentage of every &quot;Pride Collection&quot; sale goes directly to local LGBTQ+ support groups in India.</li>
                         </ul>
                     </section>
 
                     <section className="prose prose-lg dark:prose-invert max-w-none">
                         <h2 className="text-3xl font-black uppercase tracking-wide">2025 Vision & Roadmap</h2>
                         <p>
-                            As we expand globally, FLASH is pioneering <strong>"Hyper-Personalized Retail"</strong>. 
-                            We believe the future of fashion is fluid. In 2025, we are launching our <em>"Vibe-First"</em> shopping experience, allowing you to shop by mood rather than gender.
+                            As we expand globally, FLASH is pioneering <strong>&quot;Hyper-Personalized Retail&quot;</strong>. 
+                            We believe the future of fashion is fluid. In 2025, we are launching our <em>&quot;Vibe-First&quot;</em> shopping experience, allowing you to shop by mood rather than gender.
                         </p>
                     </section>
                 </main>

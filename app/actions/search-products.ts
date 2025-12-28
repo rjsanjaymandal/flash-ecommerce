@@ -3,32 +3,36 @@
 import { createClient } from '@/lib/supabase/server'
 
 // Return the full lightweight search index for client-side fuzzy search
+interface RawSearchProduct {
+    id: string
+    name: string | null
+    price: number
+    main_image_url: string | null
+    slug?: string | null
+    category: { name: string } | { name: string }[] | null
+}
+
 export async function getSearchIndex() {
     const supabase = await createClient()
     
-    // Select minimal fields needed for search & display
-    // EXCLUDING 'images' as it appears to be a non-existent column in this env, causing 500s.
-    // relying on 'main_image_url'.
     const { data } = await supabase
         .from('products')
-        .select('id, name, price, main_image_url, category:categories(name)')
+        .select('id, name, price, main_image_url, slug, category:categories(name)')
         .eq('is_active', true)
-        .limit(1000)
+        .limit(1000) as { data: RawSearchProduct[] | null }
 
     if (!data) return []
 
     // Map to specific shape if needed, or return as is
-    return data.map((p: any) => {
-        // Handle Supabase relation: could be object or array depending on mapping
+    return data.map((p) => {
         const cat = Array.isArray(p.category) ? p.category[0] : p.category
         return {
-            ...p,
+            id: p.id,
             name: p.name || '',
-            // Provide a fallback 'images' array for frontend components expecting it
-            images: p.main_image_url ? [p.main_image_url] : [], 
-            category_name: cat?.name || '', // Flatten for Fuse
-            // Unify image field for display
-            display_image: p.main_image_url || null
+            price: p.price,
+            slug: p.slug || p.id,
+            display_image: p.main_image_url,
+            category_name: cat?.name || '',
         }
     })
 }

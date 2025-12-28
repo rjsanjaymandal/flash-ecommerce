@@ -17,7 +17,7 @@ export default function ContactPage() {
                 GET IN <span className="text-transparent bg-clip-text bg-linear-to-r from-blue-500 to-purple-600">TOUCH</span>
             </h1>
             <p className="text-muted-foreground text-lg leading-relaxed max-w-lg">
-                Have a question or just want to verify your vibe? We're here.
+                Have a question or just want to verify your vibe? We&apos;re here.
             </p>
         </div>
 
@@ -99,10 +99,10 @@ export default function ContactPage() {
 
             {/* Right: Form */}
             <div className="animate-in slide-in-from-right-4 duration-700 delay-200">
-                <div className="bg-white/60 backdrop-blur-xl border border-white/40 rounded-[2rem] p-8 shadow-lg shadow-black/5">
+                <div className="bg-white/60 backdrop-blur-xl border border-white/40 rounded-4xl p-8 shadow-lg shadow-black/5">
                     <h3 className="text-2xl font-black mb-2">Send Message</h3>
                     <p className="text-muted-foreground mb-8 text-sm">
-                        Fill out the form below and we'll get back to you within 24 hours.
+                        Fill out the form below and we&apos;ll get back to you within 24 hours.
                     </p>
                     <ContactForm />
                 </div>

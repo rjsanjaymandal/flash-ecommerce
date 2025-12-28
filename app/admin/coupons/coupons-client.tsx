@@ -28,7 +28,26 @@ import {
   Plus, Search, MoreHorizontal, Ticket, Trash2, Power, Copy, Loader2 
 } from 'lucide-react'
 
-export function CouponsClient({ initialCoupons, meta }: { initialCoupons: any[], meta: { total: number, page: number, limit: number, totalPages: number } }) {
+interface AdminCoupon {
+    id: string
+    code: string
+    discount_type: 'percentage' | 'fixed'
+    value: number
+    min_order_amount: number
+    max_uses: number | null
+    used_count: number
+    expires_at: string | null
+    active: boolean
+}
+
+interface CouponMeta {
+    total: number
+    page: number
+    limit: number
+    totalPages: number
+}
+
+export function CouponsClient({ initialCoupons, meta }: { initialCoupons: AdminCoupon[], meta: CouponMeta }) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [search, setSearch] = useState(searchParams.get('q') || '') 
@@ -78,7 +97,7 @@ export function CouponsClient({ initialCoupons, meta }: { initialCoupons: any[],
       toast.success('Coupon created successfully')
       router.refresh()
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error('Failed to create coupon: ' + error.message)
     }
   })
@@ -89,7 +108,7 @@ export function CouponsClient({ initialCoupons, meta }: { initialCoupons: any[],
       toast.success('Coupon deleted')
       router.refresh()
     },
-    onError: (err: any) => toast.error('Delete failed: ' + err.message)
+    onError: (err: Error) => toast.error('Delete failed: ' + err.message)
   })
 
   const toggleStatusMutation = useMutation({
@@ -98,7 +117,7 @@ export function CouponsClient({ initialCoupons, meta }: { initialCoupons: any[],
       toast.success('Status updated')
       router.refresh()
     },
-    onError: (err: any) => toast.error('Update failed: ' + err.message)
+    onError: (err: Error) => toast.error('Update failed: ' + err.message)
   })
 
   const copyCode = (code: string) => {
