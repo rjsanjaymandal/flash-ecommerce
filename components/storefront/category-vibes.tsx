@@ -3,10 +3,10 @@
 import Link from "next/link";
 import FlashImage from "@/components/ui/flash-image";
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowUpRight, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { BrandGlow } from "./brand-glow";
 import { BrandBadge } from "./brand-badge";
+import Marquee from "@/components/ui/marquee";
 
 interface Category {
   id: string;
@@ -22,110 +22,121 @@ interface CategoryVibesProps {
 export function CategoryVibes({ categories }: CategoryVibesProps) {
   if (!categories?.length) return null;
 
-  return (
-    <section className="py-8 md:py-16 bg-background relative overflow-hidden">
-      {/* Brand Glows */}
-      <BrandGlow className="top-0 right-[-10%]" size="lg" />
-      <BrandGlow
-        className="bottom-[-10%] left-[-10%]"
-        size="lg"
-        color="accent"
-      />
+  // Bento Grid Layout Patterns (Desktop)
+  const getGridClass = (index: number) => {
+    // Pattern: Big Large (2x2) -> Tall (1x2) -> Wide (2x1) -> Small (1x1)
+    const pattern = [
+      "md:col-span-2 md:row-span-2", // Hero
+      "md:col-span-1 md:row-span-2", // Tall
+      "md:col-span-2 md:row-span-1", // Wide
+      "md:col-span-1 md:row-span-1", // Standard
+    ];
+    return pattern[index % pattern.length];
+  };
 
-      <div className="container mx-auto px-4 lg:px-8">
-        <div className="flex flex-col items-center text-center gap-4 mb-8 max-w-4xl mx-auto relative pt-8">
-          <BrandBadge variant="primary" className="mb-2">
-            The Collections
+  return (
+    <section className="py-20 bg-background relative overflow-hidden">
+      {/* BACKGROUND MARQUEE */}
+      <div className="absolute top-20 left-0 right-0 opacity-[0.03] pointer-events-none select-none z-0">
+        <Marquee className="[--duration:60s] [--gap:2rem]" reverse>
+          <span className="text-[12rem] font-black italic tracking-tighter mx-8">
+            PICK YOUR VIBE
+          </span>
+          <span className="text-[12rem] font-black italic tracking-tighter mx-8 text-stroke-2">
+            UNAPOLOGETIC
+          </span>
+          <span className="text-[12rem] font-black italic tracking-tighter mx-8">
+            BOLD
+          </span>
+        </Marquee>
+      </div>
+
+      <div className="container mx-auto px-4 lg:px-8 relative z-10">
+        <div className="flex flex-col items-start gap-4 mb-12">
+          <BrandBadge
+            variant="primary"
+            className="mb-2 shadow-lg shadow-primary/20"
+          >
+            <Sparkles className="w-3 h-3 mr-1" /> The Collections
           </BrandBadge>
           <motion.h2
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="text-5xl md:text-7xl font-black tracking-tighter text-foreground leading-[0.8] uppercase italic flex items-center justify-center gap-4 flex-wrap"
+            className="text-5xl md:text-8xl font-black tracking-tighter text-foreground leading-[0.85] uppercase italic"
           >
-            PICK YOUR{" "}
-            <span className="text-gradient drop-shadow-[0_0_30px_rgba(var(--primary),0.3)]">
-              VIBES
-            </span>
+            PICK YOUR <span className="text-gradient">VIBE</span>
           </motion.h2>
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.3 }}
-            className="text-muted-foreground text-sm md:text-base font-medium tracking-wide max-w-md mt-2"
-          >
-            Curated drops designed to affirm your identity and express your
-            authentic self.
-          </motion.p>
         </div>
 
-        <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-6 overflow-x-auto snap-x snap-mandatory pt-4 pb-12 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
-          {categories.map((cat, i) => {
-            const gradients = [
-              "from-indigo-600/40 to-violet-600/40",
-              "from-emerald-500/40 to-teal-400/40",
-              "from-amber-400/40 to-orange-600/40",
-              "from-rose-500/40 to-pink-500/40",
-            ];
-            const borderGlow = [
-              "group-hover:shadow-indigo-500/20",
-              "group-hover:shadow-emerald-500/20",
-              "group-hover:shadow-amber-500/20",
-              "group-hover:shadow-rose-500/20",
-            ];
-            const gradient = gradients[i % gradients.length];
-            const shadow = borderGlow[i % borderGlow.length];
-
-            return (
-              <Link
-                key={cat.id}
-                href={`/shop?category=${cat.id}`}
-                className={cn(
-                  "group relative min-w-[280px] w-[80vw] md:min-w-0 md:w-auto h-[450px] md:h-[550px] overflow-hidden rounded-[2.5rem] bg-zinc-900 transition-all duration-700 snap-center",
-                  "flex-shrink-0 border border-white/5",
-                  shadow,
-                  "hover:border-primary/50 hover:shadow-[0_0_30px_rgba(var(--primary),0.2)]"
-                )}
-              >
-                {/* Background Image / Gradient */}
-                <div
-                  className={`absolute inset-0 bg-linear-to-br ${gradient} z-10 opacity-60 group-hover:opacity-100 transition-opacity duration-700`}
-                />
-                {cat.image_url && (
+        {/* BENTO GRID (Desktop) / SNAP SCROLL (Mobile) */}
+        <div className="grid grid-cols-1 md:grid-cols-4 md:auto-rows-[300px] gap-4 md:gap-6">
+          {categories.slice(0, 5).map((cat, i) => (
+            <Link
+              key={cat.id}
+              href={`/shop?category=${cat.id}`}
+              className={cn(
+                "group relative overflow-hidden rounded-[2rem] bg-zinc-900 border border-white/10 transition-all duration-500 hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/10",
+                "min-h-[400px] md:min-h-0", // Mobile Height
+                getGridClass(i)
+              )}
+            >
+              {/* IMAGE HOVER EFFECT */}
+              {cat.image_url && (
+                <div className="absolute inset-0 overflow-hidden">
                   <FlashImage
                     src={cat.image_url}
-                    className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000 ease-out"
                     alt={cat.name}
                     fill
-                    sizes="(max-width: 768px) 80vw, (max-width: 1200px) 50vw, 25vw"
+                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-110 group-hover:rotate-1"
+                    sizes="(max-width: 768px) 100vw, 50vw"
                   />
-                )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-500" />
+                </div>
+              )}
 
-                {/* Content Overlay */}
-                <div className="absolute inset-0 p-8 md:p-12 flex flex-col justify-end z-20">
-                  <div className="space-y-4 transform translate-y-6 group-hover:translate-y-0 transition-transform duration-700 ease-out">
-                    <div className="h-0.5 w-12 bg-white/40 group-hover:w-20 transition-all duration-700" />
-                    <h3 className="text-4xl md:text-5xl font-black tracking-tighter text-white leading-none capitalize italic">
-                      {cat.name}
-                    </h3>
-                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500 delay-100">
-                      <span className="text-white text-[10px] uppercase font-black tracking-widest">
-                        Shop Collection
-                      </span>
-                      <ArrowRight className="h-4 w-4 text-white" />
+              {/* CONTENT */}
+              <div className="absolute inset-0 p-6 md:p-8 flex flex-col justify-end">
+                <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 ease-out">
+                  {/* Dynamic Badge (Simulated) */}
+                  <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/10 mb-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="text-[10px] font-bold text-white uppercase tracking-wider">
+                      New Drop
+                    </span>
+                  </div>
+
+                  <h3 className="text-3xl md:text-5xl font-black tracking-tighter text-white uppercase italic leading-[0.9] mb-2 drop-shadow-lg">
+                    {cat.name}
+                  </h3>
+
+                  <div className="flex items-center gap-2 text-white/80 group-hover:text-primary transition-colors duration-300">
+                    <span className="text-xs font-bold uppercase tracking-widest hidden md:inline-block">
+                      View Collection
+                    </span>
+                    <div className="p-2 rounded-full bg-white/10 backdrop-blur-sm group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                      <ArrowUpRight className="w-4 h-4" />
                     </div>
                   </div>
                 </div>
+              </div>
+            </Link>
+          ))}
 
-                {/* Glassy badge */}
-                <div className="absolute top-6 left-6 px-4 py-2 glass rounded-full z-20 border-white/20">
-                  <span className="text-white text-[10px] font-black uppercase tracking-[0.2em]">{`Drop 0${i + 1}`}</span>
-                </div>
-              </Link>
-            );
-          })}
+          {/* "VIEW ALL" TILE (If odd number or to fill grid) */}
+          <Link
+            href="/shop"
+            className="md:col-span-1 md:row-span-1 min-h-[200px] group relative overflow-hidden rounded-[2rem] bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex flex-col items-center justify-center p-6 text-center hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+          >
+            <div className="relative z-10">
+              <span className="block text-4xl mb-2 group-hover:scale-110 transition-transform duration-300">
+                👀
+              </span>
+              <span className="text-lg font-black uppercase tracking-wider">
+                View All Collections
+              </span>
+            </div>
+          </Link>
         </div>
       </div>
     </section>
