@@ -7,6 +7,7 @@ import {
   PanInfo,
   useMotionValue,
   useTransform,
+  Variants,
 } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -19,6 +20,10 @@ import {
   ShoppingBag,
   ArrowRight,
   Gift,
+  Zap,
+  ShieldCheck,
+  Truck,
+  Flame,
 } from "lucide-react";
 import { cn, formatCurrency } from "@/lib/utils";
 import { useCartStore } from "@/store/use-cart-store";
@@ -41,6 +46,79 @@ interface HeroCarouselProps {
 }
 
 import { QuickAddDialog } from "@/components/products/quick-add-dialog";
+
+// Text Reveal Variant
+const glitchVariants: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.4,
+      ease: "circOut",
+    },
+  },
+};
+
+// Generate a deterministic color from string (for dynamic glow)
+const stringToColor = (str: string) => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const c = (hash & 0x00ffffff).toString(16).toUpperCase();
+  return "#" + "00000".substring(0, 6 - c.length) + c;
+};
+
+// Stats Badge Component
+function LiveStatsBadge() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="absolute top-6 right-6 lg:right-auto lg:left-6 z-20 flex items-center gap-2 bg-black/40 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-full"
+    >
+      <span className="relative flex h-2 w-2">
+        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+      </span>
+      <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1">
+        <Flame className="w-3 h-3 text-red-500 fill-red-500" />
+        Selling Fast
+      </span>
+    </motion.div>
+  );
+}
+
+// Quick Specs Component
+function QuickSpecs() {
+  const specs = [
+    { icon: ShieldCheck, label: "Premium" },
+    { icon: Zap, label: "New Arrival" },
+    { icon: Truck, label: "Fast Ship" },
+  ];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 0.8 }}
+      className="hidden sm:flex items-center gap-6 mt-8 p-4 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-sm w-fit"
+    >
+      {specs.map((Spec, i) => (
+        <div
+          key={i}
+          className="flex items-center gap-2 text-muted-foreground/80"
+        >
+          <Spec.icon className="w-4 h-4" />
+          <span className="text-xs font-medium uppercase tracking-wider">
+            {Spec.label}
+          </span>
+        </div>
+      ))}
+    </motion.div>
+  );
+}
 
 // Internal Progress Ring Component
 function ProgressRing({
@@ -93,6 +171,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [isHolding, setIsHolding] = useState(false); // Mobile hold state
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLElement>(null);
   const router = useRouter();
@@ -132,14 +211,18 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
 
   // Efficient Auto-scroll using setTimeout instead of setInterval state loop
   useEffect(() => {
-    if (isPaused || isQuickAddOpen) return;
+    if (isPaused || isHolding || isQuickAddOpen) return;
 
     const timer = setTimeout(() => {
       handleNext();
     }, DURATION);
 
     return () => clearTimeout(timer);
-  }, [currentIndex, isPaused, isQuickAddOpen]);
+  }, [currentIndex, isPaused, isHolding, isQuickAddOpen]);
+
+  // Touch Handlers for "Hold to Pause"
+  const handleTouchStart = () => setIsHolding(true);
+  const handleTouchEnd = () => setIsHolding(false);
 
   const handleNext = () => {
     setDirection(1);
@@ -188,13 +271,19 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
       .trim();
   };
 
+  const calculateGlowColor = () => {
+    if (!currentProduct) return "#ffffff";
+    return stringToColor(currentProduct.id + currentProduct.name);
+  };
+  const dynamicGlowColor = calculateGlowColor();
+
   return (
     <section
       ref={containerRef}
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={handleMouseLeave}
-      className="relative w-full h-[85vh] lg:h-[90vh] bg-background overflow-hidden group perspective-1000 cursor-grab active:cursor-grabbing"
+      className="relative w-full h-[85vh] lg:h-[90vh] bg-background overflow-hidden group perspective-1000 cursor-grab active:cursor-grabbing selection:bg-primary selection:text-white"
     >
       <AnimatePresence initial={false} custom={direction} mode="popLayout">
         <motion.div
@@ -220,11 +309,19 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
           dragConstraints={{ left: 0, right: 0 }}
           dragElastic={1}
           onDragEnd={handleDragEnd}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
           className="absolute inset-0 flex flex-col lg:flex-row touch-pan-y"
         >
           {/* TEXT SECTION */}
           <div className="relative z-20 w-full lg:w-[45%] h-full flex flex-col justify-center px-6 py-12 lg:px-16 xl:px-20 bg-transparent lg:bg-none pointer-events-none lg:pointer-events-auto">
-            <BrandGlow className="top-1/2 left-0 -translate-y-1/2 opacity-60" />
+            <BrandGlow
+              className="top-1/2 left-0 -translate-y-1/2 opacity-20 transition-colors duration-1000"
+              style={{
+                background: `radial-gradient(circle, ${dynamicGlowColor}33 0%, transparent 70%)`,
+              }}
+              size="lg"
+            />
 
             <motion.div
               className="space-y-4 lg:space-y-6 relative max-w-xl pointer-events-auto mt-20 lg:mt-0"
@@ -257,14 +354,12 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
 
               <div className="overflow-hidden">
                 <motion.h1
-                  initial={{ y: "100%" }}
-                  animate={{ y: 0 }}
-                  transition={{
-                    delay: 0.2,
-                    duration: 0.6,
-                    ease: [0.22, 1, 0.36, 1],
-                  }}
+                  key={currentProduct.name}
+                  variants={glitchVariants}
+                  initial="hidden"
+                  animate="visible"
                   className="text-4xl sm:text-5xl lg:text-7xl font-black tracking-tighter leading-[0.9] text-foreground uppercase italic line-clamp-2 lg:line-clamp-3 drop-shadow-lg lg:drop-shadow-none"
+                  style={{ textShadow: `0 0 30px ${dynamicGlowColor}44` }}
                 >
                   {currentProduct.name}
                 </motion.h1>
@@ -326,6 +421,9 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                   </Button>
                 </motion.div>
               </div>
+
+              {/* Quick Specs Micro-Grid (New) */}
+              <QuickSpecs />
             </motion.div>
           </div>
 
@@ -335,21 +433,27 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
             style={{ rotateX, rotateY, perspective: 1000 }}
           >
             {currentProduct.main_image_url ? (
-              <div className="w-full h-full relative">
-                {/* Background Blur for atmosphere */}
-                <FlashImage
-                  src={currentProduct.main_image_url}
-                  alt=""
-                  fill
-                  className="object-cover blur-3xl opacity-30 scale-150"
-                  aria-hidden="true"
+              <div className="w-full h-full relative flex items-center justify-center">
+                {/* Live Stats Badge (New) */}
+                <LiveStatsBadge />
+
+                {/* CLEANER SPOTLIGHT EFFECT (Replaces heavy blur) */}
+                {/* 1. Large soft ambient glow */}
+                <div
+                  className="absolute inset-0 opacity-20 transition-colors duration-1000"
+                  style={{
+                    background: `radial-gradient(circle at center, ${dynamicGlowColor}, transparent 70%)`,
+                  }}
                 />
+
+                {/* 2. Spotlight behind image */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] bg-white/5 blur-3xl rounded-full" />
 
                 <motion.div
                   initial={{ scale: 1.1, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ duration: 0.8 }}
-                  className="relative w-full h-full"
+                  className="relative w-full h-full p-8 lg:p-0"
                 >
                   <FlashImage
                     src={currentProduct.main_image_url}
@@ -357,7 +461,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                     fill
                     priority={true}
                     quality={90}
-                    className="object-cover lg:object-contain object-center z-10 drop-shadow-2xl"
+                    className="object-contain object-center z-10 drop-shadow-2xl"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1400px"
                   />
                 </motion.div>
@@ -374,12 +478,12 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
         <motion.div
           key={currentIndex}
           initial={{ width: "0%" }}
-          animate={{ width: isPaused ? "auto" : "100%" }} // If paused, stop animating? Hard to pause mid-way easily without complex state.
-          // Simplified: Just restart on index change. Interaction pauses logical slide change, but bar keeps moving visually to completion then waits.
-          // OR: Actually pause visual.
-          // Better for perf: Let it complete but just don't trigger next if paused.
+          animate={{ width: isPaused || isHolding ? "auto" : "100%" }}
           transition={{ duration: DURATION / 1000, ease: "linear" }}
           className="h-full bg-primary"
+          style={{
+            backgroundColor: isHolding ? dynamicGlowColor : undefined,
+          }}
         />
       </div>
 
@@ -404,7 +508,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                 <ProgressRing
                   radius={28}
                   stroke={3}
-                  isActive={!isPaused}
+                  isActive={!isPaused && !isHolding}
                   duration={DURATION}
                 />
               </div>
