@@ -133,28 +133,37 @@ export function LabClientView({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="max-w-2xl text-center text-lg md:text-xl text-muted-foreground leading-relaxed mb-16 font-medium"
+            className="max-w-xl text-center text-sm md:text-xl text-muted-foreground leading-relaxed mb-10 md:mb-16 font-medium px-4"
           >
             Don't just follow the trend.{" "}
             <span className="text-foreground font-bold underline decoration-primary/30 underline-offset-8">
               Direct it.
             </span>{" "}
-            We prototype, you decide. Reach the vote goal to unlock
-            manufacturing for the entire community.
+            We prototype, you decide.
           </motion.p>
 
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
-            className="w-full max-w-2xl mx-auto"
+            className="w-full max-w-2xl mx-auto px-4"
           >
-            {/* Optional: Add a call to action or search here instead of stats */}
+            <button
+              onClick={() =>
+                document
+                  .getElementById("concepts-grid")
+                  ?.scrollIntoView({ behavior: "smooth" })
+              }
+              className="w-full md:w-auto px-8 py-4 rounded-full bg-primary text-white font-black uppercase text-xs tracking-widest shadow-xl shadow-primary/20 animate-bounce"
+            >
+              Start Voting
+            </button>
           </motion.div>
         </div>
 
         {/* Concepts Grid with Staggered children */}
         <motion.div
+          id="concepts-grid"
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12 lg:gap-16 mb-32"
           variants={{
             hidden: { opacity: 0 },

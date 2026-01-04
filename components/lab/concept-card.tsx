@@ -147,7 +147,7 @@ export function ConceptCard({
           {/* Share Button */}
           <button
             onClick={handleShare}
-            className="absolute right-4 top-4 p-2.5 rounded-full bg-black/40 border border-white/10 text-white backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:border-primary duration-300 transform translate-y-[-10px] group-hover:translate-y-0"
+            className="absolute right-4 top-4 p-2.5 rounded-full bg-black/40 border border-white/10 text-white backdrop-blur-md transition-all hover:bg-primary hover:border-primary duration-300 opacity-100 md:opacity-0 md:group-hover:opacity-100 transform translate-y-0 md:translate-y-[-10px] md:group-hover:translate-y-0"
           >
             <Share2 className="h-4 w-4" />
           </button>
