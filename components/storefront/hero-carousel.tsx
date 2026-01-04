@@ -454,22 +454,27 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                 {/* 2. Spotlight behind image */}
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] bg-white/5 blur-3xl rounded-full" />
 
-                <motion.div
-                  initial={{ scale: 1.1, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ duration: 0.8 }}
-                  className="relative w-full h-full p-8 lg:p-0"
+                <Link
+                  href={`/product/${currentProduct.slug}`}
+                  className="relative w-full h-full block"
                 >
-                  <FlashImage
-                    src={currentProduct.main_image_url}
-                    alt={currentProduct.name}
-                    fill
-                    priority={true}
-                    quality={90}
-                    className="object-contain object-center z-10 drop-shadow-2xl"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1400px"
-                  />
-                </motion.div>
+                  <motion.div
+                    initial={{ scale: 1.1, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.8 }}
+                    className="relative w-full h-full p-4 lg:p-0"
+                  >
+                    <FlashImage
+                      src={currentProduct.main_image_url}
+                      alt={currentProduct.name}
+                      fill
+                      priority={true}
+                      quality={90}
+                      className="object-contain object-center z-10 drop-shadow-2xl"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1400px"
+                    />
+                  </motion.div>
+                </Link>
               </div>
             ) : null}
             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent lg:hidden z-20" />
