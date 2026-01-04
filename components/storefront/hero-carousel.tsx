@@ -314,7 +314,10 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
           className="absolute inset-0 flex flex-col lg:flex-row touch-pan-y"
         >
           {/* TEXT SECTION */}
-          <div className="relative z-20 w-full lg:w-[45%] h-full flex flex-col justify-center px-6 py-12 lg:px-16 xl:px-20 bg-transparent lg:bg-none pointer-events-none lg:pointer-events-auto">
+          <div className="relative z-20 w-full lg:w-[45%] h-full flex flex-col justify-end lg:justify-center px-6 pb-32 pt-12 lg:py-12 lg:px-16 xl:px-20 bg-transparent lg:bg-none pointer-events-none lg:pointer-events-auto">
+            {/* Mobile Gradient Overlay for Readability */}
+            <div className="absolute inset-x-0 bottom-0 h-[70vh] bg-gradient-to-t from-background via-background/60 to-transparent lg:hidden -z-10" />
+
             <BrandGlow
               className="top-1/2 left-0 -translate-y-1/2 opacity-20 transition-colors duration-1000"
               style={{
@@ -324,9 +327,9 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
             />
 
             <motion.div
-              className="space-y-4 lg:space-y-6 relative max-w-xl pointer-events-auto mt-20 lg:mt-0"
+              className="space-y-3 lg:space-y-6 relative max-w-xl pointer-events-auto"
               animate={{
-                x: mousePosition.x * 20, // Reduced movement for less "heavy" feel
+                x: mousePosition.x * 20,
                 y: mousePosition.y * 20,
               }}
               transition={{ type: "spring", stiffness: 50, damping: 20 }}
@@ -343,7 +346,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                 >
                   <BrandBadge
                     variant="primary"
-                    className="mb-4 shadow-lg shadow-primary/20"
+                    className="mb-3 lg:mb-4 shadow-lg shadow-primary/20"
                   >
                     <span className="flex items-center gap-1.5">
                       JUST DROPPED
@@ -358,7 +361,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                   variants={glitchVariants}
                   initial="hidden"
                   animate="visible"
-                  className="text-4xl sm:text-5xl lg:text-7xl font-black tracking-tighter leading-[0.9] text-foreground uppercase italic line-clamp-2 lg:line-clamp-3 drop-shadow-lg lg:drop-shadow-none"
+                  className="text-5xl lg:text-7xl font-black tracking-tighter leading-[0.9] text-foreground uppercase italic line-clamp-2 lg:line-clamp-3 drop-shadow-lg lg:drop-shadow-none"
                   style={{ textShadow: `0 0 30px ${dynamicGlowColor}44` }}
                 >
                   {currentProduct.name}
@@ -369,7 +372,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.4, duration: 0.8 }}
-                className="text-base sm:text-lg text-muted-foreground font-medium line-clamp-2 leading-relaxed"
+                className="text-sm lg:text-lg text-muted-foreground font-medium line-clamp-2 leading-relaxed"
               >
                 {cleanDescription(currentProduct.description)}
               </motion.p>
@@ -380,7 +383,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                 transition={{ delay: 0.5, duration: 0.4 }}
                 className="flex items-baseline gap-4"
               >
-                <span className="text-3xl lg:text-5xl font-black text-primary drop-shadow-md">
+                <span className="text-4xl lg:text-5xl font-black text-primary drop-shadow-md">
                   {formatCurrency(currentProduct.price)}
                 </span>
               </motion.div>
@@ -390,10 +393,11 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.6 }}
+                  className="w-full sm:w-auto"
                 >
                   <Button
                     size="lg"
-                    className="flex-1 sm:flex-none h-14 sm:h-16 px-6 sm:px-10 rounded-2xl text-base sm:text-lg font-black uppercase tracking-widest gradient-primary shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all duration-300 relative overflow-hidden group/btn"
+                    className="w-full sm:w-auto h-14 sm:h-16 px-6 sm:px-10 rounded-2xl text-base sm:text-lg font-black uppercase tracking-widest gradient-primary shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all duration-300 relative overflow-hidden group/btn"
                     onClick={handleBuyNow}
                   >
                     <span className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300" />
@@ -405,6 +409,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.7 }}
+                  className="hidden sm:block"
                 >
                   <Button
                     size="lg"
