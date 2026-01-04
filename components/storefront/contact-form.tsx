@@ -37,7 +37,7 @@ export function ContactForm() {
             </Label>
             <Input 
                 id="first-name" 
-                placeholder="Jane" 
+                placeholder="sam" 
                 required 
                 className="rounded-full bg-white/50 backdrop-blur-sm border-zinc-200/50 focus:border-primary focus:ring-primary/20 h-10 px-4"
             />
@@ -48,7 +48,7 @@ export function ContactForm() {
             </Label>
             <Input 
                 id="last-name" 
-                placeholder="Doe" 
+                placeholder="sam" 
                 required 
                 className="rounded-full bg-white/50 backdrop-blur-sm border-zinc-200/50 focus:border-primary focus:ring-primary/20 h-10 px-4"
             />
@@ -62,7 +62,7 @@ export function ContactForm() {
         <Input 
             id="email" 
             type="email" 
-            placeholder="jane@example.com" 
+            placeholder="sam@example.com" 
             required 
             className="rounded-full bg-white/50 backdrop-blur-sm border-zinc-200/50 focus:border-primary focus:ring-primary/20 h-10 px-4"
         />

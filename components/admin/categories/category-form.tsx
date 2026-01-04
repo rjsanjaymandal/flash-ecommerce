@@ -1,219 +1,288 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Switch } from '@/components/ui/switch'
-import { slugify } from '@/lib/slugify'
-import { Image as ImageIcon, Loader2, X } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
-import { toast } from 'sonner'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import NextImage from 'next/image'
-import imageLoader from '@/lib/image-loader'
+import { useState, useEffect } from "react";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { categorySchema, type CategoryData } from "@/lib/validations/category";
 
-export type CategoryFormData = {
-    name: string
-    slug: string
-    description: string
-    parent_id: string 
-    image_url: string
-    is_active: boolean
-}
+export type CategoryFormData = CategoryData;
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { slugify } from "@/lib/slugify";
+import { Image as ImageIcon, Loader2, X } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { toast } from "sonner";
+import NextImage from "next/image";
+import imageLoader from "@/lib/image-loader";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 
 interface CategoryFormProps {
-    initialData?: CategoryFormData
-    categories: any[]
-    isEditing: boolean
-    isLoading: boolean
-    onSubmit: (data: CategoryFormData) => void
-    onCancel: () => void
+  initialData?: CategoryData;
+  categories: any[];
+  isEditing: boolean;
+  isLoading: boolean;
+  onSubmit: (data: CategoryData) => void;
+  onCancel: () => void;
 }
 
-export function CategoryForm({ initialData, categories, isEditing, isLoading, onSubmit, onCancel }: CategoryFormProps) {
-    const supabase = createClient()
-    const [formData, setFormData] = useState<CategoryFormData>(initialData || {
-        name: '',
-        slug: '',
-        description: '',
-        parent_id: 'none',
-        image_url: '',
-        is_active: true
-    })
-    
-    // Reset form when initialData changes (for editing)
-    useEffect(() => {
-        if (initialData) {
-            setFormData(initialData)
-        } else {
-            setFormData({
-                name: '', slug: '', description: '', parent_id: 'none', image_url: '', is_active: true
-            })
-        }
-    }, [initialData])
+export function CategoryForm({
+  initialData,
+  categories,
+  isEditing,
+  isLoading,
+  onSubmit,
+  onCancel,
+}: CategoryFormProps) {
+  const supabase = createClient();
+  const [isUploading, setIsUploading] = useState(false);
 
-    const [isUploading, setIsUploading] = useState(false)
-    const [errors, setErrors] = useState<string[]>([])
+  const form = useForm<CategoryData>({
+    resolver: zodResolver(categorySchema),
+    defaultValues: {
+      name: initialData?.name || "",
+      slug: initialData?.slug || "",
+      description: initialData?.description || "",
+      parent_id: initialData?.parent_id || "none",
+      image_url: initialData?.image_url || "",
+      is_active: initialData?.is_active ?? true,
+    },
+  });
 
-    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
-        if (!file) return
-
-        setIsUploading(true)
-        try {
-            const fileExt = file.name.split('.').pop()
-            const fileName = `cat_${Date.now()}_${Math.random()}.${fileExt}`
-            const { error } = await supabase.storage.from('category-images').upload(fileName, file)
-            if (error) throw error
-            
-            const { data: { publicUrl } } = supabase.storage.from('category-images').getPublicUrl(fileName)
-            setFormData(prev => ({ ...prev, image_url: publicUrl }))
-            toast.success('Image Uploaded')
-        } catch (err: any) {
-            toast.error('Upload failed: ' + err.message)
-        } finally {
-            setIsUploading(false)
-            if (e.target) e.target.value = ''
-        }
+  // Reset form when initialData changes
+  useEffect(() => {
+    if (initialData) {
+      form.reset(initialData);
     }
+  }, [initialData, form]);
 
-    const validateAndSubmit = (e: React.FormEvent) => {
-        e.preventDefault()
-        const newErrors = []
-        if (!formData.name) newErrors.push("Category Name is required")
-        if (!formData.slug) newErrors.push("Slug is required")
-        
-        if (newErrors.length > 0) {
-            setErrors(newErrors)
-            return
-        }
-        
-        setErrors([])
-        onSubmit(formData)
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `cat_${Date.now()}_${Math.random()}.${fileExt}`;
+      const { error } = await supabase.storage
+        .from("category-images")
+        .upload(fileName, file);
+      if (error) throw error;
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("category-images").getPublicUrl(fileName);
+      form.setValue("image_url", publicUrl);
+      toast.success("Image Uploaded");
+    } catch (err: any) {
+      toast.error("Upload failed: " + err.message);
+    } finally {
+      setIsUploading(false);
+      if (e.target) e.target.value = "";
     }
+  };
 
-    return (
-        <form onSubmit={validateAndSubmit} className="space-y-4 pt-4">
-             {errors.length > 0 && (
-                <Alert variant="destructive">
-                    <AlertTitle>Error</AlertTitle>
-                    <AlertDescription>
-                        {errors.map((e, i) => <div key={i}>{e}</div>)}
-                    </AlertDescription>
-                </Alert>
+  const onFormSubmit: SubmitHandler<CategoryData> = (data) => {
+    onSubmit(data);
+  };
+
+  return (
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(onFormSubmit)}
+        className="space-y-6 pt-4"
+      >
+        <div className="grid gap-6">
+          <FormField
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Category Name</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    placeholder="e.g. Summer Collection"
+                    onChange={(e) => {
+                      field.onChange(e);
+                      if (!isEditing) {
+                        form.setValue("slug", slugify(e.target.value));
+                      }
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )}
+          />
 
-            <div className="grid gap-4">
-                <div className="grid gap-2">
-                    <Label htmlFor="name">Name <span className="text-destructive">*</span></Label>
-                    <Input 
-                        id="name"
-                        value={formData.name} 
-                        onChange={e => setFormData(prev => ({ 
-                            ...prev, 
-                            name: e.target.value,
-                            slug: isEditing ? prev.slug : slugify(e.target.value) // Auto-slug only on create
-                        }))}
-                        placeholder="e.g. Summer Collection"
-                    />
-                </div>
-                
-                <div className="grid gap-2">
-                    <Label htmlFor="slug">Slug <span className="text-destructive">*</span></Label>
-                    <Input 
-                        id="slug"
-                        value={formData.slug} 
-                        onChange={e => setFormData(prev => ({ ...prev, slug: slugify(e.target.value) }))} 
-                        placeholder="url-friendly-slug"
-                    />
-                </div>
+          <FormField
+            name="slug"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Slug</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    value={field.value || ""}
+                    placeholder="url-friendly-slug"
+                    onChange={(e) => field.onChange(slugify(e.target.value))}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-                <div className="grid gap-2">
-                    <Label>Parent Category <span className="text-muted-foreground text-xs">(Optional)</span></Label>
-                    <Select 
-                        value={formData.parent_id} 
-                        onValueChange={(val) => setFormData(prev => ({ ...prev, parent_id: val }))}
+          <FormField
+            name="parent_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Parent Category</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value || "none"}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select parent" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="none">None (Top Level)</SelectItem>
+                    {categories.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormItem>
+            <FormLabel>Cover Image</FormLabel>
+            <div className="flex items-center gap-4 rounded-xl border-2 p-4 border-dashed hover:bg-muted/30 transition-all group">
+              {form.watch("image_url") ? (
+                <div className="relative h-20 w-20 rounded-lg overflow-hidden border-2 group/img shadow-sm">
+                  <NextImage
+                    loader={imageLoader}
+                    src={form.watch("image_url")!}
+                    className="object-cover"
+                    fill
+                    alt="Preview"
+                  />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      className="h-7 w-7 rounded-full"
+                      onClick={() => form.setValue("image_url", "")}
                     >
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select parent" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="none">None (Top Level)</SelectItem>
-                            {categories.map(c => (
-                                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </div>
-
-                <div className="grid gap-2">
-                    <Label>Cover Image <span className="text-muted-foreground text-xs">(Optional)</span></Label>
-                    <div className="flex items-center gap-4 rounded-lg border p-3 border-dashed hover:bg-muted/50 transition-colors">
-                        {formData.image_url ? (
-                            <div className="relative h-16 w-16 rounded overflow-hidden border group">
-                                <NextImage 
-                                    loader={imageLoader}
-                                    src={formData.image_url} 
-                                    className="object-cover" 
-                                    fill
-                                    alt="Preview"
-                                />
-                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                    <Button type="button" variant="destructive" size="icon" className="h-6 w-6" onClick={() => setFormData(prev => ({ ...prev, image_url: '' }))}>
-                                        <X className="h-3 w-3" />
-                                    </Button>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="h-16 w-16 rounded bg-muted flex items-center justify-center">
-                                {isUploading ? <Loader2 className="h-6 w-6 animate-spin text-muted-foreground"/> : <ImageIcon className="h-6 w-6 text-muted-foreground" />}
-                            </div>
-                        )}
-                        <div className="flex-1">
-                             <div className="text-sm text-muted-foreground mb-1">
-                                {isUploading ? 'Uploading...' : 'Click or drop to upload'}
-                             </div>
-                            <Input 
-                                type="file" 
-                                accept="image/*" 
-                                onChange={handleImageUpload} 
-                                disabled={isUploading}
-                                className="cursor-pointer file:cursor-pointer file:text-primary"
-                            />
-                        </div>
-                    </div>
+              ) : (
+                <div className="h-20 w-20 rounded-lg bg-muted flex items-center justify-center border-2 border-border/10">
+                  {isUploading ? (
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  ) : (
+                    <ImageIcon className="h-8 w-8 text-muted-foreground/30" />
+                  )}
                 </div>
-
-                <div className="grid gap-2">
-                    <Label>Description <span className="text-muted-foreground text-xs">(Optional)</span></Label>
-                    <Input 
-                        value={formData.description} 
-                        onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} 
-                        placeholder="Brief description for SEO"
-                    />
+              )}
+              <div className="flex-1">
+                <div className="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-2">
+                  {isUploading ? "Syncing..." : "Upload Signal Overlay"}
                 </div>
-
-                <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm bg-card">
-                    <div className="space-y-0.5">
-                        <Label>Active Status</Label>
-                        <p className="text-xs text-muted-foreground">Show in navigation</p>
-                    </div>
-                    <Switch 
-                        checked={formData.is_active}
-                        onCheckedChange={(c) => setFormData(prev => ({ ...prev, is_active: c }))}
-                    />
-                </div>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  disabled={isUploading}
+                  className="cursor-pointer file:cursor-pointer file:text-primary file:font-bold file:uppercase file:text-[10px] h-10"
+                />
+              </div>
             </div>
+          </FormItem>
 
-            <div className="flex justify-end pt-4 gap-2">
-                <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
-                <Button type="submit" disabled={isLoading || isUploading}>
-                    {isLoading && <Loader2 className="animate-spin mr-2 h-4 w-4" />}
-                    {isEditing ? 'Save Changes' : 'Create Category'}
-                </Button>
-            </div>
-        </form>
-    )
+          <FormField
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Description</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    value={field.value || ""}
+                    placeholder="Brief description for SEO"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            name="is_active"
+            render={({ field }) => (
+              <FormItem className="flex items-center justify-between rounded-xl border-2 p-4 shadow-sm bg-card hover:border-primary/20 transition-all">
+                <div className="space-y-0.5">
+                  <FormLabel className="text-sm font-bold uppercase tracking-tighter italic">
+                    Active Status
+                  </FormLabel>
+                  <FormDescription className="text-xs">
+                    Toggle visibility across discovery channels.
+                  </FormDescription>
+                </div>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="flex justify-end pt-4 gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            className="rounded-full px-8 font-bold uppercase tracking-widest text-[10px] h-11"
+          >
+            Abort
+          </Button>
+          <Button
+            type="submit"
+            disabled={isLoading || isUploading}
+            className="rounded-full px-8 font-bold uppercase tracking-widest text-[10px] h-11 shadow-lg shadow-primary/20"
+          >
+            {isLoading && <Loader2 className="animate-spin mr-2 h-4 w-4" />}
+            {isEditing ? "Sync Changes" : "Initialize Category"}
+          </Button>
+        </div>
+      </form>
+    </Form>
+  );
 }

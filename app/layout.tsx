@@ -7,7 +7,6 @@ import { Providers } from "./providers";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { OrganizationJsonLd } from "@/components/seo/organization-json-ld";
 import { getUnifiedAuth } from "@/lib/supabase/auth-helper";
-import { Snowfall } from "@/components/ui/snowfall";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -70,7 +69,6 @@ export default async function RootLayout({
             initialProfile={profile}
           >
             <NuqsAdapter>
-              <Snowfall />
               {children}
               <Analytics />
             </NuqsAdapter>

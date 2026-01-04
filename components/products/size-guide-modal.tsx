@@ -38,17 +38,17 @@ export function SizeGuideModal({ open, onOpenChange }: SizeGuideModalProps) {
                             <TableRow>
                                 <TableHead className="font-bold">Size</TableHead>
                                 <TableHead className="font-bold">Chest</TableHead>
-                                <TableHead className="font-bold">Length</TableHead>
-                                <TableHead className="font-bold">Shoulder</TableHead>
+                                <TableHead className="font-bold">Front Length</TableHead>
+                                <TableHead className="font-bold">Shoulder Length</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map((size) => (
+                            {['S', 'M', 'L'].map((size) => (
                                 <TableRow key={size}>
                                     <TableCell className="font-medium">{size}</TableCell>
-                                    <TableCell>{34 + (['XS','S','M','L','XL','XXL'].indexOf(size) * 2)}</TableCell>
-                                    <TableCell>{26 + (['XS','S','M','L','XL','XXL'].indexOf(size))}</TableCell>
-                                    <TableCell>{16 + (['XS','S','M','L','XL','XXL'].indexOf(size))}</TableCell>
+                                    <TableCell>{40 + (['S','M','L'].indexOf(size) * 2)}</TableCell>
+                                    <TableCell>{26 + (['S','M','L'].indexOf(size))}</TableCell>
+                                    <TableCell>{23.5 + (['S','M','L'].indexOf(size)*(0.5))}</TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>

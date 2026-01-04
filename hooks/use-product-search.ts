@@ -2,12 +2,13 @@ import { useMemo, useCallback } from 'react'
 import Fuse from 'fuse.js'
 
 export interface SearchableProduct {
-    id: string
-    name: string
-    price: number
-    category_name?: string
-    display_image?: string | null
-    slug?: string | null
+  id: string
+  name: string
+  slug: string | null
+  price: number
+  display_image: string | null
+  category_name?: string | null
+  description?: string | null
 }
 
 interface UseProductSearchProps<T extends SearchableProduct> {
@@ -21,11 +22,9 @@ export function useProductSearch<T extends SearchableProduct>({ products }: UseP
     const fuse = useMemo(() => {
         return new Fuse(products, {
             keys: [
-                'name',
-                'category_name', // Support flattened category
-                'category.name', // Support nested category name
-                'category',      // Support flat category string if used
-                'description'    // Optional: Include description if available
+                { name: 'name', weight: 0.7 },
+                { name: 'category_name', weight: 0.3 },
+                { name: 'slug', weight: 0.1 }
             ],
             threshold: 0.3, // 0.0 = Exact match, 1.0 = Match anything. 0.3 is good for typos.
             includeScore: true,

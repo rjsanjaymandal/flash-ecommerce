@@ -38,8 +38,7 @@ export default function ContactPage() {
                             <div>
                                 <h4 className="font-bold text-foreground">Headquarters</h4>
                                 <p className="text-muted-foreground text-sm mt-1">
-                                    123 Flash Avenue, Vibe City<br />
-                                    Creative District, FC 90210
+                                    India
                                 </p>
                             </div>
                         </div>
@@ -51,7 +50,7 @@ export default function ContactPage() {
                             <div>
                                 <h4 className="font-bold text-foreground">Phone</h4>
                                 <p className="text-muted-foreground text-sm mt-1">
-                                    +1 (555) 123-4567
+                                    +91 73398 81530
                                 </p>
                             </div>
                         </div>
@@ -63,14 +62,14 @@ export default function ContactPage() {
                             <div>
                                 <h4 className="font-bold text-foreground">Email</h4>
                                 <p className="text-muted-foreground text-sm mt-1">
-                                    hello@flashstore.com
+                                    info@flashhfashion.in
                                 </p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="rounded-3xl bg-zinc-900 border border-zinc-800 p-8 shadow-sm text-white relative overflow-hidden group">
+                {/* <div className="rounded-3xl bg-zinc-900 border border-zinc-800 p-8 shadow-sm text-white relative overflow-hidden group">
                     <div className="absolute inset-0 bg-linear-to-br from-zinc-800/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="relative z-10 flex items-start gap-4">
                          <div className="h-10 w-10 rounded-full bg-zinc-800 flex items-center justify-center shrink-0">
@@ -94,7 +93,7 @@ export default function ContactPage() {
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> */}
             </div>
 
             {/* Right: Form */}
