@@ -16,83 +16,54 @@ export async function AnnouncementBar() {
   if (!settings || !settings.enabled) return null;
 
   return (
-    <div className="bg-foreground text-background text-[10px] md:text-sm font-bold tracking-widest uppercase py-3 px-4 text-center relative z-50 overflow-hidden group">
-      <div className="container mx-auto relative flex items-center justify-center gap-10 whitespace-nowrap">
-        {/* Marquee Container */}
-        <div className="flex animate-marquee gap-10 items-center shrink-0">
-          <span className="flex items-center gap-2">
-            {settings.text}
-            {settings.href && (
-              <Link
-                href={settings.href}
-                className="inline-flex items-center gap-1 hover:underline underline-offset-4 decoration-1 font-black text-primary"
-              >
-                SHOP NOW <ArrowRight className="h-3 w-3" />
-              </Link>
-            )}
-          </span>
-          {/* Duplicate for seamless effect */}
-          <span className="flex items-center gap-2">
-            {settings.text}
-            {settings.href && (
-              <Link
-                href={settings.href}
-                className="inline-flex items-center gap-1 hover:underline underline-offset-4 decoration-1 font-black text-primary"
-              >
-                SHOP NOW <ArrowRight className="h-3 w-3" />
-              </Link>
-            )}
-          </span>
-          <span className="hidden md:flex items-center gap-2">
-            {settings.text}
-            {settings.href && (
-              <Link
-                href={settings.href}
-                className="inline-flex items-center gap-1 hover:underline underline-offset-4 decoration-1 font-black text-primary"
-              >
-                SHOP NOW <ArrowRight className="h-3 w-3" />
-              </Link>
-            )}
-          </span>
+    <div className="bg-foreground text-background text-[10px] md:text-sm font-bold tracking-widest uppercase py-3 px-4 text-center relative z-50 overflow-hidden group border-b border-white/10">
+      <div className="flex w-full overflow-hidden select-none">
+        {/* We need a container that is wide enough to scroll. 
+            The 'animate-marquee' moves -50% translateX. 
+            So we need two identical children: [Content] [Content] 
+            where [Content] is wide enough to fill the screen or repeats enough.
+        */}
+        <div className="flex animate-marquee shrink-0 items-center justify-around min-w-full gap-10 pr-10">
+          {/* Block 1 */}
+          {Array.from({ length: 10 }).map((_, i) => (
+            <span
+              key={`a-${i}`}
+              className="flex items-center gap-2 whitespace-nowrap"
+            >
+              {settings.text}
+              {settings.href && (
+                <Link
+                  href={settings.href}
+                  className="inline-flex items-center gap-1 hover:underline underline-offset-4 decoration-1 font-black text-primary"
+                >
+                  SHOP NOW <ArrowRight className="h-3 w-3" />
+                </Link>
+              )}
+            </span>
+          ))}
         </div>
-        {/* Duplicate for seamless effect (Second half) */}
+
+        {/* Block 2 (Duplicate for seamless loop) */}
         <div
-          className="flex animate-marquee gap-10 items-center shrink-0"
+          className="flex animate-marquee shrink-0 items-center justify-around min-w-full gap-10 pr-10"
           aria-hidden="true"
         >
-          <span className="flex items-center gap-2">
-            {settings.text}
-            {settings.href && (
-              <Link
-                href={settings.href}
-                className="inline-flex items-center gap-1 hover:underline underline-offset-4 decoration-1 font-black text-primary"
-              >
-                SHOP NOW <ArrowRight className="h-3 w-3" />
-              </Link>
-            )}
-          </span>
-          <span className="flex items-center gap-2">
-            {settings.text}
-            {settings.href && (
-              <Link
-                href={settings.href}
-                className="inline-flex items-center gap-1 hover:underline underline-offset-4 decoration-1 font-black text-primary"
-              >
-                SHOP NOW <ArrowRight className="h-3 w-3" />
-              </Link>
-            )}
-          </span>
-          <span className="hidden md:flex items-center gap-2">
-            {settings.text}
-            {settings.href && (
-              <Link
-                href={settings.href}
-                className="inline-flex items-center gap-1 hover:underline underline-offset-4 decoration-1 font-black text-primary"
-              >
-                SHOP NOW <ArrowRight className="h-3 w-3" />
-              </Link>
-            )}
-          </span>
+          {Array.from({ length: 10 }).map((_, i) => (
+            <span
+              key={`b-${i}`}
+              className="flex items-center gap-2 whitespace-nowrap"
+            >
+              {settings.text}
+              {settings.href && (
+                <Link
+                  href={settings.href}
+                  className="inline-flex items-center gap-1 hover:underline underline-offset-4 decoration-1 font-black text-primary"
+                >
+                  SHOP NOW <ArrowRight className="h-3 w-3" />
+                </Link>
+              )}
+            </span>
+          ))}
         </div>
       </div>
     </div>
