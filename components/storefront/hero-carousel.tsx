@@ -46,15 +46,16 @@ import { QuickAddDialog } from "@/components/products/quick-add-dialog";
 function ProgressRing({
   radius,
   stroke,
-  progress,
+  isActive,
+  duration,
 }: {
   radius: number;
   stroke: number;
-  progress: number;
+  isActive: boolean;
+  duration: number;
 }) {
   const normalizedRadius = radius - stroke * 2;
   const circumference = normalizedRadius * 2 * Math.PI;
-  const strokeDashoffset = circumference - (progress / 100) * circumference;
 
   return (
     <div className="relative flex items-center justify-center">
@@ -68,17 +69,21 @@ function ProgressRing({
           cx={radius}
           cy={radius}
         />
-        <motion.circle
-          stroke="white"
-          strokeWidth={stroke}
-          strokeDasharray={circumference + " " + circumference}
-          style={{ strokeDashoffset }}
-          strokeLinecap="round"
-          fill="transparent"
-          r={normalizedRadius}
-          cx={radius}
-          cy={radius}
-        />
+        {isActive && (
+          <motion.circle
+            initial={{ strokeDashoffset: circumference }}
+            animate={{ strokeDashoffset: 0 }}
+            transition={{ duration: duration / 1000, ease: "linear" }}
+            stroke="white"
+            strokeWidth={stroke}
+            strokeDasharray={circumference + " " + circumference}
+            strokeLinecap="round"
+            fill="transparent"
+            r={normalizedRadius}
+            cx={radius}
+            cy={radius}
+          />
+        )}
       </svg>
     </div>
   );
@@ -87,15 +92,17 @@ function ProgressRing({
 export function HeroCarousel({ products }: HeroCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
-  const [progress, setProgress] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLElement>(null);
   const router = useRouter();
 
+  const DURATION = 6000;
+
   // 3D Tilt Values
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-  const rotateX = useTransform(y, [-0.5, 0.5], [5, -5]); // Reversed for natural tilt
+  const rotateX = useTransform(y, [-0.5, 0.5], [5, -5]);
   const rotateY = useTransform(x, [-0.5, 0.5], [-5, 5]);
 
   // Quick Add State
@@ -120,34 +127,19 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
     x.set(0);
     y.set(0);
     setMousePosition({ x: 0, y: 0 });
+    setIsPaused(false);
   };
 
-  // Auto-scroll with Progress
+  // Efficient Auto-scroll using setTimeout instead of setInterval state loop
   useEffect(() => {
-    if (isQuickAddOpen) return;
+    if (isPaused || isQuickAddOpen) return;
 
-    const duration = 6000;
-    const interval = 50; // Update every 50ms for smooth progress
-    let elapsed = 0;
+    const timer = setTimeout(() => {
+      handleNext();
+    }, DURATION);
 
-    const timer = setInterval(() => {
-      elapsed += interval;
-      const p = (elapsed / duration) * 100;
-      setProgress(p);
-
-      if (elapsed >= duration) {
-        handleNext();
-        elapsed = 0;
-      }
-    }, interval);
-
-    return () => clearInterval(timer);
-  }, [currentIndex, isQuickAddOpen]);
-
-  // Reset progress on slide change
-  useEffect(() => {
-    setProgress(0);
-  }, [currentIndex]);
+    return () => clearTimeout(timer);
+  }, [currentIndex, isPaused, isQuickAddOpen]);
 
   const handleNext = () => {
     setDirection(1);
@@ -173,11 +165,6 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
     return (
       <section className="relative w-full h-[85vh] lg:h-[90vh] bg-background overflow-hidden animate-pulse">
         <div className="absolute inset-x-0 bottom-0 top-0 bg-zinc-100 lg:w-[55%] lg:right-0 lg:left-auto" />
-        <div className="relative z-20 w-full lg:w-[45%] h-full flex flex-col justify-center px-6 lg:px-16 space-y-6">
-          <div className="h-8 w-32 bg-muted rounded-full" />
-          <div className="h-16 w-3/4 bg-muted rounded-xl" />
-          <div className="h-24 w-full bg-muted rounded-xl" />
-        </div>
       </section>
     );
   }
@@ -190,19 +177,14 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
     e.stopPropagation();
     setQuickAddProduct(currentProduct);
     setIsQuickAddOpen(true);
+    setIsPaused(true); // Explicitly pause
   };
 
-  // Hydration-safe HTML stripping and entity decoding
   const cleanDescription = (html: string) => {
     if (!html) return "";
     return html
-      .replace(/<[^>]*>?/gm, "") // Remove HTML tags
-      .replace(/&amp;/g, "&") // Decode common entities
-      .replace(/&lt;/g, "<")
-      .replace(/&gt;/g, ">")
-      .replace(/&quot;/g, '"')
-      .replace(/&#39;/g, "'")
-      .replace(/&nbsp;/g, " ")
+      .replace(/<[^>]*>?/gm, "")
+      .replace(/&amp;/g, "&")
       .trim();
   };
 
@@ -210,6 +192,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
     <section
       ref={containerRef}
       onMouseMove={handleMouseMove}
+      onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={handleMouseLeave}
       className="relative w-full h-[85vh] lg:h-[90vh] bg-background overflow-hidden group perspective-1000 cursor-grab active:cursor-grabbing"
     >
@@ -217,12 +200,21 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
         <motion.div
           key={currentIndex}
           custom={direction}
-          initial={{ x: direction > 0 ? "100%" : "-100%", opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          exit={{ x: direction > 0 ? "-100%" : "100%", opacity: 0 }}
+          initial={{
+            x: direction > 0 ? "100%" : "-100%",
+            opacity: 0,
+            filter: "blur(10px)",
+          }}
+          animate={{ x: 0, opacity: 1, filter: "blur(0px)" }}
+          exit={{
+            x: direction > 0 ? "-20%" : "20%",
+            opacity: 0,
+            filter: "blur(10px)",
+            transition: { duration: 0.5 },
+          }}
           transition={{
-            x: { type: "spring", stiffness: 300, damping: 30 },
-            opacity: { duration: 0.2 },
+            x: { type: "spring", stiffness: 200, damping: 25 },
+            opacity: { duration: 0.4 },
           }}
           drag="x"
           dragConstraints={{ left: 0, right: 0 }}
@@ -230,55 +222,67 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
           onDragEnd={handleDragEnd}
           className="absolute inset-0 flex flex-col lg:flex-row touch-pan-y"
         >
-          {/* TEXT SECTION - with Parallax */}
+          {/* TEXT SECTION */}
           <div className="relative z-20 w-full lg:w-[45%] h-full flex flex-col justify-center px-6 py-12 lg:px-16 xl:px-20 bg-transparent lg:bg-none pointer-events-none lg:pointer-events-auto">
             <BrandGlow className="top-1/2 left-0 -translate-y-1/2 opacity-60" />
 
             <motion.div
               className="space-y-4 lg:space-y-6 relative max-w-xl pointer-events-auto mt-20 lg:mt-0"
               animate={{
-                x: mousePosition.x * 30,
-                y: mousePosition.y * 30,
+                x: mousePosition.x * 20, // Reduced movement for less "heavy" feel
+                y: mousePosition.y * 20,
               }}
-              transition={{ type: "spring", stiffness: 75, damping: 15 }}
+              transition={{ type: "spring", stiffness: 50, damping: 20 }}
             >
-              <motion.div
-                initial={
-                  currentIndex === 0
-                    ? false
-                    : { opacity: 0, x: -50, filter: "blur(10px)" }
-                }
-                animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-                transition={{ delay: 0.2, duration: 0.8, ease: "easeOut" }}
-              >
-                <BrandBadge
-                  variant="primary"
-                  className="mb-4 shadow-lg shadow-primary/20"
+              <div className="overflow-hidden">
+                <motion.div
+                  initial={{ y: "100%" }}
+                  animate={{ y: 0 }}
+                  transition={{
+                    delay: 0.1,
+                    duration: 0.6,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
                 >
-                  <span className="flex items-center gap-1.5">
-                    JUST DROPPED
-                  </span>
-                </BrandBadge>
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tighter leading-[0.9] text-foreground uppercase italic line-clamp-2 lg:line-clamp-3 drop-shadow-lg lg:drop-shadow-none">
+                  <BrandBadge
+                    variant="primary"
+                    className="mb-4 shadow-lg shadow-primary/20"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      JUST DROPPED
+                    </span>
+                  </BrandBadge>
+                </motion.div>
+              </div>
+
+              <div className="overflow-hidden">
+                <motion.h1
+                  initial={{ y: "100%" }}
+                  animate={{ y: 0 }}
+                  transition={{
+                    delay: 0.2,
+                    duration: 0.6,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                  className="text-4xl sm:text-5xl lg:text-7xl font-black tracking-tighter leading-[0.9] text-foreground uppercase italic line-clamp-2 lg:line-clamp-3 drop-shadow-lg lg:drop-shadow-none"
+                >
                   {currentProduct.name}
-                </h1>
-              </motion.div>
+                </motion.h1>
+              </div>
 
               <motion.p
-                initial={currentIndex === 0 ? false : { opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3, duration: 0.8 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4, duration: 0.8 }}
                 className="text-base sm:text-lg text-muted-foreground font-medium line-clamp-2 leading-relaxed"
               >
                 {cleanDescription(currentProduct.description)}
               </motion.p>
 
               <motion.div
-                initial={
-                  currentIndex === 0 ? false : { opacity: 0, scale: 0.8 }
-                }
+                initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.4, duration: 0.5 }}
+                transition={{ delay: 0.5, duration: 0.4 }}
                 className="flex items-baseline gap-4"
               >
                 <span className="text-3xl lg:text-5xl font-black text-primary drop-shadow-md">
@@ -286,88 +290,100 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                 </span>
               </motion.div>
 
-              <motion.div
-                initial={currentIndex === 0 ? false : { opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5, type: "spring", bounce: 0.4 }}
-                className="flex flex-row items-center gap-3 pt-4"
-              >
-                <Button
-                  size="lg"
-                  className="flex-1 sm:flex-none h-14 sm:h-16 px-6 sm:px-10 rounded-2xl text-base sm:text-lg font-black uppercase tracking-widest gradient-primary shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all duration-300 relative overflow-hidden group/btn"
-                  onClick={handleBuyNow}
+              <div className="flex flex-row items-center gap-3 pt-4">
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.6 }}
                 >
-                  <span className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300" />
-                  <ShoppingBag className="mr-2 sm:mr-3 h-5 w-5" />
-                  Buy Now
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="flex-1 sm:flex-none h-14 sm:h-16 px-6 sm:px-10 rounded-2xl text-base sm:text-lg font-black uppercase tracking-widest border-2 hover:bg-secondary transition-all bg-background/50 backdrop-blur-md"
-                  asChild
-                >
-                  <Link
-                    href={`/product/${currentProduct.slug}`}
-                    className="flex items-center justify-center gap-2"
+                  <Button
+                    size="lg"
+                    className="flex-1 sm:flex-none h-14 sm:h-16 px-6 sm:px-10 rounded-2xl text-base sm:text-lg font-black uppercase tracking-widest gradient-primary shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all duration-300 relative overflow-hidden group/btn"
+                    onClick={handleBuyNow}
                   >
-                    Details <ArrowRight className="h-5 w-5" />
-                  </Link>
-                </Button>
-              </motion.div>
+                    <span className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300" />
+                    <ShoppingBag className="mr-2 sm:mr-3 h-5 w-5" />
+                    Buy Now
+                  </Button>
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.7 }}
+                >
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="flex-1 sm:flex-none h-14 sm:h-16 px-6 sm:px-10 rounded-2xl text-base sm:text-lg font-black uppercase tracking-widest border-2 hover:bg-secondary transition-all bg-background/50 backdrop-blur-md"
+                    asChild
+                  >
+                    <Link
+                      href={`/product/${currentProduct.slug}`}
+                      className="flex items-center justify-center gap-2"
+                    >
+                      Details <ArrowRight className="h-5 w-5" />
+                    </Link>
+                  </Button>
+                </motion.div>
+              </div>
             </motion.div>
           </div>
 
-          {/* IMAGE SECTION - with Ken Burns Effect AND 3D Tilt */}
+          {/* IMAGE SECTION */}
           <motion.div
             className="absolute inset-0 lg:relative w-full lg:w-[55%] h-full overflow-hidden z-0"
             style={{ rotateX, rotateY, perspective: 1000 }}
           >
             {currentProduct.main_image_url ? (
-              <motion.div
-                className="w-full h-full relative"
-                initial={
-                  currentIndex === 0 ? false : { scale: 1.1, opacity: 0.8 }
-                }
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 6, ease: "linear" }}
-              >
+              <div className="w-full h-full relative">
+                {/* Background Blur for atmosphere */}
                 <FlashImage
                   src={currentProduct.main_image_url}
-                  alt={currentProduct.name}
+                  alt=""
                   fill
-                  priority={currentIndex === 0}
-                  loading={currentIndex === 0 ? "eager" : "lazy"}
-                  quality={80}
-                  decoding="sync"
-                  fetchPriority={currentIndex === 0 ? "high" : "auto"}
-                  className="object-cover lg:object-contain object-center"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1400px"
+                  className="object-cover blur-3xl opacity-30 scale-150"
+                  aria-hidden="true"
                 />
-              </motion.div>
-            ) : (
-              <div className="w-full h-full bg-muted flex items-center justify-center">
-                <span className="text-4xl font-black opacity-20 uppercase">
-                  No Image
-                </span>
+
+                <motion.div
+                  initial={{ scale: 1.1, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.8 }}
+                  className="relative w-full h-full"
+                >
+                  <FlashImage
+                    src={currentProduct.main_image_url}
+                    alt={currentProduct.name}
+                    fill
+                    priority={true}
+                    quality={90}
+                    className="object-cover lg:object-contain object-center z-10 drop-shadow-2xl"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1400px"
+                  />
+                </motion.div>
               </div>
-            )}
-            {/* Overlay Gradient for Text Readability on Mobile, Fades out on Desktop */}
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent lg:hidden" />
-            <div className="hidden lg:block absolute inset-0 bg-gradient-to-r from-background via-transparent to-transparent opacity-80" />
+            ) : null}
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent lg:hidden z-20" />
+            <div className="hidden lg:block absolute inset-0 bg-gradient-to-r from-background via-transparent to-transparent opacity-80 z-20" />
           </motion.div>
         </motion.div>
       </AnimatePresence>
 
-      {/* Mobile Progress Bar (Bottom) */}
+      {/* Mobile Progress Bar */}
       <div className="lg:hidden absolute bottom-0 left-0 right-0 h-1 bg-white/10 z-50">
         <motion.div
+          key={currentIndex}
+          initial={{ width: "0%" }}
+          animate={{ width: isPaused ? "auto" : "100%" }} // If paused, stop animating? Hard to pause mid-way easily without complex state.
+          // Simplified: Just restart on index change. Interaction pauses logical slide change, but bar keeps moving visually to completion then waits.
+          // OR: Actually pause visual.
+          // Better for perf: Let it complete but just don't trigger next if paused.
+          transition={{ duration: DURATION / 1000, ease: "linear" }}
           className="h-full bg-primary"
-          style={{ width: `${progress}%` }}
         />
       </div>
 
-      {/* THUMBNAIL NAVIGATION (Desktop) - with Progress Ring */}
+      {/* Desktop Thumbnails */}
       <div className="hidden lg:flex absolute bottom-12 right-12 z-40 gap-4">
         {products.map((p, idx) => (
           <button
@@ -383,19 +399,22 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                 : "border-white/20 opacity-70 hover:opacity-100"
             )}
           >
-            {/* Progress Overlay for Active Item */}
             {idx === currentIndex && (
               <div className="absolute inset-0 z-10 bg-black/20 backdrop-blur-[1px] flex items-center justify-center">
-                <ProgressRing radius={28} stroke={3} progress={progress} />
+                <ProgressRing
+                  radius={28}
+                  stroke={3}
+                  isActive={!isPaused}
+                  duration={DURATION}
+                />
               </div>
             )}
-
             {p.main_image_url && (
               <FlashImage
                 src={p.main_image_url}
                 alt={p.name}
                 fill
-                className="object-cover transition-transform duration-500 group-hover/thumb:scale-110"
+                className="object-cover"
                 sizes="64px"
               />
             )}
@@ -403,29 +422,12 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
         ))}
       </div>
 
-      {/* Mobile Dots (Optional - can disable if using progress bar, but kept for direct nav) */}
-      <div className="lg:hidden absolute bottom-6 w-full flex justify-center gap-2 z-40">
-        {products.map((_, idx) => (
-          <button
-            key={idx}
-            onClick={() => {
-              setDirection(idx > currentIndex ? 1 : -1);
-              setCurrentIndex(idx);
-            }}
-            className={cn(
-              "h-2 rounded-full transition-all duration-300 backdrop-blur-md",
-              idx === currentIndex ? "bg-primary w-8" : "bg-white/40 w-2"
-            )}
-          />
-        ))}
-      </div>
-
-      {/* Navigation Arrows (Desktop Hover) */}
-      <div className="hidden lg:flex absolute bottom-12 left-1/2 -translate-x-1/2 gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+      {/* Navigation Arrows */}
+      <div className="hidden lg:flex absolute bottom-12 left-1/2 -translate-x-1/2 gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-50">
         <Button
           size="icon"
           variant="outline"
-          className="rounded-full h-12 w-12 border-2 bg-background/50 backdrop-blur-md hover:bg-background"
+          className="rounded-full h-12 w-12 border-2 bg-background/50 hover:bg-background"
           onClick={handlePrev}
         >
           <ChevronLeft className="h-6 w-6" />
@@ -433,19 +435,21 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
         <Button
           size="icon"
           variant="outline"
-          className="rounded-full h-12 w-12 border-2 bg-background/50 backdrop-blur-md hover:bg-background"
+          className="rounded-full h-12 w-12 border-2 bg-background/50 hover:bg-background"
           onClick={handleNext}
         >
           <ChevronRight className="h-6 w-6" />
         </Button>
       </div>
 
-      {/* Quick Add Dialog */}
       {quickAddProduct && (
         <QuickAddDialog
           product={quickAddProduct}
           open={isQuickAddOpen}
-          onOpenChange={setIsQuickAddOpen}
+          onOpenChange={(open) => {
+            setIsQuickAddOpen(open);
+            if (!open) setIsPaused(false);
+          }}
           buyNowMode={true}
         />
       )}
