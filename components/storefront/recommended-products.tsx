@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Product } from "@/lib/services/product-service";
 import { getUpsellProducts } from "@/app/actions/cart-upsell";
 import { ProductCard } from "@/components/storefront/product-card";

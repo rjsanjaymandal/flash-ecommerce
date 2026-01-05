@@ -50,7 +50,7 @@ const WaitlistDialog = dynamic(
 import type { Product } from "@/lib/services/product-service";
 import { checkPreorderStatus, togglePreorder } from "@/app/actions/preorder";
 import { prefetchProductAction } from "@/app/actions/prefetch-product";
-import { useRealTimeStock } from "@/hooks/use-real-time-stock";
+import { useRealTimeHype } from "@/hooks/use-real-time-stock";
 
 interface ProductCardProps {
   product: Product;
@@ -88,7 +88,10 @@ export function ProductCard({
       quantity: item.quantity ?? 0, // Ensure number
     }));
 
-  const { stock: realTimeStock } = useRealTimeStock(product.id, initialStock);
+  const { stock: realTimeStock } = useRealTimeHype(
+    product.id,
+    product.product_stock || []
+  );
 
   // Pre-order state
   const [isOnWaitlist, setIsOnWaitlist] = useState(false);

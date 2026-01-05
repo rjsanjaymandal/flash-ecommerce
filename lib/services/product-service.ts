@@ -22,11 +22,13 @@ export type Product = Tables<'products'> & {
 
 
 
+export type ProductSortOption = 'price_asc' | 'price_desc' | 'newest' | 'trending' | 'waitlist_desc' | 'random'
+
 export type ProductFilter = {
   category_id?: string
   is_active?: boolean
   search?: string
-  sort?: 'price_asc' | 'price_desc' | 'newest' | 'trending' | 'waitlist_desc'
+  sort?: ProductSortOption
   limit?: number
   page?: number
   min_price?: number
@@ -94,6 +96,25 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: any): Promi
     const from = (page - 1) * limit
     const to = from + limit - 1
     
+    // Resolve Category Slug to ID if necessary
+    if (filter.category_id) {
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(filter.category_id)
+        if (!isUuid) {
+            const { data: cat } = await supabase
+                .from('categories')
+                .select('id')
+                .eq('slug', filter.category_id)
+                .single()
+            
+            if (cat) {
+                filter.category_id = cat.id
+            } else {
+                // Category slug not found -> ensure query returns nothing by using a never-matching UUID
+                filter.category_id = '00000000-0000-0000-0000-000000000000'
+            }
+        }
+    }
+
     // Special handling for Waitlist/Trending Sort (Two-Step Fetch)
     if (filter.sort === 'waitlist_desc' || filter.sort === 'trending') {
          // Determine select string to allow filtering
@@ -187,10 +208,6 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: any): Promi
       case 'price_desc':
         query = query.order('price', { ascending: false })
         break
-      case 'trending':
-        // trending fallback is handled in the catch/error check
-        query = query.order('sale_count' as any, { ascending: false })
-        break
       case 'random' as any:
         // Proper random order in PostgREST is difficult, but we can use a stable random-like field 
         // OR just order by ID with varying directions. 
@@ -217,9 +234,6 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: any): Promi
                 // Determine what failed - avoiding infinite recursion by checking if already retrying
                 if (!filter.ignoreStockSort) {
                     return fetchProducts({ ...filter, ignoreStockSort: true }, supabase)
-                } else if (filter.sort === 'trending') {
-                    // If even without stock sort it fails, it must be trending
-                    return fetchProducts({ ...filter, sort: 'newest', ignoreStockSort: true }, supabase)
                 }
             }
             throw error
@@ -574,43 +588,74 @@ export async function getRelatedProducts(product: Product): Promise<Product[]> {
         async () => {
             const supabase = createStaticClient()
             
-            // Logic:
-            // 1. Exclude current product
-            // 2. Prioritize: Same Category OR Shared Tags
-            // 3. Limit 8
+            // AI-Style Recommendation Logic: "Complete the Look"
+            // 1. Fetch Candidates: Items with overlapping tags OR same category
+            // We fetch more items (12) to allow for in-memory scoring and re-ranking
+            const limit = 12 
             
-            let query = supabase
-                .from('products')
-                .select('*, reviews(rating)')
-                .eq('is_active', true)
-                .neq('id', product.id)
-                .limit(8)
-            
-            // Build OR filter: category_id.eq.X,expression_tags.ov.{tag1,tag2}
-            const conditions = []
-            
-            if (product.category_id) {
-                conditions.push(`category_id.eq.${product.category_id}`)
+            const tags = product.expression_tags || []
+            let candidates: any[] = []
+
+            if (tags.length > 0) {
+                 // Try to find items with overlapping tags
+                 const { data } = await supabase
+                    .from('products')
+                    .select('*, categories(name), product_stock(*), reviews(rating)')
+                    .overlaps('expression_tags', tags)
+                    .neq('id', product.id)
+                    .eq('is_active', true)
+                    .limit(limit)
+                 
+                 candidates = data || []
             }
-            
-            if (product.expression_tags && product.expression_tags.length > 0) {
-                 // Postgres syntax for overlap: column.ov.{val1,val2}
-                 // We need to format array as {val1,val2}
-                 const tagString = `{${product.expression_tags.map(t => `"${t}"`).join(',')}}`
-                 conditions.push(`expression_tags.ov.${tagString}`)
+
+            // If we don't have enough candidates, fill with category matches
+            if (candidates.length < 4 && product.category_id) {
+                const { data: filler } = await supabase
+                    .from('products')
+                    .select('*, categories(name), product_stock(*), reviews(rating)')
+                    .eq('category_id', product.category_id)
+                    .neq('id', product.id)
+                    .eq('is_active', true)
+                    .limit(limit - candidates.length)
+                
+                // Merge unique items
+                const existingIds = new Set(candidates.map(c => c.id))
+                ;(filler || []).forEach((item: any) => {
+                    if (!existingIds.has(item.id)) {
+                        candidates.push(item)
+                    }
+                })
             }
-            
-            if (conditions.length > 0) {
-                query = query.or(conditions.join(','))
-            }
-            
-            // Optional: Order by something relevant? Random? 
-            // For now, let's just stick to default or random if possible (PostgREST random is tricky without extensions)
-            // We'll stick to DB default (likely insertion or ID) or add a sort if needed.
-            
-            const { data } = await query
-            
-            return (data || []).map((p: any) => {
+
+            // 2. Scoring Algorithm to Rank "Complete the Look"
+            // Score = (Tag Overlap * 2) + (Cross-Category Bonus * 5)
+            const scored = candidates.map((item: any) => {
+                let score = 0
+                
+                // Tag overlap
+                const itemTags = item.expression_tags || []
+                const intersection = tags.filter((t: string) => itemTags.includes(t))
+                score += intersection.length * 2
+
+                // Cross-Category Bonus (Give variety)
+                if (item.category_id !== product.category_id) {
+                    score += 5
+                }
+
+                // Base score for simply existing (so we don't get 0s sorted randomly)
+                score += 1
+
+                return { item, score }
+            })
+
+            // Sort descending by score
+            scored.sort((a: any, b: any) => b.score - a.score)
+
+            // Take top 4 for the UI
+            const finalProducts = scored.slice(0, 4).map((s: any) => s.item)
+
+            return finalProducts.map((p: any) => {
                 const ratings = p.reviews?.map((r: any) => r.rating) || []
                 const avg = ratings.length > 0 ? ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length : 0
                 return {
@@ -621,7 +666,7 @@ export async function getRelatedProducts(product: Product): Promise<Product[]> {
             })
         },
         ['related-products', key],
-        { tags: ['products', 'related-products'], revalidate: 2592000 }
+        { tags: ['products', 'related-products'], revalidate: 3600 } // 1 hour buffer
     )()
 }
 

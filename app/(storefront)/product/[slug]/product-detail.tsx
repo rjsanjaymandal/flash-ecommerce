@@ -44,7 +44,7 @@ import { FAQJsonLd } from "@/components/seo/faq-json-ld";
 import { ShareButton } from "@/components/products/share-button";
 import { motion } from "framer-motion";
 import { RecommendedProducts } from "@/components/storefront/recommended-products";
-import { useRealTimeStock, StockItem } from "@/hooks/use-real-time-stock";
+import { useRealTimeHype, StockItem } from "@/hooks/use-real-time-stock";
 import { useAuth } from "@/context/auth-context";
 import { WaitlistDialog } from "@/components/products/waitlist-dialog";
 import { useRouter } from "next/navigation";
@@ -118,11 +118,13 @@ export function ProductDetailClient({
 
   const { user } = useAuth();
 
-  // Real-time Stock Check
-  const { stock: realTimeStock, loading: loadingStock } = useRealTimeStock(
-    product.id,
-    product.product_stock
-  );
+  // Real-time Stock & Hype Check
+  // Renamed hook usage
+  const {
+    stock: realTimeStock,
+    loading: loadingStock,
+    viewerCount,
+  } = useRealTimeHype(product.id, product.product_stock);
 
   // Ref for the main action button to sticky bar intersection
   const mainActionRef = useRef<HTMLDivElement>(null);
@@ -518,6 +520,21 @@ export function ProductDetailClient({
                 isSizeAvailable={isSizeAvailable}
                 getStock={getStock}
               />
+
+              {/* Hype Badge: Live Viewers */}
+              {viewerCount > 1 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-center gap-2 mb-4 text-xs font-bold text-red-500 animate-pulse"
+                >
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                  </span>
+                  {viewerCount} people are looking at this right now
+                </motion.div>
+              )}
 
               {/* Low Stock Warning */}
               {maxQty > 0 && maxQty < 5 && selectedSize && selectedColor && (
