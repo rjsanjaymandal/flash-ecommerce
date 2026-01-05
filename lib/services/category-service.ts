@@ -50,7 +50,7 @@ export async function getCategoriesTree(): Promise<Category[]> {
     return unstable_cache(
         async () => fetchCategoriesTree(),
         ['categories-tree'],
-        { tags: ['categories'], revalidate: 2592000 } // 30 days, manual clear
+        { tags: ['categories'], revalidate: 3600 } // 1 hour buffer
     )()
 }
 
@@ -75,7 +75,7 @@ export async function getLinearCategories(activeOnly = false): Promise<Category[
             })) as Category[]
         },
         [`categories-linear-${activeOnly}`],
-        { tags: ['categories'], revalidate: 2592000 }
+        { tags: ['categories'], revalidate: 3600 }
     )()
 }
 
