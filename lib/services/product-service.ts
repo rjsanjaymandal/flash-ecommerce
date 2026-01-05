@@ -47,6 +47,46 @@ export type PaginatedResult<T> = {
 }
 
 // Internal Fetcher for Cache
+// Helper to apply filters consistently
+const applyProductFilters = (query: any, filter: ProductFilter) => {
+    if (filter.is_active !== undefined) {
+      query = query.eq('is_active', filter.is_active)
+    }
+
+    if (filter.category_id) {
+      query = query.eq('category_id', filter.category_id)
+    }
+
+    if (filter.min_price !== undefined) {
+      query = query.gte('price', filter.min_price)
+    }
+
+    if (filter.max_price !== undefined) {
+      query = query.lte('price', filter.max_price)
+    }
+
+    // Size and Color filters (require !inner join in select)
+    if (filter.size) {
+        query = query.eq('product_stock.size', filter.size)
+    }
+
+    if (filter.color) {
+        query = query.eq('product_stock.color', filter.color)
+    }
+
+    if (filter.search) {
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(filter.search)
+        if (isUuid) {
+            query = query.eq('id', filter.search)
+        } else {
+            // Smart Search: Name OR Description OR Tags
+            // Using .or() with ilike for text fields and cs (contains) for array
+            query = query.or(`name.ilike.%${filter.search}%,description.ilike.%${filter.search}%,expression_tags.cs.{${filter.search}}`)
+        }
+    }
+    return query
+}
+
 async function fetchProducts(filter: ProductFilter, supabaseClient?: any): Promise<PaginatedResult<Product>> {
     const supabase = supabaseClient || createStaticClient()
     const page = filter.page || 1
@@ -54,13 +94,19 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: any): Promi
     const from = (page - 1) * limit
     const to = from + limit - 1
     
-    // Special handling for Waitlist Sort (Two-Step Fetch to avoid computed column dependency)
-    if (filter.sort === 'waitlist_desc') {
-         // 1. Fetch ALL products with their preorder counts (lightweight)
-         const { data: allIds, error: idError } = await supabase
-            .from('products')
-            .select('id, preorders(count)')
-            .eq('is_active', true) // Assume we only care about active products for waitlist demand? Or all? Let's respect filter.
+    // Special handling for Waitlist/Trending Sort (Two-Step Fetch)
+    if (filter.sort === 'waitlist_desc' || filter.sort === 'trending') {
+         // Determine select string to allow filtering
+         let selectParams = 'id, created_at, preorders(count)'
+         if (filter.size || filter.color) {
+             selectParams = 'id, created_at, preorders(count), product_stock!inner(id)'
+         }
+
+         // 1. Fetch IDs matching ALL filters
+         let query = supabase.from('products').select(selectParams)
+         query = applyProductFilters(query, filter)
+         
+         const { data: allIds, error: idError } = await query
         
          if (idError) throw idError
 
@@ -68,9 +114,14 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: any): Promi
          const sortedIds = (allIds || [])
             .map((p: any) => ({ 
                 id: p.id, 
-                count: p.preorders ? p.preorders[0]?.count : 0 
+                count: p.preorders ? p.preorders[0]?.count : 0,
+                created: new Date(p.created_at).getTime()
             }))
-            .sort((a: any, b: any) => b.count - a.count)
+            .sort((a: any, b: any) => {
+                // For Trending: Weigh Recency + Popularity?
+                if (b.count !== a.count) return b.count - a.count
+                return b.created - a.created
+            })
         
         // 3. Paginate
         const total = sortedIds.length
@@ -85,7 +136,7 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: any): Promi
         
         if (detailError) throw detailError
 
-        // Re-order details to match sortedIds (since .in() does not preserve order)
+        // Re-order details
         const orderedData = targetIds
             .map((id: string) => details?.find((d: any) => d.id === id))
             .filter(Boolean) as Product[]
@@ -108,52 +159,18 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: any): Promi
         }
     }
 
-    // Use pre-calculated fields for faster performance
-    // Including preorders count for admin view (and potentially sorting/badges later)
-    // Note: 'preorders(count)' requires a foreign key relationship which exists.
+    // Standard Query Path (DB Sorting)
     let selectString = '*, categories(name), product_stock(*), preorders(count)'
     if (filter.size || filter.color) {
         selectString = '*, categories(name), product_stock!inner(*), preorders(count)'
     }
 
-    // We use count: 'exact' to get total rows matching filters
     let query = supabase
       .from('products')
       .select(selectString, { count: 'exact' })
     
-    if (filter.is_active !== undefined) {
-      query = query.eq('is_active', filter.is_active)
-    }
-
-    if (filter.category_id) {
-      query = query.eq('category_id', filter.category_id)
-    }
-
-    if (filter.min_price !== undefined) {
-      query = query.gte('price', filter.min_price)
-    }
-
-    if (filter.max_price !== undefined) {
-      query = query.lte('price', filter.max_price)
-    }
-
-    // Size and Color filters (applied to the joined table via !inner)
-    if (filter.size) {
-        query = query.eq('product_stock.size', filter.size)
-    }
-
-    if (filter.color) {
-        query = query.eq('product_stock.color', filter.color)
-    }
-
-    if (filter.search) {
-        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(filter.search)
-        if (isUuid) {
-            query = query.eq('id', filter.search)
-        } else {
-            query = query.ilike('name', `%${filter.search}%`)
-        }
-    }
+    // Apply shared filters
+    query = applyProductFilters(query, filter)
 
     // Sorting
     // Primary sort: In-stock items first

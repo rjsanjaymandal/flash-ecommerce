@@ -44,6 +44,19 @@ export async function ProductGrid({ params }: { params: any }) {
           <span className="text-xs uppercase tracking-wider font-bold text-muted-foreground mr-2 hidden sm:inline-block">
             Sort By
           </span>
+          <Link href={{ query: { ...params, sort: "trending" } }}>
+            <Button
+              variant={params.sort === "trending" ? "secondary" : "ghost"}
+              size="sm"
+              className={cn(
+                "h-8 rounded-full text-xs font-bold transition-all",
+                params.sort === "trending" &&
+                  "bg-primary text-primary-foreground hover:bg-primary/90 shadow-md"
+              )}
+            >
+              Trending
+            </Button>
+          </Link>
           <Link href={{ query: { ...params, sort: undefined } }}>
             <Button
               variant={!params.sort ? "secondary" : "ghost"}
