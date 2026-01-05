@@ -15,8 +15,8 @@ export default function StorefrontLayout({
 }) {
   return (
     <div className="flex flex-col min-h-screen">
+      <AnnouncementBar />
       <div className="sticky top-0 z-50">
-        <AnnouncementBar />
         <Navbar />
       </div>
       <main className="flex-1 pb-20 lg:pb-0">
