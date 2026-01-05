@@ -6,7 +6,8 @@ export interface SearchableProduct {
   name: string
   slug: string | null
   price: number
-  display_image: string | null
+  display_image?: string | null
+  main_image_url?: string | null
   category_name?: string | null
   description?: string | null
 }

@@ -21,9 +21,9 @@ export function CartDrawer() {
   const removeItem = useCartStore((state) => state.removeItem);
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const cartTotal = useCartStore(selectCartTotal);
-  const [loadingStates, setLoadingStates] =
-    (useCartStore as any).loadingStates ||
-    useState<Record<string, boolean>>({});
+
+  const loadingStates = useCartStore((state) => state.loadingStates);
+  const setLoadingState = useCartStore((state) => state.setLoadingState);
 
   const handleUpdateQuantity = async (
     productId: string,
@@ -32,11 +32,11 @@ export function CartDrawer() {
     newQty: number
   ) => {
     const key = `${productId}-${size}-${color}`;
-    setLoadingStates((prev: any) => ({ ...prev, [key]: true }));
+    setLoadingState(key, true);
     try {
       await updateQuantity(productId, size, color, newQty);
     } finally {
-      setLoadingStates((prev: any) => ({ ...prev, [key]: false }));
+      setLoadingState(key, false);
     }
   };
 

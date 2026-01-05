@@ -4,15 +4,27 @@ import type { Product } from '@/lib/services/product-service'
 
 async function fetchProductBySlug(slug: string): Promise<Product | null> {
     const supabase = createStaticClient()
-    const { data, error } = await supabase
+    const query = supabase
       .from('products')
       .select('*, categories(name), product_stock(*)')
-      .eq('slug', slug)
-      .single()
+    
+    // Check if input looks like a UUID (fallback for ID-based routing)
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug)
+    
+    if (isUuid) {
+        // Try precise ID match first
+        const { data: idMatch } = await supabase.from('products').select('*, categories(name), product_stock(*)').eq('id', slug).single()
+        if (idMatch) return formatProduct(idMatch)
+    }
+
+    const { data, error } = await query.eq('slug', slug).single()
     
     if (error) return null
 
-    const p = data as any
+    return formatProduct(data)
+}
+
+function formatProduct(p: any): Product {
     return {
         ...p,
         average_rating: Number(p.average_rating || 0),

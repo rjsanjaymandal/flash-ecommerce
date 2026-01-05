@@ -28,6 +28,8 @@ interface CartState {
   setItems: (items: CartItem[]) => void
   setIsCartOpen: (open: boolean) => void
   setIsLoading: (isLoading: boolean) => void
+  loadingStates: Record<string, boolean>
+  setLoadingState: (key: string, isLoading: boolean) => void
 }
 
 const supabase = createClient()
@@ -38,6 +40,8 @@ export const useCartStore = create<CartState>()(
       items: [],
       isCartOpen: false,
       isLoading: true,
+      loadingStates: {},
+      setLoadingState: (key, isLoading) => set((state) => ({ loadingStates: { ...state.loadingStates, [key]: isLoading } })),
       
   addItem: async (item, options = { openCart: true, showToast: true }) => {
         const currentItems = get().items

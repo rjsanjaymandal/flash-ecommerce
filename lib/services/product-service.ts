@@ -277,6 +277,14 @@ export async function getFeaturedProducts(): Promise<Product[]> {
 
 async function fetchProductBySlug(slug: string): Promise<Product | null> {
     const supabase = createStaticClient()
+    // Check for UUID/ID access
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug)
+    
+    if (isUuid) {
+        const { data: idData } = await supabase.from('products').select('*, categories(name), product_stock(*)').eq('id', slug).single()
+        if (idData) return formatProduct(idData)
+    }
+
     const { data, error } = await supabase
       .from('products')
       .select('*, categories(name), product_stock(*)')
@@ -285,7 +293,10 @@ async function fetchProductBySlug(slug: string): Promise<Product | null> {
     
     if (error) return null
 
-    const p = data as any
+    return formatProduct(data)
+}
+
+function formatProduct(p: any): Product {
     return {
         ...p,
         average_rating: Number(p.average_rating || 0),

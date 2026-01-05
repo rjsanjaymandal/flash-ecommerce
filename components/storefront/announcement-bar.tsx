@@ -23,7 +23,10 @@ export async function AnnouncementBar() {
             So we need two identical children: [Content] [Content] 
             where [Content] is wide enough to fill the screen or repeats enough.
         */}
-        <div className="flex animate-marquee shrink-0 items-center justify-around min-w-full gap-10 pr-10">
+        <div
+          className="flex animate-marquee shrink-0 items-center justify-around min-w-full gap-10 pr-10"
+          style={{ "--duration": "30s" } as React.CSSProperties}
+        >
           {/* Block 1 */}
           {Array.from({ length: 10 }).map((_, i) => (
             <span
@@ -47,6 +50,7 @@ export async function AnnouncementBar() {
         <div
           className="flex animate-marquee shrink-0 items-center justify-around min-w-full gap-10 pr-10"
           aria-hidden="true"
+          style={{ "--duration": "30s" } as React.CSSProperties}
         >
           {Array.from({ length: 10 }).map((_, i) => (
             <span

@@ -120,7 +120,7 @@ export function ProductCard({
 
   // Calculate total stock
   const totalStock = stock.reduce(
-    (acc: number, item: any) => acc + (item.quantity || 0),
+    (acc: number, item: { quantity: number }) => acc + (item.quantity || 0),
     0
   );
   const isOutOfStock = totalStock === 0;
@@ -166,7 +166,7 @@ export function ProductCard({
     }
 
     // Pick first available variant
-    const firstStock = realTimeStock.find((s: any) => s.quantity > 0);
+    const firstStock = realTimeStock.find((s) => s.quantity > 0);
     if (!firstStock) {
       toast.error("No stock available");
       return;
@@ -207,7 +207,7 @@ export function ProductCard({
     }
 
     // Pick first available variant
-    const firstStock = realTimeStock.find((s: any) => s.quantity > 0);
+    const firstStock = realTimeStock.find((s) => s.quantity > 0);
     if (!firstStock) {
       togglePreorder(product.id); // If no stock, offer preorder
       return;
