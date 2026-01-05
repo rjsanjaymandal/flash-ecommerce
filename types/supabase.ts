@@ -488,6 +488,72 @@ export type Database = {
           },
         ]
       }
+      concepts: {
+        Row: {
+          id: string
+          created_at: string
+          title: string
+          description: string
+          image_url: string
+          vote_count: number
+          vote_goal: number
+          status: string
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          title: string
+          description: string
+          image_url: string
+          vote_count?: number
+          vote_goal?: number
+          status?: string
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          title?: string
+          description?: string
+          image_url?: string
+          vote_count?: number
+          vote_goal?: number
+          status?: string
+        }
+        Relationships: []
+      }
+      concept_votes: {
+        Row: {
+          user_id: string
+          concept_id: string
+          created_at: string
+        }
+        Insert: {
+          user_id: string
+          concept_id: string
+          created_at?: string
+        }
+        Update: {
+          user_id?: string
+          concept_id?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "concept_votes_concept_id_fkey"
+            columns: ["concept_id"]
+            isOneToOne: false
+            referencedRelation: "concepts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "concept_votes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string | null
