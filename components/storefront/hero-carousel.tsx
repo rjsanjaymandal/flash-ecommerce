@@ -309,7 +309,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={handleMouseLeave}
-      className="relative w-full h-[90vh] lg:h-[95vh] bg-background overflow-hidden group perspective-1000 cursor-grab active:cursor-grabbing selection:bg-primary selection:text-white"
+      className="relative w-full h-[85vh] min-h-[500px] lg:h-[80vh] lg:max-h-[900px] bg-background overflow-hidden group perspective-1000 cursor-grab active:cursor-grabbing selection:bg-primary selection:text-white"
     >
       <GrainEffect />
 
@@ -333,8 +333,8 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
           className="absolute inset-0 flex flex-col lg:flex-row touch-pan-y"
         >
           {/* --- CONTENT SECTION (Mobile: Bottom Sheet / Desktop: Left Column) --- */}
-          <div className="relative z-20 w-full h-[35%] lg:h-full lg:w-[40%] order-2 lg:order-1 flex flex-col justify-center bg-background/80 backdrop-blur-xl border-t border-white/10 lg:bg-background lg:backdrop-blur-none lg:border-none lg:border-r lg:border-border/50 shadow-[0_-10px_40px_rgba(0,0,0,0.2)] lg:shadow-none pointer-events-auto">
-            <div className="h-full flex flex-col justify-center px-6 lg:pl-16 lg:pr-8 xl:pl-24 pointer-events-auto">
+          <div className="relative z-20 w-full h-[35%] lg:h-full lg:w-[50%] order-2 lg:order-1 flex flex-col justify-start lg:justify-center bg-background/80 backdrop-blur-xl border-t border-white/10 lg:bg-background lg:backdrop-blur-none lg:border-none lg:border-r lg:border-border/50 shadow-[0_-10px_40px_rgba(0,0,0,0.2)] lg:shadow-none pointer-events-auto">
+            <div className="h-full flex flex-col justify-center px-6 lg:pl-16 lg:pr-12 xl:pl-24 pointer-events-auto lg:pt-32">
               {/* Content Container */}
               <motion.div
                 variants={containerVariants}
@@ -360,7 +360,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                 <div className="overflow-hidden mb-2 lg:mb-6">
                   <motion.h1
                     variants={slideUpVariants}
-                    className="text-2xl sm:text-5xl lg:text-7xl xl:text-8xl font-black tracking-tighter leading-none text-foreground uppercase italic line-clamp-2 lg:line-clamp-3"
+                    className="text-2xl sm:text-5xl lg:text-5xl xl:text-6xl font-black tracking-tighter leading-none text-foreground uppercase italic line-clamp-2"
                   >
                     {currentProduct.name}
                   </motion.h1>
@@ -368,7 +368,13 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
 
                 <motion.p
                   variants={slideUpVariants}
-                  className="hidden lg:block text-sm lg:text-lg text-muted-foreground font-medium line-clamp-3 leading-relaxed mb-8 max-w-md"
+                  className="hidden lg:block text-sm lg:text-lg text-muted-foreground font-medium mb-8 max-w-md"
+                  style={{
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden",
+                  }}
                 >
                   {cleanDescription(currentProduct.description)}
                 </motion.p>
@@ -381,10 +387,8 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                   </motion.div>
 
                   {/* Mobile "Just Dropped" pill */}
-                  <div className="lg:hidden">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground border border-border px-2 py-1 rounded-full">
-                      New Arrival
-                    </span>
+                  <div className="lg:hidden text-[10px] font-bold uppercase tracking-widest text-muted-foreground border border-border px-2 py-1 rounded-full">
+                    New Arrival
                   </div>
                 </div>
 
@@ -423,7 +427,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
 
           {/* --- IMAGE SECTION (Mobile: Top / Desktop: Right Column) --- */}
           <motion.div
-            className="relative w-full h-[65%] lg:h-full lg:w-[60%] order-1 lg:order-2 overflow-hidden z-0"
+            className="relative w-full h-[65%] lg:h-full lg:w-[50%] order-1 lg:order-2 overflow-hidden z-0"
             style={{ rotateX, rotateY, perspective: 1000 }}
           >
             {/* Dynamic Background Gradient for Right Column */}
@@ -489,7 +493,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
       </div>
 
       {/* Desktop Navigation & Thumbnails */}
-      <div className="hidden lg:flex absolute bottom-12 right-12 z-40 items-end gap-6">
+      <div className="hidden lg:flex absolute bottom-8 right-8 z-40 items-end gap-6">
         {/* Arrows */}
         <div className="flex gap-2 mb-2">
           <Button
