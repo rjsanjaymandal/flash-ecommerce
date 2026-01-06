@@ -309,7 +309,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={handleMouseLeave}
-      className="relative w-full h-[85vh] min-h-[500px] lg:h-[80vh] lg:max-h-[900px] bg-background overflow-hidden group perspective-1000 cursor-grab active:cursor-grabbing selection:bg-primary selection:text-white"
+      className="relative w-full h-[90vh] lg:h-[95vh] bg-background overflow-hidden group perspective-1000 cursor-grab active:cursor-grabbing selection:bg-primary selection:text-white"
     >
       <GrainEffect />
 
@@ -493,7 +493,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
       </div>
 
       {/* Desktop Navigation & Thumbnails */}
-      <div className="hidden lg:flex absolute bottom-8 right-8 z-40 items-end gap-6">
+      <div className="hidden lg:flex absolute bottom-12 right-12 z-40 items-end gap-6">
         {/* Arrows */}
         <div className="flex gap-2 mb-2">
           <Button
