@@ -40,11 +40,14 @@ export async function ProductGrid({ params }: { params: any }) {
         <p className="text-sm font-bold text-foreground">
           {products?.length || 0} ITEMS
         </p>
-        <div className="flex items-center gap-2">
-          <span className="text-xs uppercase tracking-wider font-bold text-muted-foreground mr-2 hidden sm:inline-block">
+        <div className="flex items-center gap-2 overflow-x-auto max-w-full pb-2 no-scrollbar mask-gradient-right">
+          <span className="text-xs uppercase tracking-wider font-bold text-muted-foreground mr-2 hidden sm:inline-block shrink-0">
             Sort By
           </span>
-          <Link href={{ query: { ...params, sort: "trending" } }}>
+          <Link
+            href={{ query: { ...params, sort: "trending" } }}
+            className="shrink-0"
+          >
             <Button
               variant={params.sort === "trending" ? "secondary" : "ghost"}
               size="sm"
@@ -57,7 +60,10 @@ export async function ProductGrid({ params }: { params: any }) {
               Trending
             </Button>
           </Link>
-          <Link href={{ query: { ...params, sort: undefined } }}>
+          <Link
+            href={{ query: { ...params, sort: undefined } }}
+            className="shrink-0"
+          >
             <Button
               variant={!params.sort ? "secondary" : "ghost"}
               size="sm"
@@ -70,7 +76,10 @@ export async function ProductGrid({ params }: { params: any }) {
               Newest
             </Button>
           </Link>
-          <Link href={{ query: { ...params, sort: "price_asc" } }}>
+          <Link
+            href={{ query: { ...params, sort: "price_asc" } }}
+            className="shrink-0"
+          >
             <Button
               variant={params.sort === "price_asc" ? "secondary" : "ghost"}
               size="sm"
@@ -83,7 +92,10 @@ export async function ProductGrid({ params }: { params: any }) {
               Price Low
             </Button>
           </Link>
-          <Link href={{ query: { ...params, sort: "price_desc" } }}>
+          <Link
+            href={{ query: { ...params, sort: "price_desc" } }}
+            className="shrink-0"
+          >
             <Button
               variant={params.sort === "price_desc" ? "secondary" : "ghost"}
               size="sm"
@@ -96,7 +108,10 @@ export async function ProductGrid({ params }: { params: any }) {
               Price High
             </Button>
           </Link>
-          <Link href={{ query: { ...params, sort: "random" } }}>
+          <Link
+            href={{ query: { ...params, sort: "random" } }}
+            className="shrink-0"
+          >
             <Button
               variant={params.sort === "random" ? "secondary" : "ghost"}
               size="sm"
