@@ -207,6 +207,12 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   const containerRef = useRef<HTMLElement>(null);
+  const rectRef = useRef<{
+    width: number;
+    height: number;
+    left: number;
+    top: number;
+  } | null>(null);
   const DURATION = 6000;
 
   // 3D Tilt Values
@@ -225,12 +231,44 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
   );
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
 
+  // Measure dimensions on mount and resize
+  useEffect(() => {
+    const updateRect = () => {
+      if (containerRef.current) {
+        const { width, height, left, top } =
+          containerRef.current.getBoundingClientRect();
+        // Store absolute position relative to document
+        rectRef.current = {
+          width,
+          height,
+          left: left + window.scrollX,
+          top: top + window.scrollY,
+        };
+      }
+    };
+
+    updateRect();
+    window.addEventListener("resize", updateRect);
+    // Also update on scroll to catch sticky header shifts if valid,
+    // though usually hero is static at top.
+    // For now, resize is the main layout changer.
+
+    return () => window.removeEventListener("resize", updateRect);
+  }, []);
+
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!containerRef.current) return;
-    const { left, top, width, height } =
-      containerRef.current.getBoundingClientRect();
-    const posX = (e.clientX - left) / width - 0.5;
-    const posY = (e.clientY - top) / height - 0.5;
+    if (!rectRef.current) return;
+
+    // Use page coordinates (client + scroll) vs cached absolute position
+    // This avoids querying DOM layout in the loop
+    const pageX = e.clientX + window.scrollX;
+    const pageY = e.clientY + window.scrollY;
+
+    const { left, top, width, height } = rectRef.current;
+
+    const posX = (pageX - left) / width - 0.5;
+    const posY = (pageY - top) / height - 0.5;
+
     x.set(posX);
     y.set(posY);
   };
