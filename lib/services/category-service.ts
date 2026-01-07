@@ -100,7 +100,7 @@ export async function getRootCategories(limit?: number): Promise<Tables<'categor
           return data || []
       },
       ['root-categories', key],
-      { tags: ['categories'], revalidate: 2592000 }
+      { tags: ['categories'], revalidate: 3600 }
   )()
 }
 
