@@ -155,9 +155,30 @@ export async function createOrder(data: {
         }
     }
 
-    // NOTE: We NO LONGER decrement stock here. 
-    // Stock decrement is handled ATOMICALLY by the 'process_payment' RPC during verification.
-    // This avoids double-decrements and ensures stock is only reduced for paid orders.
+    // 3. RESERVE STOCK ATOMICALLY
+    // We call the RPC to immediately decrement stock.
+    // If this fails (insufficient stock), we must roll back (delete order) and inform user.
+    try {
+        const { error: reservationError } = await supabase.rpc('reserve_stock', { 
+            p_order_id: order.id 
+        })
+
+        if (reservationError) {
+             throw new Error(reservationError.message)
+        }
+    } catch (e: any) {
+        // Rollback: Delete the failed order
+        console.error("Stock Reservation Failed:", e)
+        await supabase.from('orders').delete().eq('id', order.id)
+        
+        // Show friendly error
+        if (e.message?.includes('Insufficient stock')) {
+             throw new Error("We're sorry, one or more items in your cart just sold out!")
+        }
+        throw new Error("Failed to reserve inventory. Please try again.")
+    }
+
+    // Stock is now reserved. Proceed.
 
     // 3. Update Coupon Usage count (informational/soft-reserve)
     if (data.coupon_code) {
