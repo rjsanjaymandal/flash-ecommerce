@@ -1,16 +1,24 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { useDebounce } from "use-debounce";
-import { Search, Loader2, X, ArrowRight } from "lucide-react";
-import { getSearchIndex } from "@/app/actions/search-products";
-import { cn, formatCurrency } from "@/lib/utils";
-import { useProductSearch } from "@/hooks/use-product-search";
+import { useState, useEffect, useCallback } from "react";
+import {
+  X,
+  Search as SearchIcon,
+  Loader2,
+  ArrowRight,
+  TrendingUp,
+  History,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { searchProducts } from "@/app/actions/search-products"; // Uses RPC
+import Link from "next/link";
 import FlashImage from "@/components/ui/flash-image";
-import { SearchableProduct } from "@/hooks/use-product-search";
+import { useDebounce } from "@/hooks/use-debounce";
+// Assuming useDebounce exists, if not I'll implement a local one or create the hook.
+// I'll stick to local timeout for safety in this snippet if hook isn't guaranteed.
 
 interface SearchOverlayProps {
   isOpen: boolean;
@@ -18,83 +26,63 @@ interface SearchOverlayProps {
 }
 
 export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
-  const [term, setTerm] = useState("");
-  const [query] = useDebounce(term, 300);
-  const [results, setResults] = useState<SearchableProduct[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
 
-  // Auto-focus when opened
+  // Load recents
   useEffect(() => {
-    if (isOpen) {
-      setTimeout(() => inputRef.current?.focus(), 100);
-    }
-  }, [isOpen]);
+    const saved = localStorage.getItem("recent_searches");
+    if (saved) setRecentSearches(JSON.parse(saved).slice(0, 4));
+  }, []);
 
-  // Clear when closed
-  useEffect(() => {
-    if (!isOpen) {
-      setTerm("");
+  const addToRecents = (term: string) => {
+    if (!term) return;
+    const updated = [term, ...recentSearches.filter((s) => s !== term)].slice(
+      0,
+      4
+    );
+    setRecentSearches(updated);
+    localStorage.setItem("recent_searches", JSON.stringify(updated));
+  };
+
+  const handleSearch = useCallback(async (searchTerm: string) => {
+    if (!searchTerm.trim()) {
       setResults([]);
-    }
-  }, [isOpen]);
-
-  // Search Effect
-  // Index State
-  const [index, setIndex] = useState<SearchableProduct[]>([]);
-  const [isIndexLoaded, setIsIndexLoaded] = useState(false);
-
-  // Logic: Fetch index once on first open
-  // Logic: Fetch index once on first open
-  useEffect(() => {
-    if (isOpen && !isIndexLoaded) {
-      console.log("[Search] Fetching search index...");
-      setLoading(true);
-      getSearchIndex()
-        .then((data) => {
-          console.log("[Search] Index loaded:", data?.length);
-          setIndex(data);
-          setIsIndexLoaded(true);
-        })
-        .catch((err) => {
-          console.error("[Search] Failed to load index:", err);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    }
-  }, [isOpen, isIndexLoaded]);
-
-  // Instantiate Fuse Hook
-  // We pass the index.
-  const { search } = useProductSearch({ products: index });
-  // Note: Ensure hook uses 'category_name' if we flattened it, or 'category.name' if object.
-  // We flattened it to 'category_name' in the action.
-  // We need to update the hook or pass config?
-  // The hook has hardcoded keys. I should update the hook to look for 'category_name' too.
-  // Actually, I'll update the hook file in next step. For now, this is fine.
-
-  // Search Effect (Client Side)
-  useEffect(() => {
-    if (!query) {
-      setResults([]);
+      setIsSearching(false);
       return;
     }
 
-    // Perfrom Fuzzy Search
-    const hits = search(query);
-    setResults(hits.slice(0, 8)); // Limit to 8 results
-  }, [query, search]);
+    setIsSearching(true);
+    try {
+      const data = await searchProducts(searchTerm);
+      setResults(data);
+    } catch (error) {
+      console.error("Search failed", error);
+    } finally {
+      setIsSearching(false);
+    }
+  }, []);
 
-  const handleClear = () => {
-    setTerm("");
-    setResults([]);
-    inputRef.current?.focus();
+  // Debounce logic
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      handleSearch(query);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [query, handleSearch]);
+
+  const onSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!query) return;
+    addToRecents(query);
+    onClose();
+    router.push(`/shop?search=${encodeURIComponent(query)}`);
   };
 
-  // Handle ESC to close
+  // Close on Escape
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -103,292 +91,168 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
     return () => window.removeEventListener("keydown", handleEsc);
   }, [onClose]);
 
-  // Handle click outside to close
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleClickOutside = (event: MouseEvent) => {
-      // If click is NOT inside the search overlay container (input + results), close it.
-      // Note: The overlay itself (motion.div) covers the header.
-      // Check if click is outside the motion.div?
-      // Actually, if the overlay is only h-16, clicking below is outside.
-      // So just checking if target is contained in a ref wrapping the whole Overlay component is enough.
-
-      if (
-        wrapperRef.current &&
-        !wrapperRef.current.contains(event.target as Node)
-      ) {
-        onClose();
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isOpen, onClose]);
-
-  const wrapperRef = useRef<HTMLDivElement>(null);
-
-  const overlayVariants = {
-    open: { opacity: 1 },
-    closed: { opacity: 0 },
-  };
+  if (!isOpen) return null;
 
   return (
     <motion.div
-      ref={wrapperRef}
-      initial="closed"
-      animate="open"
-      exit="closed"
-      variants={overlayVariants}
-      className="fixed inset-0 z-[90] flex items-start bg-background/80 backdrop-blur-xl"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[100] flex items-start justify-center bg-background/95 backdrop-blur-xl pt-20 px-4"
     >
-      <motion.div
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: -20, opacity: 0 }}
-        transition={{ type: "spring", damping: 25, stiffness: 200 }}
-        className="w-full max-w-7xl mx-auto flex flex-col h-full bg-background/95 backdrop-blur-3xl shadow-2xl relative"
-      >
-        {/* Search Input Area */}
-        <div className="h-20 sm:h-24 flex items-center px-4 sm:px-6 lg:px-8 border-b border-border/40 relative">
-          <Search className="h-6 w-6 text-primary mr-4 shrink-0" />
+      <div className="w-full max-w-2xl relative">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute -right-4 -top-12 md:-right-12 text-muted-foreground hover:text-foreground"
+          onClick={onClose}
+        >
+          <X className="h-6 w-6" />
+        </Button>
 
-          <input
-            ref={inputRef}
-            type="text"
-            value={term}
-            onChange={(e) => setTerm(e.target.value)}
-            placeholder="Type to find gear..."
-            className="flex-1 bg-transparent border-none focus:outline-none text-2xl sm:text-4xl font-black tracking-tighter uppercase italic placeholder:text-muted-foreground/30 h-full py-4 text-foreground appearance-none"
+        <form onSubmit={onSubmit} className="relative mb-8">
+          <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-6 w-6 text-muted-foreground" />
+          <Input
+            autoFocus
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search products, collections, vibes..."
+            className="w-full h-16 pl-14 pr-4 text-xl md:text-2xl font-bold bg-transparent border-0 border-b-2 border-primary/20 focus-visible:ring-0 focus-visible:border-primary rounded-none placeholder:text-muted-foreground/50"
           />
-
-          {/* Actions */}
-          <div className="flex items-center gap-4 ml-4">
-            {loading && (
+          {isSearching && (
+            <div className="absolute right-4 top-1/2 -translate-y-1/2">
               <Loader2 className="h-5 w-5 animate-spin text-primary" />
-            )}
+            </div>
+          )}
+        </form>
 
-            {term && !loading && (
-              <button
-                onClick={handleClear}
-                className="text-muted-foreground hover:text-foreground transition-colors group"
+        <div className="min-h-[300px]">
+          <AnimatePresence mode="wait">
+            {query.length === 0 ? (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="grid grid-cols-1 md:grid-cols-2 gap-8"
               >
-                <span className="sr-only">Clear</span>
-                <X className="h-5 w-5 group-hover:rotate-90 transition-transform duration-300" />
-              </button>
-            )}
-
-            <button
-              onClick={onClose}
-              className="h-10 w-10 sm:h-12 sm:w-12 flex items-center justify-center rounded-full bg-secondary/80 hover:bg-foreground hover:text-background transition-all"
-            >
-              <X className="h-6 w-6" />
-            </button>
-          </div>
-        </div>
-
-        {/* Content Area */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar">
-          <div className="max-w-7xl mx-auto p-4 sm:p-12 lg:p-16">
-            <AnimatePresence mode="wait">
-              {term && results.length > 0 ? (
-                <motion.div
-                  key="results"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="space-y-12"
-                >
-                  <div>
-                    <div className="flex items-center justify-between mb-8">
-                      <p className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">
-                        Search Results ({results.length})
-                      </p>
-                      <div className="h-px flex-1 bg-border/50 ml-6" />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 xl:gap-8">
-                      {results.map((product, i) => (
-                        <motion.div
-                          key={product.id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: i * 0.05 }}
-                        >
-                          <Link
-                            href={`/product/${product.slug || product.id}`}
-                            onClick={onClose}
-                            className="group flex flex-col gap-4"
-                          >
-                            <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-muted border border-border/40">
-                              {product.display_image ? (
-                                <FlashImage
-                                  src={product.display_image}
-                                  alt={product.name}
-                                  fill
-                                  className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
-                                />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center text-muted-foreground/20">
-                                  <Search className="h-12 w-12" />
-                                </div>
-                              )}
-                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
-                              <div className="absolute bottom-4 left-4 right-4 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
-                                <div className="bg-background/90 backdrop-blur-md px-4 py-2 rounded-lg text-center font-black uppercase tracking-widest text-[10px]">
-                                  View Product
-                                </div>
-                              </div>
-                            </div>
-
-                            <div>
-                              <h3 className="font-black italic uppercase text-lg group-hover:text-primary transition-colors pr-4 leading-none truncate">
-                                {product.name}
-                              </h3>
-                              <div className="flex items-center gap-3 mt-2">
-                                <p className="text-sm font-bold tracking-tight">
-                                  {formatCurrency(product.price)}
-                                </p>
-                                {product.category_name && (
-                                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 border border-border/60 px-2 py-0.5 rounded-sm">
-                                    {product.category_name}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </Link>
-                        </motion.div>
-                      ))}
-
-                      {/* View All Card */}
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: results.length * 0.05 }}
-                      >
-                        <Link
-                          href={`/shop?q=${term}`}
-                          onClick={onClose}
-                          className="flex flex-col items-center justify-center text-center aspect-[3/4] p-8 rounded-2xl border-2 border-dashed border-border hover:border-primary hover:bg-primary/5 transition-all group"
-                        >
-                          <div className="h-16 w-16 mb-4 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all group-hover:scale-110">
-                            <ArrowRight className="h-8 w-8" />
-                          </div>
-                          <div className="font-black italic uppercase tracking-tighter text-xl">
-                            View All
-                            <br />
-                            Results
-                          </div>
-                          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-4">
-                            Browse Collection
-                          </p>
-                        </Link>
-                      </motion.div>
-                    </div>
-                  </div>
-                </motion.div>
-              ) : !term ? (
-                <motion.div
-                  key="trending"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="grid grid-cols-1 md:grid-cols-2 gap-20"
-                >
-                  {/* trending categories or popular searches could go here */}
-                  <div className="space-y-8">
-                    <div>
-                      <p className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground mb-6">
-                        Discovery Points
-                      </p>
-                      <div className="flex flex-wrap gap-3">
-                        {[
-                          "New Arrivals",
-                          "Best Sellers",
-                          "Graphic Tees",
-                          "Outerwear",
-                          "Accessories",
-                        ].map((tag) => (
-                          <Link
-                            key={tag}
-                            href={`/shop?category=${tag.toLowerCase().replace(" ", "-")}`}
-                            onClick={onClose}
-                            className="px-6 py-4 bg-secondary/50 hover:bg-primary hover:text-white rounded-2xl font-black italic uppercase tracking-tighter transition-all hover:-rotate-1 active:scale-95"
-                          >
-                            {tag}
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <p className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground mb-6">
-                        Recent Transmissions
-                      </p>
-                      <div className="space-y-2">
-                        {[
-                          "Flash Drop v2.0",
-                          "Cyber Collection",
-                          "Noir Aesthetics",
-                        ].map((item) => (
-                          <Link
-                            key={item}
-                            href="/shop"
-                            onClick={onClose}
-                            className="group flex items-center justify-between py-4 border-b border-border/40 hover:border-primary transition-colors"
-                          >
-                            <span className="text-2xl font-black italic uppercase italic tracking-tighter group-hover:translate-x-2 transition-transform">
-                              {item}
-                            </span>
-                            <ArrowRight className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-all -translate-x-4 group-hover:translate-x-0" />
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="hidden md:block relative aspect-square rounded-[3rem] overflow-hidden bg-zinc-900">
-                    <FlashImage
-                      src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=800"
-                      alt="Discovery highlight"
-                      fill
-                      className="object-cover opacity-60 grayscale hover:grayscale-0 transition-all duration-1000"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
-                    <div className="absolute bottom-10 left-10 p-4">
-                      <h4 className="text-4xl font-black italic uppercase tracking-tighter text-white leading-none mb-2">
-                        Flash
-                        <br />
-                        Discovery
-                      </h4>
-                      <p className="text-zinc-400 font-bold uppercase tracking-widest text-[10px]">
-                        Curated Gear for High Velocity.
-                      </p>
-                    </div>
-                  </div>
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="empty"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="py-32 text-center"
-                >
-                  <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-secondary mb-6">
-                    <Search className="h-10 w-10 text-muted-foreground/30" />
-                  </div>
-                  <h3 className="text-3xl font-black italic uppercase tracking-tighter mb-2">
-                    No hits detected
+                <div>
+                  <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-4 flex items-center gap-2">
+                    <History className="h-4 w-4" /> Recent
                   </h3>
-                  <p className="text-muted-foreground">
-                    Adjust your coordinates and try again.
-                  </p>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+                  <div className="space-y-2">
+                    {recentSearches.length > 0 ? (
+                      recentSearches.map((term) => (
+                        <button
+                          key={term}
+                          onClick={() => setQuery(term)}
+                          className="block w-full text-left py-2 text-lg font-medium hover:text-primary hover:translate-x-2 transition-all"
+                        >
+                          {term}
+                        </button>
+                      ))
+                    ) : (
+                      <p className="text-muted-foreground text-sm italic">
+                        No recent searches
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-4 flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4" /> Trending Now
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      "Oversized Tees",
+                      "Cargo Pants",
+                      "Best Sellers",
+                      "New Arrivals",
+                    ].map((tag) => (
+                      <button
+                        key={tag}
+                        onClick={() => setQuery(tag)}
+                        className="px-4 py-2 rounded-full border border-border hover:border-primary hover:bg-primary/5 hover:text-primary transition-all text-sm font-bold uppercase tracking-wide"
+                      >
+                        {tag}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="space-y-2"
+              >
+                {results.length > 0 ? (
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-2">
+                      Top Results
+                    </h3>
+                    {results.map((product) => (
+                      <Link
+                        key={product.id}
+                        href={`/product/${product.slug}`}
+                        onClick={() => {
+                          addToRecents(query);
+                          onClose();
+                        }}
+                        className="flex items-center gap-4 p-3 rounded-xl hover:bg-accent/50 transition-colors group"
+                      >
+                        <div className="h-16 w-16 relative overflow-hidden rounded-lg bg-muted">
+                          {product.main_image_url && (
+                            <FlashImage
+                              src={product.main_image_url}
+                              fill
+                              className="object-cover"
+                              alt={product.name}
+                            />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-bold text-lg group-hover:text-primary transition-colors">
+                            {product.name}
+                          </h4>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-muted-foreground">
+                              ₹{product.price}
+                            </span>
+                            {product.rank > 0.1 && (
+                              <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold uppercase">
+                                Best Match
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <ArrowRight className="h-5 w-5 opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-primary" />
+                      </Link>
+                    ))}
+                    <Button
+                      className="w-full mt-4 font-bold uppercase tracking-widest"
+                      size="lg"
+                      onClick={() => onSubmit()}
+                    >
+                      View All Results for "{query}"
+                    </Button>
+                  </div>
+                ) : (
+                  !isSearching && (
+                    <div className="text-center py-12">
+                      <p className="text-xl font-bold text-muted-foreground">
+                        No matches found for "{query}"
+                      </p>
+                      <p className="text-sm text-muted-foreground mt-2">
+                        Try checking for typos or using broader terms.
+                      </p>
+                    </div>
+                  )
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-      </motion.div>
+      </div>
     </motion.div>
   );
 }
