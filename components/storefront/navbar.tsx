@@ -16,6 +16,7 @@ import { useSearchStore } from "@/store/use-search-store";
 import { MegaMenu } from "./mega-menu";
 import { HamburgerMenu } from "./hamburger-menu";
 import { SearchOverlay } from "@/components/site/search-bar";
+import { NotificationBell } from "./notification-bell";
 import { motion, AnimatePresence } from "framer-motion";
 import { useScrollDirection } from "@/hooks/use-scroll-direction";
 
@@ -191,6 +192,8 @@ export function StorefrontNavbar() {
                   )}
                 </Button>
               </Link>
+
+              {mounted && user && <NotificationBell />}
 
               <Button
                 variant="ghost"

@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import crypto from 'crypto'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { resend } from '@/lib/email/client'
+import { OrderConfirmationEmail } from '@/lib/email/templates/order-confirmation'
 
 export async function POST(req: Request) {
   try {
@@ -41,6 +43,40 @@ export async function POST(req: Request) {
             verified: false, 
             error: result.error || 'Payment processing failed in database.'
         }, { status: 400 })
+    }
+
+    // 4. Send Payment Confirmation Email
+    try {
+        const { data: orderDetails } = await supabase
+            .from('orders')
+            .select('*, order_items(*)')
+            .eq('id', order_id)
+            .single()
+
+        if (orderDetails?.user_email || orderDetails?.user_id) {
+             const email = orderDetails.user_email || (await supabase.from('profiles').select('email').eq('id', orderDetails.user_id).single()).data?.email
+             
+             if (email) {
+                 await resend.emails.send({
+                    from: 'Flash <orders@flashhfashion.in>',
+                    to: email,
+                    subject: `Payment Confirmed - Order #${order_id.slice(0, 8).toUpperCase()}`,
+                    react: OrderConfirmationEmail({
+                        orderId: order_id,
+                        customerName: orderDetails.shipping_name || 'Customer',
+                        items: orderDetails.order_items.map((i: any) => ({
+                            name: i.name_snapshot || 'Product',
+                            quantity: i.quantity,
+                            price: i.unit_price
+                        })),
+                        total: orderDetails.total
+                    })
+                 })
+             }
+        }
+    } catch (emailErr) {
+        console.error('Failed to send confirmation email:', emailErr)
+        // Don't fail the response if email fails, payment is already verified
     }
 
     return NextResponse.json({ 
