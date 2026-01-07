@@ -713,6 +713,47 @@ export type Database = {
     }
     Functions: {
       is_admin: { Args: never; Returns: boolean }
+      search_products_v2: {
+        Args: {
+          query_text: string
+          limit_val?: number
+        }
+        Returns: {
+          id: string
+          name: string
+          price: number
+          main_image_url: string | null
+          slug: string
+          rank: number
+        }[]
+      }
+      get_trending_products: {
+        Args: {
+          limit_val?: number
+        }
+        Returns: Database["public"]["Tables"]["products"]["Row"][]
+      }
+      reserve_stock: {
+        Args: {
+          p_order_id: string
+        }
+        Returns: Json
+      }
+      process_payment: {
+        Args: {
+          p_order_id: string
+          p_payment_id: string
+        }
+        Returns: Json
+      }
+      check_rate_limit: {
+        Args: {
+          p_key: string
+          p_limit: number
+          p_window_seconds: number
+        }
+        Returns: Json
+      }
     }
     Enums: {
       fit_preference_type: "oversized" | "regular" | "fitted"

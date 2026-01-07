@@ -5,6 +5,7 @@ import { Database } from '@/types/supabase'
 import { CartItem } from '@/store/use-cart-store'
 import { resend } from '@/lib/email/client'
 import { OrderConfirmationEmail } from '@/lib/email/templates/order-confirmation'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 export async function createOrder(data: {
     user_id: string | null,
@@ -28,15 +29,10 @@ export async function createOrder(data: {
     const supabase = createAdminClient()
 
     // --- SECURITY: Rate Limiting ---
+    // Limit: 5 orders per 10 minutes per User
     if (data.user_id) {
-        const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString()
-        const { count: recentOrderCount } = await supabase
-            .from('orders')
-            .select('*', { count: 'exact', head: true })
-            .eq('user_id', data.user_id)
-            .gte('created_at', tenMinutesAgo)
-        
-        if (recentOrderCount && recentOrderCount >= 3) {
+        const { success } = await checkRateLimit(`checkout:user:${data.user_id}`, 5, 600)
+        if (!success) {
             throw new Error('Too many order attempts. Please wait 10 minutes.')
         }
     }

@@ -40,11 +40,17 @@ export async function getSearchIndex() {
 export async function searchProducts(query: string) {
     if (!query) return []
      const supabase = await createClient()
-     const { data } = await supabase
-       .from('products')
-       .select('id, name, price, main_image_url')
-       .ilike('name', `%${query}%`)
-       .eq('is_active', true)
-       .limit(5)
+     
+     // Use Enterprise Search RPC (Full Text Search + Ranking)
+     const { data, error } = await supabase.rpc('search_products_v2', {
+        query_text: query,
+        limit_val: 5
+     })
+
+     if (error) {
+         console.error('Search RPC failed:', error)
+         return []
+     }
+
      return data || []
 }
