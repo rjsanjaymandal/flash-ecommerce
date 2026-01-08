@@ -20,7 +20,7 @@ interface Notification {
   title: string;
   message: string;
   is_read: boolean;
-  action_url?: string;
+  action_url?: string | null;
   created_at: string;
 }
 

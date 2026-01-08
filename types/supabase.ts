@@ -707,6 +707,44 @@ export type Database = {
           }
           Relationships: []
       }
+      notifications: {
+        Row: {
+          id: string
+          created_at: string
+          user_id: string
+          title: string
+          message: string
+          is_read: boolean
+          action_url: string | null
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          user_id: string
+          title: string
+          message: string
+          is_read?: boolean
+          action_url?: string | null
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          user_id?: string
+          title?: string
+          message?: string
+          is_read?: boolean
+          action_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
