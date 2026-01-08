@@ -21,15 +21,10 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { checkPreorderStatus, togglePreorder } from "@/app/actions/preorder";
 import { ProductGallery } from "@/components/products/product-gallery";
 import { ProductSelectors } from "@/components/products/product-selectors";
+import { ProductDescriptionAccordion } from "@/components/products/product-description-accordion";
 import dynamic from "next/dynamic";
 
 const SizeGuideModal = dynamic(
@@ -639,38 +634,10 @@ export function ProductDetailClient({
               </div>
 
               {/* Short Description Accordion */}
-              <div className="mt-8" suppressHydrationWarning>
-                <Accordion type="single" collapsible className="w-full">
-                  <AccordionItem value="details" className="border-border/60">
-                    <AccordionTrigger className="uppercase text-[11px] font-black tracking-widest text-muted-foreground hover:text-foreground">
-                      Product Description
-                    </AccordionTrigger>
-                    <AccordionContent className="text-muted-foreground leading-relaxed">
-                      <div
-                        className="prose prose-sm prose-stone max-w-none text-sm text-foreground/80 font-medium"
-                        dangerouslySetInnerHTML={{
-                          __html:
-                            product.description || "No description available.",
-                        }}
-                      />
-                    </AccordionContent>
-                  </AccordionItem>
-                  <AccordionItem value="shipping" className="border-border/60">
-                    <AccordionTrigger className="uppercase text-[11px] font-black tracking-widest text-muted-foreground hover:text-foreground">
-                      Shipping Info
-                    </AccordionTrigger>
-                    <AccordionContent className="text-sm text-muted-foreground leading-relaxed space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Truck className="h-4 w-4 text-primary" />
-                        <span>Free shipping on orders over ₹2000</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <RefreshCcw className="h-4 w-4 text-primary" />
-                        <span>14-day easy returns policy</span>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
+              <div className="mt-8">
+                <ProductDescriptionAccordion
+                  description={product.description}
+                />
               </div>
             </motion.div>
           </div>
