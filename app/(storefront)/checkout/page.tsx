@@ -96,7 +96,10 @@ export default function CheckoutPage() {
   const finalTotal = Math.max(0, cartTotal - discountAmount + shippingFee);
 
   // Address Selection Handler
-  const handleAddressSelect = (addr: Address) => {
+  const handleAddressSelect = (
+    addr: Address,
+    options?: { silent?: boolean }
+  ) => {
     form.setValue("firstName", addr.name.split(" ")[0]);
     form.setValue("lastName", addr.name.split(" ").slice(1).join(" "));
     form.setValue(
@@ -108,7 +111,10 @@ export default function CheckoutPage() {
     form.setValue("zip", addr.pincode);
     form.setValue("country", addr.country);
     form.setValue("phone", addr.phone);
-    toast.success("Address applied");
+
+    if (!options?.silent) {
+      toast.success("Address applied", { id: "address-applied" });
+    }
   };
 
   const handleApplyCoupon = async () => {

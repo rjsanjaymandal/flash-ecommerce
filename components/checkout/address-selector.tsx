@@ -22,7 +22,7 @@ import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 
 interface AddressSelectorProps {
-  onSelect: (address: Address) => void;
+  onSelect: (address: Address, options?: { silent?: boolean }) => void;
 }
 
 export function AddressSelector({ onSelect }: AddressSelectorProps) {
@@ -31,9 +31,9 @@ export function AddressSelector({ onSelect }: AddressSelectorProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const handleSelect = (addr: Address) => {
+  const handleSelect = (addr: Address, options?: { silent?: boolean }) => {
     setSelectedId(addr.id);
-    onSelect(addr);
+    onSelect(addr, options);
   };
 
   const loadAddresses = async () => {
@@ -43,7 +43,7 @@ export function AddressSelector({ onSelect }: AddressSelectorProps) {
     // Auto-select default
     const defaultAddr = data.find((a) => a.is_default) || data[0];
     if (defaultAddr && !selectedId) {
-      handleSelect(defaultAddr);
+      handleSelect(defaultAddr, { silent: true });
     }
   };
 
