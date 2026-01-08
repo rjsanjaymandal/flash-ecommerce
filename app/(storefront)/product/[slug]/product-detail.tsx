@@ -358,14 +358,39 @@ export function ProductDetailClient({
     }
   };
 
+  // Prefetch checkout for speed
+  useEffect(() => {
+    router.prefetch("/checkout");
+  }, [router]);
+
   const handleBuyNow = async () => {
-    const success = await handleAddToCart({
-      openCart: false,
-      showToast: false,
-    });
-    if (success) {
-      router.push("/checkout");
+    if (!selectedSize || !selectedColor) {
+      toast.error("Please select a size and color");
+      return;
     }
+
+    if (isOutOfStock) {
+      toast.error("Item is out of stock");
+      return;
+    }
+
+    // FIRE AND FORGET - Do not await DB sync
+    // State updates synchronously in Zustand before the remote sync
+    addToCart(
+      {
+        productId: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.main_image_url,
+        size: selectedSize,
+        color: selectedColor,
+        quantity: quantity,
+        maxQuantity: maxQty,
+      },
+      { openCart: false, showToast: false }
+    );
+
+    router.push("/checkout");
   };
 
   // FAQ Data
