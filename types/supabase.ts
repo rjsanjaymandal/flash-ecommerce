@@ -754,6 +754,43 @@ export type Database = {
         }
         Returns: Json
       }
+      get_analytics_summary: {
+        Args: {
+          start_date: string
+          end_date: string
+        }
+        Returns: {
+          total_revenue: number
+          total_orders: number
+          average_order_value: number
+          returning_customer_percentage: number
+        }[]
+      }
+      get_sales_over_time: {
+        Args: {
+          start_date: string
+          end_date: string
+          interval_val?: string
+        }
+        Returns: {
+          date_bucket: string
+          total_sales: number
+          order_count: number
+        }[]
+      }
+      get_top_products_by_revenue: {
+        Args: {
+          start_date: string
+          end_date: string
+          limit_val?: number
+        }
+        Returns: {
+          product_id: string
+          name: string
+          revenue: number
+          units_sold: number
+        }[]
+      }
     }
     Enums: {
       fit_preference_type: "oversized" | "regular" | "fitted"
