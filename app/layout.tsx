@@ -53,6 +53,11 @@ export const metadata: Metadata = {
   verification: {
     google: "CqVr1TGrfamesut-wOLLkyz2PQUjYb-ihMDqj9zL2X0",
   },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "FLASH",
+  },
 };
 
 export default async function RootLayout({

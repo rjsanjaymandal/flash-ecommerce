@@ -1,0 +1,21 @@
+{
+  "name": "FLASH | Queer & Inclusive Fashion",
+  "short_name": "FLASH",
+  "description": "Bold, affirming fashion for everyone.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#020617",
+  "icons": [
+    {
+      "src": "/flash-logo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "/flash-logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
