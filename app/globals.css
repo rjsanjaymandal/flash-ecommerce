@@ -174,3 +174,15 @@ body {
 .animate-marquee-vertical {
   animation: marquee-vertical var(--duration) linear infinite;
 }
+
+/* iOS Safe Area Utilities */
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.h-screen-safe {
+  height: 100vh; /* Fallback */
+  height: 100dvh;
+}

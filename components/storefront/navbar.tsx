@@ -89,7 +89,7 @@ export function StorefrontNavbar() {
 
   return (
     <>
-      <header className="relative w-full border-b border-border/40 bg-background/60 backdrop-blur-xl">
+      <header className="relative w-full border-b border-border/40 bg-background/60 backdrop-blur-xl pt-[env(safe-area-inset-top)]">
         <div className="relative mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           {/* Main Content - Fades out when search is open  */}
           <div

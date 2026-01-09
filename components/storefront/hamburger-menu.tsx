@@ -172,7 +172,7 @@ export function HamburgerMenu({ categories }: HamburgerMenuProps) {
           </div>
 
           {/* Footer / Socials */}
-          <div className="p-6 border-t border-border bg-muted/20">
+          <div className="p-6 border-t border-border bg-muted/20 pb-safe">
             <div className="flex justify-center gap-6">
               {[
                 {
