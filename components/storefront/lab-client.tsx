@@ -1,14 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Beaker, ThumbsUp, Check, Loader2, Lock } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { useState, useEffect } from "react";
+import { Beaker } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 import { toggleVote } from "@/lib/services/concept-service";
 import { toast } from "sonner";
 import { useAuth } from "@/context/auth-context";
 import { useRouter } from "next/navigation";
+import { ConceptCard } from "./concept-card";
 
 interface LabClientProps {
   concepts: any[];
@@ -26,6 +25,33 @@ export function LabClient({
   const [isLoadingId, setIsLoadingId] = useState<string | null>(null);
   const { user } = useAuth();
   const router = useRouter();
+  const supabase = createClient();
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("active-concepts")
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "concepts",
+        },
+        (payload) => {
+          const updatedConcept = payload.new;
+          setConcepts((prev) =>
+            prev.map((c) =>
+              c.id === updatedConcept.id ? { ...c, ...updatedConcept } : c
+            )
+          );
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const handleVote = async (concept: any) => {
     if (!user) {
@@ -58,6 +84,7 @@ export function LabClient({
       if (result && result.error) {
         throw new Error(result.error);
       }
+      toast.success(isVoted ? "Vote removed" : "Vote counted!");
     } catch (error: any) {
       // Revert
       setUserVotes((original) => {
@@ -81,120 +108,54 @@ export function LabClient({
   };
 
   return (
-    <div className="container mx-auto px-4 py-16">
-      <div className="text-center max-w-2xl mx-auto mb-16 space-y-4">
-        <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-indigo-500/10 text-indigo-500 mb-4">
-          <Beaker className="h-8 w-8" />
+    <div className="container mx-auto px-4 py-8 md:py-16">
+      {/* Header */}
+      <div className="text-center max-w-3xl mx-auto mb-12 md:mb-20 space-y-6">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary border border-primary/20 mb-2">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+          </span>
+          <span className="text-[10px] font-black uppercase tracking-widest">
+            Phase 1: Concept Extraction
+          </span>
         </div>
-        <h1 className="text-4xl md:text-6xl font-black tracking-tighter uppercase">
-          Future{" "}
-          <span className="text-transparent bg-clip-text bg-linear-to-r from-indigo-500 to-purple-600">
-            Lab
+        <h1 className="text-5xl md:text-8xl font-black tracking-tighter uppercase leading-[0.85]">
+          Future
+          <br />
+          <span className="text-transparent bg-clip-text bg-linear-to-b from-primary to-purple-600">
+            Laboratory
           </span>
         </h1>
-        <p className="text-lg text-muted-foreground font-medium">
-          Vote on our upcoming drops. The most hyped concepts get built.
+        <p className="text-lg md:text-xl text-muted-foreground font-medium max-w-xl mx-auto leading-relaxed">
+          Help us decode the next wave of fashion. Your votes determine which
+          prototypes hit the production line.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {concepts.map((concept) => {
-          const isVoted = userVotes.has(concept.id);
-          const progress = Math.min(
-            100,
-            (concept.vote_count / concept.vote_goal) * 100
-          );
-
-          return (
-            <motion.div
-              key={concept.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="bg-card border border-border/50 rounded-3xl overflow-hidden group shadow-lg hover:shadow-xl transition-all"
-            >
-              <div className="aspect-[4/3] bg-muted relative overflow-hidden">
-                {concept.image_url ? (
-                  <img
-                    src={concept.image_url}
-                    alt={concept.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-secondary/30">
-                    <Beaker className="h-12 w-12 text-muted-foreground/20" />
-                  </div>
-                )}
-
-                <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent opacity-60" />
-
-                <div className="absolute bottom-0 left-0 right-0 p-6 pt-12 text-white">
-                  <h3 className="text-2xl font-black uppercase tracking-tight mb-2">
-                    {concept.title}
-                  </h3>
-                  <p className="text-sm text-white/80 line-clamp-2">
-                    {concept.description}
-                  </p>
-                </div>
-              </div>
-
-              <div className="p-6 space-y-6">
-                {/* Progress */}
-                <div className="space-y-2">
-                  <div className="flex justify-between text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                    <span>Hype Level</span>
-                    <span>{Math.round(progress)}%</span>
-                  </div>
-                  <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                    <motion.div
-                      className="h-full bg-linear-to-r from-indigo-500 to-purple-600"
-                      initial={{ width: 0 }}
-                      animate={{ width: `${progress}%` }}
-                      transition={{ duration: 1, delay: 0.2 }}
-                    />
-                  </div>
-                  <p className="text-xs text-center text-muted-foreground pt-1">
-                    <span className="text-foreground font-bold">
-                      {concept.vote_count}
-                    </span>{" "}
-                    out of {concept.vote_goal} votes needed
-                  </p>
-                </div>
-
-                <Button
-                  className={cn(
-                    "w-full h-14 rounded-xl text-lg font-black uppercase tracking-wide transition-all",
-                    isVoted
-                      ? "bg-green-500 hover:bg-green-600 text-white shadow-green-500/25"
-                      : "bg-foreground text-background hover:scale-[1.02] shadow-xl"
-                  )}
-                  onClick={() => handleVote(concept)}
-                  disabled={isLoadingId === concept.id}
-                >
-                  {isLoadingId === concept.id ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                  ) : isVoted ? (
-                    <>
-                      <Check className="mr-2 h-5 w-5" /> Voted
-                    </>
-                  ) : (
-                    <>
-                      <ThumbsUp className="mr-2 h-5 w-5" /> Vote This
-                    </>
-                  )}
-                </Button>
-              </div>
-            </motion.div>
-          );
-        })}
+      {/* Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10">
+        {concepts.map((concept) => (
+          <ConceptCard
+            key={concept.id}
+            concept={concept}
+            isVoted={userVotes.has(concept.id)}
+            onVote={() => handleVote(concept)}
+            isLoading={isLoadingId === concept.id}
+          />
+        ))}
       </div>
 
       {concepts.length === 0 && (
-        <div className="text-center py-20 text-muted-foreground">
-          <p className="text-xl font-medium">
-            All concepts have been built or archived.
+        <div className="flex flex-col items-center justify-center py-32 text-center text-muted-foreground border-2 border-dashed border-border/50 rounded-3xl bg-secondary/20">
+          <Beaker className="h-16 w-16 mb-6 opacity-20" />
+          <h3 className="text-2xl font-black uppercase italic mb-2">
+            Lab is Quiet
+          </h3>
+          <p className="max-w-md mx-auto">
+            All current experiments have concluded. Our designers are mixing new
+            formulas. Check back soon.
           </p>
-          <p>Check back soon for new drops!</p>
         </div>
       )}
     </div>

@@ -23,7 +23,7 @@ export async function getConcepts() {
 export async function getActiveConcepts() {
     return unstable_cache(
         async () => {
-            const supabase = await createClient()
+            const supabase = createAdminClient()
             const { data } = await supabase
                 .from('concepts')
                 .select('*')
