@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/auth-context";
 import { useState, useTransition, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   Loader2,
   CheckCircle2,
@@ -54,7 +55,7 @@ export default function CheckoutPage() {
   const removeItem = useCartStore((state) => state.removeItem);
   const { user } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
+  const router = useRouter();
 
   // Coupon State
   const [couponCode, setCouponCode] = useState("");
@@ -248,8 +249,9 @@ export default function CheckoutPage() {
           const verifyData = await verifyRes.json();
 
           if (verifyData.verified) {
-            setIsSuccess(true);
             clearCart();
+            toast.success("Payment Successful! Redirecting...");
+            router.push(`/order/confirmation/${(order as any).id}`);
           } else {
             toast.error("Payment verification failed. Please contact support.");
           }
@@ -291,47 +293,8 @@ export default function CheckoutPage() {
     }
   };
 
-  if (isSuccess) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4 text-center animate-in fade-in duration-500 relative overflow-hidden">
-        <BrandGlow className="animate-pulse" />
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="max-w-md w-full space-y-8 bg-white/80 backdrop-blur-xl p-10 rounded-[2.5rem] border-2 border-white/20 shadow-2xl relative z-10"
-        >
-          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-green-400 via-emerald-500 to-teal-500" />
-
-          <div className="mx-auto w-24 h-24 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full flex items-center justify-center shadow-lg shadow-green-500/30 mb-6">
-            <CheckCircle2 className="h-12 w-12 text-white" />
-          </div>
-
-          <div className="space-y-2">
-            <h1 className="text-4xl font-black tracking-tighter uppercase italic">
-              Payment Confirmed!
-            </h1>
-            <p className="text-zinc-500 font-medium">
-              Your gear is on its way via Flash transmission.
-            </p>
-          </div>
-
-          <div className="bg-zinc-50 rounded-2xl p-4 border border-zinc-100 text-sm text-zinc-600">
-            <p>
-              A confirmation email has been sent to{" "}
-              <span className="font-bold text-zinc-900">{user?.email}</span>
-            </p>
-          </div>
-
-          <Button
-            asChild
-            className="w-full h-14 text-sm font-black uppercase tracking-widest rounded-xl shadow-xl shadow-primary/20 hover:scale-[1.02] transition-transform"
-          >
-            <Link href="/shop">Continue Shopping</Link>
-          </Button>
-        </motion.div>
-      </div>
-    );
-  }
+  // Success UI removed in favor of Redirect
+  // if (isSuccess) { ... }
 
   if (items.length === 0) {
     return (
