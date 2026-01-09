@@ -62,7 +62,7 @@ export function AdminSidebar() {
           </Link>
         </div>
 
-        <div className="flex-1 overflow-y-auto py-6 px-4 space-y-8">
+        <div className="flex-1 overflow-y-auto py-6 px-4 space-y-8 scrollbar-hide">
           {/* Main Nav */}
           <div className="space-y-2">
             <h3 className="px-4 text-xs font-bold text-indigo-400/80 mb-2 uppercase tracking-widest">

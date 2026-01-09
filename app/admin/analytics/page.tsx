@@ -35,54 +35,74 @@ export default function AnalyticsPage() {
   const [metrics, setMetrics] = useState<any>(null);
   const [chartData, setChartData] = useState<any[]>([]);
   const [topProducts, setTopProducts] = useState<any[]>([]);
+  const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
-
   const supabase = createClient();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      const endDate = new Date();
-      const startDate = new Date();
-      startDate.setDate(startDate.getDate() - parseInt(range));
+      try {
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - parseInt(range));
 
-      // 1. Summary
-      const { data: summary } = await supabase.rpc("get_analytics_summary", {
-        start_date: startDate.toISOString(),
-        end_date: endDate.toISOString(),
-      });
-
-      // 2. Chart
-      const { data: sales } = await supabase.rpc("get_sales_over_time", {
-        start_date: startDate.toISOString(),
-        end_date: endDate.toISOString(),
-        interval_val: parseInt(range) <= 2 ? "hour" : "day",
-      });
-
-      // 3. Top Products
-      const { data: top } = await supabase.rpc("get_top_products_by_revenue", {
-        start_date: startDate.toISOString(),
-        end_date: endDate.toISOString(),
-        limit_val: 5,
-      });
-
-      setMetrics(summary?.[0] || {});
-      setChartData(
-        (sales || []).map((s: any) => ({
-          name: new Date(s.date_bucket).toLocaleDateString(undefined, {
-            month: "short",
-            day: "numeric",
-            hour: parseInt(range) <= 2 ? "numeric" : undefined,
+        const [summaryResult, salesResult, topResult] = await Promise.all([
+          supabase.rpc("get_analytics_summary", {
+            start_date: startDate.toISOString(),
+            end_date: endDate.toISOString(),
           }),
-          total: s.total_sales,
-        }))
-      );
-      setTopProducts(top || []);
-      setLoading(false);
+          supabase.rpc("get_sales_over_time", {
+            start_date: startDate.toISOString(),
+            end_date: endDate.toISOString(),
+            interval_val: parseInt(range) <= 2 ? "hour" : "day",
+          }),
+          supabase.rpc("get_top_products_by_revenue", {
+            start_date: startDate.toISOString(),
+            end_date: endDate.toISOString(),
+            limit_val: 5,
+          }),
+        ]);
+
+        if (summaryResult.error) throw summaryResult.error;
+        if (salesResult.error) throw salesResult.error;
+        if (topResult.error) throw topResult.error;
+
+        setMetrics(summaryResult.data?.[0] || {});
+        setChartData(
+          (salesResult.data || []).map((s: any) => ({
+            name: new Date(s.date_bucket).toLocaleDateString(undefined, {
+              month: "short",
+              day: "numeric",
+              hour: parseInt(range) <= 2 ? "numeric" : undefined,
+            }),
+            total: s.total_sales,
+          }))
+        );
+        setTopProducts(topResult.data || []);
+      } catch (error) {
+        console.error("Analytics Error:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    fetchData();
-  }, [range]);
+    if (mounted) {
+      fetchData();
+    }
+  }, [range, mounted]);
+
+  if (!mounted) {
+    return (
+      <div className="flex-1 space-y-8 p-8 pt-6 min-h-screen bg-zinc-50/50 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   const kpiCards = [
     {
