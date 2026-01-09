@@ -19,6 +19,7 @@ import { SearchOverlay } from "@/components/site/search-bar";
 import { NotificationBell } from "./notification-bell";
 import { motion, AnimatePresence } from "framer-motion";
 import { useScrollDirection } from "@/hooks/use-scroll-direction";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface NavCategory {
   id: string;
@@ -185,7 +186,7 @@ export function StorefrontNavbar() {
                   className="relative rounded-full hover:bg-primary/5 text-muted-foreground hover:text-primary transition-colors h-10 w-10"
                 >
                   <Heart className="h-5 w-5" />
-                  {wishlistCount > 0 && (
+                  {mounted && wishlistCount > 0 && (
                     <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full gradient-primary text-[9px] font-black text-white ring-2 ring-background">
                       {wishlistCount}
                     </span>
@@ -193,7 +194,11 @@ export function StorefrontNavbar() {
                 </Button>
               </Link>
 
-              {mounted && user && <NotificationBell />}
+              {mounted && user ? (
+                <NotificationBell />
+              ) : (
+                <Skeleton className="h-10 w-10 rounded-full bg-muted/50 hidden sm:block" />
+              )}
 
               <Button
                 variant="ghost"
@@ -202,7 +207,7 @@ export function StorefrontNavbar() {
                 className="relative rounded-full hover:bg-primary/5 text-muted-foreground hover:text-primary transition-colors h-10 w-10"
               >
                 <ShoppingBag className="h-5 w-5" />
-                {cartCount > 0 && (
+                {mounted && cartCount > 0 && (
                   <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full gradient-primary text-[9px] font-black text-white ring-2 ring-background">
                     {cartCount}
                   </span>
