@@ -239,7 +239,7 @@ export function StorefrontNavbar() {
                         <Link href="/admin" className="hidden md:block">
                           <Button
                             size="sm"
-                            className="rounded-full gradient-primary shadow-lg shadow-indigo-500/20 text-[10px] font-black uppercase tracking-widest h-8"
+                            className="rounded-full gradient-primary shadow-lg shadow-primary/20 text-[10px] font-black uppercase tracking-widest h-8"
                           >
                             Admin
                           </Button>
