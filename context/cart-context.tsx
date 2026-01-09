@@ -121,7 +121,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const addItem = useCallback(
     async (item: CartItem) => {
       // Optimistic Update
-      let newItems = [...items];
+      const newItems = [...items];
       const existingIndex = newItems.findIndex(
         (i) =>
           i.productId === item.productId &&

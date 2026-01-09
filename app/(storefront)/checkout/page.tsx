@@ -111,17 +111,13 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     const fetchPincode = async () => {
-      console.log("[Checkout] Checking zip:", zipCode);
       if (zipCode && zipCode.length === 6) {
-        console.log("[Checkout] Triggering lookup for:", zipCode);
         setIsPincodeLoading(true);
         try {
           // ensure we use the imported action
           const result = await getPincodeDetails(zipCode);
-          console.log("[Checkout] Lookup result:", result);
 
           if (result.success && result.city) {
-            console.log("[Checkout] Setting form values");
             form.setValue("city", result.city, { shouldValidate: true });
             form.setValue("state", result.state || "", {
               shouldValidate: true,
@@ -131,11 +127,10 @@ export default function CheckoutPage() {
             });
             toast.success(`Found ${result.city}, ${result.state}`);
           } else {
-            console.warn("[Checkout] Lookup failed or empty:", result);
             toast.error("Could not find pincode details");
           }
         } catch (error) {
-          console.error("[Checkout] Pincode lookup error:", error);
+          console.error("Pincode lookup error:", error);
           toast.error("Error checking pincode");
         } finally {
           setIsPincodeLoading(false);
