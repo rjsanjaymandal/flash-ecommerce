@@ -9,5 +9,14 @@ export function createClient() {
     throw new Error('Supabase environment variables are missing')
   }
 
-  return createBrowserClient<Database>(supabaseUrl, supabaseKey)
+  return createBrowserClient<Database>(supabaseUrl, supabaseKey, {
+    global: {
+      fetch: (url, options) => {
+        return fetch(url, {
+          ...options,
+          signal: options?.signal || AbortSignal.timeout(30000)
+        })
+      }
+    }
+  })
 }

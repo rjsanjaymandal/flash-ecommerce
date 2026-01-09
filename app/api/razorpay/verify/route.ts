@@ -22,13 +22,17 @@ export async function POST(req: Request) {
     const supabase = createAdminClient()
 
     // 3. Call the Atomic RPC
+    // This allows us to handle the DB update securely and atomically on the server
+    console.log('[Verify] Verifying Payment via RPC:', { order_id, razorpay_payment_id })
+    
+    // NOTE: 'process_payment' is idempotent. It checks if order is already paid.
     const { data: result, error: rpcError } = await supabase.rpc('process_payment', {
         p_order_id: order_id,
         p_payment_id: razorpay_payment_id
     })
 
     if (rpcError) {
-        console.error('RPC Payment Error:', rpcError)
+        console.error('[Verify] RPC Payment Error:', rpcError)
         return NextResponse.json({ 
             verified: false, 
             error: 'Failed to process payment data.',
@@ -37,7 +41,16 @@ export async function POST(req: Request) {
     }
 
     if (!result.success) {
-        console.warn('Payment logic failed:', result.error)
+        // If it was already paid (e.g. by Webhook), we treat it as success for the UI
+        if (result.message === 'Already processed') {
+             console.log('[Verify] Order was already processed (likely via Webhook)')
+             return NextResponse.json({ 
+                verified: true, 
+                message: 'Payment verified (previously processed)' 
+            })
+        }
+
+        console.warn('[Verify] Payment logic failed:', result.error)
         return NextResponse.json({ 
             verified: false, 
             error: result.error || 'Payment processing failed in database.'
@@ -45,6 +58,7 @@ export async function POST(req: Request) {
     }
 
     // 4. Send Payment Confirmation Email (Fire-and-Forget)
+    // Only send if we just successfully processed it (result.success is true and message is not 'Already processed')
     try {
         const { data: orderDetails } = await supabase
             .from('orders')
@@ -52,11 +66,10 @@ export async function POST(req: Request) {
             .eq('id', order_id)
             .single()
 
-        if (orderDetails?.user_email || orderDetails?.user_id) {
+        if (orderDetails) {
              const email = orderDetails.user_email || (await supabase.from('profiles').select('email').eq('id', orderDetails.user_id).single()).data?.email
              
              if (email) {
-                 // FIRE AND FORGET - Do not await
                  sendOrderConfirmation({
                     email,
                     orderId: order_id,
@@ -67,11 +80,11 @@ export async function POST(req: Request) {
                         price: i.unit_price
                     })),
                     total: orderDetails.total
-                 }).catch(err => console.error('Background Email Error:', err));
+                 }).catch(err => console.error('[Verify] Background Email Error:', err));
              }
         }
     } catch (emailErr) {
-        console.error('Failed to initiate confirmation email:', emailErr)
+        console.error('[Verify] Failed to initiate confirmation email:', emailErr)
     }
 
     return NextResponse.json({ 
@@ -80,7 +93,7 @@ export async function POST(req: Request) {
     })
 
   } catch (error) {
-    console.error('Error verifying Razorpay payment:', error)
+    console.error('[Verify] Error verifying Razorpay payment:', error)
     return NextResponse.json(
       { error: 'Error verifying payment' },
       { status: 500 }

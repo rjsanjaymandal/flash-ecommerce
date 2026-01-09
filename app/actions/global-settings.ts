@@ -14,7 +14,7 @@ export async function getGlobalSettings(key: string) {
     .single()
 
   if (error) {
-    console.error(`Error fetching global settings for ${key}:`, error)
+    console.error(`Error fetching global settings for ${key}:`, JSON.stringify(error, Object.getOwnPropertyNames(error || {}), 2))
     return null
   }
 

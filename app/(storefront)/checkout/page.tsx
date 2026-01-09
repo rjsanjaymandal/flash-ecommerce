@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   Lock,
   CreditCard,
+  Trash,
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import Script from "next/script";
@@ -47,6 +48,10 @@ export default function CheckoutPage() {
   const items = useCartStore((state) => state.items);
   const cartTotal = useCartStore(selectCartTotal);
   const clearCart = useCartStore((state) => state.clearCart);
+
+  // Script Load State
+  const [isScriptLoaded, setIsScriptLoaded] = useState(false);
+  const removeItem = useCartStore((state) => state.removeItem);
   const { user } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -59,6 +64,14 @@ export default function CheckoutPage() {
     value: number;
   } | null>(null);
   const [isCheckingCoupon, setIsCheckingCoupon] = useState(false);
+
+  // Check if script is already loaded (e.g. from previous navigation)
+  useEffect(() => {
+    if ((window as any).Razorpay) {
+      console.log("Razorpay script already present on mount");
+      setIsScriptLoaded(true);
+    }
+  }, []);
 
   // Form Setup
   const form = useForm<CheckoutFormData>({
@@ -147,10 +160,30 @@ export default function CheckoutPage() {
   };
 
   const onSubmit = async (data: CheckoutFormData) => {
+    if (!isScriptLoaded && !(window as any).Razorpay) {
+      toast.error("Payment system is still loading. Please wait a moment...");
+      return;
+    }
+
     setIsProcessing(true);
 
     try {
       // 1. Create Order & Items (using Server Action)
+      toast.info("Preparing your order...");
+
+      const sanitizedItems = items.map((i) => ({
+        productId: i.productId,
+        name: i.name,
+        price: i.price,
+        quantity: i.quantity,
+        size: i.size,
+        color: i.color,
+        image: i.image,
+        maxQuantity: i.maxQuantity,
+      }));
+
+      console.log("Calling createOrder with items:", sanitizedItems);
+
       const order = await createOrder({
         user_id: user?.id || null,
         subtotal: cartTotal,
@@ -164,11 +197,13 @@ export default function CheckoutPage() {
         country: data.country,
         payment_provider: "razorpay",
         payment_reference: "",
-        items: items,
+        items: sanitizedItems,
         coupon_code: appliedCoupon?.code,
         discount_amount: discountAmount,
         email: data.email,
-      } as any);
+      });
+
+      console.log("Order created:", order);
 
       // 3. Create Razorpay Order
       // Security: We send the Order ID, not the amount. Server fetches amount from DB.
@@ -178,13 +213,21 @@ export default function CheckoutPage() {
         body: JSON.stringify({ order_id: (order as any).id }),
       });
       const rzpOrder = await response.json();
+      console.log("Razorpay Order:", rzpOrder);
 
       if (!response.ok)
         throw new Error(rzpOrder.error || "Failed to create Razorpay order");
 
       // 4. Open Razorpay Checkout
+      const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+      console.log("Razorpay Key ID:", keyId ? "Present" : "MISSING");
+
+      if (!keyId) {
+        throw new Error("Razorpay Key ID is missing. Please contact support.");
+      }
+
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        key: keyId,
         amount: rzpOrder.amount,
         currency: rzpOrder.currency,
         name: "Flash Ecommerce",
@@ -226,13 +269,23 @@ export default function CheckoutPage() {
         },
       };
 
-      const rzp1 = new window.Razorpay(options);
+      if (!(window as any).Razorpay) {
+        throw new Error(
+          "Razorpay SDK failed to load. Please check your internet connection."
+        );
+      }
+
+      const rzp1 = new (window as any).Razorpay(options);
       rzp1.open();
     } catch (err: any) {
       console.error("Checkout failed detailed:", {
-        message: err?.message,
-        fullError: err,
+        message: err instanceof Error ? err.message : String(err),
+        stack: err instanceof Error ? err.stack : undefined,
+        stringified: JSON.stringify(err, Object.getOwnPropertyNames(err), 2),
       });
+      toast.error(
+        `Checkout failed: ${err instanceof Error ? err.message : "Unknown error"}`
+      );
       toast.error(`Checkout failed: ${err?.message || "Unknown error"}`);
       setIsProcessing(false);
     }
@@ -630,9 +683,20 @@ export default function CheckoutPage() {
                         <span className="mx-1">x</span> {item.quantity}
                       </p>
                     </div>
-                    <span className="font-mono text-sm font-bold text-primary">
-                      {formatCurrency(item.price * item.quantity)}
-                    </span>
+                    <div className="flex flex-col items-end gap-1">
+                      <span className="font-mono text-sm font-bold text-primary">
+                        {formatCurrency(item.price * item.quantity)}
+                      </span>
+                      <button
+                        onClick={() =>
+                          removeItem(item.productId, item.size, item.color)
+                        }
+                        className="text-xs text-muted-foreground hover:text-red-500 transition-colors flex items-center gap-1 group/remove"
+                      >
+                        <Trash className="h-3 w-3 group-hover/remove:scale-110 transition-transform" />
+                        <span className="sr-only">Remove</span>
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -721,8 +785,13 @@ export default function CheckoutPage() {
         </div>
       </div>
       <Script
+        id="razorpay-checkout-js"
         src="https://checkout.razorpay.com/v1/checkout.js"
         strategy="lazyOnload"
+        onLoad={() => {
+          console.log("Razorpay script loaded via onLoad");
+          setIsScriptLoaded(true);
+        }}
       />
     </div>
   );
