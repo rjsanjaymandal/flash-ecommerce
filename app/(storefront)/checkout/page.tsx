@@ -18,6 +18,7 @@ import {
 import { formatCurrency } from "@/lib/utils";
 import Script from "next/script";
 import { createOrder, validateCoupon } from "./actions";
+import { getPincodeDetails } from "@/app/actions/get-pincode";
 import { AddressSelector } from "@/components/checkout/address-selector";
 import { Address } from "@/lib/services/address-service";
 import { toast } from "sonner";
@@ -103,6 +104,48 @@ export default function CheckoutPage() {
       ? (cartTotal * appliedCoupon.value) / 100
       : appliedCoupon.value
     : 0;
+
+  // Smart Pincode Lookup
+  const [isPincodeLoading, setIsPincodeLoading] = useState(false);
+  const zipCode = form.watch("zip");
+
+  useEffect(() => {
+    const fetchPincode = async () => {
+      console.log("[Checkout] Checking zip:", zipCode);
+      if (zipCode && zipCode.length === 6) {
+        console.log("[Checkout] Triggering lookup for:", zipCode);
+        setIsPincodeLoading(true);
+        try {
+          // ensure we use the imported action
+          const result = await getPincodeDetails(zipCode);
+          console.log("[Checkout] Lookup result:", result);
+
+          if (result.success && result.city) {
+            console.log("[Checkout] Setting form values");
+            form.setValue("city", result.city, { shouldValidate: true });
+            form.setValue("state", result.state || "", {
+              shouldValidate: true,
+            });
+            form.setValue("country", result.country || "India", {
+              shouldValidate: true,
+            });
+            toast.success(`Found ${result.city}, ${result.state}`);
+          } else {
+            console.warn("[Checkout] Lookup failed or empty:", result);
+            toast.error("Could not find pincode details");
+          }
+        } catch (error) {
+          console.error("[Checkout] Pincode lookup error:", error);
+          toast.error("Error checking pincode");
+        } finally {
+          setIsPincodeLoading(false);
+        }
+      }
+    };
+
+    const timeoutId = setTimeout(fetchPincode, 500); // Debounce
+    return () => clearTimeout(timeoutId);
+  }, [zipCode, form]);
 
   // Shipping Logic
   const shippingFee = cartTotal >= 1000 ? 0 : 50;
@@ -499,11 +542,18 @@ export default function CheckoutPage() {
                           Pincode
                         </FormLabel>
                         <FormControl>
-                          <Input
-                            placeholder="10001"
-                            {...field}
-                            className="h-12 bg-muted/50 border-transparent focus:border-primary/50 rounded-xl focus:ring-primary/20"
-                          />
+                          <div className="relative">
+                            <Input
+                              placeholder="10001"
+                              {...field}
+                              className="h-12 bg-muted/50 border-transparent focus:border-primary/50 rounded-xl focus:ring-primary/20 pr-10"
+                            />
+                            {isPincodeLoading && (
+                              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                              </div>
+                            )}
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
