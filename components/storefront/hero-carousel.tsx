@@ -438,6 +438,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                     size="lg"
                     className="flex-1 lg:flex-none h-12 lg:h-14 px-8 rounded-full text-sm lg:text-base font-bold uppercase tracking-widest bg-primary text-primary-foreground hover:scale-105 transition-all duration-300 shadow-xl shadow-primary/20"
                     onClick={handleBuyNow}
+                    onPointerDown={(e) => e.stopPropagation()}
                   >
                     <ShoppingBag className="mr-2 h-4 w-4" />
                     Buy Now
@@ -447,6 +448,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                     variant="outline"
                     className="h-12 lg:h-14 px-4 lg:px-8 rounded-full text-sm lg:text-base font-bold uppercase tracking-widest border-border text-foreground hover:bg-secondary transition-all"
                     asChild
+                    onPointerDown={(e) => e.stopPropagation()}
                   >
                     <Link href={`/product/${currentProduct.slug}`}>
                       <span className="hidden lg:inline">View Details</span>
@@ -538,6 +540,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
             size="icon"
             variant="ghost"
             onClick={handlePrev}
+            onPointerDown={(e) => e.stopPropagation()}
             className="h-12 w-12 rounded-full border border-white/10 bg-black/20 text-white hover:bg-white/10 hover:border-white/30 backdrop-blur-md"
           >
             <ChevronLeft className="h-5 w-5" />
@@ -546,6 +549,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
             size="icon"
             variant="ghost"
             onClick={handleNext}
+            onPointerDown={(e) => e.stopPropagation()}
             className="h-12 w-12 rounded-full border border-white/10 bg-black/20 text-white hover:bg-white/10 hover:border-white/30 backdrop-blur-md"
           >
             <ChevronRight className="h-5 w-5" />
@@ -561,6 +565,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                 setDirection(idx > currentIndex ? 1 : -1);
                 setCurrentIndex(idx);
               }}
+              onPointerDown={(e) => e.stopPropagation()}
               className={cn(
                 "relative w-14 h-14 rounded-lg overflow-hidden transition-all duration-300",
                 idx === currentIndex
