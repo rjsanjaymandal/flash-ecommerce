@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import Razorpay from 'razorpay'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 // Initialize inside handler or use a safe check if global
 // But simpler to just initialize it inside to avoid build errors if env vars missing
@@ -22,6 +23,12 @@ export async function POST(req: Request) {
 
     if (!order_id) {
         return NextResponse.json({ error: 'Order ID is required' }, { status: 400 })
+    }
+
+    // Rate Limit: 10 attempts per minute per order
+    const rateLimit = await checkRateLimit(`rzp_order:${order_id}`, 10, 60)
+    if (!rateLimit.success) {
+        return NextResponse.json({ error: 'Too many payment attempts. Please wait.' }, { status: 429 })
     }
 
     // 1. Fetch Order directly from DB
