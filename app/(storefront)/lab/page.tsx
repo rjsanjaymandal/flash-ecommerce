@@ -1,47 +1,22 @@
-import { createClient } from '@/lib/supabase/server'
-import { LabClientView } from '@/components/lab/lab-client-view'
+import {
+  getActiveConcepts,
+  getUserVotes,
+} from "@/lib/services/concept-service";
+import { LabClient } from "@/components/storefront/lab-client";
+import { Metadata } from "next";
 
-export const metadata = {
-  title: 'Future Lab | Flash Ecommerce',
-  description: 'The proving ground for our boldest ideas. Explore experimental pieces and vote for what we build next.',
-}
-
-export const dynamic = 'force-dynamic'
+export const metadata: Metadata = {
+  title: "Future Lab | Flash",
+  description: "Vote on upcoming concepts. Shape the future of fashion.",
+};
 
 export default async function FutureLabPage() {
-  const supabase = await createClient()
-
-  // 1. Fetch concepts
-  const { data: concepts, error: conceptsError } = await supabase
-    .from('concepts')
-    .select('*')
-    .order('created_at', { ascending: false })
-
-  if (conceptsError) {
-    console.error('Error fetching concepts:', conceptsError)
-  }
-
-  // 2. Get current user
-  const { data: { user } } = await supabase.auth.getUser()
-
-  // 3. If logged in, fetch their votes
-  let userVotes: string[] = []
-  if (user) {
-    const { data: votes } = await supabase
-      .from('concept_votes')
-      .select('concept_id')
-      .eq('user_id', user.id)
-    
-    if (votes) {
-      userVotes = votes.map((v: { concept_id: string }) => v.concept_id)
-    }
-  }
+  const concepts = await getActiveConcepts();
+  const userVotes = await getUserVotes();
 
   return (
-    <LabClientView 
-        concepts={concepts || []} 
-        user={user} 
-        userVotes={userVotes} 
-    />
-  )
+    <div className="min-h-screen bg-background">
+      <LabClient concepts={concepts || []} userVotes={userVotes || []} />
+    </div>
+  );
 }

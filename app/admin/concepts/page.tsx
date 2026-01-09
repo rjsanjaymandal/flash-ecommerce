@@ -1,23 +1,12 @@
-import { createClient } from "@/lib/supabase/server";
-import { ConceptsClient } from "./concepts-client";
+import { getConcepts } from "@/lib/services/concept-service";
+import { ConceptsClient } from "@/components/admin/concepts/concepts-client";
 
-export const metadata = {
-  title: "Manage concepts | Admin | Flash Ecommerce",
-};
+export default async function ConceptsPage() {
+  const concepts = await getConcepts();
 
-export const dynamic = "force-dynamic";
-
-export default async function ConceptsAdminPage() {
-  const supabase = await createClient();
-
-  const { data: concepts, error } = (await supabase
-    .from("concepts")
-    .select("*")
-    .order("vote_count", { ascending: false })) as any;
-
-  if (error) {
-    console.error("Error fetching concepts:", error.message);
-  }
-
-  return <ConceptsClient concepts={concepts || []} />;
+  return (
+    <div className="flex-1 space-y-4 p-8 pt-6">
+      <ConceptsClient initialConcepts={concepts || []} />
+    </div>
+  );
 }

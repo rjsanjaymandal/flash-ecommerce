@@ -61,10 +61,10 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import {
-  deleteProduct,
   bulkDeleteProducts,
   bulkUpdateProductStatus,
 } from "@/lib/services/product-service";
+import { deleteProductAction } from "@/app/actions/admin/delete-product";
 import { getWaitlistUsers } from "@/app/actions/admin-preorder";
 import { formatCurrency, cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
@@ -164,11 +164,13 @@ export function ProductsClient({
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      await deleteProduct(id);
+      const result = await deleteProductAction(id);
+      if (result.error) throw new Error(result.error);
+      return result;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       setDeleteId(null);
-      toast.success("Product deleted");
+      toast.success(data.message || "Product deleted successfully");
       router.refresh();
     },
     onError: (err) => {
@@ -873,6 +875,37 @@ export function ProductsClient({
           </div>
         </DialogContent>
       </Dialog>
+      <AlertDialog
+        open={!!deleteId}
+        onOpenChange={(open) => !open && setDeleteId(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the
+              product and remove all associated data including images, stock,
+              and reviews.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => deleteId && deleteMutation.mutate(deleteId)}
+            >
+              {deleteMutation.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete Permanent"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
