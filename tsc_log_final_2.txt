@@ -1,0 +1,9 @@
+app/admin/products/page.tsx(34,26): error TS2322: Type '{ created_at: string; is_active: boolean; category_id: string | null; color_options: string[] | null; description: string | null; expression_tags: string[] | null; gallery_image_urls: string[] | null; ... 12 more ...; preorder_count?: number | undefined; }[]' is not assignable to type 'AdminProduct[]'.
+  Type '{ created_at: string; is_active: boolean; category_id: string | null; color_options: string[] | null; description: string | null; expression_tags: string[] | null; gallery_image_urls: string[] | null; ... 12 more ...; preorder_count?: number; }' is not assignable to type 'AdminProduct'.
+    Types of property 'category_id' are incompatible.
+      Type 'string | null' is not assignable to type 'string | undefined'.
+        Type 'null' is not assignable to type 'string | undefined'.
+components/account/account-client.tsx(274,39): error TS2322: Type '{ created_at: string | null; fit_preference: "oversized" | "regular" | "fitted" | null; id: string; loyalty_points: number | null; name: string | null; pronouns: string | null; role: "user" | ... 1 more ... | null; updated_at: string | null; }' is not assignable to type '{ name: string | null; role?: string | undefined; fit_preference?: string | undefined; pronouns?: string | undefined; }'.
+  Types of property 'role' are incompatible.
+    Type '"user" | "admin" | null' is not assignable to type 'string | undefined'.
+      Type 'null' is not assignable to type 'string | undefined'.

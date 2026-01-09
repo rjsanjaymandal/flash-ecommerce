@@ -1,0 +1,19 @@
+app/actions/notify.ts(106,19): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "addresses" | "profiles" | "cart_items" | "products" | "content_globals" | "coupons" | "categories" | "feedback" | "order_items" | "orders" | "product_stock" | "concepts" | ... 4 more ... | "notifications"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"preorders"' is not assignable to parameter of type '"addresses" | "profiles" | "cart_items" | "products" | "content_globals" | "coupons" | "categories" | "feedback" | "order_items" | "orders" | "product_stock" | "concepts" | ... 4 more ... | "notifications"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "13.0.5"; }, { Tables: { addresses: { Row: { address_line1: string; address_line2: string | null; city: string; country: string; created_at: string; ... 6 more ...; user_id: string; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 15 more ...; notifications: { ...; }; }; Views: {}; Functions: { ...; }; Enums: { ...; }; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"preorders"' is not assignable to parameter of type 'never'.
+app/actions/notify.ts(107,23): error TS2353: Object literal may only specify known properties, and 'notified_at' does not exist in type '{ address_line1?: string | undefined; address_line2?: string | null | undefined; city?: string | undefined; country?: string | undefined; created_at?: string | undefined; id?: string | undefined; ... 5 more ...; user_id?: string | undefined; } | ... 15 more ... | { ...; }'.
+app/actions/notify.ts(142,53): error TS7006: Parameter 'c' implicitly has an 'any' type.
+app/admin/page.tsx(28,9): error TS2322: Type '{ category_id: string | null; color_options: string[] | null; created_at: string | null; description: string | null; expression_tags: string[] | null; gallery_image_urls: string[] | null; ... 8 more ...; categories: { ...; } | null; }[]' is not assignable to type 'DashboardProduct[]'.
+  Property 'sale_count' is missing in type '{ category_id: string | null; color_options: string[] | null; created_at: string | null; description: string | null; expression_tags: string[] | null; gallery_image_urls: string[] | null; ... 8 more ...; categories: { ...; } | null; }' but required in type 'DashboardProduct'.
+app/admin/products/page.tsx(26,26): error TS2322: Type 'Product[]' is not assignable to type 'AdminProduct[]'.
+  Type 'Product' is not assignable to type 'AdminProduct'.
+    Types of property 'is_active' are incompatible.
+      Type 'boolean | null' is not assignable to type 'boolean'.
+        Type 'null' is not assignable to type 'boolean'.
+components/account/account-client.tsx(176,50): error TS2322: Type '{ created_at: string | null; fit_preference: "oversized" | "regular" | "fitted" | null; id: string; loyalty_points: number | null; name: string | null; pronouns: string | null; role: "user" | ... 1 more ... | null; updated_at: string | null; }' is not assignable to type '{ name: string | null; role?: string | undefined; fit_preference?: string | undefined; pronouns?: string | undefined; }'.
+  Types of property 'role' are incompatible.
+    Type '"user" | "admin" | null' is not assignable to type 'string | undefined'.
+      Type 'null' is not assignable to type 'string | undefined'.
+components/reviews/review-section.tsx(128,41): error TS2339: Property 'is_verified' does not exist on type 'Review'.

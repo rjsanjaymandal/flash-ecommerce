@@ -1,10 +1,10 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import * as z from 'zod'
-import { Button } from '@/components/ui/button'
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -12,60 +12,63 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { toast } from 'sonner'
-import { createConcept } from '@/app/actions/admin/manage-concepts'
-import { Loader2, UploadCloud } from 'lucide-react'
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+import { createConcept } from "@/app/actions/admin/manage-concepts";
+import { Loader2, UploadCloud } from "lucide-react";
 
 const conceptSchema = z.object({
-  title: z.string().min(3, 'Title must be at least 3 characters'),
-  description: z.string().min(10, 'Description must be at least 10 characters'),
-  voteGoal: z.coerce.number().min(1, 'Goal must be at least 1'),
-  image: z.any().refine((files) => files?.length > 0, 'Image is required'),
-})
+  title: z.string().min(3, "Title must be at least 3 characters"),
+  description: z.string().min(10, "Description must be at least 10 characters"),
+  voteGoal: z.coerce.number().min(1, "Goal must be at least 1"),
+  // @ts-ignore - FileList type check is tricky with Zod in client components
+  image: z.any().refine((files) => files?.length > 0, "Image is required"),
+});
 
-type ConceptFormValues = z.infer<typeof conceptSchema>
+type ConceptFormValues = z.infer<typeof conceptSchema>;
 
 interface ConceptFormProps {
-  onSuccess?: () => void
+  onSuccess?: () => void;
 }
 
 export function ConceptForm({ onSuccess }: ConceptFormProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const form = useForm<ConceptFormValues>({
-    resolver: zodResolver(conceptSchema),
+    resolver: zodResolver(conceptSchema) as any,
     defaultValues: {
-      title: '',
-      description: '',
+      title: "",
+      description: "",
       voteGoal: 50,
+      // @ts-ignore
+      image: undefined,
     },
-  })
+  });
 
   async function onSubmit(values: ConceptFormValues) {
-    setIsSubmitting(true)
+    setIsSubmitting(true);
     try {
-      const formData = new FormData()
-      formData.append('title', values.title)
-      formData.append('description', values.description)
-      formData.append('voteGoal', values.voteGoal.toString())
-      formData.append('image', values.image[0])
+      const formData = new FormData();
+      formData.append("title", values.title);
+      formData.append("description", values.description);
+      formData.append("voteGoal", values.voteGoal.toString());
+      formData.append("image", values.image[0]);
 
-      const result = await createConcept(formData)
+      const result = await createConcept(formData);
 
       if (result.success) {
-        toast.success('Concept created successfully!')
-        form.reset()
-        onSuccess?.()
+        toast.success("Concept created successfully!");
+        form.reset();
+        onSuccess?.();
       } else {
-        toast.error(result.error || 'Failed to create concept')
+        toast.error(result.error || "Failed to create concept");
       }
     } catch (error) {
-      toast.error('An unexpected error occurred')
+      toast.error("An unexpected error occurred");
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
   }
 
@@ -93,10 +96,10 @@ export function ConceptForm({ onSuccess }: ConceptFormProps) {
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <Textarea 
-                  placeholder="Describe the vision behind this concept..." 
+                <Textarea
+                  placeholder="Describe the vision behind this concept..."
                   className="min-h-[120px]"
-                  {...field} 
+                  {...field}
                 />
               </FormControl>
               <FormMessage />
@@ -131,7 +134,8 @@ export function ConceptForm({ onSuccess }: ConceptFormProps) {
                       <div className="flex flex-col items-center justify-center pt-5 pb-6">
                         <UploadCloud className="w-8 h-8 mb-3 text-muted-foreground" />
                         <p className="mb-2 text-sm text-muted-foreground">
-                          <span className="font-semibold">Click to upload</span> or drag and drop
+                          <span className="font-semibold">Click to upload</span>{" "}
+                          or drag and drop
                         </p>
                       </div>
                       <input
@@ -146,9 +150,9 @@ export function ConceptForm({ onSuccess }: ConceptFormProps) {
                 </FormControl>
                 <FormMessage />
                 {value && value[0] && (
-                    <p className="text-xs text-muted-foreground mt-2 truncate">
-                        Selected: {value[0].name}
-                    </p>
+                  <p className="text-xs text-muted-foreground mt-2 truncate">
+                    Selected: {value[0].name}
+                  </p>
                 )}
               </FormItem>
             )}
@@ -162,10 +166,10 @@ export function ConceptForm({ onSuccess }: ConceptFormProps) {
               Creating Concept & Uploading...
             </>
           ) : (
-            'Launch Concept in Future Lab'
+            "Launch Concept in Future Lab"
           )}
         </Button>
       </form>
     </Form>
-  )
+  );
 }

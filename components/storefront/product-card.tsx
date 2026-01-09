@@ -88,10 +88,7 @@ export function ProductCard({
       quantity: item.quantity ?? 0, // Ensure number
     }));
 
-  const { stock: realTimeStock } = useRealTimeHype(
-    product.id,
-    product.product_stock || []
-  );
+  const { stock: realTimeStock } = useRealTimeHype(product.id, initialStock);
 
   // Pre-order state
   const [isOnWaitlist, setIsOnWaitlist] = useState(false);

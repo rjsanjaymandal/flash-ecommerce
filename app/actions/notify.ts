@@ -12,8 +12,21 @@ export async function notifyWaitlistUser(preorderId: string) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { error: 'Unauthorized' }
 
+    interface PreorderWithProduct {
+        id: string
+        email: string
+        user_name: string | null
+        notified_at: string | null
+        products: {
+            name: string
+            slug: string
+            main_image_url: string
+            product_stock: { quantity: number }[]
+        } | null
+    }
+
     // 2. Fetch Preorder Details with Stock and Status
-    const { data: preorder, error } = await supabase
+    const { data: preorderData, error } = await (supabase as any)
         .from('preorders')
         .select(`
             id,
@@ -29,6 +42,8 @@ export async function notifyWaitlistUser(preorderId: string) {
         `)
         .eq('id', preorderId)
         .single()
+    
+    const preorder = preorderData as unknown as PreorderWithProduct
 
     if (error || !preorder) return { error: 'Request not found' }
 
@@ -40,7 +55,8 @@ export async function notifyWaitlistUser(preorderId: string) {
     }
 
     // Check 2: Stock Validation (Don't promise ghost stock)
-    const totalStock = preorder.products?.product_stock?.reduce((acc: number, item: any) => acc + (item.quantity || 0), 0) || 0
+    const stockItems = preorder.products?.product_stock || []
+    const totalStock = stockItems.reduce((acc, item) => acc + (item.quantity || 0), 0)
     if (totalStock <= 0) {
         return { error: 'Product is still Out of Stock. Cannot notify.' }
     }
@@ -86,7 +102,7 @@ export async function notifyWaitlistUser(preorderId: string) {
 
     // 5. Update Status (Tracking)
     if (success) {
-        await supabase
+        await (supabase as any)
             .from('preorders')
             .update({ notified_at: new Date().toISOString() })
             .eq('id', preorderId)
@@ -102,12 +118,11 @@ export async function notifyAllWaitlist(productId: string) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { error: 'Unauthorized' }
 
-    // 2. Get Candidates (Notified_at IS NULL)
-    const { data: candidates, error } = await supabase
+    const { data: candidates, error } = await (supabase as any)
         .from('preorders')
         .select('id')
         .eq('product_id', productId)
-        .is('notified_at', null)
+        .filter('notified_at', 'is', 'null')
 
     if (error) return { error: 'Failed to fetch candidates' }
     if (!candidates || candidates.length === 0) return { message: 'No pending notifications' }
@@ -123,7 +138,7 @@ export async function notifyAllWaitlist(productId: string) {
         const batch = candidates.slice(i, i + BATCH_SIZE)
         
         // Process this batch in parallel
-        const results = await Promise.all(batch.map(c => notifyWaitlistUser(c.id)))
+        const results = await Promise.all(batch.map((c: { id: string }) => notifyWaitlistUser(c.id)))
 
         // Tally results
         results.forEach(r => {

@@ -25,7 +25,7 @@ export async function createConcept(formData: FormData) {
   const adminAuth = await verifyAdmin()
   if (!adminAuth.isAdmin) return { error: adminAuth.error }
   
-  const { supabase } = adminAuth
+  const { supabase } = adminAuth as { supabase: any; isAdmin: true }
   
   const title = formData.get('title') as string
   const description = formData.get('description') as string
@@ -49,7 +49,7 @@ export async function createConcept(formData: FormData) {
         title,
         description,
         vote_goal: voteGoal,
-        image_url: images.desktop, // Use desktop variant as main image
+        image_url: (images as any).desktop || images, // Use desktop variant or fallback
         status: 'voting'
       })
       
@@ -72,7 +72,7 @@ export async function updateConceptStatus(id: string, status: 'voting' | 'approv
   const adminAuth = await verifyAdmin()
   if (!adminAuth.isAdmin) return { error: adminAuth.error }
   
-  const { supabase } = adminAuth
+  const { supabase } = adminAuth as { supabase: any; isAdmin: true }
   
   const { error } = await supabase
     .from('concepts')
@@ -93,7 +93,7 @@ export async function deleteConcept(id: string) {
   const adminAuth = await verifyAdmin()
   if (!adminAuth.isAdmin) return { error: adminAuth.error }
   
-  const { supabase } = adminAuth
+  const { supabase } = adminAuth as { supabase: any; isAdmin: true }
   
   // 1. Get image URL to delete from storage
   const { data: concept } = await supabase

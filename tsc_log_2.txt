@@ -1,0 +1,90 @@
+app/actions/admin/manage-concepts.ts(77,27): error TS18048: 'supabase' is possibly 'undefined'.
+app/actions/admin/manage-concepts.ts(99,35): error TS18048: 'supabase' is possibly 'undefined'.
+app/actions/admin/manage-concepts.ts(115,11): error TS18048: 'supabase' is possibly 'undefined'.
+app/actions/admin/manage-concepts.ts(123,40): error TS18048: 'supabase' is possibly 'undefined'.
+app/actions/notify.ts(106,19): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "addresses" | "profiles" | "cart_items" | "products" | "content_globals" | "coupons" | "categories" | "feedback" | "order_items" | "orders" | "product_stock" | "concepts" | ... 4 more ... | "notifications"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"preorders"' is not assignable to parameter of type '"addresses" | "profiles" | "cart_items" | "products" | "content_globals" | "coupons" | "categories" | "feedback" | "order_items" | "orders" | "product_stock" | "concepts" | ... 4 more ... | "notifications"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "13.0.5"; }, { Tables: { addresses: { Row: { address_line1: string; address_line2: string | null; city: string; country: string; created_at: string; ... 6 more ...; user_id: string; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 15 more ...; notifications: { ...; }; }; Views: {}; Functions: { ...; }; Enums: { ...; }; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"preorders"' is not assignable to parameter of type 'never'.
+app/actions/notify.ts(107,23): error TS2353: Object literal may only specify known properties, and 'notified_at' does not exist in type '{ address_line1?: string | undefined; address_line2?: string | null | undefined; city?: string | undefined; country?: string | undefined; created_at?: string | undefined; id?: string | undefined; ... 5 more ...; user_id?: string | undefined; } | ... 15 more ... | { ...; }'.
+app/actions/notify.ts(142,79): error TS2339: Property 'id' does not exist on type 'SelectQueryError<"Invalid Relationships cannot infer result type"> | SelectQueryError<"Invalid RelationName cannot infer result type">'.
+  Property 'id' does not exist on type 'SelectQueryError<"Invalid Relationships cannot infer result type">'.
+app/admin/concepts/page.tsx(22,26): error TS2322: Type '{ id: string; created_at: string; title: string; description: string; image_url: string; vote_count: number; vote_goal: number; status: string; }[]' is not assignable to type 'Concept[]'.
+  Type '{ id: string; created_at: string; title: string; description: string; image_url: string; vote_count: number; vote_goal: number; status: string; }' is not assignable to type 'Concept'.
+    Types of property 'status' are incompatible.
+      Type 'string' is not assignable to type '"voting" | "approved" | "launched"'.
+app/admin/coupons/page.tsx(17,25): error TS2322: Type '{ id: string; created_at: string; code: string; discount_type: "percentage" | "fixed"; value: number; active: boolean | null; max_uses: number | null; used_count: number | null; expires_at: string | null; min_order_amount: number | null; }[]' is not assignable to type 'AdminCoupon[]'.
+  Type '{ id: string; created_at: string; code: string; discount_type: "percentage" | "fixed"; value: number; active: boolean | null; max_uses: number | null; used_count: number | null; expires_at: string | null; min_order_amount: number | null; }' is not assignable to type 'AdminCoupon'.
+    Types of property 'min_order_amount' are incompatible.
+      Type 'number | null' is not assignable to type 'number'.
+        Type 'null' is not assignable to type 'number'.
+app/admin/page.tsx(28,9): error TS2322: Type '{ category_id: string | null; color_options: string[] | null; created_at: string | null; description: string | null; expression_tags: string[] | null; gallery_image_urls: string[] | null; ... 8 more ...; categories: { ...; } | null; }[]' is not assignable to type 'DashboardProduct[]'.
+  Property 'sale_count' is missing in type '{ category_id: string | null; color_options: string[] | null; created_at: string | null; description: string | null; expression_tags: string[] | null; gallery_image_urls: string[] | null; ... 8 more ...; categories: { ...; } | null; }' but required in type 'DashboardProduct'.
+app/admin/products/page.tsx(26,26): error TS2322: Type 'Product[]' is not assignable to type 'AdminProduct[]'.
+  Type 'Product' is not assignable to type 'AdminProduct'.
+    Types of property 'is_active' are incompatible.
+      Type 'boolean | null' is not assignable to type 'boolean'.
+        Type 'null' is not assignable to type 'boolean'.
+app/sitemap.ts(17,28): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
+    Argument of type 'string | null' is not assignable to parameter of type 'string | number | Date'.
+      Type 'null' is not assignable to type 'string | number | Date'.
+  Overload 2 of 4, '(value: string | number): Date', gave the following error.
+    Argument of type 'string | null' is not assignable to parameter of type 'string | number'.
+      Type 'null' is not assignable to type 'string | number'.
+components/account/account-client.tsx(176,50): error TS2322: Type '{ created_at: string | null; fit_preference: "oversized" | "regular" | "fitted" | null; id: string; loyalty_points: number | null; name: string | null; pronouns: string | null; role: "user" | ... 1 more ... | null; updated_at: string | null; }' is not assignable to type '{ name: string | null; role?: string | undefined; fit_preference?: string | undefined; pronouns?: string | undefined; }'.
+  Types of property 'role' are incompatible.
+    Type '"user" | "admin" | null' is not assignable to type 'string | undefined'.
+      Type 'null' is not assignable to type 'string | undefined'.
+components/admin/concept-form.tsx(40,5): error TS2322: Type 'Resolver<{ title: string; description: string; voteGoal: unknown; image: any; }, any, { title: string; description: string; voteGoal: number; image: any; }>' is not assignable to type 'Resolver<{ title: string; description: string; voteGoal: number; image: any; }, any, { title: string; description: string; voteGoal: number; image: any; }>'.
+  Types of parameters 'options' and 'options' are incompatible.
+    Type 'ResolverOptions<{ title: string; description: string; voteGoal: number; image: any; }>' is not assignable to type 'ResolverOptions<{ title: string; description: string; voteGoal: unknown; image: any; }>'.
+      Type 'unknown' is not assignable to type 'number'.
+components/admin/concept-form.tsx(77,41): error TS2345: Argument of type '(values: { title: string; description: string; voteGoal: number; image: any; }) => Promise<void>' is not assignable to parameter of type 'SubmitHandler<TFieldValues>'.
+  Types of parameters 'values' and 'data' are incompatible.
+    Type 'TFieldValues' is not assignable to type '{ title: string; description: string; voteGoal: number; image: any; }'.
+      Type 'FieldValues' is missing the following properties from type '{ title: string; description: string; voteGoal: number; image: any; }': title, description, voteGoal, image
+components/admin/concept-form.tsx(79,11): error TS2322: Type 'Control<{ title: string; description: string; voteGoal: number; image: any; }, any, TFieldValues>' is not assignable to type 'Control<{ title: string; description: string; voteGoal: number; image: any; }, any, { title: string; description: string; voteGoal: number; image: any; }>'.
+  The types of '_options.resolver' are incompatible between these types.
+    Type 'Resolver<{ title: string; description: string; voteGoal: number; image: any; }, any, TFieldValues> | undefined' is not assignable to type 'Resolver<{ title: string; description: string; voteGoal: number; image: any; }, any, { title: string; description: string; voteGoal: number; image: any; }> | undefined'.
+      Type 'Resolver<{ title: string; description: string; voteGoal: number; image: any; }, any, TFieldValues>' is not assignable to type 'Resolver<{ title: string; description: string; voteGoal: number; image: any; }, any, { title: string; description: string; voteGoal: number; image: any; }>'.
+        Type 'ResolverResult<{ title: string; description: string; voteGoal: number; image: any; }, TFieldValues> | Promise<ResolverResult<{ title: string; description: string; voteGoal: number; image: any; }, TFieldValues>>' is not assignable to type 'ResolverResult<{ title: string; description: string; voteGoal: number; image: any; }, { title: string; description: string; voteGoal: number; image: any; }> | Promise<ResolverResult<{ title: string; description: string; voteGoal: number; image: any; }, { ...; }>>'.
+          Type 'ResolverSuccess<TFieldValues>' is not assignable to type 'ResolverResult<{ title: string; description: string; voteGoal: number; image: any; }, { title: string; description: string; voteGoal: number; image: any; }> | Promise<ResolverResult<{ title: string; description: string; voteGoal: number; image: any; }, { ...; }>>'.
+            Type 'ResolverSuccess<TFieldValues>' is not assignable to type 'ResolverSuccess<{ title: string; description: string; voteGoal: number; image: any; }>'.
+              Type 'TFieldValues' is not assignable to type '{ title: string; description: string; voteGoal: number; image: any; }'.
+                Type 'FieldValues' is missing the following properties from type '{ title: string; description: string; voteGoal: number; image: any; }': title, description, voteGoal, image
+components/admin/concept-form.tsx(93,11): error TS2322: Type 'Control<{ title: string; description: string; voteGoal: number; image: any; }, any, TFieldValues>' is not assignable to type 'Control<{ title: string; description: string; voteGoal: number; image: any; }, any, { title: string; description: string; voteGoal: number; image: any; }>'.
+  The types of '_options.resolver' are incompatible between these types.
+    Type 'Resolver<{ title: string; description: string; voteGoal: number; image: any; }, any, TFieldValues> | undefined' is not assignable to type 'Resolver<{ title: string; description: string; voteGoal: number; image: any; }, any, { title: string; description: string; voteGoal: number; image: any; }> | undefined'.
+      Type 'Resolver<{ title: string; description: string; voteGoal: number; image: any; }, any, TFieldValues>' is not assignable to type 'Resolver<{ title: string; description: string; voteGoal: number; image: any; }, any, { title: string; description: string; voteGoal: number; image: any; }>'.
+        Type 'ResolverResult<{ title: string; description: string; voteGoal: number; image: any; }, TFieldValues> | Promise<ResolverResult<{ title: string; description: string; voteGoal: number; image: any; }, TFieldValues>>' is not assignable to type 'ResolverResult<{ title: string; description: string; voteGoal: number; image: any; }, { title: string; description: string; voteGoal: number; image: any; }> | Promise<ResolverResult<{ title: string; description: string; voteGoal: number; image: any; }, { ...; }>>'.
+          Type 'ResolverSuccess<TFieldValues>' is not assignable to type 'ResolverResult<{ title: string; description: string; voteGoal: number; image: any; }, { title: string; description: string; voteGoal: number; image: any; }> | Promise<ResolverResult<{ title: string; description: string; voteGoal: number; image: any; }, { ...; }>>'.
+            Type 'ResolverSuccess<TFieldValues>' is not assignable to type 'ResolverSuccess<{ title: string; description: string; voteGoal: number; image: any; }>'.
+              Type 'TFieldValues' is not assignable to type '{ title: string; description: string; voteGoal: number; image: any; }'.
+                Type 'FieldValues' is missing the following properties from type '{ title: string; description: string; voteGoal: number; image: any; }': title, description, voteGoal, image
+components/admin/concept-form.tsx(112,13): error TS2322: Type 'Control<{ title: string; description: string; voteGoal: number; image: any; }, any, TFieldValues>' is not assignable to type 'Control<{ title: string; description: string; voteGoal: number; image: any; }, any, { title: string; description: string; voteGoal: number; image: any; }>'.
+  The types of '_options.resolver' are incompatible between these types.
+    Type 'Resolver<{ title: string; description: string; voteGoal: number; image: any; }, any, TFieldValues> | undefined' is not assignable to type 'Resolver<{ title: string; description: string; voteGoal: number; image: any; }, any, { title: string; description: string; voteGoal: number; image: any; }> | undefined'.
+      Type 'Resolver<{ title: string; description: string; voteGoal: number; image: any; }, any, TFieldValues>' is not assignable to type 'Resolver<{ title: string; description: string; voteGoal: number; image: any; }, any, { title: string; description: string; voteGoal: number; image: any; }>'.
+        Type 'ResolverResult<{ title: string; description: string; voteGoal: number; image: any; }, TFieldValues> | Promise<ResolverResult<{ title: string; description: string; voteGoal: number; image: any; }, TFieldValues>>' is not assignable to type 'ResolverResult<{ title: string; description: string; voteGoal: number; image: any; }, { title: string; description: string; voteGoal: number; image: any; }> | Promise<ResolverResult<{ title: string; description: string; voteGoal: number; image: any; }, { ...; }>>'.
+          Type 'ResolverSuccess<TFieldValues>' is not assignable to type 'ResolverResult<{ title: string; description: string; voteGoal: number; image: any; }, { title: string; description: string; voteGoal: number; image: any; }> | Promise<ResolverResult<{ title: string; description: string; voteGoal: number; image: any; }, { ...; }>>'.
+            Type 'ResolverSuccess<TFieldValues>' is not assignable to type 'ResolverSuccess<{ title: string; description: string; voteGoal: number; image: any; }>'.
+              Type 'TFieldValues' is not assignable to type '{ title: string; description: string; voteGoal: number; image: any; }'.
+                Type 'FieldValues' is missing the following properties from type '{ title: string; description: string; voteGoal: number; image: any; }': title, description, voteGoal, image
+components/admin/concept-form.tsx(126,13): error TS2322: Type 'Control<{ title: string; description: string; voteGoal: number; image: any; }, any, TFieldValues>' is not assignable to type 'Control<{ title: string; description: string; voteGoal: number; image: any; }, any, { title: string; description: string; voteGoal: number; image: any; }>'.
+  The types of '_options.resolver' are incompatible between these types.
+    Type 'Resolver<{ title: string; description: string; voteGoal: number; image: any; }, any, TFieldValues> | undefined' is not assignable to type 'Resolver<{ title: string; description: string; voteGoal: number; image: any; }, any, { title: string; description: string; voteGoal: number; image: any; }> | undefined'.
+      Type 'Resolver<{ title: string; description: string; voteGoal: number; image: any; }, any, TFieldValues>' is not assignable to type 'Resolver<{ title: string; description: string; voteGoal: number; image: any; }, any, { title: string; description: string; voteGoal: number; image: any; }>'.
+        Type 'ResolverResult<{ title: string; description: string; voteGoal: number; image: any; }, TFieldValues> | Promise<ResolverResult<{ title: string; description: string; voteGoal: number; image: any; }, TFieldValues>>' is not assignable to type 'ResolverResult<{ title: string; description: string; voteGoal: number; image: any; }, { title: string; description: string; voteGoal: number; image: any; }> | Promise<ResolverResult<{ title: string; description: string; voteGoal: number; image: any; }, { ...; }>>'.
+          Type 'ResolverSuccess<TFieldValues>' is not assignable to type 'ResolverResult<{ title: string; description: string; voteGoal: number; image: any; }, { title: string; description: string; voteGoal: number; image: any; }> | Promise<ResolverResult<{ title: string; description: string; voteGoal: number; image: any; }, { ...; }>>'.
+            Type 'ResolverSuccess<TFieldValues>' is not assignable to type 'ResolverSuccess<{ title: string; description: string; voteGoal: number; image: any; }>'.
+              Type 'TFieldValues' is not assignable to type '{ title: string; description: string; voteGoal: number; image: any; }'.
+                Type 'FieldValues' is missing the following properties from type '{ title: string; description: string; voteGoal: number; image: any; }': title, description, voteGoal, image
+components/reviews/review-section.tsx(128,41): error TS2339: Property 'is_verified' does not exist on type 'Review'.
+components/storefront/product-card.tsx(93,5): error TS2345: Argument of type '{ color: string; id: string; product_id: string | null; quantity: number | null; size: string; }[]' is not assignable to parameter of type 'StockItem[]'.
+  Type '{ color: string; id: string; product_id: string | null; quantity: number | null; size: string; }' is not assignable to type 'StockItem'.
+    Types of property 'product_id' are incompatible.
+      Type 'string | null' is not assignable to type 'string'.
+        Type 'null' is not assignable to type 'string'.
+components/storefront/shop-filters.tsx(6,10): error TS2305: Module '"@/types/supabase"' has no exported member 'Category'.
