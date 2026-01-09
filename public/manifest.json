@@ -8,14 +8,14 @@
   "theme_color": "#020617",
   "icons": [
     {
-      "src": "/flash-logo.jpg",
-      "sizes": "192x192",
-      "type": "image/jpeg"
+      "src": "/splash-icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
     },
     {
-      "src": "/flash-logo.jpg",
-      "sizes": "512x512",
-      "type": "image/jpeg"
+      "src": "/splash-icon.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
     }
   ]
 }
