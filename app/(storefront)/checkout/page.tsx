@@ -269,6 +269,7 @@ export default function CheckoutPage() {
             setIsProcessing(false);
           },
         },
+        callback_url: `${window.location.origin}/api/razorpay/callback`, // Redirect to our server on success
       };
 
       if (!(window as any).Razorpay) {

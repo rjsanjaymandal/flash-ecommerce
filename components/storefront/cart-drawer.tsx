@@ -21,6 +21,7 @@ export function CartDrawer() {
   const removeItem = useCartStore((state) => state.removeItem);
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const cartTotal = useCartStore(selectCartTotal);
+  const isLoading = useCartStore((state) => state.isLoading);
 
   const loadingStates = useCartStore((state) => state.loadingStates);
   const setLoadingState = useCartStore((state) => state.setLoadingState);
@@ -87,7 +88,20 @@ export function CartDrawer() {
 
         {/* Items */}
         <div className="flex-1 overflow-y-auto p-5 scrollbar-hide">
-          {items.length === 0 ? (
+          {isLoading ? (
+            <div className="space-y-6">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex gap-4 animate-pulse">
+                  <div className="h-28 w-24 bg-muted/50 rounded-xl" />
+                  <div className="flex-1 space-y-3 py-2">
+                    <div className="h-4 bg-muted/50 rounded w-3/4" />
+                    <div className="h-3 bg-muted/50 rounded w-1/2" />
+                    <div className="h-8 bg-muted/50 rounded w-full mt-2" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : items.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-muted-foreground space-y-6 text-center p-8">
               <div className="h-24 w-24 bg-muted/30 rounded-full flex items-center justify-center mb-2">
                 <ShoppingBag className="h-10 w-10 opacity-30" />
