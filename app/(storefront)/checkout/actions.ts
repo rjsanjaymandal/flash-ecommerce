@@ -3,8 +3,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { Database } from '@/types/supabase'
 import { CartItem } from '@/store/use-cart-store'
-import { resend } from '@/lib/email/client'
-import { OrderConfirmationEmail } from '@/lib/email/templates/order-confirmation'
 import { checkRateLimit } from '@/lib/rate-limit'
 
 export async function createOrder(data: {
@@ -202,9 +200,9 @@ export async function createOrder(data: {
 
         // Stock is now reserved. Proceed.
 
-        // 3. Update Coupon Usage count (informational/soft-reserve)
+        // 4. Update Coupon Usage
         if (data.coupon_code) {
-            try {
+             try {
                 const { data: coupon } = await supabase.from('coupons').select('id, used_count').eq('code', data.coupon_code.toUpperCase()).single()
                 if (coupon) {
                     await supabase.from('coupons').update({ used_count: (coupon.used_count || 0) + 1 }).eq('id', coupon.id)
@@ -214,29 +212,10 @@ export async function createOrder(data: {
             }
         }
 
-        // 4. Send Confirmation Email (Async)
-        if (data.email) {
-            try {
-                await resend.emails.send({
-                    from: 'Flash <orders@flashhfashion.in>', // Using the domain from sitemap
-                    to: data.email,
-                    subject: `Order Created #${order.id.slice(0,8).toUpperCase()} - Action Required`,
-                    react: OrderConfirmationEmail({
-                        orderId: order.id,
-                        customerName: data.shipping_name,
-                        items: data.items.map(i => ({
-                            name: i.name,
-                            quantity: i.quantity,
-                            price: i.price
-                        })),
-                        total: data.total
-                    })
-                })
-            } catch (emailErr) {
-                console.error('Failed to send email:', emailErr)
-            }
-        }
-
+        // Return the order immediately. 
+        // We DO NOT send email here. The 'PaymentProcessor' will send the Confirmation Email 
+        // once the payment is verified (via Verify API, Callback, or Webhook).
+        
         return order
     } catch (e: any) {
         console.error("[createOrder] FATAL ERROR:", e)

@@ -1,8 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Bell, Check, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/context/auth-context";
+import { createClient } from "@/lib/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 import {
   Popover,
   PopoverContent,
@@ -24,6 +29,52 @@ export function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
   const { notifications, unreadCount, markAllAsRead, clearAll, markAsRead } =
     useNotifications();
+
+  const { user } = useAuth();
+  const supabase = createClient();
+  const queryClient = useQueryClient();
+  const router = useRouter();
+
+  // Realtime Subscription
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel("notifications-bell")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload: any) => {
+          // Play sound (optional)
+          // const audio = new Audio('/sounds/notification.mp3');
+          // audio.play().catch(() => {});
+
+          // Show Toast
+          toast(payload.new.title, {
+            description: payload.new.message,
+            action: payload.new.action_url
+              ? {
+                  label: "View",
+                  onClick: () => router.push(payload.new.action_url),
+                }
+              : undefined,
+          });
+
+          // Refresh Data
+          queryClient.invalidateQueries({ queryKey: ["notifications"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, supabase, queryClient, router]);
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>

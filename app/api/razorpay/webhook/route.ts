@@ -1,109 +1,94 @@
 import { NextResponse } from 'next/server'
-import crypto from 'crypto'
-import { createAdminClient } from '@/lib/supabase/admin'
-import { sendOrderConfirmation } from '@/lib/email/send-order-receipt'
+import { PaymentProcessor } from '@/lib/services/payment-processor'
 
 export async function POST(req: Request) {
   try {
     const body = await req.text()
     const signature = req.headers.get('x-razorpay-signature')
 
-    if (!process.env.RAZORPAY_WEBHOOK_SECRET) {
-        console.error('RAZORPAY_WEBHOOK_SECRET is not set')
-        return NextResponse.json({ error: 'Configuration error' }, { status: 500 })
-    }
-
-    if (!signature) {
-        return NextResponse.json({ error: 'Missing signature' }, { status: 400 })
+    if (!process.env.RAZORPAY_WEBHOOK_SECRET || !signature) {
+        return NextResponse.json({ error: 'Configuration check failed' }, { status: 400 })
     }
 
     // 1. Verify Signature
-    const expectedSignature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_WEBHOOK_SECRET)
-      .update(body)
-      .digest('hex')
+    const isValid = PaymentProcessor.verifySignature(
+        body, 
+        signature, 
+        process.env.RAZORPAY_WEBHOOK_SECRET
+    )
 
-    if (expectedSignature !== signature) {
+    if (!isValid) {
         return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
     }
 
     const event = JSON.parse(body)
     const { payload } = event
+    const eventId = event.id
 
-    console.log(`[Webhook] Received event: ${event.event}`, payload?.payment?.entity?.id)
+    console.log(`[Webhook] Received event: ${event.event}`, eventId)
+    
+    const supabase = createAdminClientAdmin() // Helper or just use createAdminClient()
 
-    // 2. Handle 'order.paid' or 'payment.captured'
+    // 2. Ledger: Idempotency Check & Persistence
+    // storing raw event first
+    const { data: existingEvent } = await supabase
+        .from('webhook_events')
+        .select('*')
+        .eq('event_id', eventId)
+        .single()
+    
+    if (existingEvent && existingEvent.processed) {
+        console.log(`[Webhook] Event ${eventId} already processed. Skipping.`)
+        return NextResponse.json({ status: 'ok', message: 'Already processed' })
+    }
+
+    // Insert/Log event if new
+    if (!existingEvent) {
+        await supabase.from('webhook_events').insert({
+            event_id: eventId,
+            event_type: event.event,
+            payload: event
+        })
+    }
+
+    // 3. Handle 'order.paid' or 'payment.captured'
     if (event.event === 'order.paid' || event.event === 'payment.captured') {
         const payment = payload.payment.entity
         const orderId = payment.notes?.order_id || payload.order?.entity?.receipt 
 
         if (!orderId) {
-             console.error('[Webhook] No Order ID found in payload notes or receipt')
+             console.error('[Webhook] No Order ID found')
+             await supabase.from('webhook_events').update({ processing_error: 'No Order ID found' }).eq('event_id', eventId)
              return NextResponse.json({ error: 'No order ID found' }, { status: 400 })
         }
 
-        const supabase = createAdminClient()
+        // 4. Process Payment using Shared Service
+        const result = await PaymentProcessor.processPayment(orderId, payment.id)
 
-        // 3. Process Payment (Idempotent RPC)
-        const { data: result, error: rpcError } = await supabase.rpc('process_payment', {
-            p_order_id: orderId,
-            p_payment_id: payment.id
-        })
-
-        if (rpcError) {
-             console.error('[Webhook] RPC Error:', rpcError)
-             return NextResponse.json({ error: 'Database error' }, { status: 500 })
+        if (!result.success && result.message !== 'Payment verified (previously processed)') {
+             console.warn(`[Webhook] Processing failed for ${orderId}:`, result.error)
+             await supabase.from('webhook_events').update({ processing_error: result.error }).eq('event_id', eventId)
+             return NextResponse.json({ error: result.error }, { status: 500 })
         }
-
-        if (result.success) {
-             console.log(`[Webhook] Order ${orderId} marked as paid.`)
-             
-             // Send email if it wasn't already sent (RPC or logic dependent, 
-             // but here we can try sending it again safe in knowledge resend might just duplicate 
-             // or we can rely on verify route. For robustness, we check if we should send it.)
-             // To avoid spam, we might check if 'notification' was just created? 
-             // For now, let's rely on the RPC 'process_payment' to handle business logic updates 
-             // but the email is outside RPC. 
-             // We can fetch the order and check if we need to bug the user.
-             // Ideally, email sending should be triggered by a DB trigger or a queue, but here:
-             
-             // We will attempt to send confirmation ONLY if this webhook call successfully changed the status
-             // (i.e., 'Already processed' returns success=true but message='Already processed')
-             
-             if (result.message !== 'Already processed') {
-                  const { data: orderDetails } = await supabase
-                    .from('orders')
-                    .select('*, order_items(*)')
-                    .eq('id', orderId)
-                    .single()
-
-                  if (orderDetails) {
-                       const email = orderDetails.user_email || (await supabase.from('profiles').select('email').eq('id', orderDetails.user_id).single()).data?.email
-                       if (email) {
-                           await sendOrderConfirmation({
-                                email,
-                                orderId,
-                                customerName: orderDetails.shipping_name || 'Customer',
-                                items: orderDetails.order_items.map((i: any) => ({
-                                    name: i.name_snapshot,
-                                    quantity: i.quantity,
-                                    price: i.unit_price
-                                })),
-                                total: orderDetails.total
-                           }).catch(console.error)
-                       }
-                  }
-             }
-
-        } else {
-             console.warn(`[Webhook] Process payment returned failure for ${orderId}:`, result)
-        }
+        
+        // 5. Mark Ledger as Processed
+        await supabase.from('webhook_events').update({ processed: true, processing_error: null }).eq('event_id', eventId)
+        console.log(`[Webhook] Successfully processed ${orderId}`)
     }
 
     return NextResponse.json({ status: 'ok' })
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Webhook] Error processing webhook:', error)
+    // We don't have eventId here easily unless we parse earlier. 
+    // Ideally wrap only logic inside try/catch.
     return NextResponse.json({ error: 'Webhook processing failed' }, { status: 500 })
   }
 }
+
+// Helper to avoid import conflicts if any
+function createAdminClientAdmin() {
+    // ... logic or import
+    return require('@/lib/supabase/admin').createAdminClient()
+}
+

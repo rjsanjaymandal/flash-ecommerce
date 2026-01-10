@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import NextImage from "next/image";
 import imageLoader from "@/lib/image-loader";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { OrderStatusListener } from "@/components/checkout/order-status-listener";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -69,6 +70,7 @@ export default async function OrderConfirmationPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen pt-28 pb-20 container mx-auto px-4 relative overflow-hidden">
+      <OrderStatusListener orderId={order.id} initialStatus={order.status} />
       <BrandGlow className="top-0 animate-pulse opacity-40" />
 
       {/* Success Animation Decoration */}

@@ -4,54 +4,50 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
-  LayoutDashboard,
-  BarChart3,
-  ShoppingBag,
-  Layers,
-  ShoppingCart,
-  MessageSquare,
-  LogOut,
-  ExternalLink,
-  Settings,
-  User,
-  Ticket,
-  Clock,
-  FlaskConical,
-} from "lucide-react";
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Menu, LogOut, ExternalLink } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
+import { navItems, secondaryItems } from "./admin-sidebar";
+import { useState } from "react";
 
-export const navItems = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
-  { href: "/admin/products", label: "Products", icon: ShoppingBag },
-  { href: "/admin/concepts", label: "Future Lab", icon: FlaskConical },
-  { href: "/admin/coupons", label: "Coupons", icon: Ticket },
-  { href: "/admin/categories", label: "Categories", icon: Layers },
-  { href: "/admin/customers", label: "Customers", icon: User },
-  { href: "/admin/waitlist", label: "Waitlist", icon: Clock },
-  { href: "/admin/reviews", label: "Reviews", icon: MessageSquare },
-];
-
-export const secondaryItems = [
-  { href: "/admin/settings", label: "Settings", icon: Settings },
-  { href: "/admin/feedback", label: "Feedback", icon: MessageSquare },
-];
-
-export function AdminSidebar() {
+export function MobileAdminSidebar() {
   const pathname = usePathname();
   const { signOut, user } = useAuth();
+  const [open, setOpen] = useState(false);
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-20 hidden w-72 flex-col bg-[#0f172a] text-slate-300 transition-all duration-300 sm:flex shadow-xl print:hidden">
-      <div className="flex h-full flex-col">
-        {/* Brand */}
-        <div className="flex h-20 items-center px-8 border-b border-slate-800/50">
-          <Link href="/admin" className="flex items-center gap-3 group">
-            <div className="h-10 w-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-indigo-900/20 group-hover:scale-105 transition-transform">
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="sm:hidden text-foreground hover:bg-slate-100"
+        >
+          <Menu className="h-6 w-6" />
+          <span className="sr-only">Toggle Admin Menu</span>
+        </Button>
+      </SheetTrigger>
+      <SheetContent
+        side="left"
+        className="p-0 bg-[#0f172a] text-slate-300 w-72 border-r-slate-800"
+      >
+        <SheetHeader className="h-20 flex items-center justify-center border-b border-slate-800/50 px-6">
+          <SheetTitle className="sr-only">Admin Navigation</SheetTitle>
+          <Link
+            href="/admin"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-3 w-full"
+          >
+            <div className="h-10 w-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-indigo-900/20">
               F
             </div>
-            <div className="flex flex-col">
+            <div className="flex flex-col text-left">
               <span className="text-xl font-bold text-white tracking-tight">
                 Flash<span className="font-light text-indigo-400">Panel</span>
               </span>
@@ -60,9 +56,9 @@ export function AdminSidebar() {
               </span>
             </div>
           </Link>
-        </div>
+        </SheetHeader>
 
-        <div className="flex-1 overflow-y-auto py-6 px-4 space-y-8 scrollbar-hide">
+        <div className="flex-1 overflow-y-auto py-6 px-4 space-y-8 scrollbar-hide h-[calc(100vh-160px)]">
           {/* Main Nav */}
           <div className="space-y-2">
             <h3 className="px-4 text-xs font-bold text-indigo-400/80 mb-2 uppercase tracking-widest">
@@ -75,6 +71,7 @@ export function AdminSidebar() {
                   <Link
                     key={item.href}
                     href={item.href}
+                    onClick={() => setOpen(false)}
                     className={cn(
                       "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 group relative",
                       isActive
@@ -109,6 +106,7 @@ export function AdminSidebar() {
                   <Link
                     key={item.href}
                     href={item.href}
+                    onClick={() => setOpen(false)}
                     className={cn(
                       "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 group",
                       isActive
@@ -132,38 +130,20 @@ export function AdminSidebar() {
           </div>
         </div>
 
-        {/* Footer Actions */}
-        <div className="p-4 border-t border-slate-800/50 bg-[#0b1120]">
-          <div className="flex items-center gap-3 mb-4 px-2">
-            <div className="h-10 w-10 rounded-full bg-linear-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-inner border-2 border-[#0f172a]">
-              {user?.email?.[0].toUpperCase() || "A"}
-            </div>
-            <div className="overflow-hidden">
-              <p className="text-sm font-semibold text-white truncate">
-                {user?.email?.split("@")[0] || "Admin"}
-              </p>
-              <p className="text-xs text-slate-500">Super Admin</p>
-            </div>
-          </div>
-
+        {/* Footer */}
+        <div className="p-4 border-t border-slate-800/50 bg-[#0b1120] absolute bottom-0 w-full">
           <button
-            onClick={() => signOut()}
+            onClick={() => {
+              signOut();
+              setOpen(false);
+            }}
             className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-2.5 text-sm font-medium text-slate-300 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20 transition-all"
           >
             <LogOut className="h-4 w-4" />
             Sign Out
           </button>
-          <div className="mt-3 text-center">
-            <Link
-              href="/"
-              target="_blank"
-              className="text-xs text-indigo-400 hover:text-indigo-300 hover:underline flex items-center justify-center gap-1"
-            >
-              View Live Store <ExternalLink className="h-3 w-3" />
-            </Link>
-          </div>
         </div>
-      </div>
-    </aside>
+      </SheetContent>
+    </Sheet>
   );
 }

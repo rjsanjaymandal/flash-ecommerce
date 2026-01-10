@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/auth-context";
 import { useState, useTransition, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Loader2,
   CheckCircle2,
@@ -19,6 +19,7 @@ import { formatCurrency } from "@/lib/utils";
 import Script from "next/script";
 import { createOrder, validateCoupon } from "./actions";
 import { getPincodeDetails } from "@/app/actions/get-pincode";
+import { PaymentTimer } from "@/components/checkout/payment-timer";
 import { AddressSelector } from "@/components/checkout/address-selector";
 import { Address } from "@/lib/services/address-service";
 import { toast } from "sonner";
@@ -108,6 +109,32 @@ export default function CheckoutPage() {
   // Smart Pincode Lookup
   const [isPincodeLoading, setIsPincodeLoading] = useState(false);
   const zipCode = form.watch("zip");
+
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const error = searchParams.get("error");
+    if (error) {
+      if (error === "payment_failed")
+        toast.error("Payment failed. Please try again.");
+      else if (error === "invalid_signature")
+        toast.error("Security check failed. Payment flagged.");
+      else if (error === "order_not_found")
+        toast.error("Order not found during verification.");
+      else if (error === "db_error")
+        toast.error(
+          "Payment successful but failed to update order. Contact support."
+        );
+      else if (error === "server_error")
+        toast.error("Server error during verification. Contact support.");
+      else toast.error("Payment verification failed. Please try again.");
+
+      // Clear the param
+      const url = new URL(window.location.href);
+      url.searchParams.delete("error");
+      router.replace(url.pathname + url.search);
+    }
+  }, [searchParams, router]);
 
   useEffect(() => {
     const fetchPincode = async () => {
@@ -273,25 +300,66 @@ export default function CheckoutPage() {
         description: "Order Payment",
         order_id: rzpOrder.id,
         handler: async function (paymentResponse: any) {
-          // 5. Verify Payment
-          const verifyRes = await fetch("/api/razorpay/verify", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
+          // 5. Verify Payment with Smart Retry (Exponential Backoff)
+          const verifyPaymentWithRetry = async (
+            payload: any,
+            retries = 3,
+            delay = 1000
+          ): Promise<any> => {
+            try {
+              const res = await fetch("/api/razorpay/verify", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+              });
+
+              // If server error (5xx), throw to retry
+              if (res.status >= 500)
+                throw new Error(`Server Error: ${res.status}`);
+
+              return await res.json();
+            } catch (err) {
+              if (retries > 0) {
+                console.log(
+                  `Verification failed, retrying in ${delay}ms...`,
+                  err
+                );
+                await new Promise((resolve) => setTimeout(resolve, delay));
+                return verifyPaymentWithRetry(payload, retries - 1, delay * 2);
+              }
+              throw err;
+            }
+          };
+
+          try {
+            const verifyData = await verifyPaymentWithRetry({
               order_id: (order as any).id,
               razorpay_order_id: paymentResponse.razorpay_order_id,
               razorpay_payment_id: paymentResponse.razorpay_payment_id,
               razorpay_signature: paymentResponse.razorpay_signature,
-            }),
-          });
-          const verifyData = await verifyRes.json();
+            });
 
-          if (verifyData.verified) {
-            clearCart();
-            toast.success("Payment Successful! Redirecting...");
-            router.push(`/order/confirmation/${(order as any).id}`);
-          } else {
-            toast.error("Payment verification failed. Please contact support.");
+            if (verifyData.verified) {
+              clearCart();
+              toast.success("Payment Successful! Redirecting...");
+              router.push(`/order/confirmation/${(order as any).id}`);
+            } else {
+              // If it's a specific logic error (signature mismatch), we don't retry.
+              toast.error(
+                verifyData.error ||
+                  "Payment verification failed. Security Check."
+              );
+            }
+          } catch (netErr) {
+            // Final fallback after retries
+            console.error("Final Verification Failure:", netErr);
+            toast.error(
+              "Network verification failed. Don't worry, we are checking in the background."
+            );
+            // Optimistic redirect or just show instruction?
+            // Redirecting with error param allows the Auto-Reconciliation logic to eventually pick it up
+            // OR the user to retry.
+            router.push(`/checkout?error=verification_timeout`);
           }
         },
         prefill: {
@@ -664,6 +732,8 @@ export default function CheckoutPage() {
                   {items.length} Items
                 </span>
               </h2>
+
+              <PaymentTimer />
 
               <div className="space-y-5 max-h-[300px] lg:max-h-[400px] overflow-auto pr-2 custom-scrollbar">
                 {items.map((item) => (

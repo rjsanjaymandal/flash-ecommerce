@@ -55,7 +55,18 @@ export async function updateSession(request: NextRequest) {
           console.log('[Middleware] Unauthorized access to admin, redirecting to login')
           return NextResponse.redirect(new URL('/login', request.url))
       }
-      // Note: Ideally check for admin role here too, but basic auth is step 1.
+
+      // Check Role
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+
+      if (profile?.role !== 'admin') {
+          console.warn('[Middleware] Non-admin user attempted access:', user.id)
+          return NextResponse.redirect(new URL('/', request.url))
+      }
   }
 
   return response
