@@ -19,7 +19,7 @@ import { formatCurrency } from "@/lib/utils";
 import Script from "next/script";
 import { createOrder, validateCoupon } from "./actions";
 import { getPincodeDetails } from "@/app/actions/get-pincode";
-import { PaymentTimer } from "@/components/checkout/payment-timer";
+// import { PaymentTimer } from "@/components/checkout/payment-timer";
 import { AddressSelector } from "@/components/checkout/address-selector";
 import { Address } from "@/lib/services/address-service";
 import { toast } from "sonner";
@@ -732,8 +732,6 @@ export default function CheckoutPage() {
                   {items.length} Items
                 </span>
               </h2>
-
-              <PaymentTimer />
 
               <div className="space-y-5 max-h-[300px] lg:max-h-[400px] overflow-auto pr-2 custom-scrollbar">
                 {items.map((item) => (

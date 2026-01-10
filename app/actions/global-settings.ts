@@ -5,20 +5,30 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 
 export async function getGlobalSettings(key: string) {
-  const supabase = await createClient()
-  
-  const { data, error } = await supabase
-    .from('content_globals')
-    .select('value')
-    .eq('key', key)
-    .single()
+  try {
+    const supabase = await createClient()
+    
+    // Add a race condition to force timeout faster if needed, or just handle the error
+    const { data, error } = await supabase
+      .from('content_globals')
+      .select('value')
+      .eq('key', key)
+      .single()
 
-  if (error) {
-    console.error(`Error fetching global settings for ${key}:`, JSON.stringify(error, Object.getOwnPropertyNames(error || {}), 2))
-    return null
+    if (error) {
+       // If it's a specific "PGRST116" (Results contain 0 rows) it's fine
+       if (error.code !== 'PGRST116') {
+          console.warn(`[getGlobalSettings] Failed to fetch ${key}:`, error.message)
+       }
+       return null
+    }
+
+    return data?.value
+  } catch (err) {
+      // Network fetch errors (timeouts) end up here
+      console.warn(`[getGlobalSettings] Network error fetching ${key} (Timeout/Offline)`)
+      return null
   }
-
-  return data?.value
 }
 
 export async function updateGlobalSettings(key: string, value: any) {
