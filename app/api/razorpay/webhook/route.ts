@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { PaymentProcessor } from '@/lib/services/payment-processor'
+import { NotificationService } from '@/lib/services/notification-service'
 
 export async function POST(req: Request) {
   try {
@@ -71,7 +72,16 @@ export async function POST(req: Request) {
              return NextResponse.json({ error: result.error }, { status: 500 })
         }
         
-        // 5. Mark Ledger as Processed
+        // 5. Success! Notify Admins
+        const amount = (payment.amount / 100).toFixed(2); // Convert paise to currency
+        await NotificationService.notifyAdmins(
+            "New Order Recieved! 💰",
+            `Order ${orderId.slice(0, 8)} paid successfully. Amount: ₹${amount}`,
+            "success",
+            `/admin/orders/${orderId}`
+        );
+        
+        // 6. Mark Ledger as Processed
         await supabase.from('webhook_events').update({ processed: true, processing_error: null }).eq('event_id', eventId)
         console.log(`[Webhook] Successfully processed ${orderId}`)
     }
