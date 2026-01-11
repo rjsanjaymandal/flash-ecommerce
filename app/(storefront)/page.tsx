@@ -1,50 +1,65 @@
-import { getRootCategories } from "@/lib/services/category-service"
-import { Suspense } from "react"
-import { Skeleton } from "@/components/ui/skeleton"
-import dynamic from "next/dynamic"
+import { getRootCategories } from "@/lib/services/category-service";
+import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+import dynamic from "next/dynamic";
 
 // Lazy load non-ATF (Above The Fold) components
-const CategoryVibes = dynamic(() => import("@/components/storefront/category-vibes").then(mod => mod.CategoryVibes))
-const NewsletterSection = dynamic(() => import("@/components/marketing/newsletter-section").then(mod => mod.NewsletterSection))
-const AsyncFeaturedGrid = dynamic(() => import("@/components/storefront/async-featured-grid").then(mod => mod.AsyncFeaturedGrid))
-const AsyncPersonalizedPicks = dynamic(() => import("@/components/storefront/async-personalized-picks").then(mod => mod.AsyncPersonalizedPicks))
+const CategoryVibes = dynamic(() =>
+  import("@/components/storefront/category-vibes").then(
+    (mod) => mod.CategoryVibes
+  )
+);
+const NewsletterSection = dynamic(() =>
+  import("@/components/marketing/newsletter-section").then(
+    (mod) => mod.NewsletterSection
+  )
+);
+const AsyncFeaturedGrid = dynamic(() =>
+  import("@/components/storefront/async-featured-grid").then(
+    (mod) => mod.AsyncFeaturedGrid
+  )
+);
+const AsyncPersonalizedPicks = dynamic(() =>
+  import("@/components/storefront/async-personalized-picks").then(
+    (mod) => mod.AsyncPersonalizedPicks
+  )
+);
 
 // Force rebuild
 
 function GridSkeleton() {
-    return (
-        <div className="container mx-auto px-4 py-16">
-             <div className="flex flex-col items-center text-center mb-12 space-y-4">
-                <Skeleton className="h-6 w-24 rounded-full" />
-                <Skeleton className="h-10 w-64" />
-                <Skeleton className="h-4 w-96" />
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="flex flex-col gap-3">
-                        <Skeleton className="aspect-3/4 rounded-xl" />
-                        <Skeleton className="h-4 w-3/4" />
-                        <Skeleton className="h-4 w-1/4" />
-                    </div>
-                ))}
-            </div>
-        </div>
-    )
+  return (
+    <div className="container mx-auto px-4 py-16">
+      <div className="flex flex-col items-center text-center mb-12 space-y-4">
+        <Skeleton className="h-6 w-24 rounded-full" />
+        <Skeleton className="h-10 w-64" />
+        <Skeleton className="h-4 w-96" />
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="flex flex-col gap-3">
+            <Skeleton className="aspect-3/4 rounded-xl" />
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-4 w-1/4" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
-import { getSmartCarouselData } from "@/lib/data/get-smart-carousel"
-import { HeroCarousel } from "@/components/storefront/hero-carousel"
+import { getSmartCarouselData } from "@/lib/data/get-smart-carousel";
+import { HeroCarousel } from "@/components/storefront/hero-carousel";
 
 // Cache for 15 minutes (900 seconds) as requested
-export const revalidate = 900
+export const revalidate = 900;
 
 export default async function Home() {
-  const categories = await getRootCategories(4)
-  const heroProducts = await getSmartCarouselData()
+  const categories = await getRootCategories(4);
+  const heroProducts = await getSmartCarouselData();
 
   return (
-    <div className="min-h-screen bg-background text-foreground selection:bg-black selection:text-white pb-12">
-      
+    <div className="min-h-screen bg-background text-foreground selection:bg-primary selection:text-primary-foreground pb-12">
       {/* 1. HERO CAROUSEL (Dynamic) */}
       <HeroCarousel products={heroProducts} />
 
@@ -63,7 +78,6 @@ export default async function Home() {
 
       {/* 5. NEWSLETTER */}
       <NewsletterSection />
-
     </div>
-  )
+  );
 }

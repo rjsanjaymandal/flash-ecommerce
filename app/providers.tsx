@@ -8,6 +8,7 @@ import { User, Session } from "@supabase/supabase-js";
 import { useState } from "react";
 import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ThemeProvider } from "next-themes";
 
 export function Providers({
   children,
@@ -24,18 +25,25 @@ export function Providers({
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider
-        initialUser={initialUser}
-        initialSession={initialSession}
-        initialProfile={initialProfile}
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
       >
-        <TooltipProvider>
-          <StoreSync />
-          {children}
-          <Toaster position="top-center" richColors />
-          <CartDrawer />
-        </TooltipProvider>
-      </AuthProvider>
+        <AuthProvider
+          initialUser={initialUser}
+          initialSession={initialSession}
+          initialProfile={initialProfile}
+        >
+          <TooltipProvider>
+            <StoreSync />
+            {children}
+            <Toaster position="top-center" richColors />
+            <CartDrawer />
+          </TooltipProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

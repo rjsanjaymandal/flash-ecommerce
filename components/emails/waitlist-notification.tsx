@@ -1,4 +1,3 @@
-
 import {
   Body,
   Button,
@@ -38,20 +37,17 @@ export const WaitlistNotification = ({
       <Preview>{previewText}</Preview>
       <Body style={main}>
         <Container style={container}>
-          <Heading style={h1}>It's Back!</Heading>
+          <Heading style={h1}>It&apos;s Back!</Heading>
           <Text style={text}>Hi {userName},</Text>
           <Text style={text}>
-            You asked us to let you know, and we delivered. <strong>{productName}</strong> is finally back in stock and ready for you.
+            You asked us to let you know, and we delivered.{" "}
+            <strong>{productName}</strong> is finally back in stock and ready
+            for you.
           </Text>
 
           {imageUrl && (
             <Section style={imageSection}>
-              <Img
-                src={imageUrl}
-                width="300"
-                alt={productName}
-                style={image}
-              />
+              <Img src={imageUrl} width="300" alt={productName} style={image} />
             </Section>
           )}
 
@@ -68,7 +64,8 @@ export const WaitlistNotification = ({
           <Hr style={hr} />
 
           <Text style={footer}>
-            You received this email because you joined the waitlist for this product.
+            You received this email because you joined the waitlist for this
+            product.
             <br />
             <Link href={`${baseUrl}/account`} style={link}>
               Manage your waitlist

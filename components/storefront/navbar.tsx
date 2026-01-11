@@ -20,6 +20,7 @@ import { NotificationBell } from "./notification-bell";
 import { motion, AnimatePresence } from "framer-motion";
 import { useScrollDirection } from "@/hooks/use-scroll-direction";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ModeToggle } from "@/components/ui/mode-toggle";
 
 interface NavCategory {
   id: string;
@@ -200,6 +201,8 @@ export function StorefrontNavbar() {
                 <Skeleton className="h-10 w-10 rounded-full bg-muted/50 hidden sm:block" />
               )}
 
+              <ModeToggle />
+
               <Button
                 variant="ghost"
                 size="icon"
@@ -227,7 +230,7 @@ export function StorefrontNavbar() {
                           className="rounded-full gap-2 px-3 font-bold border border-border/50 hover:border-primary/50 transition-all"
                         >
                           <div className="h-6 w-6 rounded-full gradient-primary flex items-center justify-center text-[10px] text-white">
-                            {user.email?.[0].toUpperCase()}
+                            {user.email?.[0]?.toUpperCase()}
                           </div>
                           <span className="max-w-[100px] truncate text-xs uppercase tracking-tight">
                             {profile?.name || user.email?.split("@")[0]}

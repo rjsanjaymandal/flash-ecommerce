@@ -433,7 +433,7 @@ export function ProductCard({
         {/* Image Container */}
         <Link
           href={`/product/${product.slug || product.id}`}
-          className="block relative aspect-[3/4] overflow-hidden rounded-md bg-muted/20 border border-transparent group-hover:border-border/50 transition-all duration-300"
+          className="block relative aspect-[3/4] overflow-hidden rounded-md bg-card border border-border/60 shadow-sm group-hover:shadow-md group-hover:border-primary/20 transition-all duration-300"
         >
           {/* Badges */}
           <div className="absolute top-2 left-2 z-10 flex flex-col gap-1.5">

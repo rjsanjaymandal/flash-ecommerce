@@ -23,70 +23,82 @@
 }
 
 :root {
-  /* Premium Flash Theme - Light Mode (Monochrome Luxury) */
-  --background: #ffffff;
-  --foreground: #09090b; /* Zinc 950 */
+  /* "The Atelier" - Light Mode (Warm, Organic, Tactile) */
+  --background: #f4f1ea; /* Almond/Paper */
+  --foreground: #2b2926; /* Soft Ink */
 
-  /* Primary: Deep Black/Zinc */
-  --primary: #18181b; /* Zinc 950 */
-  --primary-foreground: #fafafa; /* Zinc 50 */
+  /* Primary: Vibrant Rust (High Energy) */
+  --primary: #ea580c; 
+  --primary-foreground: #ffffff; 
 
-  /* Secondary: Subtle Grey */
-  --secondary: #f4f4f5; /* Zinc 100 */
-  --secondary-foreground: #18181b;
+  /* Secondary: Warm Sand */
+  --secondary: #e7e5e4; 
+  --secondary-foreground: #2b2926;
 
-  /* Accent: High-Fashion Gray */
-  --accent: #f4f4f5; /* Zinc 100 */
-  --accent-foreground: #18181b;
+  /* Accent: Muted Clay */
+  --accent: #e5e5e5; 
+  --accent-foreground: #2b2926;
+
+  /* Brand Palette */
+  --brand-olive: #4d7c0f;
+  --brand-rust: #ea580c;
+  --brand-navy: #1e40af;
 
   --card: #ffffff;
-  --card-foreground: #09090b;
+  --card-foreground: #2b2926;
   --popover: #ffffff;
-  --popover-foreground: #09090b;
+  --popover-foreground: #2b2926;
 
-  --muted: #fafafa; /* Zinc 50 */
-  --muted-foreground: #71717a; /* Zinc 500 */
+  --muted: #ebe5dd; 
+  --muted-foreground: #78716c;
 
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
 
-  --border: #e4e4e7; /* Zinc 200 */
-  --input: #e4e4e7;
-  --ring: #18181b;
-  --radius: 0.5rem; /* Slightly sharper */
+  --border: #d6d3cd; /* Visible, tactile borders */
+  --input: #d6d3cd;
+  --ring: #ea580c;
+  --radius: 0.75rem; /* Friendly, modern curves */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* Premium Dark Mode - Deep Void */
-    --background: #09090b; /* Zinc 950 */
-    --foreground: #fafafa; /* Zinc 50 */
+.dark {
+  /* "The Cyber" - Dark Mode (Electric, Tech, Void) */
+  --background: #020617; /* Deep Void Blue */
+  --foreground: #f8fafc; /* Ice White */
 
-    --primary: #fafafa; /* Zinc 50 */
-    --primary-foreground: #18181b; /* Zinc 950 */
+  /* Primary: Acid Lime/Volt (Electric Flash) */
+  --primary: #a3e635; 
+  --primary-foreground: #020617;
 
-    --secondary: #27272a; /* Zinc 800 */
-    --secondary-foreground: #fafafa;
+  /* Secondary: Deep Slate */
+  --secondary: #0f172a; 
+  --secondary-foreground: #f8fafc;
 
-    --accent: #27272a; /* Zinc 800 */
-    --accent-foreground: #fafafa;
+  /* Accent: Night Glass */
+  --accent: #1e293b; 
+  --accent-foreground: #f8fafc;
 
-    --card: #09090b;
-    --card-foreground: #fafafa;
-    --popover: #09090b;
-    --popover-foreground: #fafafa;
+  /* Brand Palette (Neon) */
+  --brand-olive: #a3e635; /* Volt */
+  --brand-rust: #fb923c; /* Neon Orange */
+  --brand-navy: #38bdf8; /* Cyan */
 
-    --muted: #27272a; /* Zinc 800 */
-    --muted-foreground: #a1a1aa; /* Zinc 400 */
+  --card: #0f172a; /* Slate 900 */
+  --card-foreground: #f8fafc;
+  --popover: #0f172a;
+  --popover-foreground: #f8fafc;
 
-    --destructive: #7f1d1d;
-    --destructive-foreground: #fafafa;
+  --muted: #1e293b; 
+  --muted-foreground: #94a3b8;
 
-    --border: #27272a;
-    --input: #27272a;
-    --ring: #d4d4d8; /* Zinc 300 */
-  }
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+
+  --border: #1e293b; /* Subtle tech borders */
+  --input: #1e293b;
+  --ring: #a3e635;
 }
+
 
 body {
   background: var(--background);
@@ -110,7 +122,7 @@ body {
 }
 
 .gradient-primary {
-  background: linear-gradient(135deg, #18181b 0%, #52525b 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--brand-rust) 100%);
 }
 
 .gradient-accent {
@@ -121,7 +133,7 @@ body {
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
-  background-image: linear-gradient(135deg, #18181b 0%, #71717a 100%);
+  background-image: linear-gradient(135deg, var(--primary) 0%, var(--brand-rust) 100%);
 }
 
 /* Scrollbar Utilities */

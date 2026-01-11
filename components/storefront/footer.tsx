@@ -23,7 +23,7 @@ export function Footer() {
         <div className="flex flex-col lg:flex-row justify-between items-start gap-12 mb-16">
           <div className="space-y-4 max-w-sm">
             <Link href="/" className="inline-block">
-              <h3 className="text-3xl font-black tracking-tighter bg-clip-text text-transparent bg-linear-to-r from-primary via-purple-500 to-pink-500">
+              <h3 className="text-3xl font-black tracking-tighter text-gradient">
                 FLASH
               </h3>
             </Link>

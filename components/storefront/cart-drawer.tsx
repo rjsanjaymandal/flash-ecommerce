@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-
 import { useCartStore, selectCartTotal } from "@/store/use-cart-store";
 import { X, Minus, Plus, ShoppingBag, ArrowRight, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -111,7 +109,8 @@ export function CartDrawer() {
                   Your bag is empty
                 </h3>
                 <p className="text-sm max-w-xs mx-auto">
-                  Looks like you haven't added any gear to your loadout yet.
+                  Looks like you haven&apos;t added any gear to your loadout
+                  yet.
                 </p>
               </div>
               <Button
