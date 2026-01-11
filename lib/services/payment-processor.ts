@@ -1,4 +1,4 @@
-// @ts-nocheck - forcing reload
+
 import crypto from 'crypto'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendOrderConfirmation, sendAdminOrderAlert } from '@/lib/email/send-order-receipt'
