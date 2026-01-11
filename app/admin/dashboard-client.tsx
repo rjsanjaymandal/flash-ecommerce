@@ -39,6 +39,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { type Order } from "@/lib/services/order-service";
 
 interface DashboardStats {
   totalRevenue: number;
@@ -49,15 +50,7 @@ interface DashboardStats {
   totalProducts: number;
 }
 
-interface DashboardOrder {
-  id: string;
-  total: number;
-  status: string;
-  shipping_name?: string;
-  profiles?: {
-    name: string | null;
-  };
-}
+interface DashboardOrder extends Order {}
 
 interface DashboardActivity {
   id: string;
@@ -135,7 +128,8 @@ export function DashboardClient({
               total: newOrder.total,
               status: newOrder.status || "pending",
               shipping_name: newOrder.shipping_name || "New Customer",
-            },
+              created_at: newOrder.created_at || new Date().toISOString(),
+            } as any,
             ...prev.slice(0, 4),
           ]);
 
@@ -534,7 +528,7 @@ export function DashboardClient({
                             "bg-emerald-50 text-emerald-600 border-emerald-100",
                           order.status === "pending" &&
                             "bg-amber-50 text-amber-600 border-amber-100",
-                          order.status === "shipping" &&
+                          order.status === "shipped" &&
                             "bg-blue-50 text-blue-600 border-blue-100",
                           order.status === "delivered" &&
                             "bg-zinc-50 text-zinc-600 border-zinc-100"

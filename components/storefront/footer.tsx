@@ -238,10 +238,7 @@ export function Footer() {
 
         {/* BOTTOM SECTION */}
         <div className="border-t border-border/50 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-muted-foreground font-medium">
-          <p>
-            &copy; {new Date().getFullYear()} Flash Ecommerce. All rights
-            reserved.
-          </p>
+          <p>&copy; 2026 FLASH FASHION. All rights reserved.</p>
           <div className="flex items-center gap-6">
             <span>India</span>
             <span className="hidden md:inline-block w-1 h-1 bg-border rounded-full" />

@@ -21,21 +21,21 @@ export class EventBus {
         
         try {
             const { data, error } = await supabase
-                .from('app_events')
+                .from('app_events' as any)
                 .insert({
                     event_type: type,
                     payload: payload,
                     status: 'PENDING'
                 })
                 .select('id')
-                .single()
+                .single() as { data: { id: string } | null, error: any };
 
-            if (error) {
+            if (error || !data) {
                 console.error(`[EventBus] Failed to publish ${type}:`, error)
-                return err(error.message)
+                return err(error?.message || 'Failed to record event')
             }
             
-            return ok({ id: data.id })
+            return ok({ id: (data as any).id })
         } catch (e: unknown) {
             console.error(`[EventBus] Unexpected error publishing ${type}:`, e)
             return err(String(e))

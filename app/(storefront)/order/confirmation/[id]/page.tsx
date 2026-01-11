@@ -70,7 +70,10 @@ export default async function OrderConfirmationPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen pt-28 pb-20 container mx-auto px-4 relative overflow-hidden">
-      <OrderStatusListener orderId={order.id} initialStatus={order.status} />
+      <OrderStatusListener
+        orderId={order.id}
+        initialStatus={order.status || "pending"}
+      />
       <BrandGlow className="top-0 animate-pulse opacity-40" />
 
       {/* Success Animation Decoration */}
@@ -180,7 +183,7 @@ export default async function OrderConfirmationPage({ params }: PageProps) {
                   <span>
                     {order.shipping_fee === 0
                       ? "Free"
-                      : formatCurrency(order.shipping_fee)}
+                      : formatCurrency(order.shipping_fee || 0)}
                   </span>
                 </div>
                 <div className="flex justify-between text-xl font-black border-t border-border/50 pt-4 mt-2">
@@ -210,7 +213,7 @@ export default async function OrderConfirmationPage({ params }: PageProps) {
                 <p>{order.country}</p>
                 <p className="pt-2 flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-green-500" />
-                  {order.email}
+                  {(order as any).user_email || order.shipping_name}
                 </p>
               </div>
             </div>

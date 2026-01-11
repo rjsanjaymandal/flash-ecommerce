@@ -47,7 +47,7 @@ export async function voteForConcept(conceptId: string) {
     .from('concepts' as any)
     .select('vote_count')
     .eq('id', conceptId)
-    .single()
+    .single() as { data: { vote_count: number } | null, error: any }
 
   const newCount = (concept?.vote_count || 0) + 1
 

@@ -68,7 +68,7 @@ export async function POST(req: Request) {
     }
 
     // Check for any invalid product
-    const invalidItem = orderItems.find((item: { product: { is_active: boolean; name: string } | null }) => {
+    const invalidItem = orderItems.find((item: any) => {
         // Product explicitly deleted (null) or set to inactive
         if (!item.product) return true 
         if (item.product.is_active === false) return true

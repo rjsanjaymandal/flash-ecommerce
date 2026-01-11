@@ -201,7 +201,9 @@ export function StorefrontNavbar() {
                 <Skeleton className="h-10 w-10 rounded-full bg-muted/50 hidden sm:block" />
               )}
 
-              <ModeToggle />
+              <div className="hidden sm:block">
+                <ModeToggle />
+              </div>
 
               <Button
                 variant="ghost"

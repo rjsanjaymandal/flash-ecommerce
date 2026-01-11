@@ -12,18 +12,18 @@ export class EmailWorker {
         console.log(`[EmailWorker] Processing ORDER_PAID for ${orderId}`)
 
         try {
-            const { data: orderDetails, error } = await supabase
+            const { data: orderData, error } = await supabase
                 .from('orders')
                 .select('*, order_items(*)')
                 .eq('id', orderId)
-                .single()
+                .single() as any
 
-            if (error || !orderDetails) {
+            if (error || !orderData) {
                 return err(error?.message || 'Order not found')
             }
 
-            const email = orderDetails.user_email || 
-                          (await supabase.from('profiles').select('email').eq('id', orderDetails.user_id).single()).data?.email
+            const email = (orderData as any).user_email || 
+                          (await supabase.from('profiles').select('email').eq('id', orderData.user_id).single() as any).data?.email
 
             if (!email) {
                 return err('No email found for user associated with order')
@@ -32,16 +32,16 @@ export class EmailWorker {
             // 1. Send Customer Email
             await sendOrderConfirmation({
                 email,
-                orderId: orderDetails.id,
-                customerName: orderDetails.shipping_name || 'Customer',
-                items: orderDetails.order_items.map((i: Tables<'order_items'>) => ({
+                orderId: orderData.id,
+                customerName: orderData.shipping_name || 'Customer',
+                items: (orderData.order_items || []).map((i: any) => ({
                     name: i.name_snapshot || 'Product',
                     quantity: i.quantity,
                     price: i.unit_price
                 })),
-                total: orderDetails.total,
-                shippingAddress: orderDetails.shipping_address_snapshot ? JSON.stringify(orderDetails.shipping_address_snapshot) : undefined,
-                orderDate: new Date(orderDetails.created_at).toDateString()
+                total: orderData.total,
+                shippingAddress: (orderData as any).shipping_address_snapshot ? JSON.stringify((orderData as any).shipping_address_snapshot) : undefined,
+                orderDate: new Date(orderData.created_at).toDateString()
             })
             
             // 2. Send Admin Alert (Async, don't block)
@@ -50,16 +50,16 @@ export class EmailWorker {
             sendAdminOrderAlert({
                 email: ADMIN_EMAIL,
                 customerEmail: email,
-                orderId: orderDetails.id,
-                customerName: orderDetails.shipping_name || 'Customer',
-                items: orderDetails.order_items.map((i: Tables<'order_items'>) => ({
+                orderId: orderData.id,
+                customerName: orderData.shipping_name || 'Customer',
+                items: (orderData.order_items || []).map((i: any) => ({
                     name: i.name_snapshot || 'Product',
                     quantity: i.quantity,
                     price: i.unit_price
                 })),
-                total: orderDetails.total,
-                shippingAddress: orderDetails.shipping_address_snapshot ? JSON.stringify(orderDetails.shipping_address_snapshot) : undefined,
-                orderDate: new Date(orderDetails.created_at).toDateString()
+                total: orderData.total,
+                shippingAddress: (orderData as any).shipping_address_snapshot ? JSON.stringify((orderData as any).shipping_address_snapshot) : undefined,
+                orderDate: new Date(orderData.created_at).toDateString()
             }).catch(e => console.error("Failed to send admin alert", e));
 
             // Log Success
@@ -79,7 +79,7 @@ export class EmailWorker {
                 severity: 'ERROR',
                 component: 'EMAIL_WORKER',
                 message: `Failed to send email: ${(error as Error).message}`,
-                metadata: { orderId: orderId, error: error }
+                metadata: { orderId: orderId, error: String(error) } as any
             })
 
             return err((error as Error).message)

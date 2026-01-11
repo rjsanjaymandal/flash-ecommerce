@@ -59,7 +59,7 @@ export class PaymentProcessor {
     /**
      * Search Razorpay for an order with the given Receipt (Safety Net)
      */
-    static async findRazorpayOrderByReceipt(receipt: string): Promise<object | null> {
+    static async findRazorpayOrderByReceipt(receipt: string): Promise<any | null> {
          if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) return null
          
          const razorpay = new Razorpay({
@@ -86,7 +86,7 @@ export class PaymentProcessor {
     /**
      * Fetch successful payments for a Razorpay Order
      */
-    static async getPaymentsForOrder(razorpayOrderId: string): Promise<object[]> {
+    static async getPaymentsForOrder(razorpayOrderId: string): Promise<any[]> {
         if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) return []
         
         const razorpay = new Razorpay({

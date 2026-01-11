@@ -98,11 +98,6 @@ export default function LoginPage() {
 
   // Auto-submit OTP
   const otpValue = otpForm.watch("otp");
-  useEffect(() => {
-    if (otpValue?.length === 6) {
-      otpForm.handleSubmit(onVerifyOtp)();
-    }
-  }, [otpValue, otpForm, onVerifyOtp]);
 
   const onSendOtp = async (data: AuthFormValues) => {
     setLoading(true);
@@ -192,6 +187,13 @@ export default function LoginPage() {
     },
     [supabase, emailForm, isSignup, router, next]
   );
+
+  // Auto-submit OTP
+  useEffect(() => {
+    if (otpValue?.length === 6) {
+      otpForm.handleSubmit(onVerifyOtp)();
+    }
+  }, [otpValue, otpForm, onVerifyOtp]);
 
   const onSocialLogin = async (provider: "google") => {
     try {

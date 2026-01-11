@@ -23,6 +23,7 @@ import FlashImage from "@/components/ui/flash-image";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/auth-context";
+import { ModeToggle } from "@/components/ui/mode-toggle";
 
 interface NavCategory {
   id: string;
@@ -129,26 +130,35 @@ export function HamburgerMenu({ categories }: HamburgerMenuProps) {
                 </div>
               ))}
             </div>
+          </div>
 
-            {/* Divider */}
-            <div className="h-px bg-linear-to-r from-transparent via-border to-transparent" />
+          {/* Footer / Socials */}
+          <div className="p-6 border-t border-border bg-muted/20 pb-safe space-y-6">
+            <div className="flex flex-col items-center gap-3">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600">
+                Appearance
+              </span>
+              <ModeToggle />
+            </div>
+
+            <div className="h-px bg-border/40" />
 
             {/* Account Section */}
-            <div className="space-y-4">
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600 px-3">
+            <div className="space-y-3">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600 px-2 block text-center">
                 Using Flash As
               </span>
               {user ? (
                 <Link href="/account" onClick={() => setOpen(false)}>
-                  <div className="flex items-center gap-4 p-3 rounded-2xl bg-muted/20 border border-border hover:border-primary/50 transition-colors">
-                    <div className="h-10 w-10 rounded-full gradient-primary flex items-center justify-center text-xs font-black text-white">
+                  <div className="flex items-center gap-4 p-3 rounded-2xl bg-background border border-border hover:border-primary/50 transition-colors">
+                    <div className="h-10 w-10 rounded-full gradient-primary flex items-center justify-center text-xs font-black text-white shrink-0">
                       {user.email?.[0].toUpperCase()}
                     </div>
-                    <div>
-                      <p className="text-sm font-bold text-foreground uppercase tracking-tight">
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-foreground uppercase tracking-tight truncate">
                         {profile?.name || "Member"}
                       </p>
-                      <p className="text-[10px] text-muted-foreground font-medium truncate max-w-[140px]">
+                      <p className="text-[10px] text-muted-foreground font-medium truncate">
                         {user.email}
                       </p>
                     </div>
@@ -157,7 +167,7 @@ export function HamburgerMenu({ categories }: HamburgerMenuProps) {
               ) : (
                 <div className="grid grid-cols-2 gap-3">
                   <Link href="/login" onClick={() => setOpen(false)}>
-                    <Button className="w-full rounded-xl bg-muted hover:bg-muted/80 text-foreground border-0 font-bold uppercase tracking-wider text-xs h-12">
+                    <Button className="w-full rounded-xl bg-background hover:bg-muted text-foreground border border-border font-bold uppercase tracking-wider text-xs h-12">
                       Login
                     </Button>
                   </Link>
@@ -169,10 +179,7 @@ export function HamburgerMenu({ categories }: HamburgerMenuProps) {
                 </div>
               )}
             </div>
-          </div>
 
-          {/* Footer / Socials */}
-          <div className="p-6 border-t border-border bg-muted/20 pb-safe">
             <div className="flex justify-center gap-6">
               {[
                 {
@@ -200,7 +207,7 @@ export function HamburgerMenu({ categories }: HamburgerMenuProps) {
               ))}
             </div>
             <p className="text-center text-[10px] text-zinc-700 font-medium mt-4 uppercase tracking-widest">
-              © 2024 FLASH Inc.
+              © 2026 FLASH FASHION
             </p>
           </div>
         </div>

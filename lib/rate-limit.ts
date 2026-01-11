@@ -8,7 +8,7 @@ export async function checkRateLimit(key: string, limit: number, windowSeconds: 
       p_key: key,
       p_limit: limit,
       p_window_seconds: windowSeconds
-    });
+    }) as { data: { success: boolean, remaining: number } | null, error: any };
 
     if (error) {
       console.error('Rate limit check failed:', error);
@@ -17,8 +17,8 @@ export async function checkRateLimit(key: string, limit: number, windowSeconds: 
     }
 
     return {
-      success: result.success,
-      remaining: result.remaining
+      success: !!result?.success,
+      remaining: typeof result?.remaining === 'number' ? result.remaining : 1
     };
   } catch (e) {
     console.error('Rate limit exception:', e);

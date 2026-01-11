@@ -31,13 +31,13 @@ import { QuickAddDialog } from "@/components/products/quick-add-dialog";
 interface HeroProduct {
   id: string;
   name: string;
-  description: string;
+  description: string | null;
   price: number;
   main_image_url: string | null;
   slug: string;
   product_stock?: any[];
-  color_options?: string[];
-  size_options?: string[];
+  color_options?: string[] | null;
+  size_options?: string[] | null;
 }
 
 interface HeroCarouselProps {
@@ -416,7 +416,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                     overflow: "hidden",
                   }}
                 >
-                  {cleanDescription(currentProduct.description)}
+                  {cleanDescription(currentProduct.description || "")}
                 </motion.p>
 
                 <div className="flex items-center justify-between lg:justify-start gap-4 mb-4 lg:mb-10">

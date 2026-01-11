@@ -23,8 +23,8 @@ export async function getOrders(filter: OrderFilter = {}): Promise<PaginatedResu
 
   let query = supabase
     .from('orders')
-    .select('*, profiles(name)', { count: 'exact' })
-    .order('created_at', { ascending: false })
+    .select('*, profiles:profiles(name)', { count: 'exact' })
+    .order('created_at', { ascending: false }) as any
 
   if (filter.status && filter.status !== 'all') {
     query = query.eq('status', filter.status)
@@ -100,7 +100,7 @@ export async function getStats() {
       
       revenueGrowth: lastMonthRevenue > 0 ? ((totalRevenue - lastMonthRevenue) / lastMonthRevenue) * 100 : 0,
       orderGrowth: lastOrdersRes.status === 'fulfilled' && (lastOrdersRes.value.count || 0) > 0 
-          ? (((ordersRes.status === 'fulfilled' ? (ordersRes.value.count || 0) : 0) - lastOrdersRes.value.count!) / lastOrdersRes.value.count!) * 100 
+          ? (((ordersRes.status === 'fulfilled' ? (ordersRes.value.count || 0) : 0) - (lastOrdersRes.value.count || 0)) / (lastOrdersRes.value.count || 1)) * 100 
           : 0,
       averageOrderValue: (ordersRes.status === 'fulfilled' && ordersRes.value.count! > 0) ? (totalRevenue / ordersRes.value.count!) : 0,
       recentOrders: [] 
@@ -146,7 +146,7 @@ export async function getRecentActivity(limit = 10) {
                 type: 'order',
                 title: `New Order for ₹${o.total}`,
                 description: `By ${o.shipping_name || 'Guest'}`,
-                time: o.created_at
+                time: o.created_at || new Date().toISOString()
             }))
         }
 
@@ -156,7 +156,7 @@ export async function getRecentActivity(limit = 10) {
                 type: 'review',
                 title: `New ${r.rating}-Star Review`,
                 description: `By ${r.user_name || 'Anonymous'}`,
-                time: r.created_at
+                time: r.created_at || new Date().toISOString()
             }))
         }
 
@@ -166,7 +166,7 @@ export async function getRecentActivity(limit = 10) {
                 type: 'newsletter',
                 title: `New Subscriber`,
                 description: s.email,
-                time: s.created_at
+                time: s.created_at || new Date().toISOString()
             }))
         }
 
@@ -191,7 +191,7 @@ export async function getMonthlyRevenue() {
     const monthlyRevenue: Record<string, number> = {}
     
     data.forEach((order) => {
-        const date = new Date(order.created_at)
+        const date = new Date(order.created_at || new Date().toISOString())
         const month = date.toLocaleString('default', { month: 'short' }) // e.g., "Dec"
         monthlyRevenue[month] = (monthlyRevenue[month] || 0) + Number(order.total)
     })
@@ -203,7 +203,7 @@ export async function updateOrderStatus(orderId: string, newStatus: string) {
     const supabase = await createClient()
     const { error } = await supabase
         .from('orders')
-        .update({ status: newStatus })
+        .update({ status: newStatus as any })
         .eq('id', orderId)
     
     if (error) throw error

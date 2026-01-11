@@ -17,11 +17,11 @@ export async function GET(req: Request) {
     try {
         // 2. Poll Pending Events (Limit 10 to avoid timeouts)
         const { data: events, error } = await supabase
-            .from('app_events')
+            .from('app_events' as any)
             .select('*')
             .eq('status', 'PENDING')
             .order('created_at', { ascending: true })
-            .limit(10)
+            .limit(10) as { data: any[] | null, error: any }
 
         if (error) throw error
 
@@ -36,7 +36,7 @@ export async function GET(req: Request) {
             console.log(`[EventWorker] Processing event ${event.id} (${event.event_type})`)
             
             // Mark as PROCESSING
-            await supabase.from('app_events').update({ status: 'PROCESSING' }).eq('id', event.id)
+            await supabase.from('app_events' as any).update({ status: 'PROCESSING' }).eq('id', event.id)
 
             let success = false
             let errorMsg: string | null = null
@@ -62,12 +62,12 @@ export async function GET(req: Request) {
 
             // 4. Update Status
             if (success) {
-                await supabase.from('app_events').update({ 
+                await supabase.from('app_events' as any).update({ 
                     status: 'COMPLETED', 
                     processed_at: new Date().toISOString() 
                 }).eq('id', event.id)
             } else {
-                await supabase.from('app_events').update({ 
+                await supabase.from('app_events' as any).update({ 
                     status: 'FAILED', 
                     processing_error: errorMsg,
                     processed_at: new Date().toISOString() // Marked processed even if failed to stop loops

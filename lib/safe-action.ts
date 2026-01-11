@@ -24,7 +24,7 @@ export async function createSafeAction<Input, Output>(
                 severity: 'ERROR',
                 component: actionName,
                 message: e.message || 'Unknown error',
-                metadata: { stack: e.stack, input }
+                metadata: { stack: e.stack, input } as any
             })
         } catch (logErr) {
             console.error('Failed to log safe action error:', logErr)

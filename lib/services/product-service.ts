@@ -137,9 +137,9 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: SupabaseCli
          // 2. Sort in Memory
          // 2. Sort in Memory
          const sortedIds = (allIds || [])
-            .map((p) => ({ 
+            .map((p: any) => ({ 
                 id: p.id, 
-                count: p.preorders && Array.isArray(p.preorders) && p.preorders[0] ? (p.preorders[0] as any).count : 0,
+                count: p.preorders && Array.isArray(p.preorders) ? (p.preorders[0] as any)?.count || 0 : 0,
                 created: new Date(p.created_at).getTime()
             }))
             .sort((a, b) => {
@@ -166,11 +166,11 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: SupabaseCli
             .map((id: string) => details?.find((d) => d.id === id))
             .filter(Boolean) as Product[]
             
-        const processedData = orderedData.map((p) => ({
+        const processedData = (orderedData || []).map((p: any) => ({
              ...p,
              average_rating: Number(p.average_rating || 0),
              review_count: Number(p.review_count || 0),
-             preorder_count: p.preorders && Array.isArray(p.preorders) && p.preorders[0] ? (p.preorders[0] as any).count : 0
+             preorder_count: p.preorders && Array.isArray(p.preorders) ? (p.preorders[0] as any)?.count || 0 : 0
         }))
 
         return {
@@ -243,11 +243,11 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: SupabaseCli
             throw error
         }
 
-        const processedData = (data || []).map((p) => ({
+        const processedData = (data || []).map((p: any) => ({
             ...p,
             average_rating: Number(p.average_rating || 0),
             review_count: Number(p.review_count || 0),
-            preorder_count: p.preorders && Array.isArray(p.preorders) && p.preorders[0] ? (p.preorders[0] as any).count : 0
+            preorder_count: p.preorders && Array.isArray(p.preorders) ? (p.preorders[0] as any)?.count || 0 : 0
         })) as Product[]
 
         return {
@@ -715,9 +715,9 @@ export async function getWaitlistedProducts(userId: string): Promise<Product[]> 
     
     // 1. Get Preorders
     const { data: preorders, error } = await supabase
-        .from('preorders')
+        .from('preorders' as any)
         .select('product_id')
-        .eq('user_id', userId)
+        .eq('user_id', userId) as { data: any[] | null, error: any }
     
     if (error || !preorders || preorders.length === 0) return []
 
