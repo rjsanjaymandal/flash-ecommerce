@@ -264,9 +264,10 @@ export const useCartStore = create<CartState>()(
                 const existing = mergedMap.get(key)
                 
                 if (existing) {
-                    // CONFLICT RESOLUTION: Sum them up, but cap at reasonably high number or (10)
-                    // If specifically fetching stock, we'd cap at stock. For now, 10 is safe default cap.
-                    const newQty = Math.min(existing.quantity + localItem.quantity, 10)
+                    // CONFLICT RESOLUTION: Use MAX to prevent duplication on refresh
+                    // Refreshing shouldn't double the quantity (2+2=4), it should stay stable (max(2,2)=2).
+                    // This is a trade-off: Guest-Add+Login might not sum, but it's safer than infinite growth.
+                    const newQty = Math.max(existing.quantity, localItem.quantity)
                     mergedMap.set(key, { ...existing, quantity: newQty })
                 } else {
                     // New local item not in server
