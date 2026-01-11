@@ -1,5 +1,6 @@
 import { resend } from "@/lib/email/client";
 import { OrderConfirmationEmail } from "@/lib/email/templates/order-confirmation";
+import { AdminNewOrderEmail } from "@/lib/email/templates/admin-new-order";
 
 interface OrderItem {
     name: string;
@@ -13,6 +14,12 @@ interface SendOrderConfirmationProps {
     customerName: string;
     items: OrderItem[];
     total: number;
+    shippingAddress?: string;
+    orderDate: string;
+}
+
+interface SendAdminAlertProps extends SendOrderConfirmationProps {
+    customerEmail: string;
 }
 
 export async function sendOrderConfirmation({
@@ -20,31 +27,90 @@ export async function sendOrderConfirmation({
     orderId,
     customerName,
     items,
-    total
+    total,
+    shippingAddress,
+    orderDate
 }: SendOrderConfirmationProps) {
+    console.log(`[Email] Attempting dispatch to ${email} for Order #${orderId}`);
+    
     try {
-        // Fire-and-forget execution can be simulated by not awaiting this promise in the caller,
-        // but here we just define the async function.
-        // The sender configuration is critical as per user request.
-        
-        await resend.emails.send({
+        // Enforce 15s Timeout
+        const emailPromise = resend.emails.send({
             from: 'FLASH Orders <orders@flashhfashion.in>',
             replyTo: 'orders@flashhfashion.in',
-            bcc: 'lgbtqfashionflash@gmail.com',
-            to: email,
+            to: email, // Sending ONLY to customer
             subject: `Order Confirmed! 🚀 #${orderId.slice(0, 8).toUpperCase()}`,
             react: OrderConfirmationEmail({
                 orderId,
                 customerName,
                 items,
-                total
+                total,
+                shippingAddress,
+                orderDate
             })
         });
 
-        console.log(`Email sent successfully to ${email} for order ${orderId}`);
-        return { success: true };
-    } catch (error) {
-        console.error('Failed to send order confirmation email:', error);
-        return { success: false, error };
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Email Dispatch Timeout (15s)')), 15000)
+        );
+
+        const data: any = await Promise.race([emailPromise, timeoutPromise]);
+
+        if (data?.error) {
+             throw new Error(`Resend API Error: ${data.error.message}`);
+        }
+
+        console.log(`[Email] Customer confirmation sent successfully. ID: ${data?.data?.id}`);
+        return { success: true, id: data?.data?.id };
+
+    } catch (error: any) {
+        console.error('[Email] FAILED to send customer confirmation:', error.message);
+        // Important: We re-throw so the caller (PaymentProcessor) knows it failed
+        throw error;
+    }
+}
+
+export async function sendAdminOrderAlert({
+    email, // Admin email
+    customerEmail,
+    orderId,
+    customerName,
+    items,
+    total,
+    shippingAddress,
+    orderDate
+}: SendAdminAlertProps) {
+    console.log(`[Email] Attempting ADMIN ALERT to ${email} for Order #${orderId}`);
+
+    try {
+        const emailPromise = resend.emails.send({
+            from: 'FLASH System <system@flashhfashion.in>',
+            to: email,
+            subject: `💰 New Order: ${customerName} (₹${total})`,
+            react: AdminNewOrderEmail({
+                orderId,
+                customerName,
+                customerEmail,
+                items,
+                total
+            }) 
+        });
+
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Admin Email Dispatch Timeout (15s)')), 15000)
+        );
+
+        const data: any = await Promise.race([emailPromise, timeoutPromise]);
+
+        if (data?.error) {
+             throw new Error(`Resend Admin API Error: ${data.error.message}`);
+        }
+
+        console.log(`[Email] Admin alert sent successfully. ID: ${data?.data?.id}`);
+        return { success: true, id: data?.data?.id };
+
+    } catch (error: any) {
+        console.error('[Email] FAILED to send admin alert:', error.message);
+        throw error;
     }
 }

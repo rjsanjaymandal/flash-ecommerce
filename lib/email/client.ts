@@ -1,3 +1,7 @@
 import { Resend } from 'resend';
 
-export const resend = new Resend(process.env.RESEND_API_KEY || 're_123');
+if (!process.env.RESEND_API_KEY) {
+    console.warn('⚠️ RESEND_API_KEY is missing. Email features will fail.');
+}
+
+export const resend = new Resend(process.env.RESEND_API_KEY);

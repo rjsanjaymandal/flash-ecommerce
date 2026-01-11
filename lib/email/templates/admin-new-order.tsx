@@ -6,42 +6,36 @@ import {
   Heading,
   Hr,
   Html,
-  Img,
   Link,
   Preview,
   Row,
   Section,
   Text,
   Tailwind,
+  Button,
 } from "@react-email/components";
 import * as React from "react";
 
-interface OrderConfirmationEmailProps {
+interface AdminNewOrderEmailProps {
   orderId: string;
   customerName: string;
+  customerEmail: string;
   items: Array<{
     name: string;
     quantity: number;
     price: number;
-    image?: string;
   }>;
   total: number;
-  shippingAddress?: string;
-  orderDate?: string;
 }
 
-export const OrderConfirmationEmail = ({
+export const AdminNewOrderEmail = ({
   orderId,
   customerName,
-  items,
+  customerEmail,
+  items = [],
   total,
-  shippingAddress,
-  orderDate = new Date().toDateString(),
-}: OrderConfirmationEmailProps) => {
-  const previewText = `Your Flash order #${orderId.slice(0, 8)} is confirmed.`;
-  const estimatedDelivery = new Date(
-    new Date(orderDate).getTime() + 7 * 24 * 60 * 60 * 1000
-  ).toDateString();
+}: AdminNewOrderEmailProps) => {
+  const previewText = `New Order Received: ₹${total} by ${customerName}`;
 
   return (
     <Html>
@@ -50,39 +44,15 @@ export const OrderConfirmationEmail = ({
       <Tailwind>
         <Body className="bg-white my-auto mx-auto font-sans">
           <Container className="border border-solid border-[#eaeaea] rounded my-[40px] mx-auto p-[20px] max-w-[465px]">
-            <Section className="mt-[32px]">
-              <Img
-                src="https://flash-ecommerce.vercel.app/logo.png"
-                width="40"
-                height="40"
-                alt="Flash"
-                className="my-0 mx-auto"
-              />
-            </Section>
             <Heading className="text-black text-[24px] font-normal text-center p-0 my-[30px] mx-0">
-              Order Confirmed! 🚀
+              New Order Received 💰
             </Heading>
             <Text className="text-black text-[14px] leading-[24px]">
-              Hi {customerName},
-            </Text>
-            <Text className="text-black text-[14px] leading-[24px]">
-              Thanks for your order. We're getting it ready to be shipped.
+              <strong>Customer:</strong> {customerName} ({customerEmail})
             </Text>
             <Text className="text-black text-[14px] leading-[24px]">
               <strong>Order ID:</strong> {orderId}
-              <br />
-              <strong>Date:</strong> {orderDate}
-              <br />
-              <strong>Est. Delivery:</strong> {estimatedDelivery}
             </Text>
-
-            {shippingAddress && (
-              <Text className="text-black text-[14px] leading-[24px]">
-                <strong>Shipping To:</strong>
-                <br />
-                {shippingAddress}
-              </Text>
-            )}
 
             <Hr className="border border-solid border-[#eaeaea] my-[26px] mx-0 w-full" />
 
@@ -119,19 +89,14 @@ export const OrderConfirmationEmail = ({
               </Row>
             </Section>
 
-            <Text className="text-center text-[12px] text-gray-500 mt-8">
-              Questions? Reply to this email or visit our{" "}
-              <Link
-                href="https://flash-ecommerce.vercel.app/contact"
-                className="text-blue-600 underline"
+            <Section className="text-center mt-[32px] mb-[32px]">
+              <Button
+                className="bg-[#000000] rounded text-white text-[12px] font-semibold no-underline text-center px-5 py-3"
+                href={`https://flash-ecommerce.vercel.app/admin/orders/${orderId}`}
               >
-                Help Center
-              </Link>
-              .
-            </Text>
-            <Text className="text-black text-[14px] leading-[24px] mt-2 text-center font-bold">
-              FLASH Fashion - Embrace Your Pride
-            </Text>
+                View in Admin Panel
+              </Button>
+            </Section>
           </Container>
         </Body>
       </Tailwind>
@@ -139,4 +104,4 @@ export const OrderConfirmationEmail = ({
   );
 };
 
-export default OrderConfirmationEmail;
+export default AdminNewOrderEmail;
