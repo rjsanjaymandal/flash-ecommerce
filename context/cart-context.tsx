@@ -187,7 +187,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         if (error) console.error("Error deleting remote item", error);
       }
     },
-    [user]
+    [user, supabase]
   );
 
   const updateQuantity = useCallback(
@@ -214,7 +214,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         if (error) console.error("Error updating remote quantity", error);
       }
     },
-    [user]
+    [user, supabase]
   );
 
   const clearCart = useCallback(async () => {
@@ -224,7 +224,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     } else {
       localStorage.removeItem("flash-cart");
     }
-  }, [user]);
+  }, [user, supabase]);
 
   const cartCount = items.reduce((acc, item) => acc + item.quantity, 0);
   const cartTotal = items.reduce(

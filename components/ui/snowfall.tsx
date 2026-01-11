@@ -17,6 +17,7 @@ export function Snowfall() {
       delay: Math.random() * 5,
       size: Math.random() * 4 + 2,
       opacity: Math.random() * 0.5 + 0.3,
+      drift: `${Math.random() * 10 - 5}vw`,
     }));
     setSnowflakes(flakes);
   }, []);
@@ -32,7 +33,7 @@ export function Snowfall() {
           animate={{
             y: "110vh",
             opacity: [0, flake.opacity, flake.opacity, 0],
-            x: ["0vw", `${Math.random() * 10 - 5}vw`, "0vw"],
+            x: ["0vw", flake.drift, "0vw"],
           }}
           transition={{
             duration: flake.animationDuration,

@@ -146,7 +146,7 @@ export async function ProductGrid({ params }: { params: any }) {
             No matches found
           </h3>
           <p className="text-muted-foreground max-w-sm mb-6">
-            We couldn't find any products matching your current filters.
+            We couldn&apos;t find any products matching your current filters.
           </p>
           <Button asChild className="rounded-full font-bold px-8">
             <Link href="/shop">Clear All Filters</Link>

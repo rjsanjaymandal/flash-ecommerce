@@ -95,10 +95,11 @@ export function useNotifications() {
         setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
         setUnreadCount(0)
 
+        if (!user) return;
         await supabase
             .from('notifications')
             .update({ is_read: true })
-            .eq('user_id', user?.id!)
+            .eq('user_id', user.id)
             .eq('is_read', false)
     }
     
@@ -107,10 +108,11 @@ export function useNotifications() {
         setNotifications([])
         setUnreadCount(0)
 
+        if (!user) return;
         await supabase
             .from('notifications')
             .delete()
-            .eq('user_id', user?.id!)
+            .eq('user_id', user.id)
             
         toast.success("Notifications cleared")
     }
