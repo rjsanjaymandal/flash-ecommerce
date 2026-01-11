@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { PaymentProcessor } from '@/lib/services/payment-processor'
 import { NotificationService } from '@/lib/services/notification-service'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function POST(req: Request) {
   try {
@@ -28,7 +29,7 @@ export async function POST(req: Request) {
 
     console.log(`[Webhook] Received event: ${event.event}`, eventId)
     
-    const supabase = createAdminClientAdmin() // Helper or just use createAdminClient()
+    const supabase = createAdminClient()
 
     // 2. Ledger: Idempotency Check & Persistence
     // storing raw event first
@@ -66,7 +67,7 @@ export async function POST(req: Request) {
         // 4. Process Payment using Shared Service
         const result = await PaymentProcessor.processPayment(orderId, payment.id)
 
-        if (!result.success && result.message !== 'Payment verified (previously processed)') {
+        if (!result.success) {
              console.warn(`[Webhook] Processing failed for ${orderId}:`, result.error)
              await supabase.from('webhook_events').update({ processing_error: result.error }).eq('event_id', eventId)
              return NextResponse.json({ error: result.error }, { status: 500 })
@@ -88,7 +89,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ status: 'ok' })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[Webhook] Error processing webhook:', error)
     // We don't have eventId here easily unless we parse earlier. 
     // Ideally wrap only logic inside try/catch.
@@ -96,9 +97,5 @@ export async function POST(req: Request) {
   }
 }
 
-// Helper to avoid import conflicts if any
-function createAdminClientAdmin() {
-    // ... logic or import
-    return require('@/lib/supabase/admin').createAdminClient()
-}
+
 

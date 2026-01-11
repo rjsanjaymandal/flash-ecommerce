@@ -745,6 +745,33 @@ export type Database = {
           }
         ]
       }
+      system_logs: {
+        Row: {
+          id: string
+          created_at: string
+          severity: string
+          component: string
+          message: string
+          metadata: Json | null
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          severity: string
+          component: string
+          message: string
+          metadata?: Json | null
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          severity?: string
+          component?: string
+          message?: string
+          metadata?: Json | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -774,6 +801,14 @@ export type Database = {
       reserve_stock: {
         Args: {
           p_order_id: string
+        }
+        Returns: Json
+      }
+      finalize_payment_v3: {
+        Args: {
+          p_order_id: string
+          p_payment_id: string
+          p_amount_paid: number
         }
         Returns: Json
       }

@@ -28,7 +28,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ 
         verified: true, 
-        message: result.message 
+        message: result.data.message 
     })
 
   } catch (error) {
