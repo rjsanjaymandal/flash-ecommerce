@@ -27,13 +27,7 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '10mb',
     },
   },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  // @ts-ignore
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+
 
   async rewrites() {
     return [

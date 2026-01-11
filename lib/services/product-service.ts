@@ -4,8 +4,9 @@ import { createClient, createStaticClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requireAdmin } from '@/lib/auth/utils'
 import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache'
-import { productSchema } from '@/lib/validations/product'
+import { productSchema, type ProductFormValues } from '@/lib/validations/product'
 import type { Database, Tables, TablesInsert, TablesUpdate } from '@/types/supabase'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 export type Product = Tables<'products'> & {
     categories?: { name: string } | null
@@ -18,6 +19,7 @@ export type Product = Tables<'products'> & {
         desktop: string
     } | null
     preorder_count?: number
+    reviews?: { rating: number | null }[] | null
 }
 
 
@@ -49,6 +51,7 @@ export type PaginatedResult<T> = {
 }
 
 // Internal Fetcher for Cache
+// Helper to apply filters consistently
 // Helper to apply filters consistently
 const applyProductFilters = (query: any, filter: ProductFilter) => {
     if (filter.is_active !== undefined) {
@@ -89,7 +92,7 @@ const applyProductFilters = (query: any, filter: ProductFilter) => {
     return query
 }
 
-async function fetchProducts(filter: ProductFilter, supabaseClient?: any): Promise<PaginatedResult<Product>> {
+async function fetchProducts(filter: ProductFilter, supabaseClient?: SupabaseClient<Database>): Promise<PaginatedResult<Product>> {
     const supabase = supabaseClient || createStaticClient()
     const page = filter.page || 1
     const limit = filter.limit || 10
@@ -132,13 +135,14 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: any): Promi
          if (idError) throw idError
 
          // 2. Sort in Memory
+         // 2. Sort in Memory
          const sortedIds = (allIds || [])
-            .map((p: any) => ({ 
+            .map((p) => ({ 
                 id: p.id, 
-                count: p.preorders ? p.preorders[0]?.count : 0,
+                count: p.preorders && Array.isArray(p.preorders) && p.preorders[0] ? (p.preorders[0] as any).count : 0,
                 created: new Date(p.created_at).getTime()
             }))
-            .sort((a: any, b: any) => {
+            .sort((a, b) => {
                 // For Trending: Weigh Recency + Popularity?
                 if (b.count !== a.count) return b.count - a.count
                 return b.created - a.created
@@ -147,7 +151,7 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: any): Promi
         // 3. Paginate
         const total = sortedIds.length
         const sliced = sortedIds.slice(from, to)
-        const targetIds = sliced.map((i: any) => i.id)
+        const targetIds = sliced.map((i) => i.id)
 
         // 4. Fetch Details
         const { data: details, error: detailError } = await supabase
@@ -159,14 +163,14 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: any): Promi
 
         // Re-order details
         const orderedData = targetIds
-            .map((id: string) => details?.find((d: any) => d.id === id))
+            .map((id: string) => details?.find((d) => d.id === id))
             .filter(Boolean) as Product[]
             
-        const processedData = orderedData.map((p: any) => ({
+        const processedData = orderedData.map((p) => ({
              ...p,
              average_rating: Number(p.average_rating || 0),
              review_count: Number(p.review_count || 0),
-             preorder_count: p.preorders ? p.preorders[0]?.count : 0
+             preorder_count: p.preorders && Array.isArray(p.preorders) && p.preorders[0] ? (p.preorders[0] as any).count : 0
         }))
 
         return {
@@ -208,7 +212,7 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: any): Promi
       case 'price_desc':
         query = query.order('price', { ascending: false })
         break
-      case 'random' as any:
+      case 'random' as ProductSortOption:
         // Proper random order in PostgREST is difficult, but we can use a stable random-like field 
         // OR just order by ID with varying directions. 
         // For now, newest is a safe fallback, or we can use a pseudo-random seed if implemented in PG.
@@ -239,11 +243,11 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: any): Promi
             throw error
         }
 
-        const processedData = (data || []).map((p: any) => ({
+        const processedData = (data || []).map((p) => ({
             ...p,
             average_rating: Number(p.average_rating || 0),
             review_count: Number(p.review_count || 0),
-            preorder_count: p.preorders ? p.preorders[0]?.count : 0
+            preorder_count: p.preorders && Array.isArray(p.preorders) && p.preorders[0] ? (p.preorders[0] as any).count : 0
         })) as Product[]
 
         return {
@@ -255,10 +259,10 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: any): Promi
                 totalPages: Math.ceil((count || 0) / limit)
             }
         }
-    } catch (err: any) {
+    } catch (err: unknown) {
         console.error('fetchProducts failed:', err)
         // If it's a known missing column error and we haven't already retried, try one last time with 'newest'
-        if (err.code === '42703' && filter.sort !== 'newest') {
+        if (typeof err === 'object' && err !== null && 'code' in err && (err as any).code === '42703' && filter.sort !== 'newest') {
              return fetchProducts({ ...filter, sort: 'newest', ignoreStockSort: true }, supabase)
         }
         throw err
@@ -276,7 +280,7 @@ export async function getProducts(filter: ProductFilter = {}): Promise<Paginated
 }
 
 
-export async function getProductsSecure(filter: ProductFilter = {}, client: any): Promise<PaginatedResult<Product>> {
+export async function getProductsSecure(filter: ProductFilter = {}, client: SupabaseClient<Database>): Promise<PaginatedResult<Product>> {
     return fetchProducts(filter, client)
 }
 
@@ -344,9 +348,9 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
 }
 
 // Helper to clean up product data and sync options
-function prepareProductData(data: any) {
+function prepareProductData(data: ProductFormValues) {
   // STRICT WHITELIST of database columns
-  const cleanData: any = {
+  const cleanData: TablesInsert<'products'> = {
     name: data.name,
     slug: data.slug,
     description: data.description || null,
@@ -361,14 +365,14 @@ function prepareProductData(data: any) {
   // Derive options from variants
   if (data.variants && Array.isArray(data.variants)) {
     const variants = data.variants
-    cleanData.size_options = Array.from(new Set(variants.map((v: any) => v.size).filter(Boolean)))
-    cleanData.color_options = Array.from(new Set(variants.map((v: any) => v.color).filter(Boolean)))
+    cleanData.size_options = Array.from(new Set(variants.map((v) => v.size).filter(Boolean)))
+    cleanData.color_options = Array.from(new Set(variants.map((v) => v.color).filter(Boolean)))
   }
   
   return cleanData
 }
 
-export async function createProduct(productData: any) {
+export async function createProduct(productData: unknown) {
     try {
         // 1. Core Security Check (Required even with Admin Client)
         await requireAdmin()
@@ -404,7 +408,7 @@ export async function createProduct(productData: any) {
 
         // 5. Insert Variants (Stock)
         if (variants.length > 0) {
-            const stockData = variants.map((v: any) => ({
+            const stockData = variants.map((v) => ({
                 product_id: productId,
                 size: v.size,
                 color: v.color,
@@ -436,13 +440,13 @@ export async function createProduct(productData: any) {
         }
 
         return { success: true, id: productId }
-    } catch (err: any) {
+    } catch (err: unknown) {
         console.error('[createProduct] Action Crash:', err)
-        return { success: false, error: `Action Crash: ${err.message || 'Unknown'}` }
+        return { success: false, error: `Action Crash: ${(err as Error).message || 'Unknown'}` }
     }
 }
 
-export async function updateProduct(id: string, productData: any) {
+export async function updateProduct(id: string, productData: unknown) {
     try {
         // 1. Core Security Check
         await requireAdmin()
@@ -485,7 +489,7 @@ export async function updateProduct(id: string, productData: any) {
             
             // Insert new
             if (variants.length > 0) {
-                const stockData = variants.map((v: any) => ({
+                const stockData = variants.map((v) => ({
                     product_id: id,
                     size: v.size,
                     color: v.color,
@@ -514,9 +518,9 @@ export async function updateProduct(id: string, productData: any) {
         }
 
         return { success: true }
-    } catch (err: any) {
+    } catch (err: unknown) {
         console.error('[updateProduct] Action Crash:', err)
-        return { success: false, error: `Action Crash: ${err.message || 'Unknown'}` }
+        return { success: false, error: `Action Crash: ${(err as Error).message || 'Unknown'}` }
     }
 }
 
@@ -544,9 +548,13 @@ export async function getProductsByIds(ids: string[]): Promise<Product[]> {
     
     if (error) throw error
 
-    return (data || []).map((p: any) => {
-        const ratings = p.reviews?.map((r: any) => r.rating) || []
-        const avg = ratings.length > 0 ? ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length : 0
+    // Define a join type locally or infer
+    type ProductWithRatings = Product & { reviews: { rating: number | null }[] }
+
+    return (data || []).map((p) => {
+        const product = p as unknown as ProductWithRatings
+        const ratings = product.reviews?.map((r) => r.rating).filter((r): r is number => r !== null) || []
+        const avg = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0
         return {
             ...p,
             average_rating: avg,
@@ -571,9 +579,12 @@ export async function getValidProducts(ids: string[]): Promise<Product[]> {
         return []
     }
 
-    return (data || []).map((p: any) => {
-        const ratings = p.reviews?.map((r: any) => r.rating) || []
-        const avg = ratings.length > 0 ? ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length : 0
+    type ProductWithRatings = Product & { reviews: { rating: number | null }[] }
+
+    return (data || []).map((p) => {
+        const product = p as unknown as ProductWithRatings
+        const ratings = product.reviews?.map((r) => r.rating).filter((r): r is number => r !== null) || []
+        const avg = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0
         return {
             ...p,
             average_rating: avg,
@@ -594,7 +605,7 @@ export async function getRelatedProducts(product: Product): Promise<Product[]> {
             const limit = 12 
             
             const tags = product.expression_tags || []
-            let candidates: any[] = []
+            let candidates: Product[] = []
 
             if (tags.length > 0) {
                  // Try to find items with overlapping tags
@@ -630,7 +641,7 @@ export async function getRelatedProducts(product: Product): Promise<Product[]> {
 
             // 2. Scoring Algorithm to Rank "Complete the Look"
             // Score = (Tag Overlap * 2) + (Cross-Category Bonus * 5)
-            const scored = candidates.map((item: any) => {
+            const scored = candidates.map((item) => {
                 let score = 0
                 
                 // Tag overlap
@@ -650,14 +661,14 @@ export async function getRelatedProducts(product: Product): Promise<Product[]> {
             })
 
             // Sort descending by score
-            scored.sort((a: any, b: any) => b.score - a.score)
+            scored.sort((a, b) => b.score - a.score)
 
             // Take top 4 for the UI
-            const finalProducts = scored.slice(0, 4).map((s: any) => s.item)
+            const finalProducts = scored.slice(0, 4).map((s) => s.item as Product)
 
-            return finalProducts.map((p: any) => {
-                const ratings = p.reviews?.map((r: any) => r.rating) || []
-                const avg = ratings.length > 0 ? ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length : 0
+            return finalProducts.map((p) => {
+                const ratings = p.reviews?.map((r) => r.rating).filter((r): r is number => r !== null) || []
+                const avg = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0
                 return {
                     ...p,
                     average_rating: avg,
@@ -704,13 +715,13 @@ export async function getWaitlistedProducts(userId: string): Promise<Product[]> 
     
     // 1. Get Preorders
     const { data: preorders, error } = await supabase
-        .from('preorders' as any)
+        .from('preorders')
         .select('product_id')
         .eq('user_id', userId)
     
     if (error || !preorders || preorders.length === 0) return []
 
-    const productIds = preorders.map((p: any) => p.product_id)
+    const productIds = preorders.map((p) => p.product_id)
 
     // 2. Get Products (Reusing existing fetcher logic or direct call)
     const { data: products } = await supabase
@@ -719,7 +730,7 @@ export async function getWaitlistedProducts(userId: string): Promise<Product[]> 
         .in('id', productIds)
         .eq('is_active', true)
     
-    return (products || []).map((p: any) => ({
+    return (products || []).map((p) => ({
         ...p,
         average_rating: 0, 
         review_count: 0

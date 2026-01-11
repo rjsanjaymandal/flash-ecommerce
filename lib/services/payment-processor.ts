@@ -3,6 +3,7 @@ import crypto from 'crypto'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendOrderConfirmation, sendAdminOrderAlert } from '@/lib/email/send-order-receipt'
 import Razorpay from 'razorpay'
+import { Tables } from '@/types/supabase'
 
 // Types
 interface VerificationResult {
@@ -42,8 +43,18 @@ export class PaymentProcessor {
             
             const rzpOrder = await razorpay.orders.fetch(razorpayOrderId)
             // Priority: Notes > Receipt
-            return (rzpOrder.notes as any)?.order_id || rzpOrder.receipt
-        } catch (error) {
+            const notes = rzpOrder.notes as Record<string, string> | undefined
+            
+            if (notes?.order_id) {
+                return notes.order_id
+            }
+
+            if (rzpOrder.receipt) {
+                return rzpOrder.receipt
+            }
+
+            return null
+        } catch (error: unknown) {
             console.error('[PaymentProcessor] Failed to fetch Razorpay order:', error)
             return null
         }
@@ -52,7 +63,7 @@ export class PaymentProcessor {
     /**
      * Search Razorpay for an order with the given Receipt (Safety Net)
      */
-    static async findRazorpayOrderByReceipt(receipt: string): Promise<any | null> {
+    static async findRazorpayOrderByReceipt(receipt: string): Promise<object | null> {
          if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) return null
          
          const razorpay = new Razorpay({
@@ -70,7 +81,7 @@ export class PaymentProcessor {
                  return orders.items[0]
              }
              return null
-         } catch (e) {
+         } catch (e: unknown) {
              console.warn('[PaymentProcessor] Failed to search Razorpay orders:', e)
              return null
          }
@@ -79,7 +90,7 @@ export class PaymentProcessor {
     /**
      * Fetch successful payments for a Razorpay Order
      */
-    static async getPaymentsForOrder(razorpayOrderId: string): Promise<any[]> {
+    static async getPaymentsForOrder(razorpayOrderId: string): Promise<object[]> {
         if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) return []
         
         const razorpay = new Razorpay({
@@ -90,16 +101,12 @@ export class PaymentProcessor {
         try {
             const payments = await razorpay.orders.fetchPayments(razorpayOrderId)
             return payments.items || [] // collection
-        } catch (e) {
+        } catch (e: unknown) {
             console.warn('[PaymentProcessor] Failed to fetch payments:', e)
             return []
         }
     }
 
-    /**
-     * Core atomic function to mark an order as PAID in the database
-     * and trigger the confirmation email.
-     */
     /**
      * Core atomic function to mark an order as PAID in the database
      * and trigger the confirmation email.
@@ -130,9 +137,9 @@ export class PaymentProcessor {
                  // Note: 'authorized' is also okay if we capture manually, but typically 'captured' is best.
                  // We will proceed but log a warning if strictly captured is needed.
             }
-        } catch (e: any) {
+        } catch (e: unknown) {
             console.error('[PaymentProcessor] Razorpay Fetch Failed:', e)
-            return { success: false, error: `Invalid Payment ID: ${e.message}` }
+            return { success: false, error: `Invalid Payment ID: ${(e as Error).message}` }
         }
 
         // 1. Fetch current order status (Idempotency Check)
@@ -223,7 +230,7 @@ export class PaymentProcessor {
                     email,
                     orderId: orderDetails.id,
                     customerName: orderDetails.shipping_name || 'Customer',
-                    items: orderDetails.order_items.map((i: any) => ({
+                    items: orderDetails.order_items.map((i: Tables<'order_items'>) => ({
                         name: i.name_snapshot || 'Product',
                         quantity: i.quantity,
                         price: i.unit_price
@@ -241,7 +248,7 @@ export class PaymentProcessor {
                     customerEmail: email,
                     orderId: orderDetails.id,
                     customerName: orderDetails.shipping_name || 'Customer',
-                    items: orderDetails.order_items.map((i: any) => ({
+                    items: orderDetails.order_items.map((i: Tables<'order_items'>) => ({
                         name: i.name_snapshot || 'Product',
                         quantity: i.quantity,
                         price: i.unit_price
@@ -259,14 +266,14 @@ export class PaymentProcessor {
                     metadata: { orderId: orderId, customerEmail: email }
                 })
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('[PaymentProcessor] Email logic failed:', error)
             
             // Log Failure
             await supabase.from('system_logs').insert({
                 severity: 'ERROR',
                 component: 'PAYMENT_EMAIL',
-                message: `Failed to send email: ${error.message}`,
+                message: `Failed to send email: ${(error as Error).message}`,
                 metadata: { orderId: orderId, error: error }
             })
         }
@@ -275,7 +282,7 @@ export class PaymentProcessor {
     /**
      * Internal helper to log payment attempts
      */
-    private static async logPaymentAttempt(component: string, message: string, severity: 'INFO' | 'WARN' | 'ERROR', metadata: any) {
+    private static async logPaymentAttempt(component: string, message: string, severity: 'INFO' | 'WARN' | 'ERROR', metadata: Record<string, unknown>) {
         const supabase = createAdminClient()
         await supabase.from('system_logs').insert({
             severity,

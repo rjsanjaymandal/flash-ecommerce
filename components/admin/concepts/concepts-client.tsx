@@ -16,6 +16,7 @@ import { ConceptDialog } from "./concept-dialog";
 import { deleteConcept } from "@/lib/services/concept-service";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import FlashImage from "@/components/ui/flash-image";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -100,10 +101,11 @@ export function ConceptsClient({
           <Card key={concept.id} className="group overflow-hidden">
             <div className="aspect-video w-full bg-muted relative overflow-hidden">
               {concept.image_url ? (
-                <img
+                <FlashImage
                   src={concept.image_url}
                   alt={concept.title}
-                  className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                  fill
+                  className="object-cover transition-transform group-hover:scale-105"
                 />
               ) : (
                 <div className="flex items-center justify-center h-full text-muted-foreground/20">
@@ -185,9 +187,9 @@ export function ConceptsClient({
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete "
-              {concepts.find((c) => c.id === deletingId)?.title}" and all its
-              votes.
+              This will permanently delete &quot;
+              {concepts.find((c) => c.id === deletingId)?.title}&quot; and all
+              its votes.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -45,7 +45,7 @@ export class ErrorBoundary extends React.Component<
           <div>
             <h3 className="text-lg font-bold">Something went wrong</h3>
             <p className="text-sm text-muted-foreground mt-1 max-w-xs mx-auto">
-              We couldn't load this section.
+              We couldn&apos;t load this section.
             </p>
           </div>
           <Button

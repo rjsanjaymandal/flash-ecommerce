@@ -384,7 +384,8 @@ export function ProductForm({
               <CardContent>
                 {fields.length === 0 ? (
                   <div className="text-center py-10 text-muted-foreground border-2 border-dashed rounded-lg">
-                    No variants added yet. Click "Add Variant" to start.
+                    No variants added yet. Click &quot;Add Variant&quot; to
+                    start.
                   </div>
                 ) : (
                   <Table>

@@ -135,7 +135,7 @@ export function LabClientView({
             transition={{ delay: 0.4 }}
             className="max-w-xl text-center text-sm md:text-xl text-muted-foreground leading-relaxed mb-10 md:mb-16 font-medium px-4"
           >
-            Don't just follow the trend.{" "}
+            Don&apos;t just follow the trend.{" "}
             <span className="text-foreground font-bold underline decoration-primary/30 underline-offset-8">
               Direct it.
             </span>{" "}
@@ -284,7 +284,7 @@ export function LabClientView({
                 <span className="text-primary italic">Craftsmanship</span>
               </h3>
               <p className="max-w-xl text-zinc-400 text-base md:text-lg font-medium leading-relaxed mb-8 md:mb-10">
-                We're throwing away the old playbook. No more static
+                We&apos;re throwing away the old playbook. No more static
                 collections. We prototype, you evaluate. If the community backs
                 a concept, it earns its place in our factory. 100% transparency,
                 zero waste.
@@ -323,7 +323,7 @@ export function LabClientView({
               </h4>
               <p className="text-muted-foreground font-medium mb-8">
                 Next major concept drop scheduled for early Q1 2026. Stay tuned
-                for "Neon Pulse" collection.
+                for &quot;Neon Pulse&quot; collection.
               </p>
             </div>
             <button className="relative z-10 w-full py-4 rounded-2xl border-2 border-border font-black text-[10px] uppercase tracking-widest transition-all hover:bg-primary hover:text-white hover:border-primary">

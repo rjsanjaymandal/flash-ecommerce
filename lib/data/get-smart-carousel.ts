@@ -14,6 +14,8 @@ export async function getSmartCarouselData() {
             main_image_url, 
             slug, 
             created_at, 
+            color_options,
+            size_options,
             product_stock(quantity)
         `)
         .eq('is_active', true)

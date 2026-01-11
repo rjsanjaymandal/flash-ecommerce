@@ -233,14 +233,14 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                       size="lg"
                       onClick={() => onSubmit()}
                     >
-                      View All Results for "{query}"
+                      View All Results for &quot;{query}&quot;
                     </Button>
                   </div>
                 ) : (
                   !isSearching && (
                     <div className="text-center py-12">
                       <p className="text-xl font-bold text-muted-foreground">
-                        No matches found for "{query}"
+                        No matches found for &quot;{query}&quot;
                       </p>
                       <p className="text-sm text-muted-foreground mt-2">
                         Try checking for typos or using broader terms.

@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import { Database } from "@/types/supabase";
@@ -39,6 +45,33 @@ export function AuthProvider({
 
   // Use a lazy initializer for the client to ensure it's created once per mount
   const [supabase] = useState(() => createClient());
+
+  const fetchProfile = useCallback(
+    async (userId: string) => {
+      try {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", userId)
+          .maybeSingle();
+
+        if (error) {
+          console.error(
+            "Error fetching profile:",
+            JSON.stringify(error, null, 2)
+          );
+          // Only set profile to null if it's a real error, not just 'no rows' if we expect one (though .single() errors on no rows)
+          setProfile(null);
+        } else {
+          console.log("Fetched Profile Success:", data);
+          setProfile(data);
+        }
+      } catch (err) {
+        console.error("Unexpected error fetching profile:", err);
+      }
+    },
+    [supabase]
+  );
 
   useEffect(() => {
     const initializeAuth = async () => {
@@ -97,31 +130,7 @@ export function AuthProvider({
     return () => {
       subscription.unsubscribe();
     };
-  }, [supabase]);
-
-  const fetchProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", userId)
-        .maybeSingle();
-
-      if (error) {
-        console.error(
-          "Error fetching profile:",
-          JSON.stringify(error, null, 2)
-        );
-        // Only set profile to null if it's a real error, not just 'no rows' if we expect one (though .single() errors on no rows)
-        setProfile(null);
-      } else {
-        console.log("Fetched Profile Success:", data);
-        setProfile(data);
-      }
-    } catch (err) {
-      console.error("Unexpected error fetching profile:", err);
-    }
-  };
+  }, [supabase, initialSession, initialUser, fetchProfile]);
 
   const signOut = async () => {
     try {

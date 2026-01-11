@@ -43,8 +43,21 @@ import imageLoader from "@/lib/image-loader";
 
 declare global {
   interface Window {
-    Razorpay: any;
+    Razorpay: new (options: any) => any;
   }
+}
+
+interface RazorpayResponse {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+}
+
+interface VerifyPayload {
+  order_id: string;
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
 }
 
 export default function CheckoutPage() {
@@ -70,7 +83,7 @@ export default function CheckoutPage() {
 
   // Check if script is already loaded (e.g. from previous navigation)
   useEffect(() => {
-    if ((window as any).Razorpay) {
+    if (window.Razorpay) {
       console.log("Razorpay script already present on mount");
       setIsScriptLoaded(true);
     }
@@ -226,7 +239,7 @@ export default function CheckoutPage() {
   };
 
   const onSubmit = async (data: CheckoutFormData) => {
-    if (!isScriptLoaded && !(window as any).Razorpay) {
+    if (!isScriptLoaded && !window.Razorpay) {
       toast.error("Payment system is still loading. Please wait a moment...");
       return;
     }
@@ -276,7 +289,7 @@ export default function CheckoutPage() {
       const response = await fetch("/api/razorpay/order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ order_id: (order as any).id }),
+        body: JSON.stringify({ order_id: order.id }),
       });
       const rzpOrder = await response.json();
       console.log("Razorpay Order:", rzpOrder);
@@ -299,13 +312,13 @@ export default function CheckoutPage() {
         name: "Flash Ecommerce",
         description: "Order Payment",
         order_id: rzpOrder.id,
-        handler: async function (paymentResponse: any) {
+        handler: async function (paymentResponse: RazorpayResponse) {
           // 5. Verify Payment with Smart Retry (Exponential Backoff)
           const verifyPaymentWithRetry = async (
-            payload: any,
+            payload: VerifyPayload,
             retries = 3,
             delay = 1000
-          ): Promise<any> => {
+          ): Promise<{ verified: boolean; error?: string }> => {
             try {
               const res = await fetch("/api/razorpay/verify", {
                 method: "POST",
@@ -333,7 +346,7 @@ export default function CheckoutPage() {
 
           try {
             const verifyData = await verifyPaymentWithRetry({
-              order_id: (order as any).id,
+              order_id: order.id,
               razorpay_order_id: paymentResponse.razorpay_order_id,
               razorpay_payment_id: paymentResponse.razorpay_payment_id,
               razorpay_signature: paymentResponse.razorpay_signature,
@@ -342,7 +355,7 @@ export default function CheckoutPage() {
             if (verifyData.verified) {
               clearCart();
               toast.success("Payment Successful! Redirecting...");
-              router.push(`/order/confirmation/${(order as any).id}`);
+              router.push(`/order/confirmation/${order.id}`);
             } else {
               // If it's a specific logic error (signature mismatch), we don't retry.
               toast.error(
@@ -378,15 +391,15 @@ export default function CheckoutPage() {
         callback_url: `${window.location.origin}/api/razorpay/callback`, // Redirect to our server on success
       };
 
-      if (!(window as any).Razorpay) {
+      if (!window.Razorpay) {
         throw new Error(
           "Razorpay SDK failed to load. Please check your internet connection."
         );
       }
 
-      const rzp1 = new (window as any).Razorpay(options);
+      const rzp1 = new window.Razorpay(options);
       rzp1.open();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Checkout failed detailed:", {
         message: err instanceof Error ? err.message : String(err),
         stack: err instanceof Error ? err.stack : undefined,
@@ -395,7 +408,9 @@ export default function CheckoutPage() {
       toast.error(
         `Checkout failed: ${err instanceof Error ? err.message : "Unknown error"}`
       );
-      toast.error(`Checkout failed: ${err?.message || "Unknown error"}`);
+      toast.error(
+        `Checkout failed: ${(err as Error)?.message || "Unknown error"}`
+      );
       setIsProcessing(false);
     }
   };

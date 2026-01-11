@@ -2,7 +2,10 @@
 
 import { createClient } from '@/lib/supabase/server'
 
+import type { Tables } from '@/types/supabase'
 import { PaginatedResult } from './product-service'
+
+export type Order = Tables<'orders'> & { profiles?: { name: string } | null }
 
 export type OrderFilter = {
   status?: string
@@ -11,7 +14,7 @@ export type OrderFilter = {
   search?: string
 }
 
-export async function getOrders(filter: OrderFilter = {}): Promise<PaginatedResult<any>> {
+export async function getOrders(filter: OrderFilter = {}): Promise<PaginatedResult<Order>> {
   const supabase = await createClient()
   const page = filter.page || 1
   const limit = filter.limit || 10
@@ -24,7 +27,7 @@ export async function getOrders(filter: OrderFilter = {}): Promise<PaginatedResu
     .order('created_at', { ascending: false })
 
   if (filter.status && filter.status !== 'all') {
-    query = query.eq('status', filter.status as any)
+    query = query.eq('status', filter.status)
   }
 
   // NOTE: Supabase doesn't support ILIKE across foreign keys easily in one query without complex RPC or embedding.
@@ -82,11 +85,11 @@ export async function getStats() {
   ])
 
   const totalRevenue = revenueRes.status === 'fulfilled' && revenueRes.value.data 
-      ? revenueRes.value.data.reduce((acc: number, curr: any) => acc + Number(curr.total), 0) 
+      ? revenueRes.value.data.reduce((acc, curr) => acc + Number(curr.total), 0) 
       : 0
 
   const lastMonthRevenue = lastRevRes.status === 'fulfilled' && lastRevRes.value.data
-      ? lastRevRes.value.data.reduce((acc: number, curr: any) => acc + Number(curr.total), 0)
+      ? lastRevRes.value.data.reduce((acc, curr) => acc + Number(curr.total), 0)
       : 0
 
   const stats = {
@@ -128,7 +131,14 @@ export async function getRecentActivity(limit = 10) {
             supabase.from('newsletter_subscribers').select('id, created_at, email').order('created_at', { ascending: false }).limit(limit)
         ])
 
-        const events: any[] = []
+        type ActivityEvent = {
+            id: string,
+            type: 'order' | 'review' | 'newsletter',
+            title: string,
+            description: string,
+            time: string
+        }
+        const events: ActivityEvent[] = []
 
         if (ordersRes.data) {
             ordersRes.data.forEach(o => events.push({
@@ -160,7 +170,7 @@ export async function getRecentActivity(limit = 10) {
             }))
         }
 
-        return events.sort((a: any, b: any) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, limit)
+        return events.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, limit)
     } catch (err) {
         console.error('Activity Feed Error:', err)
         return []
@@ -180,7 +190,7 @@ export async function getMonthlyRevenue() {
 
     const monthlyRevenue: Record<string, number> = {}
     
-    data.forEach((order: any) => {
+    data.forEach((order) => {
         const date = new Date(order.created_at)
         const month = date.toLocaleString('default', { month: 'short' }) // e.g., "Dec"
         monthlyRevenue[month] = (monthlyRevenue[month] || 0) + Number(order.total)
@@ -193,7 +203,7 @@ export async function updateOrderStatus(orderId: string, newStatus: string) {
     const supabase = await createClient()
     const { error } = await supabase
         .from('orders')
-        .update({ status: newStatus as any })
+        .update({ status: newStatus })
         .eq('id', orderId)
     
     if (error) throw error
@@ -223,7 +233,7 @@ export async function getSalesByCategory() {
 
     const categoryRevenue: Record<string, number> = {}
 
-    data.forEach((item: any) => {
+    data.forEach((item) => {
         const categoryName = item.product?.category?.name || 'Uncategorized'
         const revenue = (item.quantity || 0) * (item.unit_price || 0)
         categoryRevenue[categoryName] = (categoryRevenue[categoryName] || 0) + revenue

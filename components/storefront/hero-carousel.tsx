@@ -36,6 +36,8 @@ interface HeroProduct {
   main_image_url: string | null;
   slug: string;
   product_stock?: any[];
+  color_options?: string[];
+  size_options?: string[];
 }
 
 interface HeroCarouselProps {

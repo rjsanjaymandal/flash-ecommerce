@@ -227,7 +227,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                         <ShoppingBag className="h-12 w-12 mb-4 text-muted-foreground" />
                         <p className="text-lg font-medium">No matches found</p>
                         <p className="text-sm text-muted-foreground">
-                          Try "Shirt" or "Pants"
+                          Try &quot;Shirt&quot; or &quot;Pants&quot;
                         </p>
                       </div>
                     )

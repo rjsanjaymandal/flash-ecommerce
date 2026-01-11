@@ -47,7 +47,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
-  const supabase = createClient();
+  const [supabase] = useState(() => createClient());
   const [items, setItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -106,7 +106,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
 
     loadCart();
-  }, [user]);
+  }, [user, supabase]);
 
   // Save to LocalStorage (only for guests)
   useEffect(() => {
@@ -166,7 +166,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
       }
     },
-    [items, user]
+    [items, user, supabase]
   );
 
   const removeItem = useCallback(

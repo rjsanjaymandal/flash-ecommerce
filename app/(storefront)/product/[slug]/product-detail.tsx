@@ -124,8 +124,11 @@ export function ProductDetailClient({
   // Ref for the main action button to sticky bar intersection
   const mainActionRef = useRef<HTMLDivElement>(null);
 
+  // Fallback Standards
+  const STANDARD_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL"];
+
   // Helper to get or create guest ID
-  const getGuestId = () => {
+  const getGuestId = useCallback(() => {
     if (typeof window === "undefined") return undefined;
     let id = localStorage.getItem("guest_id");
     if (!id) {
@@ -133,49 +136,7 @@ export function ProductDetailClient({
       localStorage.setItem("guest_id", id);
     }
     return id;
-  };
-
-  // Check Waitlist Status & Sync
-  useEffect(() => {
-    const savedEmail = localStorage.getItem("user_email_preference");
-    if (savedEmail) setSavedGuestEmail(savedEmail);
-
-    setIsLoadingWaitlist(true);
-    const guestId = getGuestId();
-
-    checkPreorderStatus(product.id, savedEmail || undefined, guestId).then(
-      (serverStatus) => {
-        if (serverStatus) {
-          setIsOnWaitlist(true);
-          localStorage.setItem(`waitlist_${product.id}`, "true");
-        } else {
-          setIsOnWaitlist(false);
-          localStorage.removeItem(`waitlist_${product.id}`);
-        }
-        setIsLoadingWaitlist(false);
-      }
-    );
-  }, [product.id]);
-
-  // Scroll Observer for Sticky Bar
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        // Show sticky bar when main button is NOT intersecting (scrolled past)
-        setShowStickyBar(!entry.isIntersecting);
-      },
-      { threshold: 0 }
-    );
-
-    if (mainActionRef.current) {
-      observer.observe(mainActionRef.current);
-    }
-
-    return () => observer.disconnect();
   }, []);
-
-  // Fallback Standards
-  const STANDARD_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL"];
 
   // Logic to determine what options to show
   const sizeOptions = useMemo(() => {

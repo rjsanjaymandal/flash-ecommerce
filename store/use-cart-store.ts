@@ -250,6 +250,7 @@ export const useCartStore = create<CartState>()(
             })).filter(i => i.price > 0) // Filter out bad data
 
             // 2. Perform Merge
+            const currentLocalItems = get().items // Re-fetch to avoid stale closure if user added items during await
             const mergedMap = new Map<string, CartItem>()
 
             // Load Server Items first
@@ -258,16 +259,15 @@ export const useCartStore = create<CartState>()(
                 mergedMap.set(key, item)
             })
 
-            // Merge Local Items
-            localItems.forEach(localItem => {
+            // Merge Local Items (Guest session or offline additions)
+            currentLocalItems.forEach(localItem => {
                 const key = `${localItem.productId}-${localItem.size}-${localItem.color}`
                 const existing = mergedMap.get(key)
                 
                 if (existing) {
-                    // CONFLICT RESOLUTION: Use MAX to prevent duplication on refresh
-                    // Refreshing shouldn't double the quantity (2+2=4), it should stay stable (max(2,2)=2).
-                    // This is a trade-off: Guest-Add+Login might not sum, but it's safer than infinite growth.
-                    const newQty = Math.max(existing.quantity, localItem.quantity)
+                    // CONFLICT RESOLUTION: SUM quantities (Guest + Server)
+                    // If I had 1 in cart (guest) and 1 in server, I probably want 2.
+                    const newQty = Math.min(existing.quantity + localItem.quantity, existing.maxQuantity || 10)
                     mergedMap.set(key, { ...existing, quantity: newQty })
                 } else {
                     // New local item not in server

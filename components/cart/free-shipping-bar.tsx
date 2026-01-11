@@ -63,7 +63,7 @@ export function FreeShippingBar({
             className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 px-3 py-2 rounded-lg text-xs font-bold text-center flex items-center justify-center gap-2"
           >
             <Check className="h-3 w-3" />
-            You've qualified for free standard shipping!
+            You&apos;ve qualified for free standard shipping!
           </motion.div>
         )}
       </AnimatePresence>
