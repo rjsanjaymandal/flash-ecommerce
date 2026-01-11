@@ -219,9 +219,24 @@ export const useCartStore = create<CartState>()(
                 return
             }
 
+            // Define DB Response Type locally
+            interface CartDBItem {
+                product_id: string
+                quantity: number
+                size: string
+                color: string
+                product: {
+                    name: string
+                    price: number
+                    main_image_url: string
+                    slug: string
+                    category_id: string
+                } | null
+            }
+
             // Convert to consistent format
             // We need to handle potential deleted products or null relations carefully
-            const serverItems: CartItem[] = (serverRawItems || []).map((dbItem: any) => ({
+            const serverItems: CartItem[] = ((serverRawItems as unknown) as CartDBItem[] || []).map((dbItem) => ({
                 productId: dbItem.product_id,
                 name: dbItem.product?.name || 'Unknown Product',
                 price: Number(dbItem.product?.price || 0),

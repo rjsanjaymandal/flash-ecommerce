@@ -22,6 +22,11 @@ interface SendAdminAlertProps extends SendOrderConfirmationProps {
     customerEmail: string;
 }
 
+interface ResendResponse {
+    data: { id: string } | null;
+    error: { message: string } | null;
+}
+
 export async function sendOrderConfirmation({
     email,
     orderId,
@@ -50,11 +55,11 @@ export async function sendOrderConfirmation({
             })
         });
 
-        const timeoutPromise = new Promise((_, reject) => 
+        const timeoutPromise = new Promise<never>((_, reject) => 
             setTimeout(() => reject(new Error('Email Dispatch Timeout (15s)')), 15000)
         );
 
-        const data: any = await Promise.race([emailPromise, timeoutPromise]);
+        const data = await Promise.race([emailPromise, timeoutPromise]) as unknown as ResendResponse;
 
         if (data?.error) {
              throw new Error(`Resend API Error: ${data.error.message}`);
@@ -96,11 +101,11 @@ export async function sendAdminOrderAlert({
             }) 
         });
 
-        const timeoutPromise = new Promise((_, reject) => 
+        const timeoutPromise = new Promise<never>((_, reject) => 
             setTimeout(() => reject(new Error('Admin Email Dispatch Timeout (15s)')), 15000)
         );
 
-        const data: any = await Promise.race([emailPromise, timeoutPromise]);
+        const data = await Promise.race([emailPromise, timeoutPromise]) as unknown as ResendResponse;
 
         if (data?.error) {
              throw new Error(`Resend Admin API Error: ${data.error.message}`);
