@@ -1,12 +1,13 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createStaticClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 
 export async function getGlobalSettings(key: string) {
   try {
-    const supabase = await createClient()
+    // Use Static Client for public reads (works during build/SSG)
+    const supabase = createStaticClient()
     
     // Add a race condition to force timeout faster if needed, or just handle the error
     const { data, error } = await supabase
@@ -27,6 +28,11 @@ export async function getGlobalSettings(key: string) {
   } catch (err) {
       // Network fetch errors (timeouts) end up here
       console.warn(`[getGlobalSettings] Network error fetching ${key} (Timeout/Offline)`)
+      
+      // Fallback defaults to prevent build crash
+      if (key === 'announcement_bar') {
+          return { is_active: false, text: 'Welcome', bg_color: '#000000', text_color: '#ffffff' }
+      }
       return null
   }
 }
