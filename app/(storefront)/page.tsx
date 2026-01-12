@@ -60,6 +60,11 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-primary selection:text-primary-foreground pb-12">
+      {/* SEO H1: Anime Streetwear Primary Keyword */}
+      <h1 className="sr-only">
+        FLASH | Premium Anime Streetwear & Japanese Aesthetic Clothing
+      </h1>
+
       {/* 1. HERO CAROUSEL (Dynamic) */}
       <HeroCarousel products={heroProducts} />
 

@@ -715,9 +715,9 @@ export async function getWaitlistedProducts(userId: string): Promise<Product[]> 
     
     // 1. Get Preorders
     const { data: preorders, error } = await supabase
-        .from('preorders' as any)
+        .from('preorders')
         .select('product_id')
-        .eq('user_id', userId) as { data: any[] | null, error: any }
+        .eq('user_id', userId)
     
     if (error || !preorders || preorders.length === 0) return []
 

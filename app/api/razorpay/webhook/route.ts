@@ -34,10 +34,10 @@ export async function POST(req: Request) {
     // 2. Ledger: Idempotency Check & Persistence
     // storing raw event first
     const { data: existingEvent } = await supabase
-        .from('webhook_events' as any)
+        .from('webhook_events')
         .select('*')
         .eq('event_id', eventId)
-        .single() as any
+        .single()
     
     if (existingEvent && existingEvent.processed) {
         console.log(`[Webhook] Event ${eventId} already processed. Skipping.`)
@@ -46,7 +46,7 @@ export async function POST(req: Request) {
 
     // Insert/Log event if new
     if (!existingEvent) {
-        await supabase.from('webhook_events' as any).insert({
+        await supabase.from('webhook_events').insert({
             event_id: eventId,
             event_type: event.event,
             payload: event
@@ -60,7 +60,7 @@ export async function POST(req: Request) {
 
         if (!orderId) {
              console.error('[Webhook] No Order ID found')
-             await supabase.from('webhook_events' as any).update({ processing_error: 'No Order ID found' }).eq('event_id', eventId)
+             await supabase.from('webhook_events').update({ processing_error: 'No Order ID found' }).eq('event_id', eventId)
              return NextResponse.json({ error: 'No order ID found' }, { status: 400 })
         }
 
@@ -69,7 +69,7 @@ export async function POST(req: Request) {
 
         if (!result.success) {
              console.warn(`[Webhook] Processing failed for ${orderId}:`, result.error)
-             await supabase.from('webhook_events' as any).update({ processing_error: result.error }).eq('event_id', eventId)
+             await supabase.from('webhook_events').update({ processing_error: result.error }).eq('event_id', eventId)
              return NextResponse.json({ error: result.error }, { status: 500 })
         }
         
@@ -83,7 +83,7 @@ export async function POST(req: Request) {
         );
         
         // 6. Mark Ledger as Processed
-        await supabase.from('webhook_events' as any).update({ processed: true, processing_error: null }).eq('event_id', eventId)
+        await supabase.from('webhook_events').update({ processed: true, processing_error: null }).eq('event_id', eventId)
         console.log(`[Webhook] Successfully processed ${orderId}`)
     }
 

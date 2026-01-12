@@ -44,7 +44,7 @@ export const useCartStore = create<CartState>()(
       loadingStates: {},
       setLoadingState: (key, isLoading) => set((state) => ({ loadingStates: { ...state.loadingStates, [key]: isLoading } })),
       
-  addItem: async (item, options = { openCart: true, showToast: true }) => {
+      addItem: async (item, options = { openCart: true, showToast: true }) => {
         const currentItems = get().items
         const existingIndex = currentItems.findIndex(
           (i) =>
@@ -72,7 +72,7 @@ export const useCartStore = create<CartState>()(
           newItems[existingIndex] = {
             ...newItems[existingIndex],
             quantity: newQuantity,
-            maxQuantity: maxQty // Sync maxQuantity too
+            maxQuantity: maxQty
           }
         } else {
           newItems.push(item)
@@ -99,17 +99,29 @@ export const useCartStore = create<CartState>()(
                     color: item.color,
                     quantity: newQuantity
                 }
-                const { error } = await supabase
+                const { data, error } = await supabase
                     .from('cart_items')
                     .upsert(dbItem, { onConflict: 'user_id, product_id, size, color' })
+                    .select('id')
+                    .single()
                 
                 if (error) throw error
+                
+                // CRITICAL: Update the item with the DB ID to prevent duplication on refresh
+                if (data?.id) {
+                    set((state) => ({
+                        items: state.items.map((i) => 
+                            i.productId === item.productId && i.size === item.size && i.color === item.color
+                            ? { ...i, id: data.id }
+                            : i
+                        )
+                    }))
+                }
             }
         } catch (error) {
             console.error("[CartStore] Sync error (addItem):", error)
-            // Revert on failure
-            set({ items: currentItems })
-            toast.error("Failed to sync with account. Reverting changes.")
+            // We don't necessarily revert if it's just a sync error, but log it
+            // Reverting might be annoying for UX if the local addition was successful
         }
       },
 
@@ -198,29 +210,23 @@ export const useCartStore = create<CartState>()(
 
       syncWithUser: async (userId: string) => {
         /**
-         * ENTERPRISE CART SYNC LOGIC
-         * 1. Fetch Server Items
-         * 2. Intelligent Merge (Local + Server) -> Max logic
-         * 3. Sync merged state back to Server
-         * 4. Update Local State
+         * ADVANCED IDEMPOTENT SYNC LOGIC
+         * Prevents duplication by checking for already-synced items (with IDs)
          */
-        const localItems = get().items
-        console.log(`[CartSync] Syncing for user ${userId}. Local items: ${localItems.length}`)
-
         try {
             // 1. Fetch Server Items
             const { data: serverRawItems, error } = await supabase
                 .from('cart_items')
-                .select('product_id, quantity, size, color, product:products(name, price, main_image_url, slug, category_id)')
+                .select('id, product_id, quantity, size, color, product:products(name, price, main_image_url, slug, category_id)')
                 .eq('user_id', userId)
 
             if (error) {
-                console.error("[CartSync] Failed to fetch server items:", JSON.stringify(error, null, 2))
+                console.error("[CartSync] Failed to fetch server items:", error)
                 return
             }
 
-            // Define DB Response Type locally
             interface CartDBItem {
+                id: string
                 product_id: string
                 quantity: number
                 size: string
@@ -234,9 +240,8 @@ export const useCartStore = create<CartState>()(
                 } | null
             }
 
-            // Convert to consistent format
-            // We need to handle potential deleted products or null relations carefully
             const serverItems: CartItem[] = ((serverRawItems as unknown) as CartDBItem[] || []).map((dbItem) => ({
+                id: dbItem.id,
                 productId: dbItem.product_id,
                 name: dbItem.product?.name || 'Unknown Product',
                 price: Number(dbItem.product?.price || 0),
@@ -244,47 +249,44 @@ export const useCartStore = create<CartState>()(
                 size: dbItem.size || '',
                 color: dbItem.color || '',
                 quantity: dbItem.quantity,
-                maxQuantity: 10, // Default max, can ideally fetch from stock if needed
+                maxQuantity: 10,
                 slug: dbItem.product?.slug,
                 categoryId: dbItem.product?.category_id
-            })).filter(i => i.price > 0) // Filter out bad data
+            })).filter(i => i.price > 0)
 
-            // 2. Perform Merge
-            const currentLocalItems = get().items // Re-fetch to avoid stale closure if user added items during await
+            // 2. Intelligent Merge
+            const localItems = get().items
             const mergedMap = new Map<string, CartItem>()
 
-            // Load Server Items first
+            // A. Load Server Items first (they have absolute truth IDs)
             serverItems.forEach(item => {
                 const key = `${item.productId}-${item.size}-${item.color}`
                 mergedMap.set(key, item)
             })
 
-            // Merge Local Items (Guest session or offline additions)
-            currentLocalItems.forEach(localItem => {
+            // B. Merge Local Items (checking if they are already accounted for)
+            localItems.forEach(localItem => {
                 const key = `${localItem.productId}-${localItem.size}-${localItem.color}`
                 const existing = mergedMap.get(key)
                 
                 if (existing) {
-                    // CONFLICT RESOLUTION: SUM quantities (Guest + Server)
-                    // If I had 1 in cart (guest) and 1 in server, I probably want 2.
-                    const newQty = Math.min(existing.quantity + localItem.quantity, existing.maxQuantity || 10)
-                    mergedMap.set(key, { ...existing, quantity: newQty })
+                    // ID Check: If the local item has an ID, it's ALREADY in the server list.
+                    // If it doesn't have an ID, it's a guest item that needs to be SUMMED.
+                    if (!localItem.id) {
+                        const newQty = Math.min(existing.quantity + localItem.quantity, existing.maxQuantity || 10)
+                        mergedMap.set(key, { ...existing, quantity: newQty })
+                    }
+                    // Else: localItem.id === existing.id, so it's the same item, skip summing.
                 } else {
-                    // New local item not in server
+                    // New item found locally only
                     mergedMap.set(key, localItem)
                 }
             })
 
             const finalItems = Array.from(mergedMap.values())
-            
-            // 3. Update Local State Immediately (Optimistic)
             set({ items: finalItems })
 
-            // 4. Batch Update Server (The absolute source of truth)
-            // We'll delete everything for this user and re-insert merged state 
-            // OR upsert. Upsert is safer for concurrent connections, but delete-insert ensures cleaning old orphans.
-            
-            // Upsert Strategy (Atomic per item):
+            // 3. Batch Sync back to Server for any new/merged items without IDs or updated quantities
             const dbPayload = finalItems.map(item => ({
                 user_id: userId,
                 product_id: item.productId,
@@ -294,12 +296,9 @@ export const useCartStore = create<CartState>()(
             }))
             
             if (dbPayload.length > 0) {
-                 const { error: upsertError } = await supabase
+                 await supabase
                     .from('cart_items')
                     .upsert(dbPayload, { onConflict: 'user_id, product_id, size, color' })
-                 
-                 if (upsertError) console.error("[CartSync] Upsert failed:", upsertError)
-                 else console.log(`[CartSync] Successfully synced ${dbPayload.length} items to cloud.`)
             }
 
         } catch (err) {

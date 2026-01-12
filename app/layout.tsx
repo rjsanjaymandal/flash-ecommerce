@@ -31,15 +31,15 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: "FLASH | Queer & Inclusive Fashion",
+    default: "FLASH | Anime Streetwear & Japanese Aesthetic Urban Clothing",
     template: "%s | FLASH",
   },
   description:
-    "Bold, affirming fashion for everyone. Shop our collection of gender-inclusive apparel.",
+    "Elevate your vibe with premium anime hoodies, graphic tees, and Harajuku techwear. Shop high-quality, urban anime apparel for the one-person empire.",
   metadataBase: new URL("https://flashhfashion.in"),
   openGraph: {
-    title: "FLASH | Queer & Inclusive Fashion",
-    description: "Bold, affirming fashion for everyone.",
+    title: "FLASH | Anime Streetwear & Japanese Aesthetic Urban Clothing",
+    description: "Premium anime hoodies, graphic tees, and Harajuku techwear.",
     url: "https://flashhfashion.in",
     siteName: "FLASH",
     locale: "en_US",
@@ -47,8 +47,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "FLASH | Queer & Inclusive Fashion",
-    description: "Bold, affirming fashion for everyone.",
+    title: "FLASH | Anime Streetwear & Japanese Aesthetic Urban Clothing",
+    description: "Elevate your vibe with premium anime apparel.",
   },
   verification: {
     google: "CqVr1TGrfamesut-wOLLkyz2PQUjYb-ihMDqj9zL2X0",

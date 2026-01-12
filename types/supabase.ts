@@ -745,6 +745,72 @@ export type Database = {
           }
         ]
       }
+      preorders: {
+        Row: {
+          id: string
+          created_at: string
+          user_id: string
+          product_id: string
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          user_id: string
+          product_id: string
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          user_id?: string
+          product_id?: string
+        }
+        Relationships: [
+            {
+                foreignKeyName: "preorders_product_id_fkey"
+                columns: ["product_id"]
+                isOneToOne: false
+                referencedRelation: "products"
+                referencedColumns: ["id"]
+            },
+            {
+                foreignKeyName: "preorders_user_id_fkey"
+                columns: ["user_id"]
+                isOneToOne: false
+                referencedRelation: "profiles"
+                referencedColumns: ["id"]
+            }
+        ]
+      }
+      webhook_events: {
+        Row: {
+            id: string
+            created_at: string
+            event_id: string
+            event_type: string
+            processed: boolean
+            processing_error?: string | null
+            payload: Json
+        }
+        Insert: {
+            id?: string
+            created_at?: string
+            event_id: string
+            event_type: string
+            processed?: boolean
+            processing_error?: string | null
+            payload: Json
+        }
+        Update: {
+            id?: string
+            created_at?: string
+            event_id?: string
+            event_type?: string
+            processed?: boolean
+            processing_error?: string | null
+            payload?: Json
+        }
+        Relationships: []
+      }
       system_logs: {
         Row: {
           id: string

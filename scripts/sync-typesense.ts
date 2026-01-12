@@ -1,5 +1,8 @@
 
 import { createClient } from '@supabase/supabase-js'
+import { Database } from '@/types/supabase'
+import { CollectionCreateSchema } from 'typesense/lib/Typesense/Collections'
+
 import Typesense from 'typesense'
 import * as dotenv from 'dotenv'
 
@@ -39,7 +42,7 @@ const SCHEMA_NAME = 'products'
 async function syncProducts() {
   console.log('🔄 Starting Typesense Sync...')
 
-  // 1. Fetch Products from Supabase
+// 1. Fetch Products from Supabase
   const { data: products, error } = await supabase
     .from('products')
     .select(`
@@ -54,6 +57,11 @@ async function syncProducts() {
       categories (name)
     `)
     .eq('is_active', true)
+    .returns<
+      (Database['public']['Tables']['products']['Row'] & {
+        categories: { name: string } | null
+      })[]
+    >()
 
   if (error) {
     console.error('❌ Failed to fetch products:', error)
@@ -63,7 +71,7 @@ async function syncProducts() {
   console.log(`📦 Found ${products.length} active products in Supabase.`)
 
   // 2. Define Schema
-  const schema = {
+  const schema: CollectionCreateSchema = {
     name: SCHEMA_NAME,
     fields: [
       { name: 'id', type: 'string' },
@@ -89,7 +97,7 @@ async function syncProducts() {
     }
 
     console.log('📝 Creating new collection schema...')
-    await client.collections().create(schema as any)
+    await client.collections().create(schema)
 
     // 4. Transform Data
     const documents = products.map(p => ({
@@ -99,7 +107,7 @@ async function syncProducts() {
       price: p.price,
       slug: p.slug,
       image: p.main_image_url || '',
-      category: (p.categories as any)?.name || 'Uncategorized',
+      category: p.categories?.name || 'Uncategorized',
     }))
 
     // 5. Bulk Import

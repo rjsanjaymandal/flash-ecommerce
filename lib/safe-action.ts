@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin"
+import { Json } from "@/types/supabase"
 
 export type ActionResponse<T> = {
     success: boolean
@@ -24,7 +25,7 @@ export async function createSafeAction<Input, Output>(
                 severity: 'ERROR',
                 component: actionName,
                 message: e.message || 'Unknown error',
-                metadata: { stack: e.stack, input } as any
+                metadata: { stack: e.stack, input: input as unknown } as Json
             })
         } catch (logErr) {
             console.error('Failed to log safe action error:', logErr)

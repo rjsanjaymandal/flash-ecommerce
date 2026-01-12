@@ -69,7 +69,7 @@ export function NewsletterSection() {
 
           <div className="hidden md:block absolute right-0 top-0 bottom-0 w-1/2 bg-muted overflow-hidden">
             <FlashImage
-              src="https://images.unsplash.com/photo-1555529733-0e670560f7e1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+              src="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
               alt="Newsletter exclusive"
               fill
               className="object-cover opacity-90 transition hover:opacity-100 duration-700 mix-blend-overlay grayscale group-hover:grayscale-0"

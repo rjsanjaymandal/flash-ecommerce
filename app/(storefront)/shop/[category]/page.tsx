@@ -49,9 +49,10 @@ export async function generateMetadata({
   }
 
   return {
-    title: `${category.name} | Flash Store`,
+    title: `${category.name} | Anime Streetwear & Japanese Aesthetic | FLASH`,
     description:
-      category.description || `Shop ${category.name} at Flash Store.`,
+      category.description ||
+      `Shop the latest ${category.name} drops. Premium anime-inspired apparel, Harajuku style hoodies, and urban graphic tees. Fast shipping on all orders.`,
   };
 }
 
