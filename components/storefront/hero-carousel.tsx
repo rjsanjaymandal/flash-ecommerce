@@ -380,10 +380,10 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
-                className="relative w-full bg-black/40 lg:bg-transparent backdrop-blur-2xl lg:backdrop-blur-none p-6 lg:p-0 rounded-[2.5rem] lg:rounded-none border border-white/10 lg:border-none shadow-[0_20px_50px_rgba(0,0,0,0.3)] lg:shadow-none overflow-hidden"
+                className="relative w-full bg-black/60 lg:bg-transparent backdrop-blur-3xl lg:backdrop-blur-none p-6 lg:p-0 rounded-[2.5rem] lg:rounded-none border border-white/20 lg:border-none shadow-[0_30px_60px_rgba(0,0,0,0.5)] lg:shadow-none overflow-hidden"
               >
                 {/* Subtle Gradient Backlight for Mobile Card */}
-                <div className="lg:hidden absolute -top-24 -left-24 w-48 h-48 bg-primary/20 blur-[60px] pointer-events-none" />
+                <div className="lg:hidden absolute -top-24 -left-24 w-64 h-64 bg-primary/30 blur-[80px] pointer-events-none" />
 
                 <motion.div
                   variants={slideUpVariants}
@@ -402,7 +402,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                 <div className="overflow-hidden mb-3 lg:mb-6">
                   <motion.h1
                     variants={slideUpVariants}
-                    className="text-3xl sm:text-5xl lg:text-5xl xl:text-6xl font-black tracking-tighter leading-[0.9] text-white lg:text-foreground uppercase italic"
+                    className="text-3xl sm:text-5xl lg:text-5xl xl:text-6xl font-black tracking-tighter leading-[0.9] text-white lg:text-foreground uppercase italic drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)] lg:drop-shadow-none"
                   >
                     {currentProduct.name}
                   </motion.h1>
@@ -498,8 +498,9 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
               }}
             />
 
-            {/* Mobile Gradients */}
-            <div className="lg:hidden absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-10 opacity-20" />
+            {/* Mobile Gradients & Vignette */}
+            <div className="lg:hidden absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10 opacity-60" />
+            <div className="lg:hidden absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-transparent z-10" />
 
             {currentProduct.main_image_url && (
               <div className="w-full h-full relative flex items-center justify-center p-4 lg:p-0">
