@@ -108,10 +108,10 @@ export function TrackingTimeline({ awb, className }: TrackingTimelineProps) {
   }
 
   return (
-    <div className={cn("p-6 md:p-8", className)}>
-      <div className="relative pl-8">
+    <div className={cn("p-4 md:p-8", className)}>
+      <div className="relative pl-6 md:pl-8">
         {/* Vertical line connector */}
-        <div className="absolute left-[15px] top-2 bottom-2 w-0.5 bg-zinc-100"></div>
+        <div className="absolute left-[11px] md:left-[15px] top-2 bottom-2 w-0.5 bg-zinc-100"></div>
 
         <div className="space-y-8">
           {trackingData.summary.tracking
@@ -124,7 +124,7 @@ export function TrackingTimeline({ awb, className }: TrackingTimelineProps) {
                   {/* Timeline Node */}
                   <div
                     className={cn(
-                      "absolute -left-[25px] mt-1 w-4 h-4 rounded-full border-4 border-white shadow-sm ring-2",
+                      "absolute -left-[21px] md:-left-[25px] mt-1 w-4 h-4 rounded-full border-4 border-white shadow-sm ring-2",
                       isFirst
                         ? "bg-zinc-950 ring-zinc-100"
                         : "bg-zinc-300 ring-zinc-50"
@@ -159,9 +159,9 @@ export function TrackingTimeline({ awb, className }: TrackingTimelineProps) {
                           {event.Location}
                         </span>
                       </div>
-                      <div className="flex items-center gap-1.5 text-zinc-400">
-                        <Clock className="h-3 w-3" />
-                        <span className="text-[9px] font-bold uppercase tracking-widest">
+                      <div className="flex items-center gap-1.5 text-zinc-400 min-w-0">
+                        <Clock className="h-3 w-3 shrink-0" />
+                        <span className="text-[9px] font-bold uppercase tracking-widest truncate">
                           {event.DateandTime}
                         </span>
                       </div>

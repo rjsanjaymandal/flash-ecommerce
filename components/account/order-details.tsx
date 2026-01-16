@@ -133,7 +133,7 @@ export function OrderDetails({ order, items }: OrderDetailsProps) {
                       <span className="text-[7px] md:text-[8px] font-black text-zinc-400 uppercase tracking-widest leading-none mb-1">
                         Active AWB
                       </span>
-                      <span className="text-[10px] md:text-xs font-mono font-bold text-zinc-900 leading-none">
+                      <span className="text-[10px] md:text-xs font-mono font-bold text-zinc-900 leading-none break-all">
                         {order.tracking_number}
                       </span>
                     </div>
@@ -281,44 +281,44 @@ export function OrderDetails({ order, items }: OrderDetailsProps) {
                     <div className="flex-1 flex flex-col justify-between py-2">
                       <div className="space-y-4">
                         <div className="flex flex-col md:flex-row justify-between items-start gap-4">
-                          <div className="space-y-1">
+                          <div className="space-y-1 w-full flex-1">
                             <Link
                               href={`/product/${item.products?.slug}`}
-                              className="font-black text-xl md:text-3xl tracking-tighter uppercase italic leading-tight hover:text-primary transition-colors block"
+                              className="font-black text-lg md:text-3xl tracking-tighter uppercase italic leading-tight hover:text-primary transition-colors block break-words"
                             >
                               {item.name_snapshot || item.products?.name}
                             </Link>
                             <div className="flex flex-wrap gap-2 pt-2">
                               <Badge
                                 variant="outline"
-                                className="rounded-full px-3 py-1 font-black text-[9px] uppercase border-2 text-zinc-400 group-hover:text-black group-hover:border-black transition-colors"
+                                className="rounded-full px-2 py-0.5 md:px-3 md:py-1 font-black text-[8px] md:text-[9px] uppercase border-2 text-zinc-400 group-hover:text-black group-hover:border-black transition-colors"
                               >
                                 Size: {item.size}
                               </Badge>
                               <Badge
                                 variant="outline"
-                                className="rounded-full px-3 py-1 font-black text-[9px] uppercase border-2 text-zinc-400 group-hover:text-black group-hover:border-black transition-colors"
+                                className="rounded-full px-2 py-0.5 md:px-3 md:py-1 font-black text-[8px] md:text-[9px] uppercase border-2 text-zinc-400 group-hover:text-black group-hover:border-black transition-colors"
                               >
                                 Color: {item.color}
                               </Badge>
                               <Badge
                                 variant="outline"
-                                className="rounded-full px-3 py-1 font-black text-[9px] uppercase border-2 text-zinc-400 group-hover:text-black group-hover:border-black transition-colors"
+                                className="rounded-full px-2 py-0.5 md:px-3 md:py-1 font-black text-[8px] md:text-[9px] uppercase border-2 text-zinc-400 group-hover:text-black group-hover:border-black transition-colors"
                               >
                                 Qty: {item.quantity}
                               </Badge>
                             </div>
                           </div>
-                          <p className="font-black text-lg md:text-4xl tracking-tighter italic">
+                          <p className="font-black text-lg md:text-4xl tracking-tighter italic shrink-0">
                             {formatCurrency(item.unit_price * item.quantity)}
                           </p>
                         </div>
                       </div>
-                      <div className="flex justify-start items-center gap-4 mt-8">
+                      <div className="flex flex-wrap justify-start items-center gap-x-4 gap-y-2 mt-8">
                         <Button
                           variant="link"
                           asChild
-                          className="text-primary p-0 h-auto text-[10px] font-black uppercase tracking-widest"
+                          className="text-primary p-0 h-auto text-[9px] md:text-[10px] font-black uppercase tracking-widest"
                         >
                           <Link href={`/product/${item.products?.slug}`}>
                             View Product Details
@@ -326,11 +326,11 @@ export function OrderDetails({ order, items }: OrderDetailsProps) {
                         </Button>
                         <Separator
                           orientation="vertical"
-                          className="h-3 bg-zinc-200"
+                          className="h-3 bg-zinc-200 hidden xs:block"
                         />
                         <Button
                           variant="link"
-                          className="text-zinc-400 p-0 h-auto text-[10px] font-black uppercase tracking-widest hover:text-black"
+                          className="text-zinc-400 p-0 h-auto text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:text-black text-left"
                         >
                           Write Experience Review
                         </Button>
@@ -345,7 +345,7 @@ export function OrderDetails({ order, items }: OrderDetailsProps) {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Summary */}
-            <div className="bg-zinc-950 text-white rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+            <div className="bg-zinc-950 text-white rounded-3xl p-5 md:p-8 shadow-2xl relative overflow-hidden">
               <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full blur-3xl -mr-20 -mt-20" />
               <h3 className="font-black uppercase tracking-widest text-xs text-white/50 mb-6">
                 Order Summary
@@ -387,7 +387,7 @@ export function OrderDetails({ order, items }: OrderDetailsProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="bg-white rounded-3xl p-8 border-2 border-zinc-100"
+              className="bg-white rounded-3xl p-5 md:p-8 border-2 border-zinc-100"
             >
               <div className="flex items-center gap-3 mb-4">
                 <div className="h-8 w-8 bg-zinc-100 rounded-full flex items-center justify-center">
@@ -416,7 +416,7 @@ export function OrderDetails({ order, items }: OrderDetailsProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="bg-zinc-50 rounded-3xl p-8 border-2 border-zinc-100 flex flex-col gap-4"
+              className="bg-zinc-50 rounded-3xl p-5 md:p-8 border-2 border-zinc-100 flex flex-col gap-4"
             >
               <h3 className="font-black uppercase tracking-widest text-[10px] text-zinc-400 mb-2">
                 Transmission Support
