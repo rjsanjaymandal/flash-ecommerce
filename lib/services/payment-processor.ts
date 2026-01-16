@@ -129,7 +129,10 @@ export class PaymentProcessor {
             razorpayStatus = payment.status
             
             if (razorpayStatus !== 'captured' && razorpayStatus !== 'authorized') { 
-                 // Note: 'authorized' is also okay if we capture manually, but typically 'captured' is best.
+                 const statusError = `Invalid Payment Status: ${razorpayStatus} for ${paymentId}`
+                 console.warn(`[PaymentProcessor] ${statusError}`)
+                 await this.logPaymentAttempt('PAYMENT_STATUS', statusError, 'WARN', { orderId, paymentId, status: razorpayStatus })
+                 return err(`Payment not captured: ${razorpayStatus}`)
             }
         } catch (e: unknown) {
             console.error('[PaymentProcessor] Razorpay Fetch Failed:', e)

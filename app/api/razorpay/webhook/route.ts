@@ -8,7 +8,8 @@ export async function POST(req: Request) {
     const body = await req.text()
     const signature = req.headers.get('x-razorpay-signature')
 
-    if (!process.env.RAZORPAY_WEBHOOK_SECRET || !signature) {
+    if (!process.env.RAZORPAY_WEBHOOK_SECRET || !signature || process.env.RAZORPAY_WEBHOOK_SECRET === 'your_webhook_secret_here') {
+        console.error('[Webhook] FATAL: RAZORPAY_WEBHOOK_SECRET is missing or using placeholder.')
         return NextResponse.json({ error: 'Configuration check failed' }, { status: 400 })
     }
 
@@ -85,6 +86,28 @@ export async function POST(req: Request) {
         // 6. Mark Ledger as Processed
         await supabase.from('webhook_events').update({ processed: true, processing_error: null }).eq('event_id', eventId)
         console.log(`[Webhook] Successfully processed ${orderId}`)
+    }
+
+    // 4. Handle 'payment.failed'
+    if (event.event === 'payment.failed') {
+        const payment = payload.payment.entity
+        const orderId = payment.notes?.order_id || payload.order?.entity?.receipt 
+
+        console.warn(`[Webhook] Payment Failed for Order ${orderId}: ${payment.error_description}`)
+        
+        await supabase.from('system_logs').insert({
+            severity: 'WARN',
+            component: 'WEBHOOK_PAYMENT_FAILED',
+            message: `Payment Failed for Order ${orderId}: ${payment.error_description}`,
+            metadata: { 
+                orderId, 
+                paymentId: payment.id, 
+                error: payment.error_code,
+                reason: payment.error_description 
+            }
+        })
+
+        await supabase.from('webhook_events').update({ processed: true, processing_error: payment.error_description }).eq('event_id', eventId)
     }
 
     return NextResponse.json({ status: 'ok' })
