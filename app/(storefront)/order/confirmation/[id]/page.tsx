@@ -11,6 +11,8 @@ import {
   ShieldCheck,
   Download,
   ShoppingBag,
+  Loader2,
+  Clock,
 } from "lucide-react";
 import { BrandGlow } from "@/components/storefront/brand-glow";
 import { Button } from "@/components/ui/button";
@@ -84,12 +86,25 @@ export default async function OrderConfirmationPage({ params }: PageProps) {
         {/* Header Section */}
         <div className="text-center space-y-6 animate-in slide-in-from-bottom-5 duration-700">
           <div className="inline-flex items-center justify-center p-3 bg-green-500/10 rounded-full mb-4 ring-1 ring-green-500/20 shadow-lg shadow-green-500/10">
-            <CheckCircle2 className="w-12 h-12 text-green-500" />
+            {order.status === "paid" ? (
+              <CheckCircle2 className="w-12 h-12 text-green-500" />
+            ) : (
+              <Loader2 className="w-12 h-12 text-yellow-500 animate-spin" />
+            )}
           </div>
 
           <h1 className="text-4xl md:text-6xl font-black tracking-tighter uppercase italic text-transparent bg-clip-text bg-gradient-to-br from-foreground to-muted-foreground">
-            Transmission <br />
-            <span className="text-green-500">Successful</span>
+            {order.status === "paid" ? (
+              <>
+                Transmission <br />
+                <span className="text-green-500">Successful</span>
+              </>
+            ) : (
+              <>
+                Verifying <br />
+                <span className="text-yellow-500 italic">Payment</span>
+              </>
+            )}
           </h1>
 
           <p className="text-lg md:text-xl text-muted-foreground max-w-lg mx-auto font-medium">
@@ -97,8 +112,11 @@ export default async function OrderConfirmationPage({ params }: PageProps) {
             <span className="font-mono font-bold text-foreground">
               #{order.id.slice(0, 8).toUpperCase()}
             </span>{" "}
-            confirmed.
-            <br /> We are prepping your gear for high-velocity dispatch.
+            {order.status === "paid" ? "confirmed." : "is being processed."}
+            <br />
+            {order.status === "paid"
+              ? "We are prepping your gear for high-velocity dispatch."
+              : "Hold tight, we are finalizing your transaction with Razorpay."}
           </p>
         </div>
 

@@ -38,7 +38,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Failed to fetch subscriptions" }, { status: 500 });
   }
 
-  // 3. Send notifications
+  // 3. Sync with In-App Notification Bell (Transmissions)
+  // Fetch all profiles to broadcast to everyone's in-app bell
+  const { data: profiles } = await supabase
+    .from("profiles")
+    .select("id");
+
+  if (profiles && profiles.length > 0) {
+    const notificationsToInsert = profiles.map((p) => ({
+      user_id: p.id,
+      title,
+      message,
+      type: "info",
+      action_url: url || null,
+    }));
+
+    // Batch insert notifications
+    await supabase.from("notifications").insert(notificationsToInsert);
+  }
+
+  // 4. Send Web Push notifications
   const results = await Promise.all(
     subscriptions.map(async (sub) => {
       try {

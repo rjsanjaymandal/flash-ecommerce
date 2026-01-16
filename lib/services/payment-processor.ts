@@ -179,8 +179,15 @@ export class PaymentProcessor {
         
         if (rpcError) {
              console.error('[PaymentProcessor] RPC Error:', rpcError)
-             await this.logPaymentAttempt('PAYMENT_DB', `RPC Failed for ${orderId}`, 'ERROR', { error: rpcError })
+             await this.logPaymentAttempt('PAYMENT_DB_ERROR', `RPC Failed for ${orderId}`, 'ERROR', { error: rpcError })
              return err('Transaction failed: ' + rpcError.message)
+        }
+
+        const result = rpcResult as { success: boolean, message?: string, error?: string };
+        if (!result.success) {
+             console.error('[PaymentProcessor] RPC Logic Error:', result.error)
+             await this.logPaymentAttempt('PAYMENT_DB_FAILED', `RPC reported failure for ${orderId}`, 'ERROR', { error: result.error })
+             return err(result.error || 'Payment finalization failed in database')
         }
         
         // 5. Publish Event (Async Architecture)
