@@ -372,18 +372,18 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
           onTouchEnd={handleTouchEnd}
           className="absolute inset-0 flex flex-col lg:flex-row touch-pan-y"
         >
-          {/* --- CONTENT SECTION (Mobile: Floating Card / Desktop: Left Column) --- */}
-          <div className="relative z-20 w-full h-[45%] lg:h-full lg:w-[50%] order-2 lg:order-1 flex flex-col justify-end lg:justify-center pointer-events-none pb-8 lg:pb-0">
+          {/* --- CONTENT SECTION (Mobile: Floating Overlap Card / Desktop: Left Column) --- */}
+          <div className="relative z-20 w-full h-[45%] lg:h-full lg:w-[50%] order-2 lg:order-1 flex flex-col justify-end lg:justify-center pointer-events-none pb-12 lg:pb-0 -mt-16 lg:mt-0">
             <div className="flex flex-col justify-center px-4 lg:pl-16 lg:pr-12 xl:pl-24 pointer-events-auto">
               {/* Mobile Glass Card */}
               <motion.div
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
-                className="relative w-full bg-black/60 lg:bg-transparent backdrop-blur-3xl lg:backdrop-blur-none p-6 lg:p-0 rounded-[2.5rem] lg:rounded-none border border-white/20 lg:border-none shadow-[0_30px_60px_rgba(0,0,0,0.5)] lg:shadow-none overflow-hidden"
+                className="relative w-full bg-black/70 lg:bg-transparent backdrop-blur-3xl lg:backdrop-blur-none p-8 lg:p-0 rounded-[2.5rem] lg:rounded-none border border-white/20 lg:border-none shadow-[0_40px_80px_rgba(0,0,0,0.6)] lg:shadow-none overflow-hidden"
               >
                 {/* Subtle Gradient Backlight for Mobile Card */}
-                <div className="lg:hidden absolute -top-24 -left-24 w-64 h-64 bg-primary/30 blur-[80px] pointer-events-none" />
+                <div className="lg:hidden absolute -top-32 -left-32 w-80 h-80 bg-primary/30 blur-[100px] pointer-events-none" />
 
                 <motion.div
                   variants={slideUpVariants}
