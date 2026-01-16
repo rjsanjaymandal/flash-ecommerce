@@ -75,7 +75,7 @@ export function OrderDetails({ order, items }: OrderDetailsProps) {
                 </span>
               </motion.div>
 
-              <h1 className="text-6xl md:text-8xl font-black uppercase italic tracking-tighter leading-[0.8] md:leading-[0.75]">
+              <h1 className="text-4xl md:text-8xl font-black uppercase italic tracking-tighter leading-[0.9] md:leading-[0.75]">
                 Order <br /> <span className="text-zinc-200">Details</span>
               </h1>
 
@@ -117,7 +117,7 @@ export function OrderDetails({ order, items }: OrderDetailsProps) {
         {/* Unified Order Journey Hub */}
         <div className="mb-12 md:mb-16">
           <div className="bg-white rounded-[2.5rem] border-2 border-zinc-100 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.05)] overflow-hidden">
-            <div className="px-6 md:px-10 py-8 md:py-12">
+            <div className="px-4 md:px-10 py-6 md:py-12">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
                 <div className="space-y-1">
                   <h2 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter">
@@ -128,16 +128,16 @@ export function OrderDetails({ order, items }: OrderDetailsProps) {
                   </p>
                 </div>
                 {order.tracking_number && (
-                  <div className="flex items-center gap-3 bg-zinc-50 px-4 py-2 rounded-2xl border border-zinc-100">
+                  <div className="flex items-center gap-2 md:gap-3 bg-zinc-50 px-3 md:px-4 py-2 rounded-2xl border border-zinc-100">
                     <div className="flex flex-col">
-                      <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest leading-none mb-1">
+                      <span className="text-[7px] md:text-[8px] font-black text-zinc-400 uppercase tracking-widest leading-none mb-1">
                         Active AWB
                       </span>
-                      <span className="text-xs font-mono font-bold text-zinc-900 leading-none">
+                      <span className="text-[10px] md:text-xs font-mono font-bold text-zinc-900 leading-none">
                         {order.tracking_number}
                       </span>
                     </div>
-                    <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                    <div className="h-1.5 w-1.5 md:h-2 md:w-2 rounded-full bg-primary animate-pulse" />
                   </div>
                 )}
               </div>
@@ -248,9 +248,9 @@ export function OrderDetails({ order, items }: OrderDetailsProps) {
                 {items.map((item) => (
                   <div
                     key={item.id}
-                    className="p-6 md:p-10 flex flex-col sm:flex-row gap-6 md:gap-10 group hover:bg-zinc-50/30 transition-all duration-500"
+                    className="p-4 md:p-10 flex flex-col sm:flex-row gap-4 md:gap-10 group hover:bg-zinc-50/30 transition-all duration-500"
                   >
-                    <div className="h-32 w-32 md:h-40 md:w-32 bg-zinc-100 rounded-[2rem] overflow-hidden shrink-0 self-start shadow-xl border-4 border-white group-hover:scale-105 transition-transform duration-500 relative">
+                    <div className="h-24 w-24 md:h-40 md:w-32 bg-zinc-100 rounded-2xl md:rounded-[2rem] overflow-hidden shrink-0 self-start shadow-xl border-2 md:border-4 border-white group-hover:scale-105 transition-transform duration-500 relative">
                       {item.products?.main_image_url ? (
                         <FlashImage
                           src={item.products.main_image_url}
@@ -270,7 +270,7 @@ export function OrderDetails({ order, items }: OrderDetailsProps) {
                           <div className="space-y-1">
                             <Link
                               href={`/product/${item.products?.slug}`}
-                              className="font-black text-2xl md:text-3xl tracking-tighter uppercase italic leading-none hover:text-primary transition-colors block"
+                              className="font-black text-xl md:text-3xl tracking-tighter uppercase italic leading-tight hover:text-primary transition-colors block"
                             >
                               {item.name_snapshot || item.products?.name}
                             </Link>
@@ -295,7 +295,7 @@ export function OrderDetails({ order, items }: OrderDetailsProps) {
                               </Badge>
                             </div>
                           </div>
-                          <p className="font-black text-2xl md:text-4xl tracking-tighter italic">
+                          <p className="font-black text-xl md:text-4xl tracking-tighter italic">
                             {formatCurrency(item.unit_price * item.quantity)}
                           </p>
                         </div>

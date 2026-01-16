@@ -60,18 +60,24 @@ export async function GET(req: Request) {
                 errorMsg = (e as Error).message
             }
 
-            // 4. Update Status
+            // 4. Update Status with Retry Logic
             if (success) {
                 await supabase.from('app_events' as any).update({ 
                     status: 'COMPLETED', 
                     processed_at: new Date().toISOString() 
                 }).eq('id', event.id)
             } else {
+                const retryCount = (event.retry_count || 0) + 1
+                const shouldRetry = retryCount < 3 // Max 3 retries
+                
                 await supabase.from('app_events' as any).update({ 
-                    status: 'FAILED', 
+                    status: shouldRetry ? 'PENDING' : 'FAILED', 
+                    retry_count: retryCount,
                     processing_error: errorMsg,
-                    processed_at: new Date().toISOString() // Marked processed even if failed to stop loops
+                    processed_at: new Date().toISOString()
                 }).eq('id', event.id)
+                
+                console.warn(`[EventWorker] Event ${event.id} failed. ${shouldRetry ? 'Scheduled for retry' : 'Marked as FAILED'}. Error: ${errorMsg}`)
             }
 
             results.push({ id: event.id, success, error: errorMsg })

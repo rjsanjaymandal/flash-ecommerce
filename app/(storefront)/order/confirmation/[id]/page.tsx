@@ -93,7 +93,7 @@ export default async function OrderConfirmationPage({ params }: PageProps) {
             )}
           </div>
 
-          <h1 className="text-4xl md:text-6xl font-black tracking-tighter uppercase italic text-transparent bg-clip-text bg-gradient-to-br from-foreground to-muted-foreground">
+          <h1 className="text-3xl md:text-6xl font-black tracking-tighter uppercase italic text-transparent bg-clip-text bg-gradient-to-br from-foreground to-muted-foreground">
             {order.status === "paid" ? (
               <>
                 Transmission <br />

@@ -48,7 +48,7 @@ export default async function OrdersPage() {
             <span className="text-zinc-400 font-black tracking-[0.4em] uppercase text-[10px]">
               Transmission History
             </span>
-            <h1 className="text-6xl md:text-8xl font-black tracking-tighter uppercase leading-[0.8] italic">
+            <h1 className="text-4xl md:text-8xl font-black tracking-tighter uppercase leading-[0.8] italic">
               MY <span className="text-zinc-200">ORDERS</span>
             </h1>
           </div>
