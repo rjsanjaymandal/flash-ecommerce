@@ -19,7 +19,7 @@ export async function POST(req: Request) {
   const supabase = createAdminClient()
 
   try {
-    const { order_id } = await req.json()
+    const { order_id, isPartialCod } = await req.json()
 
     if (!order_id) {
         return NextResponse.json({ error: 'Order ID is required' }, { status: 400 })
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
     // 1. Fetch Order directly from DB
     const { data: order, error } = await supabase
         .from('orders')
-        .select('total, status, id') // Removed currency as it doesn't exist
+        .select('total, status, id')
         .eq('id', order_id)
         .single()
     
@@ -44,12 +44,11 @@ export async function POST(req: Request) {
     }
 
     // 2. Security Check: Ensure order is not already paid
-    if (order.status === 'paid') {
-        return NextResponse.json({ error: 'Order is already paid' }, { status: 400 })
+    if (order.status === 'paid' || order.status === 'confirmed_partial') {
+        return NextResponse.json({ error: 'Order is already processed' }, { status: 400 })
     }
 
     // 3. STRICT GUARD: Validate Product Availability & Status
-    // Fetch order items and their related products to ensure they are still active and (optional) in stock.
     const { data: orderItems, error: itemsError } = await supabase
         .from('order_items')
         .select(`
@@ -69,7 +68,6 @@ export async function POST(req: Request) {
 
     // Check for any invalid product
     const invalidItem = orderItems.find((item: any) => {
-        // Product explicitly deleted (null) or set to inactive
         if (!item.product) return true 
         if (item.product.is_active === false) return true
         return false
@@ -88,13 +86,18 @@ export async function POST(req: Request) {
       key_secret: process.env.RAZORPAY_KEY_SECRET,
     })
 
-    // 3. Create Razorpay Order with DB Amount
+    // 4. Dynamic Amount Logic: Partial COD (₹100) vs Full PREPAID
+    // Security: Hardcode ₹100 for Partial COD to prevent tampering
+    const finalAmount = isPartialCod ? 10000 : Math.round(order.total * 100)
+
+    // 5. Create Razorpay Order with DB Amount
     const options = {
-      amount: Math.round(order.total * 100), // Convert to paisa
+      amount: finalAmount, 
       currency: 'INR',
-      receipt: order_id, // Use full UUID for reliable matching
+      receipt: order_id, 
       notes: {
-          order_id: order_id
+          order_id: order_id,
+          payment_type: isPartialCod ? 'PARTIAL_COD' : 'PREPAID'
       }
     }
 

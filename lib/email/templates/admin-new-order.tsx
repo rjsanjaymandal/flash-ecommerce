@@ -26,6 +26,8 @@ interface AdminNewOrderEmailProps {
     price: number;
   }>;
   total: number;
+  paidAmount?: number;
+  dueAmount?: number;
 }
 
 export const AdminNewOrderEmail = ({
@@ -34,6 +36,8 @@ export const AdminNewOrderEmail = ({
   customerEmail,
   items = [],
   total,
+  paidAmount,
+  dueAmount,
 }: AdminNewOrderEmailProps) => {
   const previewText = `New Order Received: ₹${total} by ${customerName}`;
 
@@ -81,12 +85,42 @@ export const AdminNewOrderEmail = ({
             <Section>
               <Row>
                 <Column>
-                  <Text className="text-[14px] font-bold m-0">Total</Text>
+                  <Text className="text-[14px] font-bold m-0 text-gray-500">
+                    Order Total
+                  </Text>
                 </Column>
                 <Column align="right">
-                  <Text className="text-[18px] font-black m-0">₹{total}</Text>
+                  <Text className="text-[14px] font-bold m-0 text-gray-500">
+                    ₹{total}
+                  </Text>
                 </Column>
               </Row>
+              <Row>
+                <Column>
+                  <Text className="text-[14px] font-bold m-0 text-green-600">
+                    Paid Amount
+                  </Text>
+                </Column>
+                <Column align="right">
+                  <Text className="text-[14px] font-bold m-0 text-green-600">
+                    ₹{paidAmount || total}
+                  </Text>
+                </Column>
+              </Row>
+              {(dueAmount ?? 0) > 0 && (
+                <Row>
+                  <Column>
+                    <Text className="text-[14px] font-black m-0 text-red-600">
+                      Due Amount (COD)
+                    </Text>
+                  </Column>
+                  <Column align="right">
+                    <Text className="text-[18px] font-black m-0 text-red-600">
+                      ₹{dueAmount}
+                    </Text>
+                  </Column>
+                </Row>
+              )}
             </Section>
 
             <Section className="text-center mt-[32px] mb-[32px]">

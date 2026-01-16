@@ -26,6 +26,8 @@ interface OrderConfirmationEmailProps {
     image?: string;
   }>;
   total: number;
+  paidAmount?: number;
+  dueAmount?: number;
   shippingAddress?: string;
   orderDate?: string;
 }
@@ -35,6 +37,8 @@ export const OrderConfirmationEmail = ({
   customerName,
   items,
   total,
+  paidAmount,
+  dueAmount,
   shippingAddress,
   orderDate = new Date().toDateString(),
 }: OrderConfirmationEmailProps) => {
@@ -111,12 +115,40 @@ export const OrderConfirmationEmail = ({
             <Section>
               <Row>
                 <Column>
-                  <Text className="text-[14px] font-bold m-0">Total</Text>
+                  <Text className="text-[14px] font-bold m-0">Order Total</Text>
                 </Column>
                 <Column align="right">
-                  <Text className="text-[18px] font-black m-0">₹{total}</Text>
+                  <Text className="text-[14px] font-bold m-0 text-gray-700">
+                    ₹{total}
+                  </Text>
                 </Column>
               </Row>
+              <Row>
+                <Column>
+                  <Text className="text-[14px] font-bold m-0 text-green-600">
+                    Paid Online
+                  </Text>
+                </Column>
+                <Column align="right">
+                  <Text className="text-[14px] font-bold m-0 text-green-600">
+                    ₹{paidAmount || total}
+                  </Text>
+                </Column>
+              </Row>
+              {(dueAmount ?? 0) > 0 && (
+                <Row className="mt-2 bg-gray-50 p-2 rounded">
+                  <Column>
+                    <Text className="text-[14px] font-black m-0 text-primary">
+                      Due on Delivery
+                    </Text>
+                  </Column>
+                  <Column align="right">
+                    <Text className="text-[18px] font-black m-0 text-primary">
+                      ₹{dueAmount}
+                    </Text>
+                  </Column>
+                </Row>
+              )}
             </Section>
 
             <Text className="text-center text-[12px] text-gray-500 mt-8">

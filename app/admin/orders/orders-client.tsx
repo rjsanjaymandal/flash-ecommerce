@@ -94,6 +94,8 @@ export function OrdersClient({
         return "outline"; // Green usually, customized below
       case "cancelled":
         return "destructive";
+      case "confirmed_partial":
+        return "secondary";
       default:
         return "outline";
     }
@@ -170,7 +172,15 @@ export function OrdersClient({
       <div className="flex flex-col sm:flex-row gap-4 p-1">
         {/* Status Tabs */}
         <div className="flex bg-muted/20 p-1 rounded-lg border w-fit overflow-x-auto">
-          {["all", "pending", "paid", "shipped", "delivered", "cancelled"].map(
+          {[
+            "all",
+            "pending",
+            "confirmed_partial",
+            "paid",
+            "shipped",
+            "delivered",
+            "cancelled",
+          ].map(
             (
               tab // Added 'cancelled' to tabs
             ) => (
@@ -287,6 +297,8 @@ export function OrdersClient({
                                   "bg-indigo-50 text-indigo-700 border-indigo-200", // Shipped = Indigo
                                 order.status === "delivered" &&
                                   "bg-slate-100 text-slate-700 border-slate-200", // Delivered = Slate (Completed)
+                                order.status === "confirmed_partial" &&
+                                  "bg-orange-50 text-orange-700 border-orange-200", // Partial = Orange
                                 order.status === "cancelled" &&
                                   "bg-red-50 text-red-700 border-red-200" // Cancelled = Red
                               )}
@@ -303,6 +315,7 @@ export function OrdersClient({
                           <DropdownMenuSeparator />
                           {[
                             "pending",
+                            "confirmed_partial",
                             "paid",
                             "shipped",
                             "delivered",

@@ -347,6 +347,9 @@ export type Database = {
           tracking_number: string | null
           updated_at: string | null
           user_id: string | null
+          payment_method: string | null
+          paid_amount: number | null
+          due_amount: number | null
         }
         Insert: {
           address_line1?: string | null
@@ -368,6 +371,9 @@ export type Database = {
           tracking_number?: string | null
           updated_at?: string | null
           user_id?: string | null
+          payment_method?: string | null
+          paid_amount?: number | null
+          due_amount?: number | null
         }
         Update: {
           address_line1?: string | null
@@ -389,6 +395,9 @@ export type Database = {
           tracking_number?: string | null
           updated_at?: string | null
           user_id?: string | null
+          payment_method?: string | null
+          paid_amount?: number | null
+          due_amount?: number | null
         }
         Relationships: [
           {
@@ -881,6 +890,15 @@ export type Database = {
         }
         Returns: Json
       }
+      finalize_payment_v5: {
+        Args: {
+          p_order_id: string
+          p_payment_id: string
+          p_amount_paid_paise: number
+          p_method: string
+        }
+        Returns: Json
+      }
       process_payment: {
         Args: {
           p_order_id: string
@@ -936,7 +954,7 @@ export type Database = {
     }
     Enums: {
       fit_preference_type: "oversized" | "regular" | "fitted"
-      order_status: "pending" | "paid" | "shipped" | "delivered" | "cancelled"
+      order_status: "pending" | "paid" | "shipped" | "delivered" | "cancelled" | "confirmed_partial"
       user_role: "user" | "admin"
       discount_type: "percentage" | "fixed"
     }
@@ -1071,7 +1089,7 @@ export const Constants = {
     Enums: {
       fit_preference_type: ["oversized", "regular", "fitted"],
 
-      order_status: ["pending", "paid", "shipped", "delivered", "cancelled"],
+      order_status: ["pending", "paid", "shipped", "delivered", "cancelled", "confirmed_partial"],
       user_role: ["user", "admin"],
       discount_type: ["percentage", "fixed"],
     },

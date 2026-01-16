@@ -14,6 +14,8 @@ interface SendOrderConfirmationProps {
     customerName: string;
     items: OrderItem[];
     total: number;
+    paidAmount?: number;
+    dueAmount?: number;
     shippingAddress?: string;
     orderDate: string;
 }
@@ -33,6 +35,8 @@ export async function sendOrderConfirmation({
     customerName,
     items,
     total,
+    paidAmount,
+    dueAmount,
     shippingAddress,
     orderDate
 }: SendOrderConfirmationProps) {
@@ -50,6 +54,8 @@ export async function sendOrderConfirmation({
                 customerName,
                 items,
                 total,
+                paidAmount,
+                dueAmount,
                 shippingAddress,
                 orderDate
             })
@@ -82,6 +88,8 @@ export async function sendAdminOrderAlert({
     customerName,
     items,
     total,
+    paidAmount,
+    dueAmount,
     shippingAddress,
     orderDate
 }: SendAdminAlertProps) {
@@ -97,7 +105,9 @@ export async function sendAdminOrderAlert({
                 customerName,
                 customerEmail,
                 items,
-                total
+                total,
+                paidAmount,
+                dueAmount
             }) 
         });
 

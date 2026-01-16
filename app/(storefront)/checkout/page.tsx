@@ -81,6 +81,11 @@ export default function CheckoutPage() {
   } | null>(null);
   const [isCheckingCoupon, setIsCheckingCoupon] = useState(false);
 
+  // Partial COD State
+  const [paymentMethod, setPaymentMethod] = useState<"PREPAID" | "PARTIAL_COD">(
+    "PREPAID"
+  );
+
   // Check if script is already loaded (e.g. from previous navigation)
   useEffect(() => {
     if (window.Razorpay) {
@@ -261,8 +266,7 @@ export default function CheckoutPage() {
         maxQuantity: i.maxQuantity,
       }));
 
-      console.log("Calling createOrder with items:", sanitizedItems);
-
+      console.log("Breadcrumb: Calling createOrder...");
       const order = await createOrder({
         user_id: user?.id || null,
         subtotal: cartTotal,
@@ -281,25 +285,27 @@ export default function CheckoutPage() {
         discount_amount: discountAmount,
         email: data.email,
       });
-
-      console.log("Order created:", order);
+      console.log("Breadcrumb: Order created successfully", order.id);
 
       // 3. Create Razorpay Order
-      // Security: We send the Order ID, not the amount. Server fetches amount from DB.
+      console.log("Breadcrumb: Requesting Razorpay Order...");
       const response = await fetch("/api/razorpay/order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ order_id: order.id }),
+        body: JSON.stringify({
+          order_id: order.id,
+          isPartialCod: paymentMethod === "PARTIAL_COD",
+        }),
       });
       const rzpOrder = await response.json();
-      console.log("Razorpay Order:", rzpOrder);
+      console.log("Breadcrumb: Razorpay Order response received", rzpOrder);
 
       if (!response.ok)
         throw new Error(rzpOrder.error || "Failed to create Razorpay order");
 
       // 4. Open Razorpay Checkout
       const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
-      console.log("Razorpay Key ID:", keyId ? "Present" : "MISSING");
+      console.log("Razorpay Key ID Status:", keyId ? "Present" : "MISSING");
 
       if (!keyId) {
         throw new Error("Razorpay Key ID is missing. Please contact support.");
@@ -403,19 +409,29 @@ export default function CheckoutPage() {
       }
 
       const rzp1 = new window.Razorpay(options);
+      console.log("Breadcrumb: Razorpay instance initialized");
       rzp1.open();
-    } catch (err: unknown) {
-      console.error("Checkout failed detailed:", {
-        message: err instanceof Error ? err.message : String(err),
-        stack: err instanceof Error ? err.stack : undefined,
-        stringified: JSON.stringify(err, Object.getOwnPropertyNames(err), 2),
+      console.log("Breadcrumb: Razorpay opened successfully");
+    } catch (err: any) {
+      console.error("FATAL Checkout Error:", err);
+      console.error("Error Object Type:", typeof err);
+
+      const detailedError = {
+        message: err?.message || String(err),
+        stack: err?.stack,
+        name: err?.name,
+        digest: err?.digest, // Next.js server action error digest
+        raw: err,
+      };
+
+      console.error("Checkout failed detailed [Object]:", detailedError);
+
+      toast.error(`Checkout failure: ${detailedError.message}`, {
+        description: detailedError.digest
+          ? `Error ID: ${detailedError.digest}`
+          : "Please check your network and try again.",
       });
-      toast.error(
-        `Checkout failed: ${err instanceof Error ? err.message : "Unknown error"}`
-      );
-      toast.error(
-        `Checkout failed: ${(err as Error)?.message || "Unknown error"}`
-      );
+
       setIsProcessing(false);
     }
   };
@@ -684,28 +700,90 @@ export default function CheckoutPage() {
                 />
               </section>
 
-              {/* Payment Section - Read Only for now (Razorpay handled via script) */}
-              <section className="space-y-6 bg-card/80 backdrop-blur-md p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-border/50 shadow-sm opacity-80">
+              {/* Payment Section - Scalable Selection */}
+              <section className="space-y-6 bg-card/80 backdrop-blur-md p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-border/50 shadow-sm">
                 <div className="flex items-center gap-3 border-b border-border/50 pb-4">
                   <span className="flex items-center justify-center w-8 h-8 rounded-full bg-foreground text-background font-bold text-sm">
                     2
                   </span>
                   <h2 className="text-xl font-black uppercase tracking-tight italic text-foreground">
-                    Payment Method
+                    Payment Selection
                   </h2>
                 </div>
-                <div className="flex items-center gap-4 p-4 border border-border/50 rounded-xl bg-muted/20">
-                  <CreditCard className="h-6 w-6 text-muted-foreground" />
-                  <div>
-                    <p className="font-bold text-sm text-foreground">
-                      Cards, UPI, NetBanking
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Processed securely by Razorpay
-                    </p>
-                  </div>
-                  <ShieldCheck className="ml-auto h-5 w-5 text-green-500" />
+
+                <div className="grid grid-cols-1 gap-4">
+                  {/* Prepaid Option */}
+                  <label
+                    className={`flex items-center gap-4 p-4 border rounded-2xl cursor-pointer transition-all ${
+                      paymentMethod === "PREPAID"
+                        ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                        : "border-border/50 bg-muted/10 hover:border-border"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      className="hidden"
+                      checked={paymentMethod === "PREPAID"}
+                      onChange={() => setPaymentMethod("PREPAID")}
+                    />
+                    <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                      <CreditCard className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-bold text-sm text-foreground uppercase tracking-tight">
+                        Full Online Payment
+                      </p>
+                      <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mt-0.5">
+                        Instant Confirmation & Zero COD Hashle
+                      </p>
+                    </div>
+                    {paymentMethod === "PREPAID" && (
+                      <CheckCircle2 className="h-5 w-5 text-primary" />
+                    )}
+                  </label>
+
+                  {/* Partial COD Option */}
+                  <label
+                    className={`flex items-center gap-4 p-4 border rounded-2xl cursor-pointer transition-all relative overflow-hidden ${
+                      paymentMethod === "PARTIAL_COD"
+                        ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                        : "border-border/50 bg-muted/10 hover:border-border"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      className="hidden"
+                      checked={paymentMethod === "PARTIAL_COD"}
+                      onChange={() => setPaymentMethod("PARTIAL_COD")}
+                    />
+                    {/* Hot Badge */}
+                    <div className="absolute top-0 right-0 bg-primary text-[8px] font-black text-white px-3 py-1 rounded-bl-xl uppercase tracking-widest italic animate-pulse">
+                      Best Seller
+                    </div>
+
+                    <div className="h-10 w-10 rounded-xl bg-orange-500/10 flex items-center justify-center shrink-0">
+                      <ShieldCheck className="h-5 w-5 text-orange-500" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-bold text-sm text-foreground uppercase tracking-tight">
+                        Partial COD (Pay ₹100 Now)
+                      </p>
+                      <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mt-0.5">
+                        Pay remaining on delivery
+                      </p>
+                    </div>
+                    {paymentMethod === "PARTIAL_COD" && (
+                      <CheckCircle2 className="h-5 w-5 text-primary" />
+                    )}
+                  </label>
                 </div>
+
+                <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-black text-center mt-2 flex items-center justify-center gap-2">
+                  <ShieldCheck className="h-3 w-3" /> Secure checkout by
+                  Razorpay
+                </p>
               </section>
 
               <div className="pt-4 sticky bottom-4 z-20 lg:static">
@@ -724,7 +802,11 @@ export default function CheckoutPage() {
                     ) : (
                       <>
                         <Lock className="h-4 w-4" />
-                        Pay {formatCurrency(finalTotal)}
+                        Pay{" "}
+                        {formatCurrency(
+                          paymentMethod === "PARTIAL_COD" ? 100 : finalTotal
+                        )}{" "}
+                        Now
                       </>
                     )}
                   </span>
@@ -868,28 +950,57 @@ export default function CheckoutPage() {
                     {formatCurrency(finalTotal)}
                   </span>
                 </div>
+
+                {/* Partial COD Breakdown */}
+                <AnimatePresence>
+                  {paymentMethod === "PARTIAL_COD" && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="space-y-2 pt-2"
+                    >
+                      <div className="flex justify-between items-center p-3 rounded-xl bg-primary/5 border border-primary/20">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-primary">
+                          Pay Online Now
+                        </span>
+                        <span className="font-bold text-primary">
+                          {formatCurrency(100)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center p-3 rounded-xl bg-muted/20 border border-border/50">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                          Due on Delivery
+                        </span>
+                        <span className="font-bold text-foreground">
+                          {formatCurrency(finalTotal - 100)}
+                        </span>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
-          </div>
 
-          <div className="bg-orange-50/50 dark:bg-orange-950/10 border border-orange-100 dark:border-orange-900/20 p-4 rounded-2xl flex gap-3 text-xs text-orange-800 dark:text-orange-400">
-            <div className="shrink-0 mt-0.5">⚠️</div>
-            <p>
-              Depending on your location, flashing high-velocity gear might
-              cause minor sonic booms. Please wear protection.
-            </p>
+            <div className="bg-orange-50/50 dark:bg-orange-950/10 border border-orange-100 dark:border-orange-900/20 p-4 rounded-2xl flex gap-3 text-xs text-orange-800 dark:text-orange-400">
+              <div className="shrink-0 mt-0.5">⚠️</div>
+              <p>
+                Depending on your location, flashing high-velocity gear might
+                cause minor sonic booms. Please wear protection.
+              </p>
+            </div>
           </div>
         </div>
+        <Script
+          id="razorpay-checkout-js"
+          src="https://checkout.razorpay.com/v1/checkout.js"
+          strategy="lazyOnload"
+          onLoad={() => {
+            console.log("Razorpay script loaded via onLoad");
+            setIsScriptLoaded(true);
+          }}
+        />
       </div>
-      <Script
-        id="razorpay-checkout-js"
-        src="https://checkout.razorpay.com/v1/checkout.js"
-        strategy="lazyOnload"
-        onLoad={() => {
-          console.log("Razorpay script loaded via onLoad");
-          setIsScriptLoaded(true);
-        }}
-      />
     </div>
   );
 }

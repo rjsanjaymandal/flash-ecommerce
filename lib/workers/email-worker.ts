@@ -40,6 +40,8 @@ export class EmailWorker {
                     price: i.unit_price
                 })),
                 total: orderData.total,
+                paidAmount: orderData.paid_amount,
+                dueAmount: orderData.due_amount,
                 shippingAddress: (orderData as any).shipping_address_snapshot ? JSON.stringify((orderData as any).shipping_address_snapshot) : undefined,
                 orderDate: new Date(orderData.created_at).toDateString()
             })
@@ -58,6 +60,8 @@ export class EmailWorker {
                     price: i.unit_price
                 })),
                 total: orderData.total,
+                paidAmount: orderData.paid_amount,
+                dueAmount: orderData.due_amount,
                 shippingAddress: (orderData as any).shipping_address_snapshot ? JSON.stringify((orderData as any).shipping_address_snapshot) : undefined,
                 orderDate: new Date(orderData.created_at).toDateString()
             }).catch(e => console.error("Failed to send admin alert", e));

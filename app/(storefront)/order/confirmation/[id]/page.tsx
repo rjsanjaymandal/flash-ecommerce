@@ -96,7 +96,7 @@ export default async function OrderConfirmationPage({
         {/* Header Section */}
         <div className="text-center space-y-6 animate-in slide-in-from-bottom-5 duration-700">
           <div className="inline-flex items-center justify-center p-3 bg-green-500/10 rounded-full mb-4 ring-1 ring-green-500/20 shadow-lg shadow-green-500/10">
-            {order.status === "paid" ? (
+            {order.status === "paid" || order.status === "confirmed_partial" ? (
               <CheckCircle2 className="w-12 h-12 text-green-500" />
             ) : (
               <Loader2 className="w-12 h-12 text-yellow-500 animate-spin" />
@@ -104,10 +104,14 @@ export default async function OrderConfirmationPage({
           </div>
 
           <h1 className="text-3xl md:text-6xl font-black tracking-tighter uppercase italic text-transparent bg-clip-text bg-gradient-to-br from-foreground to-muted-foreground">
-            {order.status === "paid" ? (
+            {order.status === "paid" || order.status === "confirmed_partial" ? (
               <>
                 Transmission <br />
-                <span className="text-green-500">Successful</span>
+                <span className="text-green-500">
+                  {order.status === "confirmed_partial"
+                    ? "Confirmed"
+                    : "Successful"}
+                </span>
               </>
             ) : (
               <>
@@ -122,10 +126,14 @@ export default async function OrderConfirmationPage({
             <span className="font-mono font-bold text-foreground">
               #{order.id.slice(0, 8).toUpperCase()}
             </span>{" "}
-            {order.status === "paid" ? "confirmed." : "is being processed."}
+            {order.status === "paid" || order.status === "confirmed_partial"
+              ? "confirmed."
+              : "is being processed."}
             <br />
-            {order.status === "paid"
-              ? "We are prepping your gear for high-velocity dispatch."
+            {order.status === "paid" || order.status === "confirmed_partial"
+              ? order.status === "confirmed_partial"
+                ? "Partial payment received. Pay the balance on delivery."
+                : "We are prepping your gear for high-velocity dispatch."
               : "Hold tight, we are finalizing your transaction with Razorpay."}
           </p>
         </div>
@@ -230,10 +238,30 @@ export default async function OrderConfirmationPage({
                       : formatCurrency(order.shipping_fee || 0)}
                   </span>
                 </div>
-                <div className="flex justify-between text-xl font-black border-t border-border/50 pt-4 mt-2">
-                  <span>Total Paid</span>
+                <div className="flex justify-between text-base font-bold text-foreground opacity-80">
+                  <span>Order Total</span>
                   <span>{formatCurrency(order.total)}</span>
                 </div>
+                <div className="flex justify-between text-sm text-green-500 font-bold">
+                  <span>Paid Online</span>
+                  <span>
+                    {formatCurrency(Number(order.paid_amount ?? order.total))}
+                  </span>
+                </div>
+                {(order.due_amount ?? 0) > 0 && (
+                  <div className="flex justify-between text-xl font-black border-t border-border/50 pt-4 mt-2 text-primary bg-primary/5 p-4 rounded-2xl ring-1 ring-primary/20">
+                    <span className="flex items-center gap-2">
+                      <Clock className="w-5 h-5" /> Due on Delivery
+                    </span>
+                    <span>{formatCurrency(Number(order.due_amount))}</span>
+                  </div>
+                )}
+                {(order.due_amount ?? 0) <= 0 && (
+                  <div className="flex justify-between text-xl font-black border-t border-border/50 pt-4 mt-2">
+                    <span>Total Paid</span>
+                    <span>{formatCurrency(order.total)}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>

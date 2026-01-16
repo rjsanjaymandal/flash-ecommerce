@@ -117,6 +117,7 @@ export class PaymentProcessor {
 
         let razorpayAmount = 0
         let razorpayStatus = ''
+        let paymentType: 'PREPAID' | 'PARTIAL_COD' | 'COD' = 'PREPAID'
         
         try {
             const razorpay = new Razorpay({
@@ -127,6 +128,14 @@ export class PaymentProcessor {
             const payment = await razorpay.payments.fetch(paymentId)
             razorpayAmount = Number(payment.amount)
             razorpayStatus = payment.status
+
+            // Fetch order notes to determine payment type
+            if (payment.order_id) {
+                const rzpOrder = await razorpay.orders.fetch(payment.order_id)
+                if ((rzpOrder.notes as any)?.payment_type === 'PARTIAL_COD') {
+                    paymentType = 'PARTIAL_COD'
+                }
+            }
             
             if (razorpayStatus !== 'captured' && razorpayStatus !== 'authorized') { 
                  const statusError = `Invalid Payment Status: ${razorpayStatus} for ${paymentId}`
@@ -151,15 +160,15 @@ export class PaymentProcessor {
             return err('Order not found')
         }
 
-        if (order.status === 'paid') {
+        if (order.status === 'paid' || order.status === 'confirmed_partial') {
             await this.logPaymentAttempt('PAYMENT', `Idempotent success for Order ${orderId}`, 'INFO', { paymentId })
             return ok({ message: 'Payment verified (previously processed)' })
         }
         
         // 2. Strict Amount Check (Security)
-        const expectedAmountPaise = Math.round(order.total * 100)
+        const expectedAmountPaise = paymentType === 'PARTIAL_COD' ? 10000 : Math.round(order.total * 100)
         
-        if (razorpayAmount !== expectedAmountPaise) {
+        if (Math.abs(razorpayAmount - expectedAmountPaise) > 1) { // 1 paise tolerance
             const mismatchError = `Amount Mismatch: Expected ${expectedAmountPaise}, Received ${razorpayAmount}`
             console.error(`[PaymentProcessor] SECURITY ALERT: ${mismatchError}`)
             
@@ -170,20 +179,21 @@ export class PaymentProcessor {
             return err('Payment verification failed: Amount Mismatch')
         }
 
-        // 3. Atomic Finalization via RPC
-        const { data: rpcResult, error: rpcError } = await supabase.rpc('finalize_payment_v3', {
+        // 3. Atomic Finalization via RPC (Master Engine v5)
+        const { data: rpcResult, error: rpcError } = await supabase.rpc('finalize_payment_v5', {
              p_order_id: orderId,
              p_payment_id: paymentId,
-             p_amount_paid: razorpayAmount
+             p_amount_paid_paise: razorpayAmount,
+             p_method: paymentType
         })
         
         if (rpcError) {
-             console.error('[PaymentProcessor] RPC Error:', rpcError)
-             await this.logPaymentAttempt('PAYMENT_DB_ERROR', `RPC Failed for ${orderId}`, 'ERROR', { error: rpcError })
+             console.error('[PaymentProcessor] Master RPC Error:', rpcError)
+             await this.logPaymentAttempt('PAYMENT_DB_ERROR', `RPC v5 Failed for ${orderId}`, 'ERROR', { error: rpcError })
              return err('Transaction failed: ' + rpcError.message)
         }
 
-        const result = rpcResult as { success: boolean, message?: string, error?: string };
+        const result = rpcResult as unknown as { success: boolean, status?: string, due?: number, error?: string };
         if (!result.success) {
              console.error('[PaymentProcessor] RPC Logic Error:', result.error)
              await this.logPaymentAttempt('PAYMENT_DB_FAILED', `RPC reported failure for ${orderId}`, 'ERROR', { error: result.error })
@@ -191,11 +201,13 @@ export class PaymentProcessor {
         }
         
         // 5. Publish Event (Async Architecture)
-        // Decoupled: Emits event to DB, Worker picks it up to send emails.
         const eventResult = await EventBus.publish('ORDER_PAID', {
             orderId,
             paymentId,
-            amount: razorpayAmount
+            amount: razorpayAmount,
+            method: paymentType,
+            status: result.status,
+            due: result.due
         })
 
         if (!eventResult.success) {

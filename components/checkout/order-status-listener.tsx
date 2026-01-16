@@ -23,7 +23,8 @@ export function OrderStatusListener({
 
   useEffect(() => {
     // 1. Idempotency Check
-    if (initialStatus === "paid") return;
+    if (initialStatus === "paid" || initialStatus === "confirmed_partial")
+      return;
 
     // 2. Active Verification (Auto-Reconciliation)
     // If we land here with payment metadata but the order is still "pending",
@@ -64,7 +65,14 @@ export function OrderStatusListener({
           filter: `id=eq.${orderId}`,
         },
         (payload: any) => {
-          if (payload.new.status === "paid" && payload.old.status !== "paid") {
+          const isConfirmed =
+            payload.new.status === "paid" ||
+            payload.new.status === "confirmed_partial";
+          const wasNotConfirmed =
+            payload.old.status !== "paid" &&
+            payload.old.status !== "confirmed_partial";
+
+          if (isConfirmed && wasNotConfirmed) {
             toast.success("Payment Confirmed! Updating status...");
             router.refresh();
           }
@@ -89,7 +97,7 @@ export function OrderStatusListener({
         .eq("id", orderId)
         .single();
 
-      if (data?.status === "paid") {
+      if (data?.status === "paid" || data?.status === "confirmed_partial") {
         toast.success("Verification Synchronized!");
         router.refresh();
         clearInterval(interval);

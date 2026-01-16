@@ -4,7 +4,14 @@ import { Result, ok, err } from '@/lib/utils/result'
 export type EventType = 'ORDER_PAID' | 'PRODUCT_UPDATED' | 'USER_SIGNUP'
 
 export interface AppEventPayload {
-    ORDER_PAID: { orderId: string; paymentId: string; amount: number }
+    ORDER_PAID: { 
+        orderId: string; 
+        paymentId: string; 
+        amount: number;
+        method?: 'PREPAID' | 'PARTIAL_COD' | 'COD';
+        status?: string;
+        due?: number;
+    }
     PRODUCT_UPDATED: { productId: string }
     USER_SIGNUP: { userId: string; email: string }
 }

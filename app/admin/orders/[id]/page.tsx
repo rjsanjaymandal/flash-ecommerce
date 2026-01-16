@@ -36,7 +36,14 @@ import {
 import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-const STATUS_OPTIONS = ["pending", "paid", "shipped", "delivered", "cancelled"];
+const STATUS_OPTIONS = [
+  "pending",
+  "confirmed_partial",
+  "paid",
+  "shipped",
+  "delivered",
+  "cancelled",
+];
 
 export default function OrderDetailsPage() {
   const { id } = useParams();
@@ -128,6 +135,8 @@ export default function OrderDetailsPage() {
         return "secondary"; // Using secondary/outline for clean look, could be green if configured
       case "cancelled":
         return "destructive";
+      case "confirmed_partial":
+        return "secondary";
       default:
         return "outline";
     }
@@ -423,23 +432,46 @@ export default function OrderDetailsPage() {
                 Payment
               </CardTitle>
             </CardHeader>
-            <CardContent className="text-sm">
+            <CardContent className="text-sm space-y-4">
               <div className="flex justify-between items-center bg-muted/50 p-3 rounded-md">
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className="bg-background">
-                    COD
+                    {order.payment_method ||
+                      (order.total > 0 ? "PREPAID" : "COD")}
                   </Badge>
-                  <span className="text-muted-foreground">
-                    Cash on Delivery
+                  <span className="text-muted-foreground uppercase text-[10px] font-bold">
+                    Method
                   </span>
                 </div>
-                {order.status === "paid" && (
-                  <Badge
-                    variant="secondary"
-                    className="bg-green-100 text-green-700 hover:bg-green-100"
-                  >
-                    PAID
-                  </Badge>
+                <Badge
+                  variant={order.status === "paid" ? "default" : "secondary"}
+                  className={
+                    order.status === "paid"
+                      ? "bg-green-100 text-green-700 hover:bg-green-100"
+                      : ""
+                  }
+                >
+                  {order.status?.toUpperCase()}
+                </Badge>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs">
+                  <span className="text-muted-foreground">Paid Amount</span>
+                  <span className="font-bold text-green-600">
+                    {formatCurrency(order.paid_amount || 0)}
+                  </span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-muted-foreground">Due Amount</span>
+                  <span className="font-bold text-red-600">
+                    {formatCurrency(order.due_amount || 0)}
+                  </span>
+                </div>
+                {order.payment_reference && (
+                  <div className="pt-2 text-[10px] text-muted-foreground break-all border-t">
+                    Ref: {order.payment_reference}
+                  </div>
                 )}
               </div>
             </CardContent>

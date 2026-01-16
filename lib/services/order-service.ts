@@ -67,13 +67,13 @@ export async function getStats() {
 
   // 1. Fetch current totals
   const totalOrdersPromise = supabase.from('orders').select('*', { count: 'exact', head: true })
-  const totalRevenuePromise = supabase.from('orders').select('total').eq('status', 'paid')
+  const totalRevenuePromise = supabase.from('orders').select('total').in('status', ['paid', 'confirmed_partial'])
   const totalProductsPromise = supabase.from('products').select('*', { count: 'exact', head: true }).eq('is_active', true)
   const totalCustomersPromise = supabase.from('profiles').select('*', { count: 'exact', head: true })
 
   // 2. Fetch last month's comparisons
   const lastMonthOrdersPromise = supabase.from('orders').select('id', { count: 'exact', head: true }).gte('created_at', firstDayLastMonth).lte('created_at', lastDayLastMonth)
-  const lastMonthRevenuePromise = supabase.from('orders').select('total').eq('status', 'paid').gte('created_at', firstDayLastMonth).lte('created_at', lastDayLastMonth)
+  const lastMonthRevenuePromise = supabase.from('orders').select('total').in('status', ['paid', 'confirmed_partial']).gte('created_at', firstDayLastMonth).lte('created_at', lastDayLastMonth)
 
   const [ordersRes, revenueRes, productsRes, customersRes, lastOrdersRes, lastRevRes] = await Promise.allSettled([
       totalOrdersPromise,
@@ -182,7 +182,7 @@ export async function getMonthlyRevenue() {
     const { data, error } = await supabase
       .from('orders')
       .select('total, created_at')
-      .eq('status', 'paid')
+      .in('status', ['paid', 'confirmed_partial'])
       .order('created_at', { ascending: true })
 
     if (error) throw error
@@ -224,7 +224,7 @@ export async function getSalesByCategory() {
             order:orders!inner(status),
             product:products!inner(category:categories!inner(name))
         `)
-        .eq('order.status', 'paid')
+        .in('order.status', ['paid', 'confirmed_partial'])
 
     if (error) {
         console.error('Error fetching category sales:', error)
