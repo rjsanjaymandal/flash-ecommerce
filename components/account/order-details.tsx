@@ -75,7 +75,7 @@ export function OrderDetails({ order, items }: OrderDetailsProps) {
                 </span>
               </motion.div>
 
-              <h1 className="text-4xl md:text-8xl font-black uppercase italic tracking-tighter leading-[0.9] md:leading-[0.75]">
+              <h1 className="text-3xl md:text-8xl font-black uppercase italic tracking-tighter leading-[0.9] md:leading-[0.75]">
                 Order <br /> <span className="text-zinc-200">Details</span>
               </h1>
 
@@ -142,11 +142,16 @@ export function OrderDetails({ order, items }: OrderDetailsProps) {
                 )}
               </div>
 
-              {/* Lifecycle Bar */}
+              {/* Lifecycle Bar - Desktop: Horizontal, Mobile: Vertical */}
               {!isCancelled && (
                 <div className="relative mb-12">
+                  {/* Desktop Horizontal Line */}
                   <div className="absolute top-5 left-0 w-full h-1 bg-zinc-100 -translate-y-1/2 rounded-full hidden md:block" />
-                  <div className="grid grid-cols-2 gap-y-8 md:grid-cols-4 md:gap-4 relative">
+
+                  {/* Vertical Line for Mobile */}
+                  <div className="absolute top-0 left-5 w-1 h-full bg-zinc-100 rounded-full md:hidden" />
+
+                  <div className="flex flex-col md:grid md:grid-cols-4 gap-y-10 md:gap-4 relative">
                     {steps.map((step, i) => {
                       const completed =
                         i <= currentStepIndex || order.status === "delivered";
@@ -155,11 +160,11 @@ export function OrderDetails({ order, items }: OrderDetailsProps) {
                       return (
                         <div
                           key={step.status}
-                          className="relative z-10 flex flex-col items-center text-center"
+                          className="relative z-10 flex md:flex-col items-start md:items-center text-left md:text-center gap-6 md:gap-0"
                         >
                           <div
                             className={`
-                            h-10 w-10 md:h-12 md:w-12 rounded-full border-4 flex items-center justify-center transition-all duration-500 mb-4 bg-white relative
+                            h-10 w-10 md:h-12 md:w-12 rounded-full border-4 flex items-center justify-center transition-all duration-500 md:mb-4 bg-white relative shrink-0
                             ${completed ? "border-primary text-primary shadow-lg scale-110" : "border-zinc-100 text-zinc-300"}
                           `}
                           >
@@ -176,11 +181,20 @@ export function OrderDetails({ order, items }: OrderDetailsProps) {
                                 </span>
                               )}
                           </div>
-                          <span
-                            className={`text-[10px] uppercase font-black tracking-widest ${completed ? "text-zinc-900" : "text-zinc-300"}`}
-                          >
-                            {step.label}
-                          </span>
+                          <div className="flex flex-col">
+                            <span
+                              className={`text-[10px] uppercase font-black tracking-widest ${completed ? "text-zinc-900" : "text-zinc-300"}`}
+                            >
+                              {step.label}
+                            </span>
+                            <span className="md:hidden text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">
+                              {completed
+                                ? "Transmission Success"
+                                : i < currentStepIndex
+                                  ? "Finalized"
+                                  : "Pending Sync"}
+                            </span>
+                          </div>
                         </div>
                       );
                     })}
@@ -250,7 +264,7 @@ export function OrderDetails({ order, items }: OrderDetailsProps) {
                     key={item.id}
                     className="p-4 md:p-10 flex flex-col sm:flex-row gap-4 md:gap-10 group hover:bg-zinc-50/30 transition-all duration-500"
                   >
-                    <div className="h-24 w-24 md:h-40 md:w-32 bg-zinc-100 rounded-2xl md:rounded-[2rem] overflow-hidden shrink-0 self-start shadow-xl border-2 md:border-4 border-white group-hover:scale-105 transition-transform duration-500 relative">
+                    <div className="h-20 w-20 md:h-40 md:w-32 bg-zinc-100 rounded-xl md:rounded-[2rem] overflow-hidden shrink-0 self-start shadow-xl border-2 md:border-4 border-white group-hover:scale-105 transition-transform duration-500 relative">
                       {item.products?.main_image_url ? (
                         <FlashImage
                           src={item.products.main_image_url}
@@ -295,7 +309,7 @@ export function OrderDetails({ order, items }: OrderDetailsProps) {
                               </Badge>
                             </div>
                           </div>
-                          <p className="font-black text-xl md:text-4xl tracking-tighter italic">
+                          <p className="font-black text-lg md:text-4xl tracking-tighter italic">
                             {formatCurrency(item.unit_price * item.quantity)}
                           </p>
                         </div>
@@ -337,7 +351,7 @@ export function OrderDetails({ order, items }: OrderDetailsProps) {
                 Order Summary
               </h3>
 
-              <div className="space-y-4 mb-6 text-sm font-medium text-white/80">
+              <div className="space-y-4 mb-6 text-xs md:text-sm font-medium text-white/80">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
                   <span>{formatCurrency(order.subtotal)}</span>

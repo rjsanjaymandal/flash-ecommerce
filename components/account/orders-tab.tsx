@@ -63,7 +63,7 @@ export function OrdersTab({ orders }: { orders: any[] }) {
         {orders.map((order) => (
           <div
             key={order.id}
-            className="bg-white rounded-2xl border border-zinc-100 p-5 shadow-sm space-y-4"
+            className="bg-white rounded-2xl border border-zinc-100 p-4 shadow-sm space-y-3"
           >
             <div className="flex items-center justify-between">
               <div>
