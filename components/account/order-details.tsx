@@ -50,7 +50,7 @@ export function OrderDetails({ order, items }: OrderDetailsProps) {
   const isCancelled = order.status === "cancelled";
 
   return (
-    <div className="relative min-h-screen bg-white">
+    <div className="relative min-h-screen bg-white overflow-x-hidden">
       <BrandGlow className="top-0 left-[-10%] opacity-20" size="lg" />
       <BrandGlow className="bottom-[10%] right-[-5%] opacity-10" size="md" />
 

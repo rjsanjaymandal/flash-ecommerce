@@ -22,12 +22,19 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { OrderStatusListener } from "@/components/checkout/order-status-listener";
 import { TrackingTimeline } from "@/components/storefront/tracking-timeline";
 
-interface PageProps {
+export default async function OrderConfirmationPage({
+  params,
+  searchParams,
+}: {
   params: Promise<{ id: string }>;
-}
-
-export default async function OrderConfirmationPage({ params }: PageProps) {
+  searchParams: Promise<{ pid?: string; poid?: string; psig?: string }>;
+}) {
   const { id } = await params;
+  const {
+    pid: paymentId,
+    poid: paymentOrderId,
+    psig: signature,
+  } = await searchParams;
 
   // Use Admin Client to fetch order details securely server-side
   // We need admin client because policies might restrict "select" on orders
@@ -76,6 +83,9 @@ export default async function OrderConfirmationPage({ params }: PageProps) {
       <OrderStatusListener
         orderId={order.id}
         initialStatus={order.status || "pending"}
+        paymentId={paymentId}
+        paymentOrderId={paymentOrderId}
+        signature={signature}
       />
       <BrandGlow className="top-0 animate-pulse opacity-40" />
 

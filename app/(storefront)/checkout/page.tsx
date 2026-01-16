@@ -364,15 +364,19 @@ export default function CheckoutPage() {
               );
             }
           } catch (netErr) {
-            // Final fallback after retries
-            console.error("Final Verification Failure:", netErr);
-            toast.error(
-              "Network verification failed. Don't worry, we are checking in the background."
-            );
-            // Optimistic redirect or just show instruction?
-            // Redirecting with error param allows the Auto-Reconciliation logic to eventually pick it up
-            // OR the user to retry.
-            router.push(`/checkout?error=verification_timeout`);
+            // High-Resilience Fallback: If verification fails/times out but Razorpay reported success,
+            // we redirect anyway and let the Confirmation page's Auto-Reconciliation handle it.
+            console.error("Verification Network Delay/Failure:", netErr);
+            clearCart();
+            toast.info("Processing your transmission in background...");
+
+            const params = new URLSearchParams({
+              pid: paymentResponse.razorpay_payment_id,
+              poid: paymentResponse.razorpay_order_id,
+              psig: paymentResponse.razorpay_signature,
+            });
+
+            router.push(`/order/confirmation/${order.id}?${params.toString()}`);
           }
         },
         prefill: {

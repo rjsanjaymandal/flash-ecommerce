@@ -27,7 +27,7 @@ export default async function OrdersPage() {
     .order("created_at", { ascending: false });
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-6xl relative min-h-screen">
+    <div className="container mx-auto px-4 py-12 max-w-6xl relative min-h-screen overflow-x-hidden">
       <BrandGlow className="top-0 right-0 opacity-30" size="lg" />
 
       <div className="mb-12">
