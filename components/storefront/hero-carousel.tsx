@@ -372,17 +372,19 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
           onTouchEnd={handleTouchEnd}
           className="absolute inset-0 flex flex-col lg:flex-row touch-pan-y"
         >
-          {/* --- CONTENT SECTION (Mobile: Bottom Sheet / Desktop: Left Column) --- */}
-          <div className="relative z-20 w-full h-[40%] lg:h-full lg:w-[50%] order-2 lg:order-1 flex flex-col justify-start lg:justify-center bg-background/80 backdrop-blur-xl border-t border-white/10 lg:bg-background lg:backdrop-blur-none lg:border-none lg:border-r lg:border-border/50 shadow-[0_-10px_40px_rgba(0,0,0,0.2)] lg:shadow-none pointer-events-auto">
-            <div className="h-full flex flex-col justify-center px-6 pb-12 lg:pb-0 lg:pl-16 lg:pr-12 xl:pl-24 pointer-events-auto lg:pt-32">
-              {/* Content Container */}
+          {/* --- CONTENT SECTION (Mobile: Floating Card / Desktop: Left Column) --- */}
+          <div className="relative z-20 w-full h-[45%] lg:h-full lg:w-[50%] order-2 lg:order-1 flex flex-col justify-end lg:justify-center pointer-events-none pb-8 lg:pb-0">
+            <div className="flex flex-col justify-center px-4 lg:pl-16 lg:pr-12 xl:pl-24 pointer-events-auto">
+              {/* Mobile Glass Card */}
               <motion.div
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
-                style={{ x: parallaxX, y: parallaxY }} // Parallax mainly for desktop feel
-                className="relative w-full"
+                className="relative w-full bg-black/40 lg:bg-transparent backdrop-blur-2xl lg:backdrop-blur-none p-6 lg:p-0 rounded-[2.5rem] lg:rounded-none border border-white/10 lg:border-none shadow-[0_20px_50px_rgba(0,0,0,0.3)] lg:shadow-none overflow-hidden"
               >
+                {/* Subtle Gradient Backlight for Mobile Card */}
+                <div className="lg:hidden absolute -top-24 -left-24 w-48 h-48 bg-primary/20 blur-[60px] pointer-events-none" />
+
                 <motion.div
                   variants={slideUpVariants}
                   className="hidden lg:block"
@@ -397,10 +399,10 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                   </BrandBadge>
                 </motion.div>
 
-                <div className="overflow-hidden mb-2 lg:mb-6">
+                <div className="overflow-hidden mb-3 lg:mb-6">
                   <motion.h1
                     variants={slideUpVariants}
-                    className="text-2xl sm:text-5xl lg:text-5xl xl:text-6xl font-black tracking-tighter leading-none text-foreground uppercase italic line-clamp-2"
+                    className="text-3xl sm:text-5xl lg:text-5xl xl:text-6xl font-black tracking-tighter leading-[0.9] text-white lg:text-foreground uppercase italic"
                   >
                     {currentProduct.name}
                   </motion.h1>
@@ -419,47 +421,63 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                   {cleanDescription(currentProduct.description || "")}
                 </motion.p>
 
-                <div className="flex items-center justify-between lg:justify-start gap-4 mb-4 lg:mb-10">
+                <div className="flex items-center justify-between lg:justify-start gap-4 mb-6 lg:mb-10">
                   <motion.div variants={slideUpVariants}>
-                    <span className="text-2xl lg:text-6xl font-black text-primary tracking-tight">
+                    <span className="text-3xl lg:text-6xl font-black text-primary tracking-tight">
                       {formatCurrency(currentProduct.price)}
                     </span>
                   </motion.div>
 
-                  {/* Mobile "Just Dropped" pill */}
-                  <div className="lg:hidden text-[10px] font-bold uppercase tracking-widest text-muted-foreground border border-border px-2 py-1 rounded-full">
-                    New Arrival
-                  </div>
+                  {/* Mobile "Just Dropped" pill - Enhanced */}
+                  <motion.div
+                    variants={scaleInVariants}
+                    className="lg:hidden flex items-center gap-1.5 bg-primary/20 text-primary border border-primary/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-[0_0_20px_rgba(var(--primary),0.3)]"
+                  >
+                    <Zap className="w-3 h-3 fill-current" />
+                    New Drop
+                  </motion.div>
                 </div>
 
                 <motion.div
                   variants={slideUpVariants}
                   className="flex flex-row items-center gap-3 w-full"
                 >
-                  <Button
-                    size="lg"
-                    className="flex-1 lg:flex-none h-12 lg:h-14 px-8 rounded-full text-sm lg:text-base font-bold uppercase tracking-widest bg-primary text-primary-foreground hover:scale-105 transition-all duration-300 shadow-xl shadow-primary/20"
-                    onClick={handleBuyNow}
-                    onPointerDown={(e) => e.stopPropagation()}
+                  {/* Pulsing Buy Now Button */}
+                  <motion.div
+                    className="flex-1 lg:flex-none"
+                    animate={{ scale: [1, 1.02, 1] }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
                   >
-                    <ShoppingBag className="mr-2 h-4 w-4" />
-                    Buy Now
-                  </Button>
+                    <Button
+                      size="lg"
+                      className="w-full lg:w-auto h-14 lg:h-16 px-8 rounded-2xl lg:rounded-full text-base font-black uppercase tracking-widest bg-primary text-primary-foreground hover:scale-105 transition-all duration-300 shadow-2xl shadow-primary/40 group/btn"
+                      onClick={handleBuyNow}
+                      onPointerDown={(e) => e.stopPropagation()}
+                    >
+                      <ShoppingBag className="mr-2 h-5 w-5 group-hover/btn:rotate-12 transition-transform" />
+                      Buy Now
+                    </Button>
+                  </motion.div>
+
                   <Button
                     size="lg"
                     variant="outline"
-                    className="h-12 lg:h-14 px-4 lg:px-8 rounded-full text-sm lg:text-base font-bold uppercase tracking-widest border-border text-foreground hover:bg-secondary transition-all"
+                    className="h-14 lg:h-16 px-4 lg:px-8 rounded-2xl lg:rounded-full text-sm lg:text-base font-bold uppercase tracking-widest border-white/10 text-white lg:text-foreground lg:border-border hover:bg-white/10 lg:hover:bg-secondary transition-all"
                     asChild
                     onPointerDown={(e) => e.stopPropagation()}
                   >
                     <Link href={`/product/${currentProduct.slug}`}>
-                      <span className="hidden lg:inline">View Details</span>
+                      <span className="hidden lg:inline">Details</span>
                       <ArrowRight className="h-5 w-5 lg:ml-2" />
                     </Link>
                   </Button>
                 </motion.div>
 
-                {/* Specs - Dark text on desktop now */}
+                {/* Specs - Desktop Only */}
                 <div className="hidden lg:flex mt-10">
                   <QuickSpecs />
                 </div>
