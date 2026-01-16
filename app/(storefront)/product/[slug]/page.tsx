@@ -35,7 +35,7 @@ export async function generateMetadata({
       title,
       description,
       images: product.main_image_url ? [product.main_image_url] : [],
-      type: "product",
+      type: "website",
       siteName: "FLASH",
     },
     twitter: {

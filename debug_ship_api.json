@@ -1,0 +1,10 @@
+{"timestamp":"2026-01-12T12:55:41.986Z","msg":"Attempting F-Ship login..."}
+{"error":"Unexpected end of JSON input","stack":"SyntaxError: Unexpected end of JSON input\n    at JSON.parse (<anonymous>)\n    at parseJSONFromBytes (node:internal/deps/undici/undici:6433:19)\n    at successSteps (node:internal/deps/undici/undici:6414:27)\n    at readAllBytes (node:internal/deps/undici/undici:5380:13)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)"}
+{"timestamp":"2026-01-12T12:56:06.988Z","msg":"Attempting F-Ship login..."}
+{"timestamp":"2026-01-12T12:56:07.350Z","msg":"Login HTTP Status","data":{"status":404}}
+{"timestamp":"2026-01-12T12:56:07.352Z","msg":"Login Raw Response","data":{"text":""}}
+{"timestamp":"2026-01-12T12:56:07.353Z","msg":"Login JSON Parse Failed"}
+{"timestamp":"2026-01-12T12:57:24.750Z","msg":"Attempting F-Ship login..."}
+{"timestamp":"2026-01-12T12:57:25.181Z","msg":"Login HTTP Status","data":{"status":404}}
+{"timestamp":"2026-01-12T12:57:25.183Z","msg":"Login Raw Response","data":{"text":""}}
+{"timestamp":"2026-01-12T12:57:25.184Z","msg":"Login JSON Parse Failed"}

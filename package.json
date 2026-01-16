@@ -71,6 +71,7 @@
     "typesense-instantsearch-adapter": "^2.9.0",
     "use-debounce": "^10.0.6",
     "uuid": "^13.0.0",
+    "web-push": "^3.6.7",
     "zod": "^4.2.1",
     "zustand": "^5.0.9"
   },
@@ -81,6 +82,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19.2.3",
+    "@types/web-push": "^3.6.4",
     "eslint": "^9",
     "eslint-config-next": "16.0.7",
     "supabase": "^2.67.1",

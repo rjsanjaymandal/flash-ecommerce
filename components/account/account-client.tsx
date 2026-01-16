@@ -32,6 +32,7 @@ import { User } from "@supabase/supabase-js";
 
 import { WaitlistTab } from "@/components/account/waitlist-tab";
 import { Product } from "@/lib/services/product-service";
+import { PushOptIn } from "@/components/storefront/push-opt-in";
 
 interface AccountClientProps {
   user: User;
@@ -160,6 +161,12 @@ export function AccountClient({
               Overview
             </TabsTrigger>
             <TabsTrigger
+              value="orders"
+              className="rounded-full px-6 md:px-10 py-3 md:py-4 data-[state=active]:bg-background data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-all text-[10px] md:text-[11px] font-black uppercase tracking-widest"
+            >
+              Orders
+            </TabsTrigger>
+            <TabsTrigger
               value="addresses"
               className="rounded-full px-6 md:px-10 py-3 md:py-4 data-[state=active]:bg-background data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-all text-[10px] md:text-[11px] font-black uppercase tracking-widest"
             >
@@ -187,6 +194,7 @@ export function AccountClient({
           <div className="grid gap-6 md:gap-8 lg:grid-cols-12 items-start">
             {/* Main Loyalty & Actions */}
             <div className="lg:col-span-4 space-y-4 md:space-y-6">
+              <PushOptIn />
               <LoyaltyCard points={profile?.loyalty_points || 0} />
 
               {/* Mini Address Preview */}
@@ -241,16 +249,47 @@ export function AccountClient({
                 <h2 className="text-2xl md:text-3xl font-black italic uppercase tracking-tighter">
                   Recent Transmissions
                 </h2>
-                <Badge
-                  variant="outline"
-                  className="rounded-full px-4 py-1 font-bold border-2 w-fit"
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  asChild
+                  className="rounded-full font-black uppercase tracking-widest text-[9px] hover:bg-zinc-100"
                 >
-                  {orders.length} Total
-                </Badge>
+                  <Link
+                    href="/account/orders"
+                    className="flex items-center gap-1"
+                  >
+                    View All Orders <ArrowRight className="h-3 w-3" />
+                  </Link>
+                </Button>
               </div>
               <div className="bg-white rounded-4xl md:rounded-4xl border-2 shadow-sm border-zinc-100 overflow-hidden">
-                <OrdersTab orders={orders} />
+                <OrdersTab orders={orders.slice(0, 3)} />
               </div>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="orders" className="focus-visible:outline-none">
+          <div className="space-y-8">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+              <div className="space-y-2">
+                <span className="text-primary font-black tracking-[0.4em] uppercase text-[10px]">
+                  Order History & Tracking
+                </span>
+                <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase italic">
+                  MY <span className="text-zinc-300">ORDERS</span>
+                </h2>
+              </div>
+              <Badge
+                variant="outline"
+                className="rounded-full px-6 py-2 border-2 font-black text-[10px] uppercase"
+              >
+                {orders.length} Total Transmissions
+              </Badge>
+            </div>
+            <div className="bg-white rounded-[2rem] border-2 shadow-sm border-zinc-100 overflow-hidden">
+              <OrdersTab orders={orders} />
             </div>
           </div>
         </TabsContent>

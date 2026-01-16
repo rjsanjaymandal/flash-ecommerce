@@ -8,20 +8,10 @@ import {
   selectIsInWishlist,
 } from "@/store/use-wishlist-store";
 import { cn, formatCurrency } from "@/lib/utils";
-import {
-  Star,
-  Truck,
-  RefreshCcw,
-  ShieldCheck,
-  ChevronRight,
-  Home,
-  Plus,
-  Heart,
-  Clock,
-} from "lucide-react";
+import { Star, Plus, Heart, Clock } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
-import { checkPreorderStatus, togglePreorder } from "@/app/actions/preorder";
+import { togglePreorder } from "@/app/actions/preorder";
 import { ProductGallery } from "@/components/products/product-gallery";
 import { ProductSelectors } from "@/components/products/product-selectors";
 import { ProductDescriptionAccordion } from "@/components/products/product-description-accordion";
@@ -53,6 +43,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+
+// Fallback Standards
+const STANDARD_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL"];
 
 // Types
 // type StockItem = { ... } // Replaced by import or compatible shape
@@ -105,10 +98,10 @@ export function ProductDetailClient({
   const [isOnWaitlist, setIsOnWaitlist] = useState(false);
   const [isLoadingWaitlist, setIsLoadingWaitlist] = useState(false);
   const [isWaitlistDialogOpen, setIsWaitlistDialogOpen] = useState(false);
-  const [savedGuestEmail, setSavedGuestEmail] = useState("");
+  const [savedGuestEmail, _setSavedGuestEmail] = useState("");
   const [isUnjoinDialogOpen, setIsUnjoinDialogOpen] = useState(false);
 
-  const [showStickyBar, setShowStickyBar] = useState(false);
+  const [showStickyBar, _setShowStickyBar] = useState(false);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
 
   const { user } = useAuth();
@@ -123,9 +116,6 @@ export function ProductDetailClient({
 
   // Ref for the main action button to sticky bar intersection
   const mainActionRef = useRef<HTMLDivElement>(null);
-
-  // Fallback Standards
-  const STANDARD_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL"];
 
   // Helper to get or create guest ID
   const getGuestId = useCallback(() => {
@@ -154,7 +144,7 @@ export function ProductDetailClient({
       if (indexB !== -1) return 1;
       return a.localeCompare(b);
     });
-  }, [product.size_options, realTimeStock]);
+  }, [product.size_options, realTimeStock, STANDARD_SIZES]);
 
   const colorOptions = product.color_options?.length
     ? product.color_options
@@ -234,7 +224,7 @@ export function ProductDetailClient({
         if (result.status === "added")
           localStorage.setItem(`waitlist_${product.id}`, "true");
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("Something went wrong.");
     } finally {
       setIsLoadingWaitlist(false);
@@ -256,7 +246,7 @@ export function ProductDetailClient({
       } else {
         localStorage.removeItem(`waitlist_${product.id}`);
       }
-    } catch (error) {
+    } catch (_error) {
       setIsOnWaitlist(previousState);
       toast.dismiss();
       toast.error("Something went wrong.");
@@ -281,7 +271,7 @@ export function ProductDetailClient({
         localStorage.setItem(`waitlist_${product.id}`, "true");
         if (email) localStorage.setItem("user_email_preference", email);
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to join waitlist.");
     } finally {
       setIsLoadingWaitlist(false);
@@ -313,7 +303,7 @@ export function ProductDetailClient({
         options
       );
       return true;
-    } catch (err) {
+    } catch (_err) {
       toast.error("Failed to add to bag");
       return false;
     }

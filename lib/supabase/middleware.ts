@@ -48,6 +48,7 @@ export async function updateSession(request: NextRequest) {
 
   // 3. Refresh the session
   const { data: { user }, error } = await supabase.auth.getUser()
+  console.log('[Middleware] User:', user?.id, 'Error:', error?.message)
 
   // 4. Protected Routes
   if (request.nextUrl.pathname.startsWith('/admin')) {

@@ -1,10 +1,11 @@
 import { OrderTimeline } from "@/components/storefront/order-timeline";
+import { TrackingTimeline } from "@/components/storefront/tracking-timeline";
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ChevronLeft, MapPin, Package } from "lucide-react";
+import { ChevronLeft, MapPin, Package, Truck } from "lucide-react";
 import FlashImage from "@/components/ui/flash-image";
 
 export const revalidate = 0;
@@ -78,6 +79,27 @@ export default async function OrderTrackingPage({
                 order.updated_at || order.created_at || new Date().toISOString()
               }
             />
+
+            {order.tracking_number && (
+              <div className="mt-12 pt-12 border-t border-zinc-100">
+                <div className="flex items-center gap-3 mb-8">
+                  <div className="h-10 w-10 bg-primary/10 rounded-2xl flex items-center justify-center">
+                    <Truck className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-black uppercase italic tracking-tighter">
+                      Live Shipment History
+                    </h3>
+                    <p className="text-zinc-500 text-[10px] font-black uppercase tracking-widest">
+                      AWB: {order.tracking_number}
+                    </p>
+                  </div>
+                </div>
+                <div className="bg-zinc-50/50 rounded-3xl border border-zinc-100 overflow-hidden">
+                  <TrackingTimeline awb={order.tracking_number} />
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

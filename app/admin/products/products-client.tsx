@@ -16,7 +16,6 @@ import {
   Plus,
   Pencil,
   Search,
-  Filter,
   MoreHorizontal,
   ArrowUpDown,
   Loader2,
@@ -206,7 +205,7 @@ export function ProductsClient({
       toast.success(`${selectedIds.size} products deleted`);
       setSelectedIds(new Set());
       router.refresh();
-    } catch (err) {
+    } catch (_err) {
       toast.error("Bulk deletion failed");
     } finally {
       setIsBulkDeleting(false);
@@ -219,12 +218,12 @@ export function ProductsClient({
       toast.success(`${selectedIds.size} products updated`);
       setSelectedIds(new Set());
       router.refresh();
-    } catch (err) {
+    } catch (_err) {
       toast.error("Bulk update failed");
     }
   };
 
-  const handleViewWaitlist = async (product: any) => {
+  const handleViewWaitlist = async (product: AdminProduct) => {
     setWaitlistProduct(product);
     setIsWaitlistLoading(true);
     setWaitlistUsers([]);
@@ -235,7 +234,7 @@ export function ProductsClient({
       } else {
         setWaitlistUsers(res.data || []);
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to load waitlist");
     } finally {
       setIsWaitlistLoading(false);
@@ -583,7 +582,10 @@ export function ProductsClient({
                 // Stock Breakdown String
                 const stockBreakdown = product.product_stock?.length
                   ? product.product_stock
-                      .map((s: any) => `${s.size || "N/A"}: ${s.quantity}`)
+                      .map(
+                        (s: { size: string | null; quantity: number }) =>
+                          `${s.size || "N/A"}: ${s.quantity}`
+                      )
                       .join(", ")
                   : "No stock records";
 

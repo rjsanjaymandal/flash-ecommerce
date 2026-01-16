@@ -47,14 +47,19 @@ G:\flash-ecommerce\app\(storefront)\product\[slug]\page.tsx
   104:67  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
 G:\flash-ecommerce\app\(storefront)\product\[slug]\product-detail.tsx
-   14:10  warning  'checkPreorderStatus' is defined but never used                                                                                                                                                                                    @typescript-eslint/no-unused-vars
-   98:27  warning  'setSavedGuestEmail' is assigned a value but never used                                                                                                                                                                            @typescript-eslint/no-unused-vars
-  101:25  warning  'setShowStickyBar' is assigned a value but never used                                                                                                                                                                              @typescript-eslint/no-unused-vars
-  118:9   warning  The 'STANDARD_SIZES' array makes the dependencies of useMemo Hook (at line 147) change on every render. Move it inside the useMemo callback. Alternatively, wrap the initialization of 'STANDARD_SIZES' in its own useMemo() Hook  react-hooks/exhaustive-deps
-  227:14  warning  '_error' is defined but never used                                                                                                                                                                                                 @typescript-eslint/no-unused-vars
-  249:14  warning  '_error' is defined but never used                                                                                                                                                                                                 @typescript-eslint/no-unused-vars
-  274:14  warning  '_error' is defined but never used                                                                                                                                                                                                 @typescript-eslint/no-unused-vars
-  306:14  warning  '_err' is defined but never used                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+   13:3   warning  'Truck' is defined but never used                                                                                @typescript-eslint/no-unused-vars
+   14:3   warning  'RefreshCcw' is defined but never used                                                                           @typescript-eslint/no-unused-vars
+   15:3   warning  'ShieldCheck' is defined but never used                                                                          @typescript-eslint/no-unused-vars
+   16:3   warning  'ChevronRight' is defined but never used                                                                         @typescript-eslint/no-unused-vars
+   17:3   warning  'Home' is defined but never used                                                                                 @typescript-eslint/no-unused-vars
+   24:10  warning  'checkPreorderStatus' is defined but never used                                                                  @typescript-eslint/no-unused-vars
+  108:27  warning  'setSavedGuestEmail' is assigned a value but never used                                                          @typescript-eslint/no-unused-vars
+  111:25  warning  'setShowStickyBar' is assigned a value but never used                                                            @typescript-eslint/no-unused-vars
+  157:6   warning  React Hook useMemo has a missing dependency: 'STANDARD_SIZES'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  237:14  warning  'error' is defined but never used                                                                                @typescript-eslint/no-unused-vars
+  259:14  warning  'error' is defined but never used                                                                                @typescript-eslint/no-unused-vars
+  284:14  warning  'error' is defined but never used                                                                                @typescript-eslint/no-unused-vars
+  316:14  warning  'err' is defined but never used                                                                                  @typescript-eslint/no-unused-vars
 
 G:\flash-ecommerce\app\(storefront)\shipping\page.tsx
   1:17  warning  'Globe' is defined but never used        @typescript-eslint/no-unused-vars
@@ -168,12 +173,14 @@ G:\flash-ecommerce\app\admin\customers\customers-client.tsx
   6:42  warning  'Loader2' is defined but never used  @typescript-eslint/no-unused-vars
 
 G:\flash-ecommerce\app\admin\dashboard-client.tsx
-  111:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  131:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  159:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  162:59  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  177:10  warning  'payload' is defined but never used       @typescript-eslint/no-unused-vars
-  564:43  warning  'i' is defined but never used             @typescript-eslint/no-unused-vars
+   14:3   warning  'Users' is defined but never used                                 @typescript-eslint/no-unused-vars
+   53:11  error    An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-object-type
+  112:43  warning  Unexpected any. Specify a different type                          @typescript-eslint/no-explicit-any
+  132:18  warning  Unexpected any. Specify a different type                          @typescript-eslint/no-explicit-any
+  160:49  warning  Unexpected any. Specify a different type                          @typescript-eslint/no-explicit-any
+  163:59  warning  Unexpected any. Specify a different type                          @typescript-eslint/no-explicit-any
+  178:10  warning  'payload' is defined but never used                               @typescript-eslint/no-unused-vars
+  565:43  warning  'i' is defined but never used                                     @typescript-eslint/no-unused-vars
 
 G:\flash-ecommerce\app\admin\feedback\page.tsx
   15:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
@@ -227,11 +234,14 @@ G:\flash-ecommerce\app\admin\products\new\page.tsx
   3:15  warning  'Category' is defined but never used  @typescript-eslint/no-unused-vars
 
 G:\flash-ecommerce\app\admin\products\products-client.tsx
-  121:9   warning  'searchParams' is assigned a value but never used    @typescript-eslint/no-unused-vars
-  208:14  warning  '_err' is defined but never used                     @typescript-eslint/no-unused-vars
-  221:14  warning  '_err' is defined but never used                     @typescript-eslint/no-unused-vars
-  237:14  warning  '_error' is defined but never used                   @typescript-eslint/no-unused-vars
-  583:23  warning  'stockBreakdown' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   19:3   warning  'Filter' is defined but never used                   @typescript-eslint/no-unused-vars
+  122:9   warning  'searchParams' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  209:14  warning  'err' is defined but never used                      @typescript-eslint/no-unused-vars
+  222:14  warning  'err' is defined but never used                      @typescript-eslint/no-unused-vars
+  227:46  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  238:14  warning  'error' is defined but never used                    @typescript-eslint/no-unused-vars
+  584:23  warning  'stockBreakdown' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  586:32  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
 
 G:\flash-ecommerce\app\admin\reviews\reviews-client.tsx
    27:41  warning  'MessageSquare' is defined but never used                                                                                                                                                                                                                                                @typescript-eslint/no-unused-vars
@@ -773,5 +783,5 @@ G:\flash-ecommerce\scripts\sync-typesense.ts
    95:14  warning  'err' is defined but never used           @typescript-eslint/no-unused-vars
   118:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
-Γ£û 462 problems (0 errors, 462 warnings)
+Γ£û 472 problems (1 error, 471 warnings)
 

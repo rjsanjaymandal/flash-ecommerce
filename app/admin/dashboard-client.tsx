@@ -11,7 +11,6 @@ import {
   DollarSign,
   Package,
   ShoppingCart,
-  Users,
   ArrowUpRight,
   Activity,
   MessageSquare,
@@ -50,7 +49,7 @@ interface DashboardStats {
   totalProducts: number;
 }
 
-interface DashboardOrder extends Order {}
+type DashboardOrder = Order;
 
 interface DashboardActivity {
   id: string;
@@ -108,8 +107,8 @@ export function DashboardClient({
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "orders" },
-        (payload) => {
-          const newOrder = payload.new as any;
+        (_payload) => {
+          const newOrder = _payload.new as Order;
 
           // Update Aggregate Stats
           setStats((prev) => ({
@@ -129,7 +128,7 @@ export function DashboardClient({
               status: newOrder.status || "pending",
               shipping_name: newOrder.shipping_name || "New Customer",
               created_at: newOrder.created_at || new Date().toISOString(),
-            } as any,
+            } as DashboardOrder,
             ...prev.slice(0, 4),
           ]);
 
@@ -156,11 +155,11 @@ export function DashboardClient({
       .on(
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "products" },
-        (payload) => {
-          const updatedProduct = payload.new as any;
+        (_payload) => {
+          const updatedProduct = _payload.new as any;
 
           // If sale_count changed, likely a sale
-          if (updatedProduct.sale_count > (payload.old as any).sale_count) {
+          if (updatedProduct.sale_count > (_payload.old as any).sale_count) {
             // Update Top Products List if currently visible
             // (Note: accurate resorted list requires re-fetch, but we can patch local state for "Live" feel)
             // This is a simplified "Enterprise" patch
@@ -175,7 +174,7 @@ export function DashboardClient({
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "profiles" },
-        (payload) => {
+        (_payload) => {
           setActivity((prev) => [
             {
               id: `act-user-${Date.now()}`,
@@ -283,12 +282,12 @@ export function DashboardClient({
             color: "rose",
             sub: `Potential: ₹${(waitlistStats?.potentialRevenue || 0).toLocaleString()}`,
           },
-        ].map((item, i) => (
+        ].map((item, _i) => (
           <motion.div
             key={item.title}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
+            transition={{ delay: _i * 0.1 }}
           >
             <Card className="border-2 hover:border-primary/20 transition-all duration-500 group relative overflow-hidden h-full">
               <div
@@ -562,7 +561,7 @@ export function DashboardClient({
                   Awaiting Data...
                 </p>
               ) : (
-                topProducts.map((product, i) => (
+                topProducts.map((product, _i) => (
                   <div
                     key={product.id}
                     className="flex items-center gap-3 group"

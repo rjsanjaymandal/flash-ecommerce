@@ -1,0 +1,14 @@
+﻿
+> flash-ecommerce@0.1.0 dev
+> next dev
+
+   Γû▓ Next.js 16.0.10 (Turbopack)
+   - Local:         http://localhost:3001
+   - Network:       http://10.116.179.92:3001
+   - Environments: .env.local
+   - Experiments (use with caution):
+     ┬╖ serverActions
+
+ Γ£ô Starting...
+   Suggestion: If you intended to restart next dev, terminate the other process, and then try again.
+[?25h

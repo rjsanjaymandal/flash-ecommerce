@@ -18,6 +18,7 @@ import NextImage from "next/image";
 import imageLoader from "@/lib/image-loader";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { OrderStatusListener } from "@/components/checkout/order-status-listener";
+import { TrackingTimeline } from "@/components/storefront/tracking-timeline";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -126,6 +127,21 @@ export default async function OrderConfirmationPage({ params }: PageProps) {
                 </div>
               </div>
             </div>
+
+            {/* Live Tracking Information */}
+            {order.tracking_number && (
+              <div className="bg-card/50 backdrop-blur-md border border-border/50 rounded-[2rem] overflow-hidden shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <div className="px-8 py-5 bg-muted/30 border-b border-border/50 flex items-center justify-between">
+                  <h3 className="font-black uppercase tracking-widest text-xs text-muted-foreground flex items-center gap-2">
+                    <Truck className="h-4 w-4" /> Live Shipment Updates
+                  </h3>
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">
+                    AWB: {order.tracking_number}
+                  </span>
+                </div>
+                <TrackingTimeline awb={order.tracking_number} />
+              </div>
+            )}
 
             {/* Items Card */}
             <div className="bg-card border border-border/50 rounded-[2rem] p-8 shadow-sm">

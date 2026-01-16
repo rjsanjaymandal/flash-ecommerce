@@ -15,11 +15,10 @@ import {
   Calendar,
   Truck,
 } from "lucide-react";
-import { OrderPaymentLogs } from "@/components/admin/order-payment-logs";
+import { TrackingTimeline } from "@/components/storefront/tracking-timeline";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
   CardFooter,
@@ -69,14 +68,15 @@ export default function OrderDetailsPage() {
       setIsLoading(false);
     };
     fetchOrder();
-  }, [id]);
+  }, [id, supabase]);
 
   // Mutation for Status
   const statusMutation = useMutation({
     mutationFn: async (newStatus: string) => {
-      const { error } = await (supabase.from("orders") as any)
-        .update({ status: newStatus })
-        .eq("id", id);
+      const { error } = await supabase
+        .from("orders")
+        .update({ status: newStatus as any })
+        .eq("id", id as string);
       if (error) throw error;
       return newStatus;
     },
@@ -85,7 +85,24 @@ export default function OrderDetailsPage() {
       queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
       toast.success(`Order status updated to ${newStatus}`);
     },
-    onError: (err) => toast.error("Failed to update status"),
+    onError: (_err) => toast.error("Failed to update status"),
+  });
+
+  // Mutation for Tracking Number
+  const trackingMutation = useMutation({
+    mutationFn: async (trackingNumber: string) => {
+      const { error } = await supabase
+        .from("orders")
+        .update({ tracking_number: trackingNumber as any })
+        .eq("id", id as string);
+      if (error) throw error;
+      return trackingNumber;
+    },
+    onSuccess: (trackingNumber) => {
+      setOrder((prev: any) => ({ ...prev, tracking_number: trackingNumber }));
+      toast.success("Tracking number updated");
+    },
+    onError: (_err) => toast.error("Failed to update tracking number"),
   });
 
   if (isLoading)
@@ -137,7 +154,13 @@ export default function OrderDetailsPage() {
             <h1 className="text-2xl font-bold tracking-tight flex items-center gap-3 text-slate-900">
               Order #{order.id.slice(0, 8)}
               <Badge
-                variant={getStatusColor(order.status) as any}
+                variant={
+                  getStatusColor(order.status) as
+                    | "default"
+                    | "secondary"
+                    | "destructive"
+                    | "outline"
+                }
                 className="uppercase text-[10px] tracking-wider font-semibold rounded-md px-2 py-0.5"
               >
                 {order.status}
@@ -323,6 +346,73 @@ export default function OrderDetailsPage() {
                 {order.city}, {order.state} {order.pincode}
               </p>
               <p>{order.country}</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Truck className="h-4 w-4 text-muted-foreground" />
+                Shipment Tracking
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  AWB / Tracking Number
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    defaultValue={order.tracking_number}
+                    placeholder="Enter AWB Number"
+                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                      if (e.key === "Enter") {
+                        trackingMutation.mutate(
+                          (e.target as HTMLInputElement).value
+                        );
+                      }
+                    }}
+                    id="tracking-number-input"
+                  />
+                  <Button
+                    size="sm"
+                    className="h-9 px-3"
+                    onClick={() => {
+                      const input = document.getElementById(
+                        "tracking-number-input"
+                      ) as HTMLInputElement;
+                      trackingMutation.mutate(input.value);
+                    }}
+                    disabled={trackingMutation.isPending}
+                  >
+                    {trackingMutation.isPending ? "..." : "Save"}
+                  </Button>
+                </div>
+                {order.tracking_number && (
+                  <Link
+                    href={`/account/orders/${order.id}`}
+                    target="_blank"
+                    className="text-xs text-indigo-600 font-bold hover:underline flex items-center gap-1 mt-1"
+                  >
+                    View Customer Page
+                  </Link>
+                )}
+                {order.tracking_number && (
+                  <div className="mt-4 pt-4 border-t border-zinc-100">
+                    <p className="text-[10px] font-black uppercase text-zinc-400 tracking-widest mb-4">
+                      Live AWB History
+                    </p>
+                    <div className="bg-zinc-50 rounded-2xl border border-zinc-100 overflow-hidden">
+                      <TrackingTimeline
+                        awb={order.tracking_number}
+                        className="scale-90 origin-top -translate-y-2 -mb-8"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
 

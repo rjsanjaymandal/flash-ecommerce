@@ -17,6 +17,7 @@ import {
   Ticket,
   Clock,
   FlaskConical,
+  Bell,
 } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 
@@ -31,6 +32,7 @@ export const navItems = [
   { href: "/admin/customers", label: "Customers", icon: User },
   { href: "/admin/waitlist", label: "Waitlist", icon: Clock },
   { href: "/admin/reviews", label: "Reviews", icon: MessageSquare },
+  { href: "/admin/notifications", label: "Notifications", icon: Bell },
 ];
 
 export const secondaryItems = [
