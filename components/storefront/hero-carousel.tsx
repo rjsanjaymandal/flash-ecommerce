@@ -349,7 +349,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={handleMouseLeave}
-      className="relative w-full h-[90vh] lg:h-[95vh] bg-background overflow-hidden group perspective-1000 cursor-grab active:cursor-grabbing selection:bg-primary selection:text-white"
+      className="relative w-full h-[110vh] lg:h-[95vh] bg-background overflow-hidden group perspective-1000 cursor-grab active:cursor-grabbing selection:bg-primary selection:text-white"
     >
       <GrainEffect />
 
@@ -373,8 +373,8 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
           className="absolute inset-0 flex flex-col lg:flex-row touch-pan-y"
         >
           {/* --- CONTENT SECTION (Mobile: Bottom Sheet / Desktop: Left Column) --- */}
-          <div className="relative z-20 w-full h-[35%] lg:h-full lg:w-[50%] order-2 lg:order-1 flex flex-col justify-start lg:justify-center bg-background/80 backdrop-blur-xl border-t border-white/10 lg:bg-background lg:backdrop-blur-none lg:border-none lg:border-r lg:border-border/50 shadow-[0_-10px_40px_rgba(0,0,0,0.2)] lg:shadow-none pointer-events-auto">
-            <div className="h-full flex flex-col justify-center px-6 lg:pl-16 lg:pr-12 xl:pl-24 pointer-events-auto lg:pt-32">
+          <div className="relative z-20 w-full h-[40%] lg:h-full lg:w-[50%] order-2 lg:order-1 flex flex-col justify-start lg:justify-center bg-background/80 backdrop-blur-xl border-t border-white/10 lg:bg-background lg:backdrop-blur-none lg:border-none lg:border-r lg:border-border/50 shadow-[0_-10px_40px_rgba(0,0,0,0.2)] lg:shadow-none pointer-events-auto">
+            <div className="h-full flex flex-col justify-center px-6 pb-12 lg:pb-0 lg:pl-16 lg:pr-12 xl:pl-24 pointer-events-auto lg:pt-32">
               {/* Content Container */}
               <motion.div
                 variants={containerVariants}
@@ -469,7 +469,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
 
           {/* --- IMAGE SECTION (Mobile: Top / Desktop: Right Column) --- */}
           <motion.div
-            className="relative w-full h-[65%] lg:h-full lg:w-[50%] order-1 lg:order-2 overflow-hidden z-0"
+            className="relative w-full h-[60%] lg:h-full lg:w-[50%] order-1 lg:order-2 overflow-hidden z-0"
             style={{ rotateX, rotateY, perspective: 1000 }}
           >
             {/* Dynamic Background Gradient for Right Column */}
