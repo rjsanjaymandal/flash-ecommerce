@@ -30,7 +30,10 @@ export async function getUnifiedAuth() {
     }
 
     return { user, session, profile }
-  } catch (error) {
+  } catch (error: any) {
+    if (error.digest === 'DYNAMIC_SERVER_USAGE') {
+      throw error;
+    }
     console.error('[getUnifiedAuth] Critical error:', error)
     return { user: null, session: null, profile: null }
   }
