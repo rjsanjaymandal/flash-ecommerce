@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { PostHogProvider } from "./providers/posthog-provider";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { Providers } from "./providers";
@@ -72,18 +71,16 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased overflow-x-hidden`}
       >
-        <PostHogProvider>
-          <Providers
-            initialUser={user}
-            initialSession={session}
-            initialProfile={profile}
-          >
-            <NuqsAdapter>
-              {children}
-              <Analytics />
-            </NuqsAdapter>
-          </Providers>
-        </PostHogProvider>
+        <Providers
+          initialUser={user}
+          initialSession={session}
+          initialProfile={profile}
+        >
+          <NuqsAdapter>
+            {children}
+            <Analytics />
+          </NuqsAdapter>
+        </Providers>
         <OrganizationJsonLd />
       </body>
     </html>
