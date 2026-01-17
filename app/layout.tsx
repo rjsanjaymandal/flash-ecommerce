@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { Providers } from "./providers";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
@@ -76,10 +75,7 @@ export default async function RootLayout({
           initialSession={session}
           initialProfile={profile}
         >
-          <NuqsAdapter>
-            {children}
-            <Analytics />
-          </NuqsAdapter>
+          <NuqsAdapter>{children}</NuqsAdapter>
         </Providers>
         <OrganizationJsonLd />
       </body>
