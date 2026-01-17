@@ -61,5 +61,36 @@ Next.js standalone mode needs you to manually add the public assets. After the b
 
 Click **Start** or **Run** in the Hostinger panel. Your app should now be live!
 
+## 6. Troubleshooting 🚀
+
+### ❌ Persistent "Server Components render" Error
+
+- **The Cause**: Usually missing **Environment Variables**.
+- **The Fix**:
+  1. Go to the Hostinger Node.js Dashboard.
+  2. Verify that `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are typed correctly.
+  3. Ensure there are no leading/trailing spaces in the values.
+  4. **Restart** the Node.js app after saving changes.
+
+### ❌ Logo or Images 404 (Not Found)
+
+- **The Cause**: The `public` folder was not uploaded or is in the wrong place.
+- **The Fix**:
+  - The `public` folder (containing `flash-logo.jpg`) must be **inside** the application folder on Hostinger.
+  - Correct structure:
+    ```text
+    / (root of your app on Hostinger)
+    ├── public/
+    │   └── flash-logo.jpg
+    ├── server.js
+    └── .next/
+        └── static/
+    ```
+
+### ❌ Analytics/PostHog Errors in Console
+
+- **The Cause**: Browsers are caching the old version of your site.
+- **The Fix**: Clear your browser cache or use an Incognito window to confirm the new clean code is running.
+
 > [!TIP]
 > If you make changes later, just repeat the build and upload the `standalone` folder again.
