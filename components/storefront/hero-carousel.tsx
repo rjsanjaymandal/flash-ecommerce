@@ -28,7 +28,7 @@ import { cn, formatCurrency } from "@/lib/utils";
 
 import { QuickAddDialog } from "@/components/products/quick-add-dialog";
 
-interface HeroProduct {
+export interface HeroProduct {
   id: string;
   name: string;
   description: string | null;
@@ -229,7 +229,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
 
   // Quick Add State
   const [quickAddProduct, setQuickAddProduct] = useState<HeroProduct | null>(
-    null
+    null,
   );
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
 
@@ -340,7 +340,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
   };
 
   const dynamicGlowColor = stringToColor(
-    currentProduct.id + currentProduct.name
+    currentProduct.id + currentProduct.name,
   );
 
   return (
@@ -591,7 +591,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                 "relative w-14 h-14 rounded-lg overflow-hidden transition-all duration-300",
                 idx === currentIndex
                   ? "opacity-100 scale-110"
-                  : "opacity-40 hover:opacity-75 grayscale"
+                  : "opacity-40 hover:opacity-75 grayscale",
               )}
             >
               {idx === currentIndex && (

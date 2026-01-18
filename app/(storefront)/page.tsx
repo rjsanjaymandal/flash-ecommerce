@@ -6,23 +6,23 @@ import dynamic from "next/dynamic";
 // Lazy load non-ATF (Above The Fold) components
 const CategoryVibes = dynamic(() =>
   import("@/components/storefront/category-vibes").then(
-    (mod) => mod.CategoryVibes
-  )
+    (mod) => mod.CategoryVibes,
+  ),
 );
 const NewsletterSection = dynamic(() =>
   import("@/components/marketing/newsletter-section").then(
-    (mod) => mod.NewsletterSection
-  )
+    (mod) => mod.NewsletterSection,
+  ),
 );
 const AsyncFeaturedGrid = dynamic(() =>
   import("@/components/storefront/async-featured-grid").then(
-    (mod) => mod.AsyncFeaturedGrid
-  )
+    (mod) => mod.AsyncFeaturedGrid,
+  ),
 );
 const AsyncPersonalizedPicks = dynamic(() =>
   import("@/components/storefront/async-personalized-picks").then(
-    (mod) => mod.AsyncPersonalizedPicks
-  )
+    (mod) => mod.AsyncPersonalizedPicks,
+  ),
 );
 
 // Force rebuild
@@ -48,15 +48,28 @@ function GridSkeleton() {
   );
 }
 
+import {
+  getFeaturedProducts,
+  type Product,
+} from "@/lib/services/product-service";
 import { getSmartCarouselData } from "@/lib/data/get-smart-carousel";
-import { HeroCarousel } from "@/components/storefront/hero-carousel";
+import {
+  HeroCarousel,
+  type HeroProduct,
+} from "@/components/storefront/hero-carousel";
 
 // Cache for 15 minutes (900 seconds) as requested
 export const revalidate = 900;
 
 export default async function Home() {
   const categories = await getRootCategories(4);
-  const heroProducts = await getSmartCarouselData();
+
+  let heroProducts: HeroProduct[] = [];
+  try {
+    heroProducts = await getSmartCarouselData();
+  } catch (error) {
+    console.error("[Home] Failed to fetch carousel data:", error);
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-primary selection:text-primary-foreground pb-12">

@@ -66,9 +66,10 @@ Click **Start** or **Run** in the Hostinger panel. Your app should now be live!
 ### ❌ Persistent "Server Components render" Error
 
 - **The Cause**: Usually missing **Environment Variables**.
+- **Important**: Your **Home Page** specifically requires the `SUPABASE_SERVICE_ROLE_KEY`. If this is missing, the Home Page will crash while other pages work.
 - **The Fix**:
   1. Go to the Hostinger Node.js Dashboard.
-  2. Verify that `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are typed correctly.
+  2. Verify that `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` are typed correctly.
   3. Ensure there are no leading/trailing spaces in the values.
   4. **Restart** the Node.js app after saving changes.
 
