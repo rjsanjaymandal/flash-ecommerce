@@ -93,5 +93,26 @@ Click **Start** or **Run** in the Hostinger panel. Your app should now be live!
 - **The Cause**: Browsers are caching the old version of your site.
 - **The Fix**: Clear your browser cache or use an Incognito window to confirm the new clean code is running.
 
+## 7. Clean Deployment Checklist 🧹
+
+If you are seeing old errors (like Vercel 404s) or Auth is not working:
+
+1.  **Clear Local Cache**:
+    - `rm -rf .next`
+    - `npm run build`
+2.  **Clear Hostinger Files**:
+    - Log in to File Manager.
+    - Delete everything in your `public_html` (or your app folder) EXCEPT the `.env` if you have one there.
+3.  **Upload fresh contents** from `.next/standalone`.
+4.  **RESTART Node.js App**: In the Hostinger Node.js Dashboard, click "Stop" and then "Start" after you change any environment variables. **Changes do NOT apply until you restart.**
+
+### 🛑 Special Note on Auth
+
+`Navbar Auth State: {email: undefined...}` usually means either:
+
+- The `NEXT_PUBLIC_SUPABASE_URL` was missing **during your local build**.
+- The `SUPABASE_SERVICE_ROLE_KEY` is missing in the **Hostinger Dashboard**.
+- You haven't **restarted** the Node.js app after adding variables.
+
 > [!TIP]
 > If you make changes later, just repeat the build and upload the `standalone` folder again.

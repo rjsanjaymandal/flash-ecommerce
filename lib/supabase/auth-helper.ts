@@ -6,6 +6,15 @@ import { createClient } from './server'
  * to minimize sequential waterfall requests.
  */
 export async function getUnifiedAuth() {
+  // 1. Environment Check for Hostinger Debugging
+  const hasUrl = !!process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const hasKey = !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  
+  if (!hasUrl || !hasKey) {
+    console.error('[getUnifiedAuth] Missing Supabase Configuration:', { hasUrl, hasKey });
+    return { user: null, session: null, profile: null };
+  }
+
   try {
     const supabase = await createClient()
 
