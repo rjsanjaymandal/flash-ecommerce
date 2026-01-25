@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { OrganizationJsonLd } from "@/components/seo/organization-json-ld";
+import { WebSiteJsonLd } from "@/components/seo/website-json-ld";
 import { getUnifiedAuth } from "@/lib/supabase/auth-helper";
 
 const geistSans = Geist({
@@ -29,15 +30,29 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: "FLASH | Anime Streetwear & Japanese Aesthetic Urban Clothing",
+    default: "FLASH | Premium Anime Streetwear & Intelligent Queer Fashion",
     template: "%s | FLASH",
   },
   description:
-    "Elevate your vibe with premium anime hoodies, graphic tees, and Harajuku techwear. Shop high-quality, urban anime apparel for the one-person empire.",
+    "Cyberpunk aesthetics meets nano-fabric engineering. Explore FLASH's gender-neutral anime streetwear, queer fashion drops, and premium intelligent clothing for the modern rebel. Fast fashion, fantastic fabric.",
+  keywords: [
+    "anime streetwear",
+    "queer fashion",
+    "gender neutral clothing",
+    "nano fabric materials",
+    "intelligent clothing",
+    "cyberpunk aesthetic",
+    "japanese streetwear",
+    "fast fashion anime",
+    "premium japanese fabric",
+    "lgbtq fashion brand",
+    "streetwear for all",
+  ],
   metadataBase: new URL("https://flashhfashion.in"),
   openGraph: {
-    title: "FLASH | Anime Streetwear & Japanese Aesthetic Urban Clothing",
-    description: "Premium anime hoodies, graphic tees, and Harajuku techwear.",
+    title: "FLASH | Premium Anime Streetwear & Intelligent Queer Fashion",
+    description:
+      "Cyberpunk aesthetics meets nano-fabric engineering. Gender-neutral anime streetwear and intelligent clothing.",
     url: "https://flashhfashion.in",
     siteName: "FLASH",
     locale: "en_US",
@@ -45,8 +60,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "FLASH | Anime Streetwear & Japanese Aesthetic Urban Clothing",
-    description: "Elevate your vibe with premium anime apparel.",
+    title: "FLASH | Anime Streetwear & Intelligent Queer Fashion",
+    description:
+      "Cyberpunk aesthetics meets nano-fabric engineering. Premium anime apparel and intelligent clothing for all.",
   },
   verification: {
     google: "CqVr1TGrfamesut-wOLLkyz2PQUjYb-ihMDqj9zL2X0",
@@ -78,6 +94,7 @@ export default async function RootLayout({
           <NuqsAdapter>{children}</NuqsAdapter>
         </Providers>
         <OrganizationJsonLd />
+        <WebSiteJsonLd />
       </body>
     </html>
   );

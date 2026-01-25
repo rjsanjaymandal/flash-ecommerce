@@ -12,6 +12,11 @@ export function OrganizationJsonLd() {
       "https://instagram.com/flashhfashion",
       "https://twitter.com/flashhfashion",
     ],
+    description:
+      "FLASH is a premium streetwear brand at the intersection of Japanese anime aesthetic, queer fashion DNA, and intelligent nano-fabric engineering. Designed for all, regardless of gender.",
+    slogan: "Unapologetic Style. Intelligent Fabric. Fashion for All.",
+    keywords:
+      "anime streetwear, queer fashion, nano fabric, intelligent clothing, gender neutral fashion, harajuku aesthetic",
     contactPoint: {
       "@type": "ContactPoint",
       telephone: "+91-9876543210",
