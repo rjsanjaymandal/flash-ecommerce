@@ -41,9 +41,13 @@ export default function FlashImage({
   const isExternal = typeof src === "string" && src.startsWith("http");
   const isUnsplash = typeof src === "string" && src.includes("unsplash.com");
 
-  // Force unoptimized for ALL external images except Unsplash to bypass proxy issues
-  // This ensures 100% reliability for Supabase and other third-party hosts
-  const finalUnoptimized = unoptimized || (isExternal && !isUnsplash);
+  // Force unoptimized for ALL external images except Unsplash and Supabase to bypass proxy issues
+  // This ensures 100% reliability for other third-party hosts
+  const isSupabase =
+    typeof src === "string" &&
+    src.includes("supabase.co/storage/v1/object/public");
+  const finalUnoptimized =
+    unoptimized || (isExternal && !isUnsplash && !isSupabase);
 
   // Manual URL encoding for spaces and special characters to prevent browser parsing errors
   let safeSrc = src;
@@ -85,8 +89,8 @@ export default function FlashImage({
     );
   }
 
-  // Determine if we should use the custom loader (only for Unsplash now)
-  const shouldUseLoader = isUnsplash;
+  // Determine if we should use the custom loader
+  const shouldUseLoader = isUnsplash || isSupabase;
 
   // Inject transformation hints into the src URL for the loader to pick up
   let finalSrc = safeSrc;
