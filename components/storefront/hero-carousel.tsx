@@ -94,14 +94,137 @@ const stringToColor = (str: string) => {
 
 // --- SUB-COMPONENTS ---
 
+function BackgroundAtmosphere({ color }: { color: string }) {
+  return (
+    <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+      <motion.div
+        animate={{
+          scale: [1, 1.2, 1],
+          opacity: [0.15, 0.25, 0.15],
+          rotate: [0, 5, 0],
+        }}
+        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute -top-[20%] -right-[10%] w-[100%] h-[120%] blur-[150px] rounded-full"
+        style={{
+          background: `radial-gradient(circle, ${color} 0%, transparent 70%)`,
+        }}
+      />
+      <motion.div
+        animate={{
+          scale: [1.2, 1, 1.2],
+          opacity: [0.1, 0.2, 0.1],
+          rotate: [0, -5, 0],
+        }}
+        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute -bottom-[20%] -left-[10%] w-[100%] h-[120%] blur-[150px] rounded-full"
+        style={{
+          background: `radial-gradient(circle, ${color} 0%, transparent 70%)`,
+        }}
+      />
+    </div>
+  );
+}
+
+function FloatingAccents({ color }: { color: string }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) return null;
+
+  return (
+    <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden hidden lg:block">
+      {[...Array(5)].map((_, i) => (
+        <motion.div
+          key={i}
+          initial={{ opacity: 0, y: Math.random() * 1000 }}
+          animate={{
+            opacity: [0, 0.5, 0],
+            y: [Math.random() * 1000, Math.random() * 1000 - 500],
+            x: [Math.random() * 100, Math.random() * 100 - 50],
+          }}
+          transition={{
+            duration: 10 + Math.random() * 10,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+          className="absolute w-px h-24 bg-linear-to-b from-transparent via-current to-transparent"
+          style={{
+            left: `${Math.random() * 100}%`,
+            color: color,
+            opacity: 0.2,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 function GrainEffect() {
   return (
     <div
-      className="absolute inset-0 z-0 pointer-events-none opacity-[0.03] mix-blend-overlay"
+      className="absolute inset-0 z-10 pointer-events-none opacity-[0.05] mix-blend-overlay"
       style={{
         backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
       }}
     />
+  );
+}
+
+function ScanLine({ color }: { color: string }) {
+  return (
+    <motion.div
+      animate={{
+        top: ["-10%", "110%"],
+        opacity: [0, 1, 0],
+      }}
+      transition={{
+        duration: 3,
+        repeat: Infinity,
+        ease: "linear",
+      }}
+      className="absolute left-0 right-0 h-[2px] z-20 pointer-events-none blur-[1px]"
+      style={{
+        background: `linear-gradient(90deg, transparent, ${color}, transparent)`,
+        boxShadow: `0 0 15px ${color}`,
+      }}
+    />
+  );
+}
+
+function ImageIndicator({
+  label,
+  value,
+  className,
+  delay = 0,
+  hideOnMobile = true,
+}: {
+  label: string;
+  value: string;
+  className?: string;
+  delay?: number;
+  hideOnMobile?: boolean;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ delay: 0.5 + delay, duration: 0.5 }}
+      className={cn(
+        "absolute z-30 flex flex-col items-start gap-1 pointer-events-none",
+        hideOnMobile ? "hidden lg:flex" : "flex",
+        className,
+      )}
+    >
+      <div className="flex items-center gap-2">
+        <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_10px_rgba(var(--primary),0.8)]" />
+        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">
+          {label}
+        </span>
+      </div>
+      <span className="text-[10px] lg:text-xs font-bold text-white uppercase ml-3.5">
+        {value}
+      </span>
+    </motion.div>
   );
 }
 
@@ -111,15 +234,15 @@ function LiveStatsBadge() {
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 1, duration: 0.5 }}
-      className="absolute top-4 right-4 lg:top-8 lg:left-auto lg:right-8 z-30 flex items-center gap-2 bg-black/60 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-full shadow-2xl"
+      className="absolute top-4 right-4 lg:top-8 lg:right-8 z-30 flex items-center gap-2 border border-white/10 bg-black/40 hover:bg-black/60 backdrop-blur-md px-4 py-2 rounded-2xl shadow-2xl group cursor-help"
     >
       <span className="relative flex h-2 w-2">
-        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+        <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
       </span>
-      <span className="text-[10px] lg:text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1">
-        <Flame className="w-3 h-3 text-red-500 fill-red-500" />
-        Trending Now
+      <span className="text-[10px] font-black text-white uppercase tracking-[0.2em] flex items-center gap-1.5">
+        <Flame className="w-3.5 h-3.5 text-orange-500 fill-orange-500 group-hover:animate-bounce" />
+        Live // Trending
       </span>
     </motion.div>
   );
@@ -349,8 +472,10 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={handleMouseLeave}
-      className="relative w-full h-[110vh] lg:h-[95vh] bg-background overflow-hidden group perspective-1000 cursor-grab active:cursor-grabbing selection:bg-primary selection:text-white"
+      className="relative w-full h-[110vh] lg:h-[95vh] bg-background overflow-hidden group perspective-2000 cursor-grab active:cursor-grabbing selection:bg-primary selection:text-white"
     >
+      <BackgroundAtmosphere color={dynamicGlowColor} />
+      <FloatingAccents color={dynamicGlowColor} />
       <GrainEffect />
 
       <AnimatePresence initial={false} custom={direction} mode="popLayout">
@@ -373,7 +498,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
           className="absolute inset-0 flex flex-col lg:flex-row touch-pan-y"
         >
           {/* --- CONTENT SECTION (Mobile: Floating Overlap Card / Desktop: Left Column) --- */}
-          <div className="relative z-20 w-full h-[45%] lg:h-full lg:w-[50%] order-2 lg:order-1 flex flex-col justify-end lg:justify-center pointer-events-none pb-12 lg:pb-0 -mt-16 lg:mt-0">
+          <div className="relative z-30 w-full h-[45%] lg:h-full lg:w-[50%] order-2 lg:order-1 flex flex-col justify-end lg:justify-center pointer-events-none pb-12 lg:pb-0 -mt-24 lg:mt-0">
             <div className="flex flex-col justify-center px-4 lg:pl-16 lg:pr-12 xl:pl-24 pointer-events-auto">
               {/* Mobile Glass Card */}
               <motion.div
@@ -399,13 +524,36 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                   </BrandBadge>
                 </motion.div>
 
-                <div className="overflow-hidden mb-3 lg:mb-6">
-                  <motion.h1
-                    variants={slideUpVariants}
-                    className="text-3xl sm:text-5xl lg:text-5xl xl:text-6xl font-black tracking-tighter leading-[0.9] text-white lg:text-foreground uppercase italic drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)] lg:drop-shadow-none"
+                <div className="overflow-hidden mb-3 lg:mb-6 max-w-full">
+                  <motion.div
+                    style={{ x: parallaxX, y: parallaxY }}
+                    className="relative px-1"
                   >
-                    {currentProduct.name}
-                  </motion.h1>
+                    <motion.h1
+                      variants={slideUpVariants}
+                      className="text-3xl sm:text-5xl lg:text-5xl xl:text-6xl font-black tracking-tighter leading-[0.9] text-white lg:text-foreground uppercase italic break-words hyphens-auto drop-shadow-[0_4px_20px_rgba(0,0,0,0.8)] lg:drop-shadow-none max-w-[15ch] lg:max-w-none"
+                    >
+                      {currentProduct.name.split(" ").map((word, i) => (
+                        <span
+                          key={i}
+                          className={cn(
+                            "inline-block mr-2 lg:block lg:mr-0 lg:leading-[0.85]",
+                            i % 2 === 1 &&
+                              "text-primary lg:text-primary not-italic tracking-normal",
+                          )}
+                        >
+                          {word}
+                        </span>
+                      ))}
+                    </motion.h1>
+
+                    {/* Floating Accent Text for Desktop */}
+                    <div className="hidden lg:block absolute -right-12 top-0 rotate-90 origin-left">
+                      <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/40 whitespace-nowrap">
+                        Collection 2025 // Future Lab
+                      </span>
+                    </div>
+                  </motion.div>
                 </div>
 
                 <motion.p
@@ -487,7 +635,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
 
           {/* --- IMAGE SECTION (Mobile: Top / Desktop: Right Column) --- */}
           <motion.div
-            className="relative w-full h-[60%] lg:h-full lg:w-[50%] order-1 lg:order-2 overflow-hidden z-0"
+            className="relative w-full h-[60%] lg:h-full lg:w-[50%] order-1 lg:order-2 overflow-hidden z-20"
             style={{ rotateX, rotateY, perspective: 1000 }}
           >
             {/* Dynamic Background Gradient for Right Column */}
@@ -506,6 +654,20 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
               <div className="w-full h-full relative flex items-center justify-center p-4 lg:p-0">
                 <LiveStatsBadge />
 
+                {/* Immersive Scan & Detail Indicators */}
+                <ScanLine color={dynamicGlowColor} />
+                <ImageIndicator
+                  label="Fabric Code"
+                  value="NANO-X2025"
+                  className="top-1/4 left-10 hidden lg:flex"
+                />
+                <ImageIndicator
+                  label="Dye Method"
+                  value="Digital Sublimation"
+                  className="bottom-1/4 right-10 hidden lg:flex"
+                  delay={0.2}
+                />
+
                 {/* Spotlight Backlight - Stronger on Desktop Right Column */}
                 <div
                   className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] blur-[100px] opacity-20 lg:opacity-40 transition-colors duration-1000"
@@ -514,14 +676,14 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
 
                 <Link
                   href={`/product/${currentProduct.slug}`}
-                  className="relative w-full h-full block"
+                  className="relative w-full h-full block lg:rounded-none rounded-[2.5rem] overflow-hidden"
                 >
                   <motion.div
                     initial={{ scale: 1.1, opacity: 0, y: 20 }}
                     animate={{ scale: 1, opacity: 1, y: 0 }}
                     whileHover={{ scale: 1.05, rotate: 2 }}
                     transition={{ duration: 0.8, ease: "easeOut" }}
-                    className="relative w-full h-full flex items-center justify-center"
+                    className="relative w-full h-full flex items-center justify-center lg:rounded-none rounded-[2.5rem] overflow-hidden"
                   >
                     <FlashImage
                       src={currentProduct.main_image_url}
@@ -530,7 +692,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                       resizeMode="cover"
                       priority={true}
                       quality={90}
-                      className="object-cover object-center z-10 drop-shadow-[0_20px_50_rgba(0,0,0,0.5)] rounded-[2.5rem]"
+                      className="object-cover object-center z-10 drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
                       sizes="(max-width: 768px) 100vw, 60vw"
                     />
                   </motion.div>
