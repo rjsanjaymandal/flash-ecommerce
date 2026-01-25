@@ -111,6 +111,7 @@ export function ProductForm({
       slug: "",
       description: "",
       price: 0,
+      original_price: null,
       category_id: "",
       main_image_url: "",
       gallery_image_urls: [],
@@ -612,6 +613,34 @@ export function ProductForm({
                           }
                         />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={control}
+                  name="original_price"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Original Price (MRP) (₹)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder="Optional MRP"
+                          value={field.value || ""}
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value === ""
+                                ? null
+                                : Number(e.target.value),
+                            )
+                          }
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Shown with a strikethrough if greater than sale price.
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

@@ -454,6 +454,7 @@ export type Database = {
           main_image_url: string | null
           name: string
           price: number
+          original_price: number | null
           size_options: string[] | null
           slug: string
           updated_at: string | null
@@ -470,6 +471,7 @@ export type Database = {
           main_image_url?: string | null
           name: string
           price: number
+          original_price?: number | null
           size_options?: string[] | null
           slug: string
           updated_at?: string | null
@@ -486,6 +488,7 @@ export type Database = {
           main_image_url?: string | null
           name?: string
           price?: number
+          original_price?: number | null
           size_options?: string[] | null
           slug?: string
           updated_at?: string | null

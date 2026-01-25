@@ -20,9 +20,9 @@ import dynamic from "next/dynamic";
 const SizeGuideModal = dynamic(
   () =>
     import("@/components/products/size-guide-modal").then(
-      (mod) => mod.SizeGuideModal
+      (mod) => mod.SizeGuideModal,
     ),
-  { ssr: false }
+  { ssr: false },
 );
 import { MobileStickyBar } from "@/components/storefront/mobile-sticky-bar";
 import { FAQJsonLd } from "@/components/seo/faq-json-ld";
@@ -56,6 +56,7 @@ type ProductDetailProps = {
     name: string;
     description: string;
     price: number;
+    original_price?: number | null;
     main_image_url: string;
     gallery_image_urls?: string[];
     size_options: string[];
@@ -87,7 +88,7 @@ export function ProductDetailClient({
   const addItem = useWishlistStore((state) => state.addItem);
   const removeItem = useWishlistStore((state) => state.removeItem);
   const isWishlisted = useWishlistStore((state) =>
-    selectIsInWishlist(state, product.id)
+    selectIsInWishlist(state, product.id),
   );
 
   const [selectedSize, setSelectedSize] = useState<string>("");
@@ -149,7 +150,7 @@ export function ProductDetailClient({
   const colorOptions = product.color_options?.length
     ? product.color_options
     : (Array.from(
-        new Set(realTimeStock?.map((s) => s.color) || ["Standard"])
+        new Set(realTimeStock?.map((s) => s.color) || ["Standard"]),
       ).sort() as string[]);
 
   // Stock Logic
@@ -167,7 +168,7 @@ export function ProductDetailClient({
     return (
       realTimeStock?.reduce(
         (acc: number, item) => acc + (item.quantity || 0),
-        0
+        0,
       ) ?? 0
     );
   }, [realTimeStock]);
@@ -278,7 +279,7 @@ export function ProductDetailClient({
     }
   };
   const handleAddToCart = async (
-    options = { openCart: true, showToast: true }
+    options = { openCart: true, showToast: true },
   ) => {
     if (!selectedSize || !selectedColor) {
       toast.error("Please select a size and color");
@@ -300,7 +301,7 @@ export function ProductDetailClient({
           quantity: quantity,
           maxQuantity: maxQty,
         },
-        options
+        options,
       );
       return true;
     } catch (_err) {
@@ -338,7 +339,7 @@ export function ProductDetailClient({
         quantity: quantity,
         maxQuantity: maxQty,
       },
-      { openCart: false, showToast: false }
+      { openCart: false, showToast: false },
     );
 
     router.push("/checkout");
@@ -447,6 +448,23 @@ export function ProductDetailClient({
                     <p className="text-3xl font-black tracking-tighter text-foreground">
                       {formatCurrency(product.price)}
                     </p>
+                    {product.original_price &&
+                      product.original_price > product.price && (
+                        <div className="flex items-center gap-2 mt-1">
+                          <p className="text-lg text-muted-foreground line-through decoration-red-500/30 decoration-2 font-medium">
+                            {formatCurrency(product.original_price)}
+                          </p>
+                          <span className="bg-red-500/10 text-red-500 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider">
+                            Save{" "}
+                            {Math.round(
+                              ((product.original_price - product.price) /
+                                product.original_price) *
+                                100,
+                            )}
+                            %
+                          </span>
+                        </div>
+                      )}
                     <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest mt-1">
                       Inclusive of all taxes
                     </p>
@@ -534,7 +552,7 @@ export function ProductDetailClient({
                         "flex-1 h-14 text-sm font-black uppercase tracking-[0.15em] rounded-xl shadow-lg hover:shadow-xl transition-all duration-300",
                         isOutOfStock
                           ? "bg-amber-400 text-amber-950 hover:bg-amber-500"
-                          : "bg-foreground text-background hover:bg-foreground/90 hover:scale-[1.01]"
+                          : "bg-foreground text-background hover:bg-foreground/90 hover:scale-[1.01]",
                       )}
                       disabled={
                         isOutOfStock
@@ -571,7 +589,7 @@ export function ProductDetailClient({
                         "h-14 w-14 rounded-xl border-2 transition-all duration-300 px-0 shrink-0",
                         isWishlisted
                           ? "border-red-500/50 bg-red-500/5 text-red-500"
-                          : "hover:border-primary/30 hover:bg-primary/5"
+                          : "hover:border-primary/30 hover:bg-primary/5",
                       )}
                       onClick={() =>
                         isWishlisted
@@ -590,7 +608,7 @@ export function ProductDetailClient({
                           "h-5 w-5 transition-colors",
                           isWishlisted
                             ? "fill-red-500 stroke-red-500"
-                            : "text-foreground"
+                            : "text-foreground",
                         )}
                       />
                     </Button>

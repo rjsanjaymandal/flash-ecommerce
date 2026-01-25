@@ -33,6 +33,7 @@ export interface HeroProduct {
   name: string;
   description: string | null;
   price: number;
+  original_price?: number | null;
   main_image_url: string | null;
   slug: string;
   product_stock?: any[];
@@ -99,24 +100,30 @@ function BackgroundAtmosphere({ color }: { color: string }) {
     <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
       <motion.div
         animate={{
-          scale: [1, 1.2, 1],
-          opacity: [0.15, 0.25, 0.15],
-          rotate: [0, 5, 0],
+          scale: [1, 1.1, 1],
+          opacity: [0.1, 0.2, 0.1],
         }}
-        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute -top-[20%] -right-[10%] w-[100%] h-[120%] blur-[150px] rounded-full"
+        transition={{
+          duration: 15,
+          repeat: Infinity,
+          ease: "linear", // Linear is cheaper than easeInOut for repeat
+        }}
+        className="absolute -top-[20%] -right-[10%] w-[100%] h-[120%] blur-[150px] rounded-full will-change-transform"
         style={{
           background: `radial-gradient(circle, ${color} 0%, transparent 70%)`,
         }}
       />
       <motion.div
         animate={{
-          scale: [1.2, 1, 1.2],
-          opacity: [0.1, 0.2, 0.1],
-          rotate: [0, -5, 0],
+          scale: [1.1, 1, 1.1],
+          opacity: [0.05, 0.15, 0.05],
         }}
-        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute -bottom-[20%] -left-[10%] w-[100%] h-[120%] blur-[150px] rounded-full"
+        transition={{
+          duration: 18,
+          repeat: Infinity,
+          ease: "linear",
+        }}
+        className="absolute -bottom-[20%] -left-[10%] w-[100%] h-[120%] blur-[150px] rounded-full will-change-transform"
         style={{
           background: `radial-gradient(circle, ${color} 0%, transparent 70%)`,
         }}
@@ -257,22 +264,21 @@ function QuickSpecs() {
 
   return (
     <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="hidden sm:flex items-center gap-6 p-3 rounded-2xl bg-secondary/40 border border-border/40 backdrop-blur-md w-fit"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 1, duration: 0.5 }}
+      className="flex flex-wrap items-center gap-4 sm:gap-6 p-3 rounded-2xl bg-secondary/40 border border-border/40 backdrop-blur-md w-fit"
     >
       {specs.map((Spec, i) => (
-        <motion.div
+        <div
           key={i}
-          variants={slideUpVariants}
           className="flex items-center gap-2 text-foreground font-medium"
         >
-          <Spec.icon className="w-4 h-4 text-primary" />
-          <span className="text-[10px] uppercase font-bold tracking-widest">
+          <Spec.icon className="w-3.5 h-3.5 text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.5)]" />
+          <span className="text-[9px] sm:text-[10px] uppercase font-black tracking-widest leading-none">
             {Spec.label}
           </span>
-        </motion.div>
+        </div>
       ))}
     </motion.div>
   );
@@ -505,7 +511,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
-                className="relative w-full bg-black/70 lg:bg-transparent backdrop-blur-3xl lg:backdrop-blur-none p-8 lg:p-0 rounded-[2.5rem] lg:rounded-none border border-white/20 lg:border-none shadow-[0_40px_80px_rgba(0,0,0,0.6)] lg:shadow-none overflow-hidden"
+                className="relative w-full bg-black/70 lg:bg-transparent backdrop-blur-3xl lg:backdrop-blur-none p-8 lg:p-0 rounded-[2.5rem] lg:rounded-none border border-white/20 lg:border-none shadow-[0_40px_80px_rgba(0,0,0,0.6)] lg:shadow-none"
               >
                 {/* Subtle Gradient Backlight for Mobile Card */}
                 <div className="lg:hidden absolute -top-32 -left-32 w-80 h-80 bg-primary/30 blur-[100px] pointer-events-none" />
@@ -531,13 +537,13 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                   >
                     <motion.h1
                       variants={slideUpVariants}
-                      className="text-3xl sm:text-5xl lg:text-5xl xl:text-6xl font-black tracking-tighter leading-[0.9] text-white lg:text-foreground uppercase italic break-words hyphens-auto drop-shadow-[0_4px_20px_rgba(0,0,0,0.8)] lg:drop-shadow-none max-w-[15ch] lg:max-w-none"
+                      className="text-3xl sm:text-5xl lg:text-5xl xl:text-6xl font-black tracking-tighter leading-[0.95] text-white lg:text-foreground uppercase italic break-words hyphens-auto drop-shadow-[0_4px_20px_rgba(0,0,0,0.8)] lg:drop-shadow-none max-w-[20ch] lg:max-w-md"
                     >
                       {currentProduct.name.split(" ").map((word, i) => (
                         <span
                           key={i}
                           className={cn(
-                            "inline-block mr-2 lg:block lg:mr-0 lg:leading-[0.85]",
+                            "inline-block mr-2 lg:mr-3",
                             i % 2 === 1 &&
                               "text-primary lg:text-primary not-italic tracking-normal",
                           )}
@@ -550,7 +556,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                     {/* Floating Accent Text for Desktop */}
                     <div className="hidden lg:block absolute -right-12 top-0 rotate-90 origin-left">
                       <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/40 whitespace-nowrap">
-                        Collection 2025 // Future Lab
+                        Collection 2026 // Future Lab
                       </span>
                     </div>
                   </motion.div>
@@ -558,7 +564,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
 
                 <motion.p
                   variants={slideUpVariants}
-                  className="hidden lg:block text-sm lg:text-lg text-muted-foreground font-medium mb-8 max-w-md"
+                  className="hidden lg:block text-sm lg:text-lg text-muted-foreground font-medium mb-6 max-w-md"
                   style={{
                     display: "-webkit-box",
                     WebkitLineClamp: 2,
@@ -569,11 +575,20 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                   {cleanDescription(currentProduct.description || "")}
                 </motion.p>
 
-                <div className="flex items-center justify-between lg:justify-start gap-4 mb-6 lg:mb-10">
+                <div className="flex items-center justify-between lg:justify-start gap-4 mb-6 lg:mb-8">
                   <motion.div variants={slideUpVariants}>
-                    <span className="text-3xl lg:text-6xl font-black text-primary tracking-tight">
-                      {formatCurrency(currentProduct.price)}
-                    </span>
+                    <div className="flex items-baseline gap-3">
+                      <span className="text-3xl lg:text-6xl font-black text-primary tracking-tight">
+                        {formatCurrency(currentProduct.price)}
+                      </span>
+                      {currentProduct.original_price &&
+                        currentProduct.original_price >
+                          currentProduct.price && (
+                          <span className="text-xl lg:text-3xl text-white/30 line-through decoration-white/20 font-medium">
+                            {formatCurrency(currentProduct.original_price)}
+                          </span>
+                        )}
+                    </div>
                   </motion.div>
 
                   {/* Mobile "Just Dropped" pill - Enhanced */}
@@ -625,8 +640,8 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                   </Button>
                 </motion.div>
 
-                {/* Specs - Desktop Only */}
-                <div className="hidden lg:flex mt-10">
+                {/* Specs - Visible Always for Premium Feel */}
+                <div className="flex mt-6 lg:mt-8">
                   <QuickSpecs />
                 </div>
               </motion.div>
@@ -636,7 +651,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
           {/* --- IMAGE SECTION (Mobile: Top / Desktop: Right Column) --- */}
           <motion.div
             className="relative w-full h-[60%] lg:h-full lg:w-[50%] order-1 lg:order-2 overflow-hidden z-20"
-            style={{ rotateX, rotateY, perspective: 1000 }}
+            style={{ rotateX: 0, rotateY: 0, perspective: 1000 }} // Disabled expensive mouse-tilt for performance
           >
             {/* Dynamic Background Gradient for Right Column */}
             <div
@@ -658,7 +673,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                 <ScanLine color={dynamicGlowColor} />
                 <ImageIndicator
                   label="Fabric Code"
-                  value="NANO-X2025"
+                  value="NANO-X2026"
                   className="top-1/4 left-10 hidden lg:flex"
                 />
                 <ImageIndicator

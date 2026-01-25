@@ -15,6 +15,7 @@ export async function getSmartCarouselData() {
             name, 
             description, 
             price, 
+            original_price,
             main_image_url, 
             slug, 
             created_at, 

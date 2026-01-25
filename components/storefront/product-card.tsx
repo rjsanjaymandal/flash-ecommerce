@@ -448,6 +448,17 @@ export function ProductCard({
                     New
                   </Badge>
                 )}
+                {product.original_price &&
+                  product.original_price > product.price && (
+                    <Badge className="bg-red-500 text-white uppercase tracking-wider text-[9px] font-bold px-2 py-0.5 rounded-sm border-none shadow-sm">
+                      {Math.round(
+                        ((product.original_price - product.price) /
+                          product.original_price) *
+                          100,
+                      )}
+                      % OFF
+                    </Badge>
+                  )}
               </>
             )}
           </div>
@@ -556,9 +567,17 @@ export function ProductCard({
                   {product.name}
                 </h3>
               </Link>
-              <p className="font-bold text-xs lg:text-sm text-foreground tracking-tight tabular-nums whitespace-nowrap">
-                {formatCurrency(product.price)}
-              </p>
+              <div className="flex flex-col items-end">
+                <p className="font-bold text-xs lg:text-sm text-foreground tracking-tight tabular-nums whitespace-nowrap">
+                  {formatCurrency(product.price)}
+                </p>
+                {product.original_price &&
+                  product.original_price > product.price && (
+                    <p className="text-[10px] text-muted-foreground/60 line-through tracking-tight tabular-nums">
+                      {formatCurrency(product.original_price)}
+                    </p>
+                  )}
+              </div>
             </div>
 
             <div className="flex items-center justify-between text-[10px] text-muted-foreground/70 uppercase tracking-wider font-medium">

@@ -9,6 +9,7 @@ import type { Database, Tables, TablesInsert, TablesUpdate } from '@/types/supab
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 export type Product = Tables<'products'> & {
+    original_price?: number | null
     categories?: { name: string } | null
     product_stock?: Tables<'product_stock'>[]
     average_rating?: number
@@ -355,6 +356,7 @@ function prepareProductData(data: ProductFormValues) {
     slug: data.slug,
     description: data.description || null,
     price: data.price ? Number(data.price) : 0,
+    original_price: data.original_price ? Number(data.original_price) : null,
     category_id: data.category_id || null, // Critical: Prevent "" for UUID
     main_image_url: data.main_image_url,
     gallery_image_urls: data.gallery_image_urls || [],

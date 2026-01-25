@@ -11,6 +11,7 @@ export const productSchema = z.object({
   slug: z.string().min(2, "Slug is required").regex(/^[a-z0-9-]+$/, "Slug must be lowercase alphanumeric with dashes"),
   description: z.string().optional(),
   price: z.number().min(0.01, "Price must be greater than 0"),
+  original_price: z.number().min(0, "Original price must be 0 or more").nullable().optional(),
   category_id: z.string().min(1, "Category is required"),
   main_image_url: z.string().min(1, "Main image is required"),
   gallery_image_urls: z.array(z.string()),
