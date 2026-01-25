@@ -103,6 +103,10 @@ export async function deleteProductAction(productId: string): Promise<DeleteProd
         revalidatePath('/admin/products')
         revalidatePath('/shop')
         revalidatePath('/')
+        // @ts-expect-error: Next.js types incorrectly require a second argument
+        revalidateTag('products')
+        // @ts-expect-error: Next.js types incorrectly require a second argument
+        revalidateTag('featured-products')
 
         return { 
             success: true, 

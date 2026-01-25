@@ -9,6 +9,16 @@ interface FlashImageProps extends Omit<ImageProps, "loader"> {
    * If true, bypasses the custom loader (useful for tiny local SVGs/icons)
    */
   unoptimized?: boolean;
+  /**
+   * Specific resize mode for Supabase/Unsplash
+   * 'cover' = fill container, crop if needed
+   * 'contain' = fit inside container, no cropping
+   */
+  resizeMode?: "cover" | "contain" | "fill";
+  /**
+   * Optional height hint for the loader
+   */
+  heightHint?: number;
 }
 
 /**
@@ -23,28 +33,94 @@ export default function FlashImage({
   alt,
   className,
   unoptimized = false,
+  resizeMode,
+  heightHint,
   ...props
 }: FlashImageProps) {
+  // Determine if it's an external URL
+  const isExternal = typeof src === "string" && src.startsWith("http");
+  const isUnsplash = typeof src === "string" && src.includes("unsplash.com");
+
+  // Force unoptimized for ALL external images except Unsplash to bypass proxy issues
+  // This ensures 100% reliability for Supabase and other third-party hosts
+  const finalUnoptimized = unoptimized || (isExternal && !isUnsplash);
+
+  // Manual URL encoding for spaces and special characters to prevent browser parsing errors
+  let safeSrc = src;
+  if (typeof src === "string" && src.startsWith("http")) {
+    try {
+      // Only encode part of the URL to avoid breaking the protocol/hostname
+      const url = new URL(src);
+      url.pathname = url.pathname
+        .split("/")
+        .map((segment) => encodeURIComponent(decodeURIComponent(segment)))
+        .join("/");
+      safeSrc = url.toString();
+    } catch (e) {
+      // Fallback: simple space replacement if URL constructor fails
+      safeSrc = src.replace(/ /g, "%20");
+    }
+  }
+
   // If explicitly unoptimized or a tiny local asset we don't want to process
-  if (unoptimized) {
+  if (finalUnoptimized) {
+    // Map resizeMode to CSS classes even for unoptimized images
+    const objectFitClass =
+      resizeMode === "cover"
+        ? "object-cover"
+        : resizeMode === "contain"
+          ? "object-contain"
+          : resizeMode === "fill"
+            ? "object-fill"
+            : "";
+
     return (
-      <Image src={src} alt={alt} className={className} unoptimized {...props} />
+      <Image
+        src={safeSrc}
+        alt={alt}
+        className={cn("bg-zinc-900/10", objectFitClass, className)}
+        unoptimized
+        {...props}
+      />
     );
   }
 
-  // Determine if we should use the custom loader
-  const shouldUseLoader =
-    typeof src === "string" &&
-    (src.startsWith("http") ||
-      src.includes("supabase.co") ||
-      src.includes("unsplash.com"));
+  // Determine if we should use the custom loader (only for Unsplash now)
+  const shouldUseLoader = isUnsplash;
+
+  // Inject transformation hints into the src URL for the loader to pick up
+  let finalSrc = safeSrc;
+  if (shouldUseLoader && typeof safeSrc === "string") {
+    try {
+      const url = new URL(src, "http://n"); // dummy base for relative-looking strings
+      if (resizeMode) url.searchParams.set("resize", resizeMode);
+      if (heightHint) url.searchParams.set("height", heightHint.toString());
+
+      // If it was a real URL, use the full string, otherwise just the search part
+      finalSrc = src.startsWith("http")
+        ? url.toString()
+        : src.split("?")[0] + url.search;
+    } catch (e) {
+      // Fallback to original src if URL parsing fails
+    }
+  }
+
+  // Map resizeMode to CSS classes
+  const objectFitClass =
+    resizeMode === "cover"
+      ? "object-cover"
+      : resizeMode === "contain"
+        ? "object-contain"
+        : resizeMode === "fill"
+          ? "object-fill"
+          : "";
 
   return (
     <Image
       loader={shouldUseLoader ? imageLoader : undefined}
-      src={src}
+      src={finalSrc}
       alt={alt}
-      className={cn("bg-zinc-900/10", className)}
+      className={cn("bg-zinc-900/10", objectFitClass, className)}
       {...props}
     />
   );

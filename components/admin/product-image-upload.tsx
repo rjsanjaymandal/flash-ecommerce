@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Upload, Loader2, X, RefreshCw } from "lucide-react";
-import NextImage from "next/image";
+import FlashImage from "@/components/ui/flash-image";
 import { Button } from "@/components/ui/button";
 import {
   uploadOptimizedImage,
@@ -63,7 +63,7 @@ export function ProductImageUpload({
           isUploading && "opacity-50 pointer-events-none",
           !preview &&
             "h-64 flex flex-col items-center justify-center cursor-pointer",
-          preview && "h-64 border-none bg-accent/20"
+          preview && "h-64 border-none bg-accent/20",
         )}
       >
         {isUploading ? (
@@ -75,7 +75,7 @@ export function ProductImageUpload({
           </div>
         ) : preview ? (
           <div className="relative w-full h-full group overflow-hidden rounded-xl">
-            <NextImage
+            <FlashImage
               src={preview}
               alt="Product Preview"
               fill

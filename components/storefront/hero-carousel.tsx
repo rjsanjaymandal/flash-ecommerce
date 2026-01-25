@@ -527,9 +527,10 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                       src={currentProduct.main_image_url}
                       alt={currentProduct.name}
                       fill
+                      resizeMode="cover"
                       priority={true}
                       quality={90}
-                      className="object-cover object-center z-10 drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-[2rem]"
+                      className="object-cover object-center z-10 drop-shadow-[0_20px_50_rgba(0,0,0,0.5)] rounded-[2.5rem]"
                       sizes="(max-width: 768px) 100vw, 60vw"
                     />
                   </motion.div>

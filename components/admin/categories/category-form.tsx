@@ -20,8 +20,7 @@ import { slugify } from "@/lib/slugify";
 import { Image as ImageIcon, Loader2, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
-import NextImage from "next/image";
-import imageLoader from "@/lib/image-loader";
+import FlashImage from "@/components/ui/flash-image";
 import {
   Form,
   FormControl,
@@ -77,18 +76,19 @@ export function CategoryForm({
 
     setIsUploading(true);
     try {
-      const fileExt = file.name.split(".").pop();
-      const fileName = `cat_${Date.now()}_${Math.random()}.${fileExt}`;
-      const { error } = await supabase.storage
-        .from("category-images")
-        .upload(fileName, file);
-      if (error) throw error;
+      const formData = new FormData();
+      formData.append("file", file);
 
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("category-images").getPublicUrl(fileName);
-      form.setValue("image_url", publicUrl);
-      toast.success("Image Uploaded");
+      // Use the same optimized pipeline as products
+      const { uploadOptimizedImage } =
+        await import("@/app/actions/upload-images");
+      const urls = await uploadOptimizedImage(formData, "category-images", {
+        generateVariants: false, // Categories usually just need one high-res optimized image
+        maxWidth: 1200,
+      });
+
+      form.setValue("image_url", urls.desktop);
+      toast.success("Image Optimized & Uploaded");
     } catch (err: any) {
       toast.error("Upload failed: " + err.message);
     } finally {
@@ -181,11 +181,11 @@ export function CategoryForm({
             <div className="flex items-center gap-4 rounded-xl border-2 p-4 border-dashed hover:bg-muted/30 transition-all group">
               {form.watch("image_url") ? (
                 <div className="relative h-20 w-20 rounded-lg overflow-hidden border-2 group/img shadow-sm">
-                  <NextImage
-                    loader={imageLoader}
+                  <FlashImage
                     src={form.watch("image_url")!}
                     className="object-cover"
                     fill
+                    resizeMode="cover"
                     alt="Preview"
                   />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">

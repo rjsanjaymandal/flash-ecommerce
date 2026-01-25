@@ -35,7 +35,7 @@ import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import Image from "next/image";
+import FlashImage from "@/components/ui/flash-image";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { type Order } from "@/lib/services/order-service";
@@ -145,7 +145,7 @@ export function DashboardClient({
           ]);
 
           toast.success(`New Order: ₹${newOrder.total}`);
-        }
+        },
       )
       .subscribe();
 
@@ -164,7 +164,7 @@ export function DashboardClient({
             // (Note: accurate resorted list requires re-fetch, but we can patch local state for "Live" feel)
             // This is a simplified "Enterprise" patch
           }
-        }
+        },
       )
       .subscribe();
 
@@ -185,7 +185,7 @@ export function DashboardClient({
             },
             ...prev.slice(0, 9),
           ]);
-        }
+        },
       )
       .subscribe();
 
@@ -297,7 +297,7 @@ export function DashboardClient({
                   item.color === "blue" && "bg-blue-500",
                   item.color === "violet" && "bg-violet-500",
                   item.color === "amber" && "bg-amber-500",
-                  item.color === "rose" && "bg-rose-500"
+                  item.color === "rose" && "bg-rose-500",
                 )}
               />
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -316,7 +316,7 @@ export function DashboardClient({
                     item.color === "amber" &&
                       "bg-amber-50 border-amber-100 text-amber-600",
                     item.color === "rose" &&
-                      "bg-rose-50 border-rose-100 text-rose-600"
+                      "bg-rose-50 border-rose-100 text-rose-600",
                   )}
                 >
                   <item.icon className="h-4 w-4" />
@@ -330,7 +330,7 @@ export function DashboardClient({
                   <p
                     className={cn(
                       "text-[10px] font-black uppercase tracking-tighter mt-1 flex items-center gap-1",
-                      item.growth >= 0 ? "text-emerald-500" : "text-rose-500"
+                      item.growth >= 0 ? "text-emerald-500" : "text-rose-500",
                     )}
                   >
                     {item.growth >= 0 ? (
@@ -417,7 +417,7 @@ export function DashboardClient({
                         item.type === "review" &&
                           "bg-amber-500/20 border-amber-500/30 text-amber-500",
                         item.type === "newsletter" &&
-                          "bg-blue-500/20 border-blue-500/30 text-blue-500"
+                          "bg-blue-500/20 border-blue-500/30 text-blue-500",
                       )}
                     >
                       {item.type === "order" && (
@@ -530,7 +530,7 @@ export function DashboardClient({
                           order.status === "shipped" &&
                             "bg-blue-50 text-blue-600 border-blue-100",
                           order.status === "delivered" &&
-                            "bg-zinc-50 text-zinc-600 border-zinc-100"
+                            "bg-zinc-50 text-zinc-600 border-zinc-100",
                         )}
                       >
                         {order.status}
@@ -568,10 +568,11 @@ export function DashboardClient({
                   >
                     <div className="h-10 w-10 shrink-0 rounded-lg overflow-hidden border-2 group-hover:border-primary transition-colors relative">
                       {product.main_image_url ? (
-                        <Image
+                        <FlashImage
                           src={product.main_image_url}
                           alt={product.name}
                           fill
+                          resizeMode="cover"
                           className="object-cover group-hover:scale-110 transition-transform duration-500"
                         />
                       ) : (

@@ -1,0 +1,14 @@
+--- Product Image Audit ---
+Product: FLASH 'Embrace' Pride Crewneck Sweatshirt – Lavender (cfc9bbd8-eb2f-4e66-9777-daebfe1753d9)
+  Main: https://gyizmixhmrfwywvafdbi.supabase.co/storage/v1/object/public/products/prod_1765736252146_0.4732433284565124.png
+Product: FLASH 'Embrace' Pride Crewneck Sweatshirt – Off-White (1bf38265-0b0b-4900-ac84-b836d955429e)
+  Main: https://gyizmixhmrfwywvafdbi.supabase.co/storage/v1/object/public/products/prod_1765772009324_0.8869706006500504.png
+  Gallery[0]: https://gyizmixhmrfwywvafdbi.supabase.co/storage/v1/object/public/products/prod_1767867620038_0.2473374070896841.jpeg
+  Gallery[1]: https://gyizmixhmrfwywvafdbi.supabase.co/storage/v1/object/public/products/prod_1767867625921_0.9384438884853227.jpeg
+Product: FLASH 'Superpower' Pride Edition Hoodie – Off-White (7f87f47d-67e3-4cb5-b584-9df3768f17cf)
+  Main: https://gyizmixhmrfwywvafdbi.supabase.co/storage/v1/object/public/products/prod_1765725751335_0.5195914556489459.png
+Product: The "Superpower Style" Lavender Hoodie (d7c34411-8f2d-48d0-b086-bc75ac0efae9)
+  Main: https://gyizmixhmrfwywvafdbi.supabase.co/storage/v1/object/public/products/67db0735-e7a2-462d-85c4-ee723eb94a3c-desktop.webp
+  Gallery[0]: https://gyizmixhmrfwywvafdbi.supabase.co/storage/v1/object/public/products/prod_1767871090079_0.37373054463708544.jpeg
+  Gallery[1]: https://gyizmixhmrfwywvafdbi.supabase.co/storage/v1/object/public/products/prod_1767871098742_0.24257336563165366.jpeg
+  Gallery[2]: https://gyizmixhmrfwywvafdbi.supabase.co/storage/v1/object/public/products/prod_1767871153648_0.35676541686062135.jpeg

@@ -78,7 +78,7 @@ export function CategoryVibes({ categories }: CategoryVibesProps) {
               className={cn(
                 "group relative overflow-hidden rounded-[2rem] bg-zinc-900 border border-white/10 transition-all duration-500 hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/10",
                 "min-h-[400px] md:min-h-0", // Mobile Height
-                getGridClass(i)
+                getGridClass(i),
               )}
             >
               {/* IMAGE HOVER EFFECT */}
@@ -88,6 +88,7 @@ export function CategoryVibes({ categories }: CategoryVibesProps) {
                     src={cat.image_url}
                     alt={cat.name}
                     fill
+                    resizeMode="cover"
                     className="object-cover transition-transform duration-700 ease-out group-hover:scale-110 group-hover:rotate-1"
                     sizes="(max-width: 768px) 100vw, 50vw"
                   />

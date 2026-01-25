@@ -53,7 +53,7 @@ import { cn } from "@/lib/utils";
 function flattenCategoryTree(
   nodes: Category[],
   depth = 0,
-  result: (Category & { depth: number })[] = []
+  result: (Category & { depth: number })[] = [],
 ) {
   for (const node of nodes) {
     result.push({ ...node, depth });
@@ -85,7 +85,7 @@ export default function CategoriesPage() {
 
     // A. Filter first (O(n))
     const filtered = flatCategories.filter((c) =>
-      c.name.toLowerCase().includes(search.toLowerCase())
+      c.name.toLowerCase().includes(search.toLowerCase()),
     );
 
     // B. If searching active, return flat list (Tree structure is confusing during search)
@@ -281,7 +281,7 @@ export default function CategoriesPage() {
                         <div
                           className={cn(
                             "h-9 w-9 rounded-md overflow-hidden border bg-muted flex items-center justify-center shrink-0 shadow-sm",
-                            category.depth === 0 ? "ring-1 ring-border" : ""
+                            category.depth === 0 ? "ring-1 ring-border" : "",
                           )}
                         >
                           {category.image_url ? (
@@ -290,6 +290,7 @@ export default function CategoriesPage() {
                                 src={category.image_url}
                                 className="object-cover"
                                 fill
+                                resizeMode="cover"
                                 alt=""
                               />
                             </div>
@@ -303,7 +304,7 @@ export default function CategoriesPage() {
                               "text-sm",
                               category.depth === 0
                                 ? "font-semibold text-foreground"
-                                : "text-muted-foreground"
+                                : "text-muted-foreground",
                             )}
                           >
                             {category.name}
@@ -323,7 +324,7 @@ export default function CategoriesPage() {
                           "rounded-md px-2 py-0.5 font-normal text-xs",
                           category.is_active
                             ? "border-emerald-200 text-emerald-700 bg-emerald-50"
-                            : "bg-slate-100 text-slate-500"
+                            : "bg-slate-100 text-slate-500",
                         )}
                       >
                         {category.is_active ? "Active" : "Hidden"}

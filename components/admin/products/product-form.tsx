@@ -54,11 +54,12 @@ import {
 } from "@/components/ui/form";
 import { ProductImageUpload } from "@/components/admin/product-image-upload";
 import { cn } from "@/lib/utils";
+import FlashImage from "@/components/ui/flash-image";
 import { Category } from "@/types/store-types";
 const RichTextEditor = dynamic(
   () =>
     import("@/components/admin/products/rich-text-editor").then(
-      (mod) => mod.RichTextEditor
+      (mod) => mod.RichTextEditor,
     ),
   {
     ssr: false,
@@ -67,7 +68,7 @@ const RichTextEditor = dynamic(
         Loading Editor...
       </div>
     ),
-  }
+  },
 );
 
 const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL", "Oversized"];
@@ -162,7 +163,7 @@ export function ProductForm({
   // -- Handlers --
   const handleImageUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
-    type: "main" | "gallery"
+    type: "main" | "gallery",
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -197,7 +198,7 @@ export function ProductForm({
     const currentGallery = form.getValues("gallery_image_urls");
     setValue(
       "gallery_image_urls",
-      currentGallery.filter((_, i) => i !== idx)
+      currentGallery.filter((_, i) => i !== idx),
     );
   };
 
@@ -316,8 +317,7 @@ export function ProductForm({
                         key={idx}
                         className="relative aspect-square rounded-md overflow-hidden border group"
                       >
-                        <NextImage
-                          loader={imageLoader}
+                        <FlashImage
                           src={url}
                           className="object-cover"
                           alt="Gallery"
@@ -433,7 +433,7 @@ export function ProductForm({
                               name={`variants.${idx}.color`}
                               render={({ field }) => {
                                 const isCustom = !COLOR_OPTIONS.includes(
-                                  field.value
+                                  field.value,
                                 );
                                 return isCustom ? (
                                   <div className="flex gap-2">
@@ -466,7 +466,7 @@ export function ProductForm({
                                       <div className="flex items-center gap-2">
                                         {field.value &&
                                           COLOR_OPTIONS.includes(
-                                            field.value
+                                            field.value,
                                           ) && (
                                             <div
                                               className="h-3 w-3 rounded-full border border-muted-foreground/20 shadow-sm"
@@ -528,7 +528,7 @@ export function ProductForm({
                                     field.onChange(
                                       e.target.value === ""
                                         ? 0
-                                        : Number(e.target.value)
+                                        : Number(e.target.value),
                                     )
                                   }
                                 />
@@ -605,7 +605,9 @@ export function ProductForm({
                           {...field}
                           onChange={(e) =>
                             field.onChange(
-                              e.target.value === "" ? 0 : Number(e.target.value)
+                              e.target.value === ""
+                                ? 0
+                                : Number(e.target.value),
                             )
                           }
                         />

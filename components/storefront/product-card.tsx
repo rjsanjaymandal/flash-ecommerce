@@ -30,21 +30,21 @@ import FlashImage from "@/components/ui/flash-image";
 
 const QuickView = dynamic(
   () => import("@/components/products/quick-view").then((mod) => mod.QuickView),
-  { ssr: false }
+  { ssr: false },
 );
 const QuickAddDialog = dynamic(
   () =>
     import("@/components/products/quick-add-dialog").then(
-      (mod) => mod.QuickAddDialog
+      (mod) => mod.QuickAddDialog,
     ),
-  { ssr: false }
+  { ssr: false },
 );
 const WaitlistDialog = dynamic(
   () =>
     import("@/components/products/waitlist-dialog").then(
-      (mod) => mod.WaitlistDialog
+      (mod) => mod.WaitlistDialog,
     ),
-  { ssr: false }
+  { ssr: false },
 );
 
 import type { Product } from "@/lib/services/product-service";
@@ -80,7 +80,7 @@ export function ProductCard({
   // Type sanitation: DB types map product_id as string | null, but we need string for strict state
   const initialStock = (product.product_stock || [])
     .filter((item): item is typeof item & { product_id: string } =>
-      Boolean(item.product_id)
+      Boolean(item.product_id),
     )
     .map((item) => ({
       ...item,
@@ -102,7 +102,7 @@ export function ProductCard({
   const addToWishlist = useWishlistStore((state) => state.addItem);
   const removeFromWishlist = useWishlistStore((state) => state.removeItem);
   const isWishlisted = useWishlistStore((state) =>
-    selectIsInWishlist(state, product.id)
+    selectIsInWishlist(state, product.id),
   );
 
   // Dynamic stock calculation
@@ -121,7 +121,7 @@ export function ProductCard({
   // Calculate total stock
   const totalStock = stock.reduce(
     (acc: number, item: { quantity: number }) => acc + (item.quantity || 0),
-    0
+    0,
   );
   const isOutOfStock = totalStock === 0;
 
@@ -185,7 +185,7 @@ export function ProductCard({
           quantity: 1,
           maxQuantity: firstStock.quantity,
         },
-        { openCart: false, showToast: false }
+        { openCart: false, showToast: false },
       );
 
       router.push("/checkout");
@@ -273,7 +273,7 @@ export function ProductCard({
             localStorage.removeItem(`waitlist_${product.id}`);
           }
           setIsLoadingWaitlist(false);
-        }
+        },
       );
     }
   }, [isOutOfStock, product.id]);
@@ -386,7 +386,7 @@ export function ProductCard({
       const result = await togglePreorder(
         product.id,
         savedEmail || undefined,
-        guestId
+        guestId,
       );
 
       if (result.error) {
@@ -459,13 +459,15 @@ export function ProductCard({
               "absolute top-2 right-2 z-10 h-7 w-7 flex items-center justify-center rounded-full bg-white/90 backdrop-blur-sm transition-all duration-200 hover:scale-110 shadow-sm opacity-0 group-hover:opacity-100",
               isWishlisted
                 ? "text-red-500 opacity-100"
-                : "text-black hover:bg-white"
+                : "text-black hover:bg-white",
             )}
           >
             <Heart
               className={cn(
                 "h-3.5 w-3.5 transition-colors",
-                isWishlisted ? "fill-current" : "group-hover/heart:fill-red-200"
+                isWishlisted
+                  ? "fill-current"
+                  : "group-hover/heart:fill-red-200",
               )}
             />
           </button>
@@ -476,11 +478,12 @@ export function ProductCard({
               src={imageSrc}
               alt={product.name}
               fill
+              resizeMode="cover"
               className={cn(
                 "object-cover transition-all duration-700 ease-in-out",
                 isHovered && product.gallery_image_urls?.[0]
                   ? "opacity-0 scale-110"
-                  : "opacity-100 scale-100"
+                  : "opacity-100 scale-100",
               )}
               sizes="(max-width: 768px) 50vw, (max-width: 1210px) 33vw, 25vw"
               priority={priority}
@@ -493,9 +496,10 @@ export function ProductCard({
                 src={product.gallery_image_urls[0]}
                 alt={`${product.name} - alternate`}
                 fill
+                resizeMode="cover"
                 className={cn(
                   "object-cover transition-all duration-700 ease-in-out absolute inset-0",
-                  isHovered ? "opacity-100 scale-100" : "opacity-0 scale-105"
+                  isHovered ? "opacity-100 scale-100" : "opacity-0 scale-105",
                 )}
                 sizes="(max-width: 768px) 50vw, (max-width: 1210px) 33vw, 25vw"
               />
@@ -525,7 +529,7 @@ export function ProductCard({
                   "flex-1 shadow-md font-bold h-9 rounded-sm transition-all duration-200 uppercase text-[10px] tracking-widest",
                   isOnWaitlist
                     ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                    : "bg-neutral-900 hover:bg-neutral-800 text-white"
+                    : "bg-neutral-900 hover:bg-neutral-800 text-white",
                 )}
                 onClick={handlePreOrder}
                 disabled={isLoadingWaitlist}
@@ -595,7 +599,7 @@ export function ProductCard({
                 "col-span-2 h-9 rounded-sm text-[10px] font-bold uppercase tracking-widest shadow-sm",
                 isOnWaitlist
                   ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                  : "bg-neutral-900 hover:bg-neutral-800 text-white"
+                  : "bg-neutral-900 hover:bg-neutral-800 text-white",
               )}
               onClick={handlePreOrder}
               disabled={isLoadingWaitlist}

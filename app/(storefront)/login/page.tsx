@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
+import FlashImage from "@/components/ui/flash-image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, ArrowRight, Mail, Lock, Clock, User } from "lucide-react";
@@ -175,7 +175,7 @@ export default function LoginPage() {
           }
 
           toast.success(
-            isSignup ? "Account created! Welcome." : "Welcome back!"
+            isSignup ? "Account created! Welcome." : "Welcome back!",
           );
           router.refresh();
           router.push(next);
@@ -185,7 +185,7 @@ export default function LoginPage() {
         setLoading(false);
       }
     },
-    [supabase, emailForm, isSignup, router, next]
+    [supabase, emailForm, isSignup, router, next],
   );
 
   // Auto-submit OTP
@@ -226,11 +226,12 @@ export default function LoginPage() {
       {/* Left Side - Image (Desktop Only) */}
       <div className="hidden lg:flex w-1/2 relative bg-black items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent z-10" />
-        <Image
+        <FlashImage
           src="https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&q=80&w=2000"
           alt="Fashion Editorial"
           fill
           priority
+          resizeMode="cover"
           className="object-cover object-center opacity-80"
         />
         <div className="absolute bottom-20 left-12 z-20 max-w-lg">

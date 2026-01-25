@@ -689,6 +689,8 @@ export async function bulkDeleteProducts(ids: string[]) {
     if (error) throw error
     // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
     revalidateTag('products')
+    // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
+    revalidateTag('featured-products')
     revalidatePath('/admin/products')
     revalidatePath('/shop')
 }
@@ -704,6 +706,8 @@ export async function bulkUpdateProductStatus(ids: string[], isActive: boolean) 
     if (error) throw error
     // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
     revalidateTag('products')
+    // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
+    revalidateTag('featured-products')
     revalidatePath('/admin/products')
     revalidatePath('/shop')
 }

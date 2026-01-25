@@ -18,6 +18,7 @@ import {
   Clock,
   FlaskConical,
   Bell,
+  Terminal,
 } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 
@@ -38,6 +39,7 @@ export const navItems = [
 export const secondaryItems = [
   { href: "/admin/settings", label: "Settings", icon: Settings },
   { href: "/admin/feedback", label: "Feedback", icon: MessageSquare },
+  { href: "/admin/system-logs", label: "System Logs", icon: Terminal },
 ];
 
 export function AdminSidebar() {
@@ -81,7 +83,7 @@ export function AdminSidebar() {
                       "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 group relative",
                       isActive
                         ? "bg-indigo-600 text-white shadow-md shadow-indigo-900/20"
-                        : "hover:bg-slate-800/50 hover:text-white"
+                        : "hover:bg-slate-800/50 hover:text-white",
                     )}
                   >
                     <item.icon
@@ -89,7 +91,7 @@ export function AdminSidebar() {
                         "h-5 w-5 transition-transform group-hover:scale-110",
                         isActive
                           ? "text-indigo-200"
-                          : "text-slate-500 group-hover:text-slate-300"
+                          : "text-slate-500 group-hover:text-slate-300",
                       )}
                     />
                     {item.label}
@@ -115,7 +117,7 @@ export function AdminSidebar() {
                       "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 group",
                       isActive
                         ? "bg-indigo-600/10 text-indigo-400"
-                        : "hover:bg-slate-800/50 hover:text-white"
+                        : "hover:bg-slate-800/50 hover:text-white",
                     )}
                   >
                     <item.icon
@@ -123,7 +125,7 @@ export function AdminSidebar() {
                         "h-5 w-5",
                         isActive
                           ? "text-indigo-400"
-                          : "text-slate-500 group-hover:text-slate-300"
+                          : "text-slate-500 group-hover:text-slate-300",
                       )}
                     />
                     {item.label}
