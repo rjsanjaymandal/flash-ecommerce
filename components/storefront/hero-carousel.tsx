@@ -134,29 +134,42 @@ function BackgroundAtmosphere({ color }: { color: string }) {
 
 function FloatingAccents({ color }: { color: string }) {
   const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const [accents, setAccents] = useState<any[]>([]);
+
+  useEffect(() => {
+    const generatedAccents = Array.from({ length: 5 }).map((_, i) => ({
+      id: i,
+      initialY: Math.random() * 1000,
+      animY: [Math.random() * 1000, Math.random() * 1000 - 500],
+      animX: [Math.random() * 100, Math.random() * 100 - 50],
+      duration: 10 + Math.random() * 10,
+      left: `${Math.random() * 100}%`,
+    }));
+    setAccents(generatedAccents);
+    setMounted(true);
+  }, []);
 
   if (!mounted) return null;
 
   return (
     <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden hidden lg:block">
-      {[...Array(5)].map((_, i) => (
+      {accents.map((accent) => (
         <motion.div
-          key={i}
-          initial={{ opacity: 0, y: Math.random() * 1000 }}
+          key={accent.id}
+          initial={{ opacity: 0, y: accent.initialY }}
           animate={{
             opacity: [0, 0.5, 0],
-            y: [Math.random() * 1000, Math.random() * 1000 - 500],
-            x: [Math.random() * 100, Math.random() * 100 - 50],
+            y: accent.animY,
+            x: accent.animX,
           }}
           transition={{
-            duration: 10 + Math.random() * 10,
+            duration: accent.duration,
             repeat: Infinity,
             ease: "linear",
           }}
           className="absolute w-px h-24 bg-linear-to-b from-transparent via-current to-transparent"
           style={{
-            left: `${Math.random() * 100}%`,
+            left: accent.left,
             color: color,
             opacity: 0.2,
           }}
