@@ -275,7 +275,7 @@ export async function getProducts(filter: ProductFilter = {}): Promise<Paginated
     return unstable_cache(
         async () => fetchProducts(filter),
         ['products-list', key],
-        { tags: ['products'], revalidate: 2592000 } // Cache for 30 days
+        { tags: ['products'], revalidate: 3600 } // Cache for 1 hour (down from 30 days)
     )()
 }
 
@@ -306,7 +306,7 @@ export async function getFeaturedProducts(): Promise<Product[]> {
             })
         },
         ['featured-products'],
-        { tags: ['featured-products'], revalidate: 2592000 } 
+        { tags: ['featured-products'], revalidate: 3600 } 
     )()
 }
 

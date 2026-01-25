@@ -1,7 +1,8 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
+import { createClient, createStaticClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { revalidatePath, revalidateTag } from 'next/cache'
 
 export type DeleteProductResult = {
     success?: boolean
@@ -28,6 +29,7 @@ function extractStoragePath(url: string | null): string | null {
 
 export async function deleteProductAction(productId: string): Promise<DeleteProductResult> {
     const supabase = await createClient()
+    const adminClient = createAdminClient()
 
     // 1. Verify Admin
     const { data: { user } } = await supabase.auth.getUser()
@@ -89,8 +91,8 @@ export async function deleteProductAction(productId: string): Promise<DeleteProd
             }
         }
 
-        // 5. Delete Product Row (Cascade will handle relations)
-        const { error: deleteError } = await supabase
+        // 5. Delete Product Row (Using Admin Client to bypass RLS)
+        const { error: deleteError } = await adminClient
             .from('products')
             .delete()
             .eq('id', productId)
@@ -100,13 +102,22 @@ export async function deleteProductAction(productId: string): Promise<DeleteProd
              return { error: 'Failed to delete product from database' }
         }
 
-        revalidatePath('/admin/products')
-        revalidatePath('/shop')
-        revalidatePath('/')
-        // @ts-expect-error: Next.js types incorrectly require a second argument
-        revalidateTag('products')
-        // @ts-expect-error: Next.js types incorrectly require a second argument
-        revalidateTag('featured-products')
+        // 6. Hardened Revalidation
+        try {
+            revalidatePath('/admin/products')
+            revalidatePath('/shop')
+            revalidatePath('/')
+            // @ts-expect-error: Next.js types correctly require a second argument
+            revalidateTag('products')
+            // @ts-expect-error: Next.js types incorrectly require a second argument
+            revalidateTag('featured-products')
+            
+            // Revalidate specifically for the shop page which might be heavily cached
+            revalidatePath('/shop', 'page')
+            revalidatePath('/admin/products', 'page')
+        } catch (err) {
+            console.warn('Revalidation notice:', err)
+        }
 
         return { 
             success: true, 
