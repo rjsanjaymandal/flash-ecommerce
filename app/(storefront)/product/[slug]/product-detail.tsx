@@ -7,7 +7,7 @@ import {
   useWishlistStore,
   selectIsInWishlist,
 } from "@/store/use-wishlist-store";
-import { cn, formatCurrency } from "@/lib/utils";
+import { cn, formatCurrency, calculateDiscount } from "@/lib/utils";
 import { Star, Plus, Heart, Clock } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -146,6 +146,11 @@ export function ProductDetailClient({
       return a.localeCompare(b);
     });
   }, [product.size_options, realTimeStock, STANDARD_SIZES]);
+
+  const discountPercent = useMemo(
+    () => calculateDiscount(product.price, product.original_price),
+    [product.price, product.original_price],
+  );
 
   const colorOptions = product.color_options?.length
     ? product.color_options
@@ -448,23 +453,16 @@ export function ProductDetailClient({
                     <p className="text-3xl font-black tracking-tighter text-foreground">
                       {formatCurrency(product.price)}
                     </p>
-                    {product.original_price &&
-                      product.original_price > product.price && (
-                        <div className="flex items-center gap-2 mt-1">
-                          <p className="text-lg text-muted-foreground line-through decoration-red-500/30 decoration-2 font-medium">
-                            {formatCurrency(product.original_price)}
-                          </p>
-                          <span className="bg-red-500/10 text-red-500 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider">
-                            Save{" "}
-                            {Math.round(
-                              ((product.original_price - product.price) /
-                                product.original_price) *
-                                100,
-                            )}
-                            %
-                          </span>
-                        </div>
-                      )}
+                    {discountPercent && (
+                      <div className="flex items-center gap-2 mt-1">
+                        <p className="text-lg text-muted-foreground line-through decoration-red-500/30 decoration-2 font-medium">
+                          {formatCurrency(product.original_price)}
+                        </p>
+                        <span className="bg-red-500/10 text-red-500 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider">
+                          Save {discountPercent}%
+                        </span>
+                      </div>
+                    )}
                     <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest mt-1">
                       Inclusive of all taxes
                     </p>

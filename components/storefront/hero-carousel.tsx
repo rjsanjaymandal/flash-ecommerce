@@ -132,9 +132,18 @@ function BackgroundAtmosphere({ color }: { color: string }) {
   );
 }
 
+interface Accent {
+  id: number;
+  initialY: number;
+  animY: number[];
+  animX: number[];
+  duration: number;
+  left: string;
+}
+
 function FloatingAccents({ color }: { color: string }) {
   const [mounted, setMounted] = useState(false);
-  const [accents, setAccents] = useState<any[]>([]);
+  const [accents, setAccents] = useState<Accent[]>([]);
 
   useEffect(() => {
     const generatedAccents = Array.from({ length: 5 }).map((_, i) => ({

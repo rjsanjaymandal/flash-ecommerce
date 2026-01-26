@@ -27,6 +27,9 @@ import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import FlashImage from "@/components/ui/flash-image";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Tables } from "@/types/supabase";
+
+type Category = Tables<"categories">;
 
 const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL", "Oversized"];
 const COLOR_OPTIONS = [
@@ -64,7 +67,7 @@ export type ProductFormData = {
 
 interface ProductFormProps {
   initialData?: ProductFormData;
-  categories: any[];
+  categories: Category[];
   isLoading: boolean;
   onSubmit: (data: ProductFormData) => void;
   onCancel: () => void;
@@ -131,8 +134,8 @@ export function ProductForm({
         }));
       }
       toast.success("Image uploaded");
-    } catch (err: any) {
-      toast.error("Upload failed: " + err.message);
+    } catch (err: unknown) {
+      toast.error("Upload failed: " + (err as Error).message);
     } finally {
       setIsUploading(false);
       if (e.target) e.target.value = "";

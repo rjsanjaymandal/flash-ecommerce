@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { cn, formatCurrency } from "@/lib/utils";
-import { ShoppingBag, Heart, Star } from "lucide-react";
+import { cn, formatCurrency, calculateDiscount } from "@/lib/utils";
+import { Heart, Star, ShoppingBag } from "lucide-react";
 import {
   useWishlistStore,
   selectIsInWishlist,
@@ -448,17 +448,12 @@ export function ProductCard({
                     New
                   </Badge>
                 )}
-                {product.original_price &&
-                  product.original_price > product.price && (
-                    <Badge className="bg-red-500 text-white uppercase tracking-wider text-[9px] font-bold px-2 py-0.5 rounded-sm border-none shadow-sm">
-                      {Math.round(
-                        ((product.original_price - product.price) /
-                          product.original_price) *
-                          100,
-                      )}
-                      % OFF
-                    </Badge>
-                  )}
+                {calculateDiscount(product.price, product.original_price) && (
+                  <Badge className="bg-red-500 text-white uppercase tracking-wider text-[9px] font-bold px-2 py-0.5 rounded-sm border-none shadow-sm">
+                    {calculateDiscount(product.price, product.original_price)}%
+                    OFF
+                  </Badge>
+                )}
               </>
             )}
           </div>

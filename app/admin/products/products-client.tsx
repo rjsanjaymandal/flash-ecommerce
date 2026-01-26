@@ -65,7 +65,7 @@ import {
 } from "@/lib/services/product-service";
 import { deleteProductAction } from "@/app/actions/admin/delete-product";
 import { getWaitlistUsers } from "@/app/actions/admin-preorder";
-import { formatCurrency, cn } from "@/lib/utils";
+import { formatCurrency, calculateDiscount, cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
@@ -84,6 +84,7 @@ interface AdminProduct {
   id: string;
   name: string;
   price: number;
+  original_price?: number | null;
   main_image_url: string | null;
   slug: string | null;
   is_active: boolean;
@@ -132,7 +133,7 @@ export function ProductsClient({
 
   // Waitlist Modal State
   const [waitlistProduct, setWaitlistProduct] = useState<AdminProduct | null>(
-    null
+    null,
   );
   const [waitlistUsers, setWaitlistUsers] = useState<WaitlistUser[]>([]);
   const [isWaitlistLoading, setIsWaitlistLoading] = useState(false);
@@ -272,7 +273,7 @@ export function ProductsClient({
     const total =
       p.product_stock?.reduce(
         (acc: number, curr) => acc + (curr.quantity || 0),
-        0
+        0,
       ) || 0;
     return total < 10 && total > 0;
   });
@@ -281,7 +282,7 @@ export function ProductsClient({
     const total =
       p.product_stock?.reduce(
         (acc: number, curr) => acc + (curr.quantity || 0),
-        0
+        0,
       ) || 0;
     return total === 0;
   });
@@ -309,7 +310,7 @@ export function ProductsClient({
     link.href = url;
     link.setAttribute(
       "download",
-      `products_export_${new Date().toISOString().split("T")[0]}.csv`
+      `products_export_${new Date().toISOString().split("T")[0]}.csv`,
     );
     document.body.appendChild(link);
     link.click();
@@ -320,9 +321,9 @@ export function ProductsClient({
   const categories = Array.from(
     new Set(
       initialProducts.map((p) =>
-        JSON.stringify({ id: p.category_id, name: p.categories?.name })
-      )
-    )
+        JSON.stringify({ id: p.category_id, name: p.categories?.name }),
+      ),
+    ),
   )
     .map((s) => JSON.parse(s))
     .filter((c) => c.id);
@@ -445,7 +446,7 @@ export function ProductsClient({
               if (!res.ok) throw new Error(data.error);
               toast.success(
                 `Processed ${data.processed_count} images. ${data.remaining_count} remaining.`,
-                { id: toastId }
+                { id: toastId },
               );
               router.refresh();
             } catch (err) {
@@ -584,7 +585,7 @@ export function ProductsClient({
                   ? product.product_stock
                       .map(
                         (s: { size: string | null; quantity: number }) =>
-                          `${s.size || "N/A"}: ${s.quantity}`
+                          `${s.size || "N/A"}: ${s.quantity}`,
                       )
                       .join(", ")
                   : "No stock records";
@@ -594,7 +595,7 @@ export function ProductsClient({
                     key={product.id}
                     className={cn(
                       "group transition-colors border-b last:border-0 text-sm hover:bg-muted/40",
-                      isSelected && "bg-primary/5 hover:bg-primary/10"
+                      isSelected && "bg-primary/5 hover:bg-primary/10",
                     )}
                   >
                     <TableCell className="px-4 align-middle">
@@ -643,7 +644,7 @@ export function ProductsClient({
                               variant={stockStatus.variant}
                               className={cn(
                                 "px-2 py-0.5 rounded-full text-[10px] font-semibold border shadow-sm",
-                                stockStatus.className
+                                stockStatus.className,
                               )}
                             >
                               {stockStatus.label}
@@ -676,13 +677,13 @@ export function ProductsClient({
                                     <span
                                       className={cn(
                                         "font-mono font-bold",
-                                        s.quantity < 3 ? "text-red-500" : ""
+                                        s.quantity < 3 ? "text-red-500" : "",
                                       )}
                                     >
                                       {s.quantity}
                                     </span>
                                   </div>
-                                )
+                                ),
                               )
                             ) : (
                               <span className="col-span-2 text-muted-foreground italic">
@@ -693,8 +694,30 @@ export function ProductsClient({
                         </TooltipContent>
                       </Tooltip>
                     </TableCell>
-                    <TableCell className="font-semibold align-middle text-foreground">
-                      {formatCurrency(product.price)}
+                    <TableCell className="align-middle">
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-foreground">
+                          {formatCurrency(product.price)}
+                        </span>
+                        {calculateDiscount(
+                          product.price,
+                          product.original_price,
+                        ) && (
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <span className="text-[10px] text-muted-foreground/60 line-through">
+                              {formatCurrency(product.original_price)}
+                            </span>
+                            <span className="text-[9px] font-black text-red-500 uppercase bg-red-50 px-1 rounded">
+                              -
+                              {calculateDiscount(
+                                product.price,
+                                product.original_price,
+                              )}
+                              %
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell className="align-middle">
                       <div
@@ -702,7 +725,7 @@ export function ProductsClient({
                           "flex items-center gap-1.5 px-2.5 py-1 rounded-full w-fit text-xs font-medium border transition-colors cursor-pointer",
                           preorderCount > 0
                             ? "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 hover:border-blue-300"
-                            : "bg-transparent text-muted-foreground border-transparent hover:bg-muted"
+                            : "bg-transparent text-muted-foreground border-transparent hover:bg-muted",
                         )}
                         onClick={() => handleViewWaitlist(product)}
                       >
@@ -716,7 +739,7 @@ export function ProductsClient({
                           <span
                             className={cn(
                               "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75",
-                              product.is_active ? "bg-emerald-400" : "hidden"
+                              product.is_active ? "bg-emerald-400" : "hidden",
                             )}
                           ></span>
                           <span
@@ -724,7 +747,7 @@ export function ProductsClient({
                               "relative inline-flex rounded-full h-2 w-2",
                               product.is_active
                                 ? "bg-emerald-500"
-                                : "bg-slate-300"
+                                : "bg-slate-300",
                             )}
                           ></span>
                         </span>
