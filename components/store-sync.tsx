@@ -60,7 +60,7 @@ export function StoreSync() {
           .select("product_id, size, color, quantity")
           .in(
             "product_id",
-            items.map((i) => i.productId)
+            items.map((i) => i.productId),
           );
 
         if (!stocks) return;
@@ -71,7 +71,7 @@ export function StoreSync() {
           .select("id, price")
           .in(
             "id",
-            items.map((i) => i.productId)
+            items.map((i) => i.productId),
           );
 
         let changed = false;
@@ -82,7 +82,7 @@ export function StoreSync() {
             (s) =>
               s.product_id === item.productId &&
               s.size === item.size &&
-              s.color === item.color
+              s.color === item.color,
           );
           const productEntry = products?.find((p) => p.id === item.productId);
 
@@ -109,7 +109,7 @@ export function StoreSync() {
           if (productEntry && productEntry.price !== item.price) {
             changed = true;
             changes.push(
-              `Price for ${item.name} updated to ${productEntry.price}`
+              `Price for ${item.name} updated to ${productEntry.price}`,
             );
             updatedItem = { ...updatedItem, price: productEntry.price };
           }
@@ -134,7 +134,7 @@ export function StoreSync() {
                   color: updated.color,
                   quantity: updated.quantity,
                 },
-                { onConflict: "user_id, product_id, size, color" }
+                { onConflict: "user_id, product_id, size, color" },
               );
             }
           }
@@ -143,7 +143,7 @@ export function StoreSync() {
         console.error("[StoreSync] Stock validation failed:", error);
       }
     },
-    [supabase, user, setCartItems]
+    [supabase, user, setCartItems],
   );
 
   // 1. Load Initial Data on Auth Change
@@ -156,13 +156,15 @@ export function StoreSync() {
       setIsLoading(true);
 
       try {
-        // Hydrate from localStorage first
-        useCartStore.persist.rehydrate();
-        useWishlistStore.persist.rehydrate();
+        // 1. Hydrate from localStorage first (Crucial: Await these in Zustand 5+)
+        await useCartStore.persist.rehydrate();
+        await useWishlistStore.persist.rehydrate();
+
+        // 2. Mark as hydrated so UI can render safely
+        useCartStore.getState().setHasHydrated(true);
 
         if (user) {
           console.log("[StoreSync] Logged in. Triggering deep sync...");
-          // Use the new centralized sync logic in use-cart-store
           await useCartStore.getState().syncWithUser(user.id);
           const finalCart = useCartStore.getState().items;
           await validateStock(finalCart);
@@ -171,7 +173,7 @@ export function StoreSync() {
           const localWishlist = useWishlistStore.getState().items;
           if (localWishlist.length > 0) {
             console.log(
-              "[StoreSync] Found guest wishlist items. Merging to DB..."
+              "[StoreSync] Found guest wishlist items. Merging to DB...",
             );
             for (const item of localWishlist) {
               await supabase.from("wishlist_items").upsert(
@@ -179,7 +181,7 @@ export function StoreSync() {
                   user_id: user.id,
                   product_id: item.productId,
                 },
-                { onConflict: "user_id, product_id", ignoreDuplicates: true }
+                { onConflict: "user_id, product_id", ignoreDuplicates: true },
               );
             }
           }
@@ -245,7 +247,9 @@ export function StoreSync() {
           const currentItems = useCartStore.getState().items;
           const relevantItem = currentItems.find(
             (i) =>
-              i.productId === product_id && i.size === size && i.color === color
+              i.productId === product_id &&
+              i.size === size &&
+              i.color === color,
           );
 
           if (relevantItem) {
@@ -266,7 +270,7 @@ export function StoreSync() {
                     };
                   }
                   return i;
-                })
+                }),
               );
             } else {
               // Just update maxQuantity silently
@@ -280,11 +284,11 @@ export function StoreSync() {
                     return { ...i, maxQuantity: quantity };
                   }
                   return i;
-                })
+                }),
               );
             }
           }
-        }
+        },
       )
       .subscribe();
 

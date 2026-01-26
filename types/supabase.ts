@@ -766,18 +766,27 @@ export type Database = {
           created_at: string
           user_id: string
           product_id: string
+          email: string
+          user_name: string | null
+          notified_at: string | null
         }
         Insert: {
           id?: string
           created_at?: string
           user_id: string
           product_id: string
+          email: string
+          user_name?: string | null
+          notified_at?: string | null
         }
         Update: {
           id?: string
           created_at?: string
           user_id?: string
           product_id?: string
+          email?: string
+          user_name?: string | null
+          notified_at?: string | null
         }
         Relationships: [
             {

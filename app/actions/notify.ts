@@ -26,7 +26,7 @@ export async function notifyWaitlistUser(preorderId: string) {
     }
 
     // 2. Fetch Preorder Details with Stock and Status
-    const { data: preorderData, error } = await (supabase as any)
+    const { data: preorderData, error } = await supabase
         .from('preorders')
         .select(`
             id,
@@ -102,7 +102,7 @@ export async function notifyWaitlistUser(preorderId: string) {
 
     // 5. Update Status (Tracking)
     if (success) {
-        await (supabase as any)
+        await supabase
             .from('preorders')
             .update({ notified_at: new Date().toISOString() })
             .eq('id', preorderId)
@@ -118,11 +118,11 @@ export async function notifyAllWaitlist(productId: string) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { error: 'Unauthorized' }
 
-    const { data: candidates, error } = await (supabase as any)
+    const { data: candidates, error } = await supabase
         .from('preorders')
         .select('id')
         .eq('product_id', productId)
-        .filter('notified_at', 'is', 'null')
+        .is('notified_at', null)
 
     if (error) return { error: 'Failed to fetch candidates' }
     if (!candidates || candidates.length === 0) return { message: 'No pending notifications' }

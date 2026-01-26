@@ -67,7 +67,7 @@ export function NotificationBell() {
 
           // Refresh Data
           queryClient.invalidateQueries({ queryKey: ["notifications"] });
-        }
+        },
       )
       .subscribe();
 
@@ -87,7 +87,7 @@ export function NotificationBell() {
           <Bell
             className={cn(
               "h-5 w-5 transition-all duration-300",
-              isOpen && "fill-primary text-primary"
+              isOpen && "fill-primary text-primary",
             )}
           />
           {unreadCount > 0 && (
@@ -98,7 +98,7 @@ export function NotificationBell() {
 
       <PopoverContent
         align="end"
-        className="w-[380px] p-0 rounded-3xl shadow-2xl border-border/50 bg-background/95 backdrop-blur-xl overflow-hidden z-50 ring-1 ring-border/50"
+        className="w-[calc(100vw-1rem)] sm:w-[400px] p-0 rounded-3xl shadow-2xl border-border/50 bg-background/95 backdrop-blur-xl overflow-hidden z-50 ring-1 ring-border/50 transition-all duration-300 mr-2 sm:mr-0"
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 bg-muted/30 border-b border-border/50">
@@ -182,7 +182,7 @@ export function NotificationBell() {
                     "relative p-4 border-b border-border/40 hover:bg-muted/50 transition-all group flex gap-3 items-start",
                     !n.is_read
                       ? "bg-primary/[0.03]"
-                      : "opacity-80 hover:opacity-100"
+                      : "opacity-80 hover:opacity-100",
                   )}
                 >
                   {!n.is_read && (
@@ -199,7 +199,7 @@ export function NotificationBell() {
                           ? "bg-yellow-500/10 text-yellow-500"
                           : n.type === "error"
                             ? "bg-red-500/10 text-red-500"
-                            : "bg-primary/10 text-primary"
+                            : "bg-primary/10 text-primary",
                     )}
                   >
                     <Bell className="h-4 w-4" />
@@ -212,7 +212,7 @@ export function NotificationBell() {
                           "text-sm",
                           !n.is_read
                             ? "font-black text-foreground"
-                            : "font-semibold text-muted-foreground"
+                            : "font-semibold text-muted-foreground",
                         )}
                       >
                         {n.title}

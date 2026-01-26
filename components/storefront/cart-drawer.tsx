@@ -15,8 +15,9 @@ import { cn, formatCurrency } from "@/lib/utils";
 import { FreeShippingBar } from "@/components/cart/free-shipping-bar";
 import { CartUpsell } from "@/components/cart/cart-upsell";
 import { AnimatePresence, motion } from "framer-motion";
-import { AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import { useCartStockSync } from "@/hooks/use-cart-stock-sync";
+import { Badge } from "@/components/ui/badge";
 
 export function CartDrawer() {
   const [mounted, setMounted] = useState(false);
@@ -34,17 +35,15 @@ export function CartDrawer() {
   const isHydrated = useCartStore((state) => state.isHydrated);
   const setHasHydrated = useCartStore((state) => state.setHasHydrated);
 
+  // Enable Real-Time Stock Pulse
+  useCartStockSync();
+
   const loadingStates = useCartStore((state) => state.loadingStates);
   const setLoadingState = useCartStore((state) => state.setLoadingState);
 
   useEffect(() => {
     setMounted(true);
-    // Trigger hydration check if not already done
-    if (!isHydrated) {
-      useCartStore.persist.rehydrate();
-      setHasHydrated(true);
-    }
-  }, [isHydrated, setHasHydrated]);
+  }, []);
 
   const handleUpdateQuantity = async (
     productId: string,
@@ -278,9 +277,27 @@ export function CartDrawer() {
                             </button>
                           </div>
                         </div>
-                        <p className="text-xs text-muted-foreground font-medium">
-                          {item.size} / {item.color}
-                        </p>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="text-xs text-muted-foreground font-medium">
+                            {item.size} / {item.color}
+                          </p>
+                          {item.maxQuantity > 0 && item.maxQuantity <= 5 && (
+                            <Badge
+                              variant="outline"
+                              className="text-[9px] h-4 border-amber-500/50 text-amber-600 bg-amber-500/5 px-1 font-black animate-pulse"
+                            >
+                              Only {item.maxQuantity} Left
+                            </Badge>
+                          )}
+                          {item.maxQuantity === 0 && (
+                            <Badge
+                              variant="destructive"
+                              className="text-[9px] h-4 px-1 font-black uppercase"
+                            >
+                              Sold Out
+                            </Badge>
+                          )}
+                        </div>
                       </div>
 
                       <div className="flex items-center justify-between mt-2">

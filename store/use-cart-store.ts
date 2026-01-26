@@ -36,6 +36,9 @@ interface CartState {
   setHasHydrated: (hydrated: boolean) => void
   loadingStates: Record<string, boolean>
   setLoadingState: (key: string, isLoading: boolean) => void
+  // Enterprise Sync Logic
+  syncQueue: Promise<any>
+  addToSyncQueue: (fn: () => Promise<any>) => void
 }
 
 const supabase = createClient()
@@ -49,8 +52,25 @@ export const useCartStore = create<CartState>()(
       isLoading: false,
       isHydrated: false,
       loadingStates: {},
+      syncQueue: Promise.resolve(),
       setLoadingState: (key, isLoading) => set((state) => ({ loadingStates: { ...state.loadingStates, [key]: isLoading } })),
       setHasHydrated: (hydrated) => set({ isHydrated: hydrated }),
+
+      addToSyncQueue: (fn) => {
+        set((state) => {
+          // ENSURE syncQueue is a Promise (defensive against hydration edge cases)
+          const currentQueue = state.syncQueue instanceof Promise ? state.syncQueue : Promise.resolve();
+          return {
+            syncQueue: currentQueue.then(async () => {
+              try {
+                await fn();
+              } catch (err) {
+                console.error("[CartStore] Sync operation failed:", err);
+              }
+            })
+          };
+        });
+      },
       
       addItem: async (item, options = { openCart: true, showToast: true }) => {
         const currentItems = get().items
@@ -96,41 +116,37 @@ export const useCartStore = create<CartState>()(
             toast.success("Added to cart")
         }
 
-        // Sync to DB
-        try {
+        // Sync to DB via Queue
+        get().addToSyncQueue(async () => {
             const { data: { user } } = await supabase.auth.getUser()
-            if (user) {
-                const dbItem = {
-                    user_id: user.id,
-                    product_id: item.productId,
-                    size: item.size,
-                    color: item.color,
-                    quantity: newQuantity
-                }
-                const { data, error } = await supabase
-                    .from('cart_items')
-                    .upsert(dbItem, { onConflict: 'user_id, product_id, size, color' })
-                    .select('id')
-                    .single()
-                
-                if (error) throw error
-                
-                // CRITICAL: Update the item with the DB ID to prevent duplication on refresh
-                if (data?.id) {
-                    set((state) => ({
-                        items: state.items.map((i) => 
-                            i.productId === item.productId && i.size === item.size && i.color === item.color
-                            ? { ...i, id: data.id }
-                            : i
-                        )
-                    }))
-                }
+            if (!user) return
+
+            const dbItem = {
+                user_id: user.id,
+                product_id: item.productId,
+                size: item.size,
+                color: item.color,
+                quantity: newQuantity
             }
-        } catch (error) {
-            console.error("[CartStore] Sync error (addItem):", error)
-            // We don't necessarily revert if it's just a sync error, but log it
-            // Reverting might be annoying for UX if the local addition was successful
-        }
+            
+            const { data, error } = await supabase
+                .from('cart_items')
+                .upsert(dbItem, { onConflict: 'user_id, product_id, size, color' })
+                .select('id')
+                .single()
+            
+            if (error) throw error
+            
+            if (data?.id) {
+                set((state) => ({
+                    items: state.items.map((i) => 
+                        i.productId === item.productId && i.size === item.size && i.color === item.color
+                        ? { ...i, id: data.id }
+                        : i
+                    )
+                }))
+            }
+        })
       },
 
       removeItem: async (productId, size, color) => {
@@ -143,21 +159,22 @@ export const useCartStore = create<CartState>()(
             )
         }))
 
-        try {
+        // Sync to DB via Queue
+        get().addToSyncQueue(async () => {
             const { data: { user } } = await supabase.auth.getUser()
-            if (user) {
-                 const { error } = await supabase
-                    .from('cart_items')
-                    .delete()
-                    .match({ user_id: user.id, product_id: productId, size, color })
-                
-                if (error) throw error
+            if (!user) return
+
+            const { error } = await supabase
+                .from('cart_items')
+                .delete()
+                .match({ user_id: user.id, product_id: productId, size, color })
+            
+            if (error) {
+                toast.error("Failed to sync removal. Reverting.")
+                set({ items: currentItems })
+                throw error
             }
-        } catch (error) {
-            console.error("[CartStore] Sync error (removeItem):", error)
-            set({ items: currentItems })
-            toast.error("Failed to sync removal. Reverting.")
-        }
+        })
       },
 
       updateQuantity: async (productId, size, color, quantity) => {
@@ -191,21 +208,22 @@ export const useCartStore = create<CartState>()(
             )
         }))
 
-        try {
+        // Sync to DB via Queue
+        get().addToSyncQueue(async () => {
             const { data: { user } } = await supabase.auth.getUser()
-            if (user) {
-                const { error } = await supabase
-                    .from('cart_items')
-                    .update({ quantity })
-                    .match({ user_id: user.id, product_id: productId, size, color })
-                
-                if (error) throw error
+            if (!user) return
+
+            const { error } = await supabase
+                .from('cart_items')
+                .update({ quantity })
+                .match({ user_id: user.id, product_id: productId, size, color })
+            
+            if (error) {
+                toast.error("Failed to sync quantity. Reverting.")
+                set({ items: currentItems })
+                throw error
             }
-        } catch (error) {
-            console.error("[CartStore] Sync error (updateQuantity):", error)
-            set({ items: currentItems })
-            toast.error("Failed to sync quantity. Reverting.")
-        }
+        })
       },
 
       toggleSaveForLater: async (productId, size, color) => {
@@ -220,6 +238,18 @@ export const useCartStore = create<CartState>()(
             savedItems: [...savedItems, itemInCart]
           })
           toast.success("Item saved for later")
+          
+          // Sync: Remove from cart_items, Add to wishlist_items
+          get().addToSyncQueue(async () => {
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) return
+            
+            // 1. Delete from cart
+            await supabase.from('cart_items').delete().match({ user_id: user.id, product_id: productId, size, color })
+            
+            // 2. Add to wishlist
+            await supabase.from('wishlist_items').upsert({ user_id: user.id, product_id: productId }, { onConflict: 'user_id, product_id' })
+          })
         } else if (itemInSaved) {
           // Move from Saved to Cart
           set({
@@ -228,14 +258,24 @@ export const useCartStore = create<CartState>()(
             isCartOpen: true
           })
           toast.success("Item moved back to bag")
-        }
 
-        // Sync with DB if needed
-        const { data: { user } } = await supabase.auth.getUser()
-        if (user) {
-          // In a real DB, we'd have a 'is_saved' column or a separate table
-          // For now, we'll just update local state and note that full DB sync for 'saved' 
-          // would require a migration.
+          // Sync: Remove from wishlist_items, Add to cart_items
+          get().addToSyncQueue(async () => {
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) return
+            
+            // 1. Delete from wishlist
+            await supabase.from('wishlist_items').delete().match({ user_id: user.id, product_id: productId })
+            
+            // 2. Add to cart
+            await supabase.from('cart_items').upsert({ 
+                user_id: user.id, 
+                product_id: productId, 
+                size, 
+                color, 
+                quantity: itemInSaved.quantity 
+            }, { onConflict: 'user_id, product_id, size, color' })
+          })
         }
       },
 
@@ -253,14 +293,20 @@ export const useCartStore = create<CartState>()(
          * Prevents duplication by checking for already-synced items (with IDs)
          */
         try {
-            // 1. Fetch Server Items
-            const { data: serverRawItems, error } = await supabase
-                .from('cart_items')
-                .select('id, product_id, quantity, size, color, product:products(name, price, main_image_url, slug, category_id)')
-                .eq('user_id', userId)
+            // 1. Fetch Server Items (Cart + Saved/Wishlist)
+            const [cartRes, savedRes] = await Promise.all([
+                supabase
+                    .from('cart_items')
+                    .select('id, product_id, quantity, size, color, product:products(name, price, main_image_url, slug, category_id)')
+                    .eq('user_id', userId),
+                supabase
+                    .from('wishlist_items')
+                    .select('id, product_id, product:products(name, price, main_image_url, slug, category_id)')
+                    .eq('user_id', userId)
+            ])
 
-            if (error) {
-                console.error("[CartSync] Failed to fetch server items:", error)
+            if (cartRes.error) {
+                console.error("[CartSync] Failed to fetch server cart:", cartRes.error)
                 return
             }
 
@@ -279,7 +325,22 @@ export const useCartStore = create<CartState>()(
                 } | null
             }
 
-            const serverItems: CartItem[] = ((serverRawItems as unknown) as CartDBItem[] || []).map((dbItem) => ({
+            interface SavedDBItem {
+                id: string
+                product_id: string
+                product: {
+                    name: string
+                    price: number
+                    main_image_url: string
+                    slug: string
+                    category_id: string
+                } | null
+            }
+
+            const serverCartRaw = (cartRes.data as unknown) as CartDBItem[] || []
+            const serverSavedRaw = (savedRes.data as unknown) as SavedDBItem[] || []
+
+            const serverItems: CartItem[] = serverCartRaw.map((dbItem) => ({
                 id: dbItem.id,
                 productId: dbItem.product_id,
                 name: dbItem.product?.name || 'Unknown Product',
@@ -288,6 +349,20 @@ export const useCartStore = create<CartState>()(
                 size: dbItem.size || '',
                 color: dbItem.color || '',
                 quantity: dbItem.quantity,
+                maxQuantity: 10,
+                slug: dbItem.product?.slug || '',
+                categoryId: dbItem.product?.category_id || ''
+            })).filter(i => i.price > 0 && i.slug && i.categoryId)
+
+            const serverSavedItems: CartItem[] = serverSavedRaw.map((dbItem) => ({
+                id: dbItem.id,
+                productId: dbItem.product_id,
+                name: dbItem.product?.name || 'Unknown Product',
+                price: Number(dbItem.product?.price || 0),
+                image: dbItem.product?.main_image_url || null,
+                size: 'Universal', // Clearer than 'Standard' for generic wishlist items
+                color: 'N/A',
+                quantity: 1,
                 maxQuantity: 10,
                 slug: dbItem.product?.slug || '',
                 categoryId: dbItem.product?.category_id || ''
@@ -323,9 +398,23 @@ export const useCartStore = create<CartState>()(
             })
 
             const finalItems = Array.from(mergedMap.values())
-            set({ items: finalItems })
+            
+            // 3. Intelligent Merge (Saved)
+            const localSaved = get().savedItems
+            const mergedSavedMap = new Map<string, CartItem>()
+            
+            serverSavedItems.forEach(item => mergedSavedMap.set(item.productId, item))
+            localSaved.forEach(item => {
+                if (!mergedSavedMap.has(item.productId)) {
+                    mergedSavedMap.set(item.productId, item)
+                }
+            })
+            
+            const finalSavedItems = Array.from(mergedSavedMap.values())
 
-            // 3. Batch Sync back to Server for any new/merged items without IDs or updated quantities
+            set({ items: finalItems, savedItems: finalSavedItems })
+
+            // 4. Batch Sync Cart back to Server
             const dbPayload = finalItems.map(item => ({
                 user_id: userId,
                 product_id: item.productId,
@@ -338,6 +427,18 @@ export const useCartStore = create<CartState>()(
                  await supabase
                     .from('cart_items')
                     .upsert(dbPayload, { onConflict: 'user_id, product_id, size, color' })
+            }
+
+            // 5. Batch Sync Saved (Wishlist) back to Server
+            const savedPayload = finalSavedItems.map(item => ({
+                user_id: userId,
+                product_id: item.productId,
+            }))
+            
+            if (savedPayload.length > 0) {
+                 await supabase
+                    .from('wishlist_items')
+                    .upsert(savedPayload, { onConflict: 'user_id, product_id' })
             }
 
         } catch (err) {
@@ -353,6 +454,10 @@ export const useCartStore = create<CartState>()(
     {
       name: 'flash-cart-storage',
       skipHydration: true,
+      partialize: (state) => ({ 
+        items: state.items, 
+        savedItems: state.savedItems 
+      }),
     }
   )
 )
