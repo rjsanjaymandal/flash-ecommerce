@@ -81,9 +81,10 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
     const taglines = [
       "Level Up Your Aesthetic",
       "Limited Edition Drop",
+      "420 GSM Heavyweight Quality",
       "The Future of Streetwear",
       "Engineered for Performance",
-      "High Volume Style",
+      "420 GSM Hoodie Season",
       "Bold. Unfiltered. Authentic.",
       "Summer Collection 2025",
     ];
@@ -204,6 +205,17 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                 <span className="inline-block bg-primary px-3 py-1 rounded text-[10px] font-black uppercase tracking-widest shadow-lg">
                   New Arrival
                 </span>
+                {currentProduct.name.toLowerCase().includes("hoodie") && (
+                  <motion.span
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.5 }}
+                    className="ml-3 inline-flex items-center gap-1.5 bg-white/10 backdrop-blur-md border border-white/20 px-3 py-1 rounded text-[10px] font-black uppercase tracking-widest text-white shadow-lg"
+                  >
+                    <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+                    420 GSM Quality
+                  </motion.span>
+                )}
               </motion.div>
 
               <div className="min-h-[90px] lg:min-h-[160px] flex flex-col justify-end mb-6">
