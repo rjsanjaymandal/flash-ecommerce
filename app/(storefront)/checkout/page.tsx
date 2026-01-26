@@ -83,7 +83,7 @@ export default function CheckoutPage() {
 
   // Partial COD State
   const [paymentMethod, setPaymentMethod] = useState<"PREPAID" | "PARTIAL_COD">(
-    "PREPAID"
+    "PREPAID",
   );
 
   // Check if script is already loaded (e.g. from previous navigation)
@@ -141,7 +141,7 @@ export default function CheckoutPage() {
         toast.error("Order not found during verification.");
       else if (error === "db_error")
         toast.error(
-          "Payment successful but failed to update order. Contact support."
+          "Payment successful but failed to update order. Contact support.",
         );
       else if (error === "server_error")
         toast.error("Server error during verification. Contact support.");
@@ -188,20 +188,21 @@ export default function CheckoutPage() {
   }, [zipCode, form]);
 
   // Shipping Logic
-  const shippingFee = cartTotal >= 1000 ? 0 : 50;
+  const shippingFee = cartTotal >= 699 ? 0 : 50;
 
   const finalTotal = Math.max(0, cartTotal - discountAmount + shippingFee);
 
   // Address Selection Handler
   const handleAddressSelect = (
     addr: Address,
-    options?: { silent?: boolean }
+    options?: { silent?: boolean },
   ) => {
     form.setValue("firstName", addr.name.split(" ")[0]);
     form.setValue("lastName", addr.name.split(" ").slice(1).join(" "));
     form.setValue(
       "address",
-      addr.address_line1 + (addr.address_line2 ? `, ${addr.address_line2}` : "")
+      addr.address_line1 +
+        (addr.address_line2 ? `, ${addr.address_line2}` : ""),
     );
     form.setValue("city", addr.city);
     form.setValue("state", addr.state);
@@ -264,6 +265,8 @@ export default function CheckoutPage() {
         color: i.color,
         image: i.image,
         maxQuantity: i.maxQuantity,
+        slug: i.slug,
+        categoryId: i.categoryId,
       }));
 
       console.log("Breadcrumb: Calling createOrder...");
@@ -323,7 +326,7 @@ export default function CheckoutPage() {
           const verifyPaymentWithRetry = async (
             payload: VerifyPayload,
             retries = 3,
-            delay = 1000
+            delay = 1000,
           ): Promise<{ verified: boolean; error?: string }> => {
             try {
               const res = await fetch("/api/razorpay/verify", {
@@ -341,7 +344,7 @@ export default function CheckoutPage() {
               if (retries > 0) {
                 console.log(
                   `Verification failed, retrying in ${delay}ms...`,
-                  err
+                  err,
                 );
                 await new Promise((resolve) => setTimeout(resolve, delay));
                 return verifyPaymentWithRetry(payload, retries - 1, delay * 2);
@@ -366,7 +369,7 @@ export default function CheckoutPage() {
               // If it's a specific logic error (signature mismatch), we don't retry.
               toast.error(
                 verifyData.error ||
-                  "Payment verification failed. Security Check."
+                  "Payment verification failed. Security Check.",
               );
             }
           } catch (netErr) {
@@ -404,7 +407,7 @@ export default function CheckoutPage() {
 
       if (!window.Razorpay) {
         throw new Error(
-          "Razorpay SDK failed to load. Please check your internet connection."
+          "Razorpay SDK failed to load. Please check your internet connection.",
         );
       }
 
@@ -804,7 +807,7 @@ export default function CheckoutPage() {
                         <Lock className="h-4 w-4" />
                         Pay{" "}
                         {formatCurrency(
-                          paymentMethod === "PARTIAL_COD" ? 100 : finalTotal
+                          paymentMethod === "PARTIAL_COD" ? 100 : finalTotal,
                         )}{" "}
                         Now
                       </>

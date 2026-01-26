@@ -36,7 +36,7 @@ export function QuickAddDialog({
 
   // Determine available sizes based on real-time stock
   const availableSizes = Array.from(
-    new Set(stock.filter((s: any) => s.quantity > 0).map((s: any) => s.size))
+    new Set(stock.filter((s: any) => s.quantity > 0).map((s: any) => s.size)),
   );
   const allSizes =
     product.size_options && product.size_options.length > 0
@@ -51,10 +51,10 @@ export function QuickAddDialog({
       stock
         .filter(
           (s: any) =>
-            (!selectedSize || s.size === selectedSize) && s.quantity > 0
+            (!selectedSize || s.size === selectedSize) && s.quantity > 0,
         )
-        .map((s: any) => s.color)
-    )
+        .map((s: any) => s.color),
+    ),
   );
 
   // State for color
@@ -79,7 +79,7 @@ export function QuickAddDialog({
     }
 
     const stockItem = stock.find(
-      (item: any) => item.size === selectedSize && item.color === finalColor
+      (item: any) => item.size === selectedSize && item.color === finalColor,
     );
     const maxQuantity = stockItem?.quantity || 0;
 
@@ -91,6 +91,7 @@ export function QuickAddDialog({
     addItem(
       {
         productId: product.id,
+        categoryId: product.category_id || "",
         name: product.name,
         price: product.price,
         image: product.main_image_url,
@@ -98,8 +99,9 @@ export function QuickAddDialog({
         color: finalColor,
         quantity: 1,
         maxQuantity: maxQuantity,
+        slug: product.slug || "",
       },
-      { openCart: !buyNowMode, showToast: !buyNowMode }
+      { openCart: !buyNowMode, showToast: !buyNowMode },
     );
 
     if (buyNowMode) {
@@ -138,7 +140,7 @@ export function QuickAddDialog({
             <div className="grid grid-cols-3 gap-3">
               {allSizes.map((size: string) => {
                 const isAvailable = stock.some(
-                  (s: any) => s.size === size && s.quantity > 0
+                  (s: any) => s.size === size && s.quantity > 0,
                 );
                 const isSelected = selectedSize === size;
 
@@ -156,7 +158,7 @@ export function QuickAddDialog({
                         ? "border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-[1.02]"
                         : "border-input hover:bg-muted/50 text-foreground hover:border-foreground/20",
                       !isAvailable &&
-                        "opacity-40 cursor-not-allowed bg-muted/20 border-transparent"
+                        "opacity-40 cursor-not-allowed bg-muted/20 border-transparent",
                     )}
                   >
                     {size}
@@ -183,7 +185,7 @@ export function QuickAddDialog({
                   new Set([
                     ...(product.color_options || []),
                     ...availableColorsForSize,
-                  ])
+                  ]),
                 ).map((color: string) => {
                   // Check if this color is valid for the selected size (if size selected)
                   // If no size selected, check if color exists in ANY stock
@@ -193,7 +195,7 @@ export function QuickAddDialog({
                       (s: any) =>
                         s.size === selectedSize &&
                         s.color === color &&
-                        s.quantity > 0
+                        s.quantity > 0,
                     );
                   const isSelected = selectedColor === color;
 
@@ -209,7 +211,7 @@ export function QuickAddDialog({
                         isSelected
                           ? "border-primary bg-primary text-primary-foreground shadow-md scale-105"
                           : "border-input hover:bg-muted/50",
-                        !isValidForSize && "opacity-40 cursor-not-allowed"
+                        !isValidForSize && "opacity-40 cursor-not-allowed",
                       )}
                     >
                       {color}

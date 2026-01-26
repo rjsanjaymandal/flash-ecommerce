@@ -184,6 +184,8 @@ export function ProductCard({
           color: firstStock.color || "Standard",
           quantity: 1,
           maxQuantity: firstStock.quantity,
+          slug: product.slug || "",
+          categoryId: product.category_id || "",
         },
         { openCart: false, showToast: false },
       );
@@ -227,6 +229,8 @@ export function ProductCard({
         color: firstStock.color || "Standard",
         quantity: 1,
         maxQuantity: firstStock.quantity,
+        slug: product.slug || "",
+        categoryId: product.category_id || "",
       });
       toast.success("Added to Cart");
       setIsCartOpen(true);

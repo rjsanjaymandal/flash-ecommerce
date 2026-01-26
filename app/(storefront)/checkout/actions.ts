@@ -84,7 +84,7 @@ export async function createOrder(data: {
         
         // --- SHIPPING LOGIC ---
         // Free shipping for orders >= 1000, else 50
-        const shippingFee = serverSubtotal >= 1000 ? 0 : 50
+        const shippingFee = serverSubtotal >= 699 ? 0 : 50
         const finalServerTotal = serverTotal + shippingFee
 
         // Allow for minor floating point differences

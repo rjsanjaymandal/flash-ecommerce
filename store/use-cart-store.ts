@@ -6,8 +6,8 @@ import { toast } from 'sonner'
 export interface CartItem {
   id?: string // UUID for DB items
   productId: string
-  categoryId?: string
-  slug?: string
+  categoryId: string
+  slug: string
   name: string
   price: number
   image: string | null
@@ -19,16 +19,21 @@ export interface CartItem {
 
 interface CartState {
   items: CartItem[]
+  savedItems: CartItem[]
   isCartOpen: boolean
   isLoading: boolean
+  isHydrated: boolean
   addItem: (item: CartItem, options?: { openCart?: boolean, showToast?: boolean }) => Promise<void>
   removeItem: (productId: string, size: string, color: string) => Promise<void>
   updateQuantity: (productId: string, size: string, color: string, quantity: number) => Promise<void>
+  toggleSaveForLater: (productId: string, size: string, color: string) => Promise<void>
   clearCart: () => Promise<void>
   syncWithUser: (userId: string) => Promise<void>
   setItems: (items: CartItem[]) => void
+  setSavedItems: (items: CartItem[]) => void
   setIsCartOpen: (open: boolean) => void
   setIsLoading: (isLoading: boolean) => void
+  setHasHydrated: (hydrated: boolean) => void
   loadingStates: Record<string, boolean>
   setLoadingState: (key: string, isLoading: boolean) => void
 }
@@ -39,10 +44,13 @@ export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       items: [],
+      savedItems: [],
       isCartOpen: false,
-      isLoading: true,
+      isLoading: false,
+      isHydrated: false,
       loadingStates: {},
       setLoadingState: (key, isLoading) => set((state) => ({ loadingStates: { ...state.loadingStates, [key]: isLoading } })),
+      setHasHydrated: (hydrated) => set({ isHydrated: hydrated }),
       
       addItem: async (item, options = { openCart: true, showToast: true }) => {
         const currentItems = get().items
@@ -200,9 +208,40 @@ export const useCartStore = create<CartState>()(
         }
       },
 
+      toggleSaveForLater: async (productId, size, color) => {
+        const { items, savedItems } = get()
+        const itemInCart = items.find(i => i.productId === productId && i.size === size && i.color === color)
+        const itemInSaved = savedItems.find(i => i.productId === productId && i.size === size && i.color === color)
+
+        if (itemInCart) {
+          // Move from Cart to Saved
+          set({
+            items: items.filter(i => !(i.productId === productId && i.size === size && i.color === color)),
+            savedItems: [...savedItems, itemInCart]
+          })
+          toast.success("Item saved for later")
+        } else if (itemInSaved) {
+          // Move from Saved to Cart
+          set({
+            items: [...items, itemInSaved],
+            savedItems: savedItems.filter(i => !(i.productId === productId && i.size === size && i.color === color)),
+            isCartOpen: true
+          })
+          toast.success("Item moved back to bag")
+        }
+
+        // Sync with DB if needed
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          // In a real DB, we'd have a 'is_saved' column or a separate table
+          // For now, we'll just update local state and note that full DB sync for 'saved' 
+          // would require a migration.
+        }
+      },
+
       clearCart: async () => {
          const { data: { user } } = await supabase.auth.getUser()
-         set({ items: [] })
+         set({ items: [], savedItems: [] })
          if (user) {
              await supabase.from('cart_items').delete().eq('user_id', user.id)
          }
@@ -250,9 +289,9 @@ export const useCartStore = create<CartState>()(
                 color: dbItem.color || '',
                 quantity: dbItem.quantity,
                 maxQuantity: 10,
-                slug: dbItem.product?.slug,
-                categoryId: dbItem.product?.category_id
-            })).filter(i => i.price > 0)
+                slug: dbItem.product?.slug || '',
+                categoryId: dbItem.product?.category_id || ''
+            })).filter(i => i.price > 0 && i.slug && i.categoryId)
 
             // 2. Intelligent Merge
             const localItems = get().items
@@ -307,6 +346,7 @@ export const useCartStore = create<CartState>()(
       },
 
       setItems: (items) => set({ items }),
+      setSavedItems: (savedItems) => set({ savedItems }),
       setIsCartOpen: (open) => set({ isCartOpen: open }),
       setIsLoading: (loading) => set({ isLoading: loading }),
     }),
@@ -318,4 +358,16 @@ export const useCartStore = create<CartState>()(
 )
 
 export const selectCartCount = (state: CartState) => state.items.reduce((acc, item) => acc + item.quantity, 0)
-export const selectCartTotal = (state: CartState) => state.items.reduce((acc, item) => acc + (item.price * item.quantity), 0)
+export const selectCartSubtotal = (state: CartState) => state.items.reduce((acc, item) => acc + (item.price * item.quantity), 0)
+export const selectShippingFee = (state: CartState) => {
+  const subtotal = selectCartSubtotal(state)
+  if (subtotal === 0) return 0
+  return subtotal >= 699 ? 0 : 50
+}
+export const selectCartTotal = (state: CartState) => {
+  return selectCartSubtotal(state) + selectShippingFee(state)
+}
+export const selectFreeShippingRemaining = (state: CartState) => {
+  const subtotal = selectCartSubtotal(state)
+  return Math.max(699 - subtotal, 0)
+}

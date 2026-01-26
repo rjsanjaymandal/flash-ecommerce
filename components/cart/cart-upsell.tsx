@@ -9,6 +9,7 @@ import { formatCurrency } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import { useMemo } from "react";
 
 export function CartUpsell() {
   const cartItems = useCartStore((state) => state.items);
@@ -18,23 +19,28 @@ export function CartUpsell() {
   // Since we don't have categoryId in cartItems, we'll suggest based on items or just use general trending
   // Extract unique category IDs from cart items
   const categoryIds = Array.from(
-    new Set(cartItems.map((i) => i.categoryId).filter(Boolean))
+    new Set(cartItems.map((i) => i.categoryId).filter(Boolean)),
   ) as string[];
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ["cart-upsell", categoryIds.join(",")],
-    queryFn: () =>
-      getUpsellProducts(
+    queryFn: async () => {
+      const results = await getUpsellProducts(
         categoryIds,
-        cartItems.map((i) => i.productId)
-      ),
+        cartItems.map((i) => i.productId),
+      );
+      // Shuffle here to keep render pure
+      return results.sort(() => Math.random() - 0.5);
+    },
     staleTime: 1000 * 60 * 5,
   });
 
   // Filter out items already in cart
-  const upsellItems = products.filter(
-    (p) => !cartItems.some((ci) => ci.productId === p.id)
-  );
+  const upsellItems = useMemo(() => {
+    return products.filter(
+      (p) => !cartItems.some((ci) => ci.productId === p.id),
+    );
+  }, [products, cartItems]);
 
   if (isLoading)
     return (
@@ -93,7 +99,7 @@ export function CartUpsell() {
             animate={{ opacity: 1, x: 0 }}
             className="snap-start shrink-0 w-32 group relative"
           >
-            <div className="aspect-[3/4] rounded-xl overflow-hidden bg-secondary/5 border border-border/40 relative mb-2 group/img">
+            <div className="aspect-3/4 bg-muted/20 rounded-lg overflow-hidden border border-border/40 relative mb-2 group/img">
               {product.main_image_url ? (
                 <FlashImage
                   src={product.main_image_url}

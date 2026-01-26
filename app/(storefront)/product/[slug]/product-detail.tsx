@@ -298,6 +298,7 @@ export function ProductDetailClient({
       await addToCart(
         {
           productId: product.id,
+          categoryId: product.category_id || "",
           name: product.name,
           price: product.price,
           image: product.main_image_url,
@@ -305,6 +306,7 @@ export function ProductDetailClient({
           color: selectedColor,
           quantity: quantity,
           maxQuantity: maxQty,
+          slug: product.slug || "",
         },
         options,
       );
@@ -336,6 +338,7 @@ export function ProductDetailClient({
     addToCart(
       {
         productId: product.id,
+        categoryId: product.category_id || "",
         name: product.name,
         price: product.price,
         image: product.main_image_url,
@@ -343,6 +346,7 @@ export function ProductDetailClient({
         color: selectedColor,
         quantity: quantity,
         maxQuantity: maxQty,
+        slug: product.slug || "",
       },
       { openCart: false, showToast: false },
     );

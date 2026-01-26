@@ -12,7 +12,7 @@ interface FreeShippingBarProps {
 
 export function FreeShippingBar({
   total,
-  threshold = 999,
+  threshold = 699,
 }: FreeShippingBarProps) {
   const progress = Math.min((total / threshold) * 100, 100);
   const remaining = Math.max(threshold - total, 0);
