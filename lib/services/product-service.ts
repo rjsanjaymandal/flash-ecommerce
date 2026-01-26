@@ -71,13 +71,13 @@ const applyProductFilters = (query: any, filter: ProductFilter) => {
       query = query.lte('price', filter.max_price)
     }
 
-    // Size and Color filters (require !inner join in select)
+    // Size and Color filters (using .ilike for case-insensitive matching)
     if (filter.size) {
-        query = query.eq('product_stock.size', filter.size)
+        query = query.ilike('product_stock.size', filter.size)
     }
 
     if (filter.color) {
-        query = query.eq('product_stock.color', filter.color)
+        query = query.ilike('product_stock.color', filter.color)
     }
 
     if (filter.search) {
@@ -198,13 +198,8 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: SupabaseCli
     // Apply shared filters
     query = applyProductFilters(query, filter)
 
-    // Sorting
-    // Primary sort: In-stock items first
-    // We try to order by the computed column 'in_stock'. 
-    // If the function doesn't exist, we catch the error and retry without it.
-    if (!filter.ignoreStockSort) {
-        query = query.order('in_stock', { ascending: false })
-    }
+    // Sorting removed: 'in_stock' column does not exist in the schema.
+    // We strictly use the provided sorts below.
 
     switch (filter.sort) {
       case 'price_asc':
@@ -231,16 +226,6 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: SupabaseCli
         const { data, error, count } = await query
         
         if (error) {
-            // Check for PostgREST undefined column error (42703) 
-            // This happens if 'in_stock' function or 'sale_count' column is missing
-            if (error.code === '42703') {
-                console.warn('Sort column missing (likely in_stock or sale_count), retrying with simplified sort', error.message)
-                
-                // Determine what failed - avoiding infinite recursion by checking if already retrying
-                if (!filter.ignoreStockSort) {
-                    return fetchProducts({ ...filter, ignoreStockSort: true }, supabase)
-                }
-            }
             throw error
         }
 

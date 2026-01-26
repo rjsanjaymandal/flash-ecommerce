@@ -54,17 +54,30 @@ export function ShopFilters({ categories }: { categories: Category[] }) {
             side="bottom"
             className="h-[80vh] rounded-t-[3rem] border-border/10 bg-background/95 backdrop-blur-3xl overflow-y-auto px-8 pb-12"
           >
-            <SheetHeader className="mb-8 pt-4">
-              <div className="flex flex-col gap-2">
-                <span className="text-primary font-black tracking-[0.4em] uppercase text-[10px]">
-                  Selections
-                </span>
-                <SheetTitle className="text-4xl font-black italic tracking-tighter uppercase text-foreground">
-                  RE<span className="text-gradient">FINE</span> VIBE
-                </SheetTitle>
+            <div className="flex flex-col h-full">
+              <SheetHeader className="mb-8 pt-4">
+                <div className="flex flex-col gap-2">
+                  <span className="text-primary font-black tracking-[0.4em] uppercase text-[10px]">
+                    Selections
+                  </span>
+                  <SheetTitle className="text-4xl font-black italic tracking-tighter uppercase text-foreground">
+                    RE<span className="text-gradient">FINE</span> VIBE
+                  </SheetTitle>
+                </div>
+              </SheetHeader>
+              <div className="flex-1 overflow-y-auto pr-2 pb-24">
+                <FilterContent categories={categories} />
               </div>
-            </SheetHeader>
-            <FilterContent categories={categories} />
+
+              {/* Mobile Stick Apply */}
+              <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background via-background to-transparent pt-12">
+                <SheetTrigger asChild>
+                  <Button className="w-full h-14 rounded-2xl font-black uppercase tracking-widest gradient-primary shadow-2xl">
+                    View Results
+                  </Button>
+                </SheetTrigger>
+              </div>
+            </div>
           </SheetContent>
         </Sheet>
       </div>
@@ -87,11 +100,18 @@ export function ShopFilters({ categories }: { categories: Category[] }) {
 
 function FilterContent({ categories }: { categories: Category[] }) {
   // State
-  const [minPrice, setMinPrice] = useQueryState("min_price", parseAsInteger);
-  const [maxPrice, setMaxPrice] = useQueryState("max_price", parseAsInteger);
-  const [size, setSize] = useQueryState("size");
-  const [color, setColor] = useQueryState("color");
-  const [category, setCategory] = useQueryState("category");
+  // State (Set shallow: false to trigger server-side re-render on URL change)
+  const [minPrice, setMinPrice] = useQueryState(
+    "min_price",
+    parseAsInteger.withOptions({ shallow: false }),
+  );
+  const [maxPrice, setMaxPrice] = useQueryState(
+    "max_price",
+    parseAsInteger.withOptions({ shallow: false }),
+  );
+  const [size, setSize] = useQueryState("size", { shallow: false });
+  const [color, setColor] = useQueryState("color", { shallow: false });
+  const [category, setCategory] = useQueryState("category", { shallow: false });
 
   // Local state for slider performance
   const [priceRange, setPriceRange] = useState([0, 20000]);
@@ -151,7 +171,7 @@ function FilterContent({ categories }: { categories: Category[] }) {
           <AccordionTrigger
             className={cn(
               "py-4 text-[10px] uppercase font-black tracking-[0.3em] hover:no-underline",
-              textClass
+              textClass,
             )}
           >
             Drop Collection
@@ -165,8 +185,8 @@ function FilterContent({ categories }: { categories: Category[] }) {
                   !category
                     ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-105"
                     : cn(
-                        "hover:bg-muted text-muted-foreground hover:text-foreground"
-                      )
+                        "hover:bg-muted text-muted-foreground hover:text-foreground",
+                      ),
                 )}
               >
                 All Drops
@@ -180,8 +200,8 @@ function FilterContent({ categories }: { categories: Category[] }) {
                     category === c.id
                       ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-105"
                       : cn(
-                          "hover:bg-muted text-muted-foreground hover:text-foreground"
-                        )
+                          "hover:bg-muted text-muted-foreground hover:text-foreground",
+                        ),
                   )}
                 >
                   {c.name}
@@ -196,7 +216,7 @@ function FilterContent({ categories }: { categories: Category[] }) {
           <AccordionTrigger
             className={cn(
               "py-4 text-[10px] uppercase font-black tracking-[0.3em] hover:no-underline",
-              textClass
+              textClass,
             )}
           >
             Price Range
@@ -215,7 +235,7 @@ function FilterContent({ categories }: { categories: Category[] }) {
               <div
                 className={cn(
                   "flex items-center justify-between text-[10px] font-black uppercase tracking-widest",
-                  mutedClass
+                  mutedClass,
                 )}
               >
                 <span className="bg-primary/10 px-3 py-1 rounded-full">
@@ -234,7 +254,7 @@ function FilterContent({ categories }: { categories: Category[] }) {
           <AccordionTrigger
             className={cn(
               "py-4 text-[10px] uppercase font-black tracking-[0.3em] hover:no-underline",
-              textClass
+              textClass,
             )}
           >
             Select Size
@@ -253,8 +273,8 @@ function FilterContent({ categories }: { categories: Category[] }) {
                       ? "bg-primary text-primary-foreground shadow-xl shadow-primary/20 scale-105 border-primary"
                       : cn(
                           "border-border hover:border-primary/50 hover:bg-muted text-muted-foreground hover:text-foreground",
-                          mutedClass
-                        )
+                          mutedClass,
+                        ),
                   )}
                 >
                   {s}
@@ -269,7 +289,7 @@ function FilterContent({ categories }: { categories: Category[] }) {
           <AccordionTrigger
             className={cn(
               "py-4 text-[10px] uppercase font-black tracking-[0.3em] hover:no-underline",
-              textClass
+              textClass,
             )}
           >
             Select Hue
@@ -285,7 +305,7 @@ function FilterContent({ categories }: { categories: Category[] }) {
                     c.class,
                     color === c.value
                       ? "ring-2 ring-primary scale-125 shadow-2xl z-10"
-                      : "hover:scale-110 border-white/5 shadow-lg"
+                      : "hover:scale-110 border-white/5 shadow-lg",
                   )}
                   title={c.name}
                 >

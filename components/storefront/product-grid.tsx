@@ -21,6 +21,7 @@ export async function ProductGrid({ params }: { params: any }) {
     max_price: params.max_price ? Number(params.max_price) : undefined,
     size: params.size,
     color: params.color,
+    search: params.q,
   });
 
   const itemListItems =
@@ -54,7 +55,7 @@ export async function ProductGrid({ params }: { params: any }) {
               className={cn(
                 "h-8 rounded-full text-xs font-bold transition-all",
                 params.sort === "trending" &&
-                  "bg-primary text-primary-foreground hover:bg-primary/90 shadow-md"
+                  "bg-primary text-primary-foreground hover:bg-primary/90 shadow-md",
               )}
             >
               Trending
@@ -70,7 +71,7 @@ export async function ProductGrid({ params }: { params: any }) {
               className={cn(
                 "h-8 rounded-full text-xs font-bold transition-all",
                 !params.sort &&
-                  "bg-primary text-primary-foreground hover:bg-primary/90 shadow-md"
+                  "bg-primary text-primary-foreground hover:bg-primary/90 shadow-md",
               )}
             >
               Newest
@@ -86,7 +87,7 @@ export async function ProductGrid({ params }: { params: any }) {
               className={cn(
                 "h-8 rounded-full text-xs font-bold transition-all",
                 params.sort === "price_asc" &&
-                  "bg-primary text-primary-foreground hover:bg-primary/90 shadow-md"
+                  "bg-primary text-primary-foreground hover:bg-primary/90 shadow-md",
               )}
             >
               Price Low
@@ -102,7 +103,7 @@ export async function ProductGrid({ params }: { params: any }) {
               className={cn(
                 "h-8 rounded-full text-xs font-bold transition-all",
                 params.sort === "price_desc" &&
-                  "bg-primary text-primary-foreground hover:bg-primary/90 shadow-md"
+                  "bg-primary text-primary-foreground hover:bg-primary/90 shadow-md",
               )}
             >
               Price High
@@ -118,7 +119,7 @@ export async function ProductGrid({ params }: { params: any }) {
               className={cn(
                 "h-8 rounded-full text-xs font-bold transition-all",
                 params.sort === "random" &&
-                  "bg-primary text-primary-foreground hover:bg-primary/90 shadow-md"
+                  "bg-primary text-primary-foreground hover:bg-primary/90 shadow-md",
               )}
             >
               Shuffle
