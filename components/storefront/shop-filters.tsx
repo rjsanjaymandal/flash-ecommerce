@@ -3,16 +3,12 @@
 import { useQueryState, parseAsInteger } from "nuqs";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { Database } from "@/types/supabase";
-
-type Category = Database["public"]["Tables"]["categories"]["Row"];
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Sheet,
   SheetContent,
@@ -23,6 +19,10 @@ import {
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { Filter, X } from "lucide-react";
+import { motion } from "framer-motion";
+import { Database } from "@/types/supabase";
+
+type Category = Database["public"]["Tables"]["categories"]["Row"];
 
 // Constants
 const SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
@@ -43,36 +43,41 @@ export function ShopFilters({ categories }: { categories: Category[] }) {
   return (
     <>
       {/* Mobile: Floating Filter Action Button */}
-      <div className="md:hidden fixed bottom-24 right-6 z-40">
+      <div className="md:hidden fixed bottom-24 right-5 z-40 group">
         <Sheet>
           <SheetTrigger asChild>
-            <Button className="h-14 w-14 rounded-full gradient-primary shadow-2xl shadow-primary/40 flex items-center justify-center p-0 group overflow-hidden">
-              <Filter className="h-6 w-6 text-primary-foreground group-hover:scale-110 transition-transform" />
+            <Button className="h-14 w-14 rounded-2xl shadow-[0_20px_40px_rgba(234,88,12,0.4)] flex items-center justify-center p-0 transition-all duration-500 hover:scale-110 active:scale-90 bg-primary border-none">
+              <Filter className="h-6 w-6 text-white" />
+              <motion.div
+                animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="absolute inset-0 bg-white/20 blur-lg rounded-2xl"
+              />
             </Button>
           </SheetTrigger>
           <SheetContent
             side="bottom"
-            className="h-[80vh] rounded-t-[3rem] border-border/10 bg-background/95 backdrop-blur-3xl overflow-y-auto px-8 pb-12"
+            className="h-[85vh] rounded-t-[3.5rem] border-white/5 bg-background/90 backdrop-blur-3xl overflow-y-auto px-8 pb-12 shadow-[0_-20px_80px_rgba(0,0,0,0.5)]"
           >
             <div className="flex flex-col h-full">
-              <SheetHeader className="mb-8 pt-4">
+              <SheetHeader className="mb-8 pt-6">
                 <div className="flex flex-col gap-2">
-                  <span className="text-primary font-black tracking-[0.4em] uppercase text-[10px]">
-                    Selections
+                  <span className="text-primary font-black tracking-[0.5em] uppercase text-[10px]">
+                    Customize Vibe
                   </span>
-                  <SheetTitle className="text-4xl font-black italic tracking-tighter uppercase text-foreground">
-                    RE<span className="text-gradient">FINE</span> VIBE
+                  <SheetTitle className="text-4xl font-black italic tracking-tighter uppercase text-foreground leading-none">
+                    THE <span className="text-gradient">FILTER</span>
                   </SheetTitle>
                 </div>
               </SheetHeader>
-              <div className="flex-1 overflow-y-auto pr-2 pb-24">
+              <div className="flex-1 overflow-y-auto pr-2 pb-24 scrollbar-hide">
                 <FilterContent categories={categories} />
               </div>
 
               {/* Mobile Stick Apply */}
-              <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background via-background to-transparent pt-12">
+              <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-background via-background/95 to-transparent pt-16 z-10">
                 <SheetTrigger asChild>
-                  <Button className="w-full h-14 rounded-2xl font-black uppercase tracking-widest gradient-primary shadow-2xl">
+                  <Button className="w-full h-16 rounded-2xl font-black uppercase tracking-[0.2em] gradient-primary shadow-[0_15px_40px_rgba(234,88,12,0.4)] border-none text-white text-base">
                     View Results
                   </Button>
                 </SheetTrigger>
@@ -103,15 +108,24 @@ function FilterContent({ categories }: { categories: Category[] }) {
   // State (Set shallow: false to trigger server-side re-render on URL change)
   const [minPrice, setMinPrice] = useQueryState(
     "min_price",
-    parseAsInteger.withOptions({ shallow: false }),
+    parseAsInteger.withOptions({ shallow: false, history: "push" }),
   );
   const [maxPrice, setMaxPrice] = useQueryState(
     "max_price",
-    parseAsInteger.withOptions({ shallow: false }),
+    parseAsInteger.withOptions({ shallow: false, history: "push" }),
   );
-  const [size, setSize] = useQueryState("size", { shallow: false });
-  const [color, setColor] = useQueryState("color", { shallow: false });
-  const [category, setCategory] = useQueryState("category", { shallow: false });
+  const [size, setSize] = useQueryState("size", {
+    shallow: false,
+    history: "push",
+  });
+  const [color, setColor] = useQueryState("color", {
+    shallow: false,
+    history: "push",
+  });
+  const [category, setCategory] = useQueryState("category", {
+    shallow: false,
+    history: "push",
+  });
 
   // Local state for slider performance
   const [priceRange, setPriceRange] = useState([0, 20000]);
@@ -177,16 +191,14 @@ function FilterContent({ categories }: { categories: Category[] }) {
             Drop Collection
           </AccordionTrigger>
           <AccordionContent>
-            <div className="flex flex-col gap-3 pt-2">
+            <div className="flex flex-col gap-2.5 pt-2">
               <button
                 onClick={() => setCategory(null)}
                 className={cn(
-                  "text-left text-sm py-2 px-4 rounded-xl transition-all font-black uppercase tracking-tighter italic",
+                  "text-left text-[11px] py-3.5 px-6 rounded-2xl transition-all font-black uppercase tracking-tighter italic border",
                   !category
-                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-105"
-                    : cn(
-                        "hover:bg-muted text-muted-foreground hover:text-foreground",
-                      ),
+                    ? "bg-primary text-primary-foreground shadow-[0_10px_20px_rgba(234,88,12,0.25)] scale-[1.02] border-primary"
+                    : "bg-muted/30 border-transparent hover:border-primary/20 text-muted-foreground hover:text-foreground",
                 )}
               >
                 All Drops
@@ -194,14 +206,12 @@ function FilterContent({ categories }: { categories: Category[] }) {
               {categories.map((c) => (
                 <button
                   key={c.id}
-                  onClick={() => setCategory(c.id)}
+                  onClick={() => setCategory(c.slug)}
                   className={cn(
-                    "text-left text-sm py-2 px-4 rounded-xl transition-all font-black uppercase tracking-tighter italic",
-                    category === c.id
-                      ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-105"
-                      : cn(
-                          "hover:bg-muted text-muted-foreground hover:text-foreground",
-                        ),
+                    "text-left text-[11px] py-3.5 px-6 rounded-2xl transition-all font-black uppercase tracking-tighter italic border",
+                    category === (c.slug || c.id)
+                      ? "bg-primary text-primary-foreground shadow-[0_10px_20px_rgba(234,88,12,0.25)] scale-[1.02] border-primary"
+                      : "bg-muted/30 border-transparent hover:border-primary/20 text-muted-foreground hover:text-foreground",
                   )}
                 >
                   {c.name}

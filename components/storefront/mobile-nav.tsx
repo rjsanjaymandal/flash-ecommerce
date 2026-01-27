@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Home,
-  Grid,
+  Zap,
   User,
   ShoppingBag,
   FlaskConical,
@@ -32,7 +32,7 @@ export function MobileNav() {
 
   const links: NavLink[] = [
     { href: "/", label: "Home", icon: Home },
-    { href: "/shop", label: "Shop", icon: Grid },
+    { href: "/shop", label: "Shop", icon: Zap },
     { href: "/wishlist", label: "Wishlist", icon: Heart, count: wishlistCount },
     { href: "/lab", label: "Lab", icon: FlaskConical },
     { href: "/account", label: "You", icon: User },
@@ -50,17 +50,28 @@ export function MobileNav() {
               key={link.label}
               href={link.href}
               className={cn(
-                "flex flex-col items-center justify-center gap-1 w-full h-full transition-all duration-300 relative",
+                "flex flex-col items-center justify-center gap-1 w-full h-full transition-all duration-500 relative group",
                 isActive
                   ? "text-primary scale-110"
-                  : "text-muted-foreground/60 hover:text-primary"
+                  : "text-muted-foreground/40 hover:text-primary",
               )}
             >
               <div className="relative">
+                {isActive && (
+                  <motion.div
+                    layoutId="active-glow"
+                    className="absolute inset-0 bg-primary/20 blur-xl rounded-full"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5 }}
+                  />
+                )}
                 <Icon
                   className={cn(
-                    "h-5 w-5 transition-all",
-                    isActive ? "stroke-[2.5px]" : "stroke-[1.5px]"
+                    "h-5 w-5 transition-all relative z-10",
+                    isActive
+                      ? "stroke-[2.5px] drop-shadow-[0_0_8px_rgba(234,88,12,0.5)]"
+                      : "stroke-[1.5px]",
                   )}
                 />
                 {link.count !== undefined && link.count > 0 && (
@@ -74,7 +85,7 @@ export function MobileNav() {
                   "text-[10px] uppercase tracking-tighter font-black",
                   isActive
                     ? "opacity-100"
-                    : "opacity-0 h-0 overflow-hidden group-hover:opacity-100 group-hover:h-auto transition-all"
+                    : "opacity-0 h-0 overflow-hidden group-hover:opacity-100 group-hover:h-auto transition-all",
                 )}
               >
                 {link.label}

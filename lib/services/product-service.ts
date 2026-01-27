@@ -94,6 +94,7 @@ const applyProductFilters = (query: any, filter: ProductFilter) => {
 }
 
 async function fetchProducts(filter: ProductFilter, supabaseClient?: SupabaseClient<Database>): Promise<PaginatedResult<Product>> {
+    console.log('[fetchProducts] Incoming Filter:', JSON.stringify(filter, null, 2));
     const supabase = supabaseClient || createStaticClient()
     const page = filter.page || 1
     const limit = filter.limit || 10
@@ -101,7 +102,7 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: SupabaseCli
     const to = from + limit - 1
     
     // Resolve Category Slug to ID if necessary
-    if (filter.category_id) {
+    if (filter.category_id && typeof filter.category_id === 'string' && filter.category_id.trim() !== '') {
         const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(filter.category_id)
         if (!isUuid) {
             const { data: cat } = await supabase
@@ -117,6 +118,9 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: SupabaseCli
                 filter.category_id = '00000000-0000-0000-0000-000000000000'
             }
         }
+    } else if (filter.category_id === '') {
+        // Handle empty string explicitly to avoid UUID check failure
+        filter.category_id = undefined
     }
 
     // Special handling for Waitlist/Trending Sort (Two-Step Fetch)

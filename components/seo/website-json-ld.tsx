@@ -12,7 +12,7 @@ export function WebSiteJsonLd() {
         "@type": "EntryPoint",
         urlTemplate:
           "https://flashhfashion.in/shop?search={search_term_string}",
-      } as any,
+      },
       "query-input": "required name=search_term_string",
     } as any,
   } as WithContext<WebSite>;
