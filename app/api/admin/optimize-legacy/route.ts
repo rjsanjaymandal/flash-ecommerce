@@ -38,7 +38,7 @@ export async function POST(req: Request) {
 
   // Filter for ones that lack the new 'images' structure
   const legacyProducts = products.filter((p) => {
-    const images = p.images as any
+    const images = (p as any).images
     // Check if images is empty or missing required keys
     return !images || !images.thumbnail || !images.desktop || Object.keys(images).length === 0
   })

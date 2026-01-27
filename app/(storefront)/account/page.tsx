@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { getWaitlistedProducts } from "@/lib/services/product-service";
 import { AccountClient } from "@/components/account/account-client";
+import { Database, Tables } from "@/types/supabase";
 
 export default async function AccountPage() {
   const supabase = await createClient();
@@ -41,7 +42,7 @@ export default async function AccountPage() {
   const safeProfile: Tables<"profiles"> = profile || {
     id: user.id,
     name: user.email?.split("@")[0] || "User",
-    role: "customer",
+    role: "customer" as Database["public"]["Enums"]["user_role"],
     loyalty_points: 0,
     pronouns: null,
     fit_preference: null,

@@ -22,7 +22,7 @@ export async function ProductGrid({ params }: { params: ShopParams }) {
   const { data: products } = await getProducts({
     is_active: true,
     category_id: params.category,
-    sort: params.sort,
+    sort: params.sort as any,
     min_price: params.min_price ? Number(params.min_price) : undefined,
     max_price: params.max_price ? Number(params.max_price) : undefined,
     size: params.size,

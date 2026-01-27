@@ -53,7 +53,6 @@ export type PaginatedResult<T> = {
 
 // Internal Fetcher for Cache
 // Helper to apply filters consistently
-// Helper to apply filters consistently
 const applyProductFilters = (query: any, filter: ProductFilter) => {
     if (filter.is_active !== undefined) {
       query = query.eq('is_active', filter.is_active)
@@ -123,149 +122,128 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: SupabaseCli
         filter.category_id = undefined
     }
 
-    // Special handling for Waitlist/Trending Sort (Two-Step Fetch)
-    if (filter.sort === 'waitlist_desc' || filter.sort === 'trending') {
-         // Determine select string to allow filtering
-         let selectParams = 'id, created_at, preorders(count)'
-         if (filter.size || filter.color) {
-             selectParams = 'id, created_at, preorders(count), product_stock!inner(id)'
-         }
-
-         // 1. Fetch IDs matching ALL filters
-         let query = supabase.from('products').select(selectParams)
-         query = applyProductFilters(query, filter)
-         
-         const { data: allIds, error: idError } = await query
-        
-         if (idError) throw idError
-
-         // 2. Sort in Memory
-         // 2. Sort in Memory
-         const sortedIds = (allIds || [])
-            .map((p: any) => ({ 
-                id: p.id, 
-                count: p.preorders && Array.isArray(p.preorders) ? (p.preorders[0] as any)?.count || 0 : 0,
-                created: new Date(p.created_at).getTime()
-            }))
-            .sort((a, b) => {
-                // For Trending: Weigh Recency + Popularity?
-                if (b.count !== a.count) return b.count - a.count
-                return b.created - a.created
-            })
-        
-        // 3. Paginate
-        const total = sortedIds.length
-        const sliced = sortedIds.slice(from, to)
-        const targetIds = sliced.map((i) => i.id)
-
-        // 4. Fetch Details
-        const { data: details, error: detailError } = await supabase
-            .from('products')
-            .select('*, categories(name), product_stock(*), preorders(count)')
-            .in('id', targetIds)
-        
-        if (detailError) throw detailError
-
-        // Re-order details
-        const orderedData = targetIds
-            .map((id: string) => details?.find((d) => d.id === id))
-            .filter(Boolean) as Product[]
-            
-        const processedData = (orderedData || []).map((p: any) => ({
-             ...p,
-             average_rating: Number(p.average_rating || 0),
-             review_count: Number(p.review_count || 0),
-             preorder_count: p.preorders && Array.isArray(p.preorders) ? (p.preorders[0] as any)?.count || 0 : 0
-        }))
-
-        return {
-            data: processedData,
-            meta: {
-                total,
-                page,
-                limit,
-                totalPages: Math.ceil(total / limit)
-            }
-        }
-    }
-
-    // Standard Query Path (DB Sorting)
-    let selectString = '*, categories(name), product_stock(*), preorders(count)'
-    if (filter.size || filter.color) {
-        selectString = '*, categories(name), product_stock!inner(*), preorders(count)'
-    }
-
-    let query = supabase
-      .from('products')
-      .select(selectString, { count: 'exact' })
+    // --- STOCK-FIRST SORTING STRATEGY ---
+    // We fetch IDs and Stock Quantity first to perform an in-memory sort 
+    // that prioritizes In-Stock items over Out-of-Stock items.
     
-    // Apply shared filters
-    query = applyProductFilters(query, filter)
+     // Determine select string to allow filtering
+     let selectParams = 'id, created_at, price, product_stock(quantity), preorders(count)'
+     if (filter.size || filter.color || filter.search || filter.min_price || filter.max_price) {
+         // We might need to join other tables or filter on columns not in the selectParams,
+         // but 'applyProductFilters' handles the WHERE clauses. 
+         // If we need to filter on a joined relation (product_stock), we need select parameters to include it properly.
+         if (filter.size || filter.color) {
+             selectParams = 'id, created_at, price, product_stock!inner(quantity), preorders(count)'
+         }
+     }
 
-    // Sorting removed: 'in_stock' column does not exist in the schema.
-    // We strictly use the provided sorts below.
+     // 1. Fetch IDs matching ALL filters
+     let query = supabase.from('products').select(selectParams)
+     query = applyProductFilters(query, filter)
+     
+     const { data: allIds, error: idError } = await query
+    
+     if (idError) {
+         console.error('fetchProducts ID fetch failed:', idError)
+         throw idError
+     }
 
-    switch (filter.sort) {
-      case 'price_asc':
-        query = query.order('price', { ascending: true })
-        break
-      case 'price_desc':
-        query = query.order('price', { ascending: false })
-        break
-      case 'random' as ProductSortOption:
-        // Proper random order in PostgREST is difficult, but we can use a stable random-like field 
-        // OR just order by ID with varying directions. 
-        // For now, newest is a safe fallback, or we can use a pseudo-random seed if implemented in PG.
-        query = query.order('created_at', { ascending: Math.random() > 0.5 })
-        break
-      case 'newest':
-      default:
-        query = query.order('created_at', { ascending: false })
+     // 2. Sort in Memory
+     const sortedIds = (allIds || [])
+        .map((p: any) => {
+            const totalStock = p.product_stock?.reduce((acc: number, s: any) => acc + (s.quantity || 0), 0) || 0
+            const isInStock = totalStock > 0
+            const preorderCount = p.preorders && Array.isArray(p.preorders) ? (p.preorders[0] as any)?.count || 0 : 0
+            
+            return { 
+                id: p.id,
+                isInStock,
+                totalStock,
+                price: p.price,
+                preorderCount, 
+                created: new Date(p.created_at).getTime()
+            }
+        })
+        .sort((a, b) => {
+            // PRIMARY SORT: In Stock First (unless explicitly ignored, though not exposed currently)
+            if (a.isInStock !== b.isInStock) {
+                return a.isInStock ? -1 : 1 // In-stock (true) comes first
+            }
+
+            // SECONDARY SORT: User Selection
+            switch (filter.sort) {
+                case 'price_asc':
+                    return a.price - b.price
+                case 'price_desc':
+                    return b.price - a.price
+                case 'trending':
+                    // Waitlist Count Descending
+                    if (b.preorderCount !== a.preorderCount) return b.preorderCount - a.preorderCount
+                    return b.created - a.created
+                case 'waitlist_desc':
+                     return b.preorderCount - a.preorderCount
+                case 'random':
+                    // Simple random shuffle logic (stable-ish per request if needed, but per-fetch is fine)
+                    return Math.random() - 0.5
+                case 'newest':
+                default:
+                    return b.created - a.created
+            }
+        })
+    
+    // 3. Paginate
+    const total = sortedIds.length
+    const sliced = sortedIds.slice(from, to)
+    const targetIds = sliced.map((i) => i.id)
+
+    if (total === 0) {
+        return {
+            data: [],
+            meta: { total: 0, page, limit, totalPages: 0 }
+        }
     }
 
-    // Apply Pagination
-    query = query.range(from, to)
+    // 4. Fetch Details
+    const { data: details, error: detailError } = await supabase
+        .from('products')
+        .select('*, categories(name), product_stock(*), preorders(count)')
+        .in('id', targetIds)
+    
+    if (detailError) throw detailError
 
-    try {
-        const { data, error, count } = await query
+    // Re-order details to match the sorted slice
+    const orderedData = targetIds
+        .map((id: string) => details?.find((d) => d.id === id))
+        .filter(Boolean) as Product[]
         
-        if (error) {
-            throw error
-        }
+    const processedData = (orderedData || []).map((p: any) => ({
+         ...p,
+         average_rating: Number(p.average_rating || 0),
+         review_count: Number(p.review_count || 0),
+         preorder_count: p.preorders && Array.isArray(p.preorders) ? (p.preorders[0] as any)?.count || 0 : 0
+    }))
 
-        const processedData = (data || []).map((p: any) => ({
-            ...p,
-            average_rating: Number(p.average_rating || 0),
-            review_count: Number(p.review_count || 0),
-            preorder_count: p.preorders && Array.isArray(p.preorders) ? (p.preorders[0] as any)?.count || 0 : 0
-        })) as Product[]
-
-        return {
-            data: processedData,
-            meta: {
-                total: count || 0,
-                page,
-                limit,
-                totalPages: Math.ceil((count || 0) / limit)
-            }
+    return {
+        data: processedData,
+        meta: {
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit)
         }
-    } catch (err: unknown) {
-        console.error('fetchProducts failed:', err)
-        // If it's a known missing column error and we haven't already retried, try one last time with 'newest'
-        if (typeof err === 'object' && err !== null && 'code' in err && (err as any).code === '42703' && filter.sort !== 'newest') {
-             return fetchProducts({ ...filter, sort: 'newest', ignoreStockSort: true }, supabase)
-        }
-        throw err
     }
 }
 
 // Public Cached Methods
 export async function getProducts(filter: ProductFilter = {}): Promise<PaginatedResult<Product>> {
     const key = JSON.stringify(filter)
+    // Lower cache time for random sort to 60s, otherwise 1 hour
+    const revalidateTime = filter.sort === 'random' ? 60 : 3600
+    
     return unstable_cache(
         async () => fetchProducts(filter),
-        ['products-list', key],
-        { tags: ['products'], revalidate: 3600 } // Cache for 1 hour (down from 30 days)
+        ['products-list-stock-v1', key], // Versioned key to bust old non-stock-sorted cache
+        { tags: ['products'], revalidate: revalidateTime }
     )()
 }
 
