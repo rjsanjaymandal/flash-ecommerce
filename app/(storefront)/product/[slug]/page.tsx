@@ -22,7 +22,7 @@ export async function generateMetadata({
 
   if (!product) return { title: "Product Not Found" };
 
-  const title = `${product.name} | Anime Streetwear & Graphic Apparel | FLASH`;
+  const title = `${product.name} | Flash Fashion`;
   const description = (
     product.description ||
     `Cop the ${product.name}. High-quality anime streetwear, heavyweight cotton, and premium graphic design. Fast shipping available.`

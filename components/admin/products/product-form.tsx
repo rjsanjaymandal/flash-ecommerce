@@ -53,6 +53,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { ProductImageUpload } from "@/components/admin/product-image-upload";
+import { TagInput } from "@/components/admin/tag-input";
 import { cn } from "@/lib/utils";
 import FlashImage from "@/components/ui/flash-image";
 import { Category } from "@/types/store-types";
@@ -672,6 +673,27 @@ export function ProductForm({
                           ))}
                         </SelectContent>
                       </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={control}
+                  name="expression_tags"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tags</FormLabel>
+                      <FormControl>
+                        <TagInput
+                          value={field.value || []}
+                          onChange={field.onChange}
+                          placeholder="Type tag and press Enter"
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Used for search, SEO, and recommendations.
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

@@ -7,6 +7,7 @@ import Link from "next/link";
 import FlashImage from "@/components/ui/flash-image"; // Optimized image component
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn, formatCurrency } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 import { QuickAddDialog } from "@/components/products/quick-add-dialog";
 
@@ -64,6 +65,8 @@ function DashIndicators({
 }
 
 export function HeroCarousel({ products }: HeroCarouselProps) {
+  const router = useRouter();
+  const isDraggingRef = useRef(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -125,6 +128,12 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
     }
   };
 
+  const handleSlideClick = () => {
+    if (!isDraggingRef.current && currentProduct) {
+      router.push(`/product/${currentProduct.slug}`);
+    }
+  };
+
   if (!products || products.length === 0) {
     return (
       <section className="relative w-full h-[85vh] lg:h-[90vh] bg-background overflow-hidden animate-pulse">
@@ -173,8 +182,17 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
           drag="x"
           dragConstraints={{ left: 0, right: 0 }}
           dragElastic={0.4}
-          onDragEnd={handleDragEnd}
-          className="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing"
+          onDragStart={() => {
+            isDraggingRef.current = true;
+          }}
+          onDragEnd={(e, info) => {
+            handleDragEnd(e, info);
+            setTimeout(() => {
+              isDraggingRef.current = false;
+            }, 50);
+          }}
+          onClick={handleSlideClick}
+          className="absolute inset-0 w-full h-full cursor-pointer active:cursor-grabbing"
         >
           {/* IMAGE LAYER */}
           <div className="absolute inset-0 w-full h-full">
