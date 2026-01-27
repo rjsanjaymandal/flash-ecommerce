@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import FlashImage from "@/components/ui/flash-image";
+import FlashImage from "@/components/ui/flash-image"; // Optimized image component
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn, formatCurrency } from "@/lib/utils";
 

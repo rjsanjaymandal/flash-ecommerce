@@ -37,9 +37,10 @@ export async function POST(req: Request) {
   }
 
   // Filter for ones that lack the new 'images' structure
-  const legacyProducts = products.filter((p: any) => {
+  const legacyProducts = products.filter((p) => {
+    const images = p.images as any
     // Check if images is empty or missing required keys
-    return !p.images || !p.images.thumbnail || !p.images.desktop || Object.keys(p.images).length === 0
+    return !images || !images.thumbnail || !images.desktop || Object.keys(images).length === 0
   })
 
   // Limit batch size to avoid timeout
@@ -69,7 +70,7 @@ export async function POST(req: Request) {
         { name: 'desktop', buffer: desktopBuffer }
       ]
 
-      const urls: any = {}
+      const urls: Record<string, string> = {}
 
       for (const upload of uploads) {
         const fileName = `${baseUuid}-${upload.name}.webp`

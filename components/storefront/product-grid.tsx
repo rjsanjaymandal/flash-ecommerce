@@ -7,7 +7,17 @@ import { SlidersHorizontal } from "lucide-react";
 import { ItemListJsonLd } from "@/components/seo/item-list-json-ld";
 import { ProductList } from "./product-list";
 
-export async function ProductGrid({ params }: { params: any }) {
+interface ShopParams {
+  category?: string;
+  sort?: string;
+  min_price?: string;
+  max_price?: string;
+  size?: string;
+  color?: string;
+  q?: string;
+}
+
+export async function ProductGrid({ params }: { params: ShopParams }) {
   console.log("[ProductGrid] Params:", params);
   const { data: products } = await getProducts({
     is_active: true,

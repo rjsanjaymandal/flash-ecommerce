@@ -1,0 +1,6 @@
+--- Verifying Search ---
+Found 1 products with 'kangaroo' in description via ilike.
+Sample: The "Superpower Style" Lavender Hoodie
+
+--- Testing OR Query ---
+Found 1 products via OR query.

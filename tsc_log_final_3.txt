@@ -1,9 +1,0 @@
-app/admin/products/page.tsx(35,26): error TS2322: Type '{ created_at: string; is_active: boolean; category_id: string | undefined; color_options: string[] | null; description: string | null; expression_tags: string[] | null; gallery_image_urls: string[] | null; ... 12 more ...; preorder_count?: number | undefined; }[]' is not assignable to type 'AdminProduct[]'.
-  Type '{ created_at: string; is_active: boolean; category_id: string | undefined; color_options: string[] | null; description: string | null; expression_tags: string[] | null; gallery_image_urls: string[] | null; ... 12 more ...; preorder_count?: number; }' is not assignable to type 'AdminProduct'.
-    Types of property 'product_stock' are incompatible.
-      Type '{ color: string; id: string; product_id: string | null; quantity: number | null; size: string; }[] | undefined' is not assignable to type '{ id: string; size: string; color: string; quantity: number; }[] | undefined'.
-        Type '{ color: string; id: string; product_id: string | null; quantity: number | null; size: string; }[]' is not assignable to type '{ id: string; size: string; color: string; quantity: number; }[]'.
-          Type '{ color: string; id: string; product_id: string | null; quantity: number | null; size: string; }' is not assignable to type '{ id: string; size: string; color: string; quantity: number; }'.
-            Types of property 'quantity' are incompatible.
-              Type 'number | null' is not assignable to type 'number'.
-                Type 'null' is not assignable to type 'number'.

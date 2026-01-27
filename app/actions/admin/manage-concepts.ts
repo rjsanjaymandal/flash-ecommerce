@@ -49,9 +49,13 @@ export async function createConcept(formData: FormData) {
         title,
         description,
         vote_goal: voteGoal,
-        image_url: (images as any).desktop || images, // Use desktop variant or fallback
-        status: 'voting'
+        image_url: images.desktop, // Use high-res optimized desktop variant
+        images: images as any, // Store full variant map for responsive loading
+        status: status || 'concept',
+        created_at: new Date().toISOString()
       })
+      .select()
+      .single()
       
     if (insertError) {
       console.error('Error creating concept:', insertError)

@@ -46,10 +46,11 @@ export default function SystemLogsPage() {
     }
   };
 
-  const getSeverityVariant = (severity: string) => {
+  const getSeverityVariant = (
+    severity: string,
+  ): "destructive" | "secondary" | "outline" | "default" => {
     switch (severity) {
       case "CRITICAL":
-        return "destructive";
       case "ERROR":
         return "destructive";
       case "WARN":
@@ -117,7 +118,7 @@ export default function SystemLogsPage() {
                     <div className="flex items-center gap-2">
                       {getSeverityIcon(log.severity)}
                       <Badge
-                        variant={getSeverityVariant(log.severity) as any}
+                        variant={getSeverityVariant(log.severity)}
                         className="text-[10px] font-black tracking-tighter"
                       >
                         {log.severity}

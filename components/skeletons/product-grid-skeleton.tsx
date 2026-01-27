@@ -1,6 +1,7 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
 export function ProductGridSkeleton() {
+  // Skeleton loader for product grid
   return (
     <div className="flex-1 min-w-0">
       <div className="flex items-center justify-between mb-8 pb-4 border-b border-border/40">

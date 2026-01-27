@@ -2,7 +2,7 @@ import { getLinearCategories } from "@/lib/services/category-service";
 import { ShopFilters } from "@/components/storefront/shop-filters";
 import { ShopHeader } from "@/components/storefront/shop-header";
 import { ProductGrid } from "@/components/storefront/product-grid";
-import { ProductGridSkeleton } from "@/components/skeletons/product-grid-skeleton";
+import { ProductGridSkeleton } from "@/components/skeletons/product-grid-skeleton"; // Static import verified
 import { CategoryDiscoveryBar } from "@/components/storefront/category-discovery-bar";
 import { Suspense } from "react";
 

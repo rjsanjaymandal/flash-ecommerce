@@ -1,0 +1,111 @@
+[2026-01-27T06:57:30.58476+00:00] [ERROR] [GLOBAL_ERROR_BOUNDARY]: ProductGridSkeleton is not defined
+{"stack":"ReferenceError: ProductGridSkeleton is not defined\n    at ShopPage (about://React/Server/G:%5Cflash-ecommerce%5C.next%5Cdev%5Cserver%5Cchunks%5Cssr%5C%5Broot-of-the-server%5D__f8dea707._.js?48:521:291)\n    at resolveErrorDev (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_9212ccad._.js:1882:148)\n    at processFullStringRow (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_9212ccad._.js:2390:29)\n    at processFullBinaryRow (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_9212ccad._.js:2349:9)\n    at processBinaryChunk (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_9212ccad._.js:2459:98)\n    at progress (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_9212ccad._.js:2628:13)"}
+-------------------
+[2026-01-26T20:47:20.421955+00:00] [ERROR] [GLOBAL_ERROR_BOUNDARY]: Attempted to call createMotionComponent() from the server but createMotionComponent is on the client. It's not possible to invoke a client function from the server, it can only be rendered as a Component or passed to props of a Client Component.
+{"stack":"Error: Attempted to call createMotionComponent() from the server but createMotionComponent is on the client. It's not possible to invoke a client function from the server, it can only be rendered as a Component or passed to props of a Client Component.\n    at ProductGrid (about://React/Server/G:%5Cflash-ecommerce%5C.next%5Cdev%5Cserver%5Cchunks%5Cssr%5C%5Broot-of-the-server%5D__382bfd91._.js?65:350:496)\n    at resolveErrorDev (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_9212ccad._.js:1882:148)\n    at processFullStringRow (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_9212ccad._.js:2390:29)\n    at processFullBinaryRow (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_9212ccad._.js:2349:9)\n    at processBinaryChunk (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_9212ccad._.js:2459:98)\n    at progress (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_9212ccad._.js:2628:13)"}
+-------------------
+[2026-01-26T14:48:44.788564+00:00] [ERROR] [GLOBAL_ERROR_BOUNDARY]: FlashImage is not defined
+{"stack":"ReferenceError: FlashImage is not defined\n    at HeroCarousel (http://localhost:3000/_next/static/chunks/_b31b3a1e._.js:706:269)\n    at Object.react_stack_bottom_frame (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:14816:24)\n    at renderWithHooks (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:4645:24)\n    at updateFunctionComponent (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:6106:21)\n    at beginWork (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:6681:639)\n    at runWithFiberInDEV (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:959:74)\n    at performUnitOfWork (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:9556:97)\n    at workLoopSync (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:9450:40)\n    at renderRootSync (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:9434:13)\n    at performWorkOnRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:9099:47)\n    at performWorkOnRootViaSchedulerTask (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:10224:9)\n    at MessagePort.performWorkUntilDeadline (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_a0e4c7b4._.js:2647:64)"}
+-------------------
+[2026-01-26T11:55:57.071528+00:00] [ERROR] [GLOBAL_ERROR_BOUNDARY]: {code: "42703", details: Null, hint: ..., message: ...}
+{"stack":"Error: {code: \"42703\", details: Null, hint: ..., message: ...}\n    at resolveErrorDev (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_9212ccad._.js:1882:148)\n    at processFullStringRow (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_9212ccad._.js:2390:29)\n    at processFullBinaryRow (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_9212ccad._.js:2349:9)\n    at processBinaryChunk (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_9212ccad._.js:2459:98)\n    at progress (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_9212ccad._.js:2628:13)"}
+-------------------
+[2026-01-19T07:44:38.857369+00:00] [ERROR] [GLOBAL_ERROR_BOUNDARY]: An error occurred in the Server Components render. The specific message is omitted in production builds to avoid leaking sensitive details. A digest property is included on this error instance which may provide additional details about the nature of the error.
+{"stack":"Error: An error occurred in the Server Components render. The specific message is omitted in production builds to avoid leaking sensitive details. A digest property is included on this error instance which may provide additional details about the nature of the error."}
+-------------------
+[2026-01-18T19:11:31.069935+00:00] [INFO] [PAYMENT]: Idempotent success for Order e90b4c7e-83b2-4ea7-8b3e-6cc30350ad37
+{"paymentId":"pay_S5S5m5Lt5GXGSA"}
+-------------------
+[2026-01-18T19:11:19.601455+00:00] [INFO] [PAYMENT]: Payment Success for Order e90b4c7e-83b2-4ea7-8b3e-6cc30350ad37
+{"amount":100,"paymentId":"pay_S5S5m5Lt5GXGSA"}
+-------------------
+[2026-01-18T19:11:19.580485+00:00] [INFO] [PAYMENT]: Payment Success for Order e90b4c7e-83b2-4ea7-8b3e-6cc30350ad37
+{"amount":100,"paymentId":"pay_S5S5m5Lt5GXGSA"}
+-------------------
+[2026-01-17T19:42:27.72479+00:00] [INFO] [PAYMENT]: Payment Success for Order ef0cd3aa-1522-4fe1-aa69-a748afc66486
+{"amount":100,"paymentId":"pay_S545Sg867TBqZG"}
+-------------------
+[2026-01-17T07:23:16.368162+00:00] [INFO] [PAYMENT]: Idempotent success for Order 440a1cf6-9d75-400d-9cc4-3548934ab73c
+{"paymentId":"pay_S4X0Nf4RXBdH13"}
+-------------------
+[2026-01-17T06:49:14.553538+00:00] [INFO] [PAYMENT]: Idempotent success for Order c153ae93-fe68-430a-95a3-29c0042e42e7
+{"paymentId":"pay_S4VzJegxlrSpI6"}
+-------------------
+[2026-01-17T06:49:14.525887+00:00] [INFO] [PAYMENT]: Idempotent success for Order c153ae93-fe68-430a-95a3-29c0042e42e7
+{"paymentId":"pay_S4VzJegxlrSpI6"}
+-------------------
+[2026-01-17T01:13:28.614031+00:00] [INFO] [PAYMENT]: Idempotent success for Order 440a1cf6-9d75-400d-9cc4-3548934ab73c
+{"paymentId":"pay_S4X0Nf4RXBdH13"}
+-------------------
+[2026-01-17T00:43:30.223052+00:00] [INFO] [PAYMENT]: Idempotent success for Order c153ae93-fe68-430a-95a3-29c0042e42e7
+{"paymentId":"pay_S4VzJegxlrSpI6"}
+-------------------
+[2026-01-17T00:43:30.222193+00:00] [INFO] [PAYMENT]: Idempotent success for Order c153ae93-fe68-430a-95a3-29c0042e42e7
+{"paymentId":"pay_S4VzJegxlrSpI6"}
+-------------------
+[2026-01-16T22:21:57.015396+00:00] [INFO] [PAYMENT]: Payment Success for Order 440a1cf6-9d75-400d-9cc4-3548934ab73c
+{"amount":100,"paymentId":"pay_S4X0Nf4RXBdH13"}
+-------------------
+[2026-01-16T22:21:56.749579+00:00] [INFO] [PAYMENT]: Payment Success for Order 440a1cf6-9d75-400d-9cc4-3548934ab73c
+{"amount":100,"paymentId":"pay_S4X0Nf4RXBdH13"}
+-------------------
+[2026-01-16T21:52:32.204661+00:00] [INFO] [PAYMENT]: Payment Success for Order c153ae93-fe68-430a-95a3-29c0042e42e7
+{"amount":100,"paymentId":"pay_S4VzJegxlrSpI6"}
+-------------------
+[2026-01-16T21:52:31.676423+00:00] [INFO] [PAYMENT]: Payment Success for Order c153ae93-fe68-430a-95a3-29c0042e42e7
+{"amount":100,"paymentId":"pay_S4VzJegxlrSpI6"}
+-------------------
+[2026-01-16T21:17:27.262251+00:00] [INFO] [PAYMENT]: Payment Success for Order 7e4fca23-94a4-4c12-b774-cb7a01473394
+{"amount":100,"paymentId":"pay_S4dDFXZSlNSIiL"}
+-------------------
+[2026-01-16T21:17:26.562921+00:00] [INFO] [PAYMENT]: Payment Success for Order 7e4fca23-94a4-4c12-b774-cb7a01473394
+{"amount":100,"paymentId":"pay_S4dDFXZSlNSIiL"}
+-------------------
+[2026-01-16T21:09:51.411293+00:00] [INFO] [PAYMENT]: Idempotent success for Order 30dd707d-041c-4e3c-b728-0d29b6dda801
+{"paymentId":"pay_S4eVquOqK1zTc2"}
+-------------------
+[2026-01-16T21:09:50.462933+00:00] [INFO] [PAYMENT]: Payment Success for Order 30dd707d-041c-4e3c-b728-0d29b6dda801
+{"amount":100,"paymentId":"pay_S4eVquOqK1zTc2"}
+-------------------
+[2026-01-16T21:09:25.979195+00:00] [INFO] [PAYMENT]: Idempotent success for Order 42cebb3f-5812-499d-adae-3607d8d7c128
+{"paymentId":"pay_S4gbjuZx5obx1O"}
+-------------------
+[2026-01-16T21:09:25.713212+00:00] [INFO] [PAYMENT]: Idempotent success for Order 42cebb3f-5812-499d-adae-3607d8d7c128
+{"paymentId":"pay_S4gbjuZx5obx1O"}
+-------------------
+[2026-01-16T20:55:21.977172+00:00] [INFO] [PAYMENT]: Idempotent success for Order 2d37dfed-76bd-4575-ab70-bb659b40b9bf
+{"paymentId":"pay_S4eAB9UYOin894"}
+-------------------
+[2026-01-16T20:55:21.911497+00:00] [INFO] [PAYMENT]: Payment Success for Order 2d37dfed-76bd-4575-ab70-bb659b40b9bf
+{"amount":100,"paymentId":"pay_S4eAB9UYOin894"}
+-------------------
+[2026-01-16T20:48:28.082337+00:00] [ERROR] [PAYMENT_DB_ERROR]: RPC Failed for 7e4fca23-94a4-4c12-b774-cb7a01473394
+{"error":{"code":"PGRST202","hint":"Perhaps you meant to call the function public.finalize_payment_v4","details":"Searched for the function public.finalize_payment_v3 with parameters p_amount_paid, p_order_id, p_payment_id or with a single unnamed json/jsonb parameter, but no matches were found in the schema cache.","message":"Could not find the function public.finalize_payment_v3(p_amount_paid, p_order_id, p_payment_id) in the schema cache"}}
+-------------------
+[2026-01-16T20:48:27.040166+00:00] [ERROR] [PAYMENT_DB_ERROR]: RPC Failed for 7e4fca23-94a4-4c12-b774-cb7a01473394
+{"error":{"code":"PGRST202","hint":"Perhaps you meant to call the function public.finalize_payment_v4","details":"Searched for the function public.finalize_payment_v3 with parameters p_amount_paid, p_order_id, p_payment_id or with a single unnamed json/jsonb parameter, but no matches were found in the schema cache.","message":"Could not find the function public.finalize_payment_v3(p_amount_paid, p_order_id, p_payment_id) in the schema cache"}}
+-------------------
+[2026-01-16T20:44:28.395853+00:00] [INFO] [PAYMENT]: Payment Success for Order 42cebb3f-5812-499d-adae-3607d8d7c128
+{"amount":100,"paymentId":"pay_S4gbjuZx5obx1O"}
+-------------------
+[2026-01-16T20:44:16.832357+00:00] [ERROR] [PAYMENT_DB_ERROR]: RPC Failed for 42cebb3f-5812-499d-adae-3607d8d7c128
+{"error":{"code":"PGRST202","hint":"Perhaps you meant to call the function public.finalize_payment_v4","details":"Searched for the function public.finalize_payment_v3 with parameters p_amount_paid, p_order_id, p_payment_id or with a single unnamed json/jsonb parameter, but no matches were found in the schema cache.","message":"Could not find the function public.finalize_payment_v3(p_amount_paid, p_order_id, p_payment_id) in the schema cache"}}
+-------------------
+[2026-01-16T20:44:14.15835+00:00] [ERROR] [PAYMENT_DB_ERROR]: RPC Failed for 42cebb3f-5812-499d-adae-3607d8d7c128
+{"error":{"code":"PGRST202","hint":"Perhaps you meant to call the function public.finalize_payment_v4","details":"Searched for the function public.finalize_payment_v3 with parameters p_amount_paid, p_order_id, p_payment_id or with a single unnamed json/jsonb parameter, but no matches were found in the schema cache.","message":"Could not find the function public.finalize_payment_v3(p_amount_paid, p_order_id, p_payment_id) in the schema cache"}}
+-------------------
+[2026-01-16T20:43:55.596151+00:00] [ERROR] [PAYMENT_DB_ERROR]: RPC Failed for 30dd707d-041c-4e3c-b728-0d29b6dda801
+{"error":{"code":"PGRST202","hint":"Perhaps you meant to call the function public.finalize_payment_v4","details":"Searched for the function public.finalize_payment_v3 with parameters p_amount_paid, p_order_id, p_payment_id or with a single unnamed json/jsonb parameter, but no matches were found in the schema cache.","message":"Could not find the function public.finalize_payment_v3(p_amount_paid, p_order_id, p_payment_id) in the schema cache"}}
+-------------------
+[2026-01-16T20:43:51.490966+00:00] [ERROR] [PAYMENT_DB_ERROR]: RPC Failed for 30dd707d-041c-4e3c-b728-0d29b6dda801
+{"error":{"code":"PGRST202","hint":"Perhaps you meant to call the function public.finalize_payment_v4","details":"Searched for the function public.finalize_payment_v3 with parameters p_amount_paid, p_order_id, p_payment_id or with a single unnamed json/jsonb parameter, but no matches were found in the schema cache.","message":"Could not find the function public.finalize_payment_v3(p_amount_paid, p_order_id, p_payment_id) in the schema cache"}}
+-------------------
+[2026-01-16T20:41:15.103099+00:00] [ERROR] [PAYMENT_DB_ERROR]: RPC Failed for 440a1cf6-9d75-400d-9cc4-3548934ab73c
+{"error":{"code":"PGRST202","hint":"Perhaps you meant to call the function public.finalize_payment_v4","details":"Searched for the function public.finalize_payment_v3 with parameters p_amount_paid, p_order_id, p_payment_id or with a single unnamed json/jsonb parameter, but no matches were found in the schema cache.","message":"Could not find the function public.finalize_payment_v3(p_amount_paid, p_order_id, p_payment_id) in the schema cache"}}
+-------------------
+[2026-01-16T20:41:14.303988+00:00] [ERROR] [PAYMENT_DB_ERROR]: RPC Failed for 440a1cf6-9d75-400d-9cc4-3548934ab73c
+{"error":{"code":"PGRST202","hint":"Perhaps you meant to call the function public.finalize_payment_v4","details":"Searched for the function public.finalize_payment_v3 with parameters p_amount_paid, p_order_id, p_payment_id or with a single unnamed json/jsonb parameter, but no matches were found in the schema cache.","message":"Could not find the function public.finalize_payment_v3(p_amount_paid, p_order_id, p_payment_id) in the schema cache"}}
+-------------------
+[2026-01-16T20:38:04.075403+00:00] [INFO] [MIGRATION]: Partial COD schema applied
+null
+-------------------

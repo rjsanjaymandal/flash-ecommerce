@@ -555,24 +555,24 @@ export function ProductCard({
         </Link>
 
         {/* Details */}
-        <div className="space-y-1 px-0.5">
-          <div className="flex flex-col gap-0.5">
+        <div className="space-y-2 px-0.5">
+          <div className="flex flex-col gap-1">
             <div className="flex justify-between items-start gap-2">
               <Link
                 href={`/product/${product.slug || product.id}`}
                 className="hover:text-primary transition-colors flex-1 min-w-0"
               >
-                <h3 className="font-bold text-xs lg:text-sm leading-tight text-foreground uppercase tracking-wide truncate">
+                <h3 className="font-bold text-xs lg:text-sm leading-tight text-foreground uppercase tracking-wide line-clamp-2 h-9">
                   {product.name}
                 </h3>
               </Link>
-              <div className="flex flex-col items-end">
+              <div className="flex flex-col items-end min-h-[2.5rem] justify-start">
                 <p className="font-bold text-xs lg:text-sm text-foreground tracking-tight tabular-nums whitespace-nowrap">
                   {formatCurrency(product.price)}
                 </p>
                 {product.original_price &&
                   product.original_price > product.price && (
-                    <p className="text-[10px] text-muted-foreground/60 line-through tracking-tight tabular-nums">
+                    <p className="text-[10px] text-red-500/80 line-through tracking-tight tabular-nums">
                       {formatCurrency(product.original_price)}
                     </p>
                   )}

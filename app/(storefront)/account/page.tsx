@@ -38,12 +38,13 @@ export default async function AccountPage() {
 
   // If we have a user but no profile, something is wrong with DB sync
   // but we can still show the account client with a placeholder profile
-  const safeProfile = profile || {
+  const safeProfile: Tables<"profiles"> = profile || {
     id: user.id,
-    email: user.email,
     name: user.email?.split("@")[0] || "User",
     role: "customer",
     loyalty_points: 0,
+    pronouns: null,
+    fit_preference: null,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
@@ -51,7 +52,7 @@ export default async function AccountPage() {
   return (
     <AccountClient
       user={user}
-      profile={safeProfile as any}
+      profile={safeProfile}
       orders={orders}
       addresses={addresses}
       waitlist={waitlistedProducts}
