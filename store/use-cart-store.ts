@@ -73,6 +73,8 @@ export const useCartStore = create<CartState>()(
       },
       
       addItem: async (item, options = { openCart: true, showToast: true }) => {
+        if (item.quantity <= 0) return; // Prevent adding invalid quantities
+        
         const currentItems = get().items
         const existingIndex = currentItems.findIndex(
           (i) =>
@@ -281,7 +283,7 @@ export const useCartStore = create<CartState>()(
 
       clearCart: async () => {
          const { data: { user } } = await supabase.auth.getUser()
-         set({ items: [], savedItems: [] })
+         set({ items: [] }) // Only clear active items, keep savedItems
          if (user) {
              await supabase.from('cart_items').delete().eq('user_id', user.id)
          }

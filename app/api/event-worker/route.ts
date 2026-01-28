@@ -6,9 +6,13 @@ import { AppEventPayload } from '@/lib/services/event-bus'
 export const dynamic = 'force-dynamic' // Ensure no caching for worker
 
 export async function GET(req: Request) {
-    // 1. Security Check (Optional: Verify a cron secret header)
+    // 1. Security Check (Verify a cron secret header)
+    // IMPORTANT: On Hostinger, ensure you set CRON_SECRET in the hPanel and send it in your curl command.
     const authHeader = req.headers.get('authorization')
-    if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    const secret = process.env.CRON_SECRET
+
+    if (secret && authHeader !== `Bearer ${secret}`) {
+        console.warn('[EventWorker] Unauthorized access attempt blocked');
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

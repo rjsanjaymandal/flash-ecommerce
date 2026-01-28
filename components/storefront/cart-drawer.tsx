@@ -13,7 +13,6 @@ import Link from "next/link";
 import FlashImage from "@/components/ui/flash-image";
 import { cn, formatCurrency } from "@/lib/utils";
 import { FreeShippingBar } from "@/components/cart/free-shipping-bar";
-import { CartUpsell } from "@/components/cart/cart-upsell";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
 import { useCartStockSync } from "@/hooks/use-cart-stock-sync";
@@ -55,6 +54,8 @@ export function CartDrawer() {
     setLoadingState(key, true);
     try {
       await updateQuantity(productId, size, color, newQty);
+    } catch (error) {
+      toast.error("Failed to update quantity");
     } finally {
       setLoadingState(key, false);
     }
@@ -432,9 +433,6 @@ export function CartDrawer() {
                   </div>
                 </div>
               )}
-
-              {/* Upsells */}
-              <CartUpsell />
             </div>
           )}
         </div>
