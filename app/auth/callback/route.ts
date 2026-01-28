@@ -2,10 +2,20 @@ import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url)
+  const requestUrl = new URL(request.url)
+  const { searchParams } = requestUrl
   const code = searchParams.get('code')
   // if "next" is in param, use it as the redirect URL
   const next = searchParams.get('next') ?? '/'
+
+  // Handle 0.0.0.0 issue on some hosts
+  if (requestUrl.hostname === '0.0.0.0') {
+    const host = request.headers.get('host')
+    if (host) {
+      requestUrl.host = host
+    }
+  }
+  const origin = requestUrl.origin
 
   if (code) {
     const supabase = await createClient()

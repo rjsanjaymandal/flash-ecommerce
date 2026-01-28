@@ -54,7 +54,12 @@ export async function updateSession(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith('/admin')) {
       if (!user) {
           console.log('[Middleware] Unauthorized access to admin, redirecting to login')
-          return NextResponse.redirect(new URL('/login', request.url))
+          const redirectUrl = new URL('/login', request.url)
+          // Fix for 0.0.0.0 issue on Hostinger/proxies
+          if (redirectUrl.hostname === '0.0.0.0') {
+            redirectUrl.hostname = request.headers.get('host')?.split(':')[0] || 'localhost'
+          }
+          return NextResponse.redirect(redirectUrl)
       }
 
       // Check Role
@@ -66,7 +71,11 @@ export async function updateSession(request: NextRequest) {
 
       if (profile?.role !== 'admin') {
           console.warn('[Middleware] Non-admin user attempted access:', user.id)
-          return NextResponse.redirect(new URL('/', request.url))
+          const redirectUrl = new URL('/', request.url)
+          if (redirectUrl.hostname === '0.0.0.0') {
+            redirectUrl.hostname = request.headers.get('host')?.split(':')[0] || 'localhost'
+          }
+          return NextResponse.redirect(redirectUrl)
       }
   }
 
