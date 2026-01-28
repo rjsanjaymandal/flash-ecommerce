@@ -6,6 +6,7 @@ import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { OrganizationJsonLd } from "@/components/seo/organization-json-ld";
 import { WebSiteJsonLd } from "@/components/seo/website-json-ld";
 import { getUnifiedAuth } from "@/lib/supabase/auth-helper";
+import { Analytics } from "@vercel/analytics/react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -95,6 +96,7 @@ export default async function RootLayout({
         </Providers>
         <OrganizationJsonLd />
         <WebSiteJsonLd />
+        <Analytics />
       </body>
     </html>
   );
