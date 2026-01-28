@@ -41,25 +41,28 @@ export async function voteForConcept(conceptId: string) {
   }
 
   // 4. Increment the concepts.vote_count (Using Admin Client to bypass RLS)
-  const adminClient = createAdminClient()
-  
-  const { data: concept } = await adminClient
-    .from('concepts' as any)
-    .select('vote_count')
-    .eq('id', conceptId)
-    .single() as { data: { vote_count: number } | null, error: any }
+  try {
+    const adminClient = createAdminClient()
+    
+    const { data: concept } = await adminClient
+      .from('concepts' as any)
+      .select('vote_count')
+      .eq('id', conceptId)
+      .single() as { data: { vote_count: number } | null, error: any }
 
-  const newCount = (concept?.vote_count || 0) + 1
+    const newCount = (concept?.vote_count || 0) + 1
 
-  const { error: updateError } = await adminClient
-    .from('concepts' as any)
-    .update({ vote_count: newCount })
-    .eq('id', conceptId)
+    const { error: updateError } = await adminClient
+      .from('concepts' as any)
+      .update({ vote_count: newCount })
+      .eq('id', conceptId)
 
-  if (updateError) {
-    console.error('Error updating vote count:', updateError)
-    // We don't rollback the vote because it IS recorded, just the count is arguably slightly desynced.
-    // In a real prod app, we'd use a transaction or RPC.
+    if (updateError) {
+      console.error('Error updating vote count:', updateError)
+    }
+  } catch (err) {
+    console.error('[voteForConcept] Admin increment failed (Suppressed):', err)
+    // The vote record still exists, count will be slightly desynced but UI remains stable.
   }
 
   // 5. Revalidate the /lab path

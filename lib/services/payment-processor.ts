@@ -230,12 +230,16 @@ export class PaymentProcessor {
      * Internal helper to log payment attempts
      */
     private static async logPaymentAttempt(component: string, message: string, severity: 'INFO' | 'WARN' | 'ERROR', metadata: Record<string, unknown>) {
-        const supabase = createAdminClient()
-        await supabase.from('system_logs').insert({
-            severity,
-            component,
-            message,
-            metadata: metadata as any
-        })
+        try {
+            const supabase = createAdminClient()
+            await supabase.from('system_logs').insert({
+                severity,
+                component,
+                message,
+                metadata: metadata as any
+            })
+        } catch (err) {
+            console.error(`[PaymentProcessor] Critical Logging Failure (Suppressed):`, err)
+        }
     }
 }
