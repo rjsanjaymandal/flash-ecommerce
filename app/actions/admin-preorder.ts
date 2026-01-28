@@ -115,28 +115,33 @@ export async function getAllPreorders() {
 }
 
 export async function getWaitlistStats() {
-    const supabase = await createClient()
-    const adminClient = createAdminClient()
-    
-    // Check auth briefly (optional for stats but good practice)
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return { count: 0, potentialRevenue: 0 }
+    try {
+        const supabase = await createClient()
+        const adminClient = createAdminClient()
+        
+        // Check auth briefly (optional for stats but good practice)
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return { count: 0, potentialRevenue: 0 }
 
-    const { data: preorders, error } = await adminClient
-        .from('preorders' as any)
-        .select(`
-            id,
-            products (price)
-        `)
+        const { data: preorders, error } = await adminClient
+            .from('preorders' as any)
+            .select(`
+                id,
+                products (price)
+            `)
 
-    if (error) return { count: 0, potentialRevenue: 0 }
-    
-    // Calculate potential revenue (sum of prices of all waitlisted items)
-    const potentialRevenue = (preorders || []).reduce((acc: number, curr: any) => {
-        return acc + (curr.products?.price || 0)
-    }, 0)
+        if (error) return { count: 0, potentialRevenue: 0 }
+        
+        // Calculate potential revenue (sum of prices of all waitlisted items)
+        const potentialRevenue = (preorders || []).reduce((acc: number, curr: any) => {
+            return acc + (curr.products?.price || 0)
+        }, 0)
 
-    return { count: preorders?.length || 0, potentialRevenue }
+        return { count: preorders?.length || 0, potentialRevenue }
+    } catch (err) {
+        console.error('[getWaitlistStats] Dashboard fetch failed (Suppressed):', err)
+        return { count: 0, potentialRevenue: 0 }
+    }
 }
 
 export async function deletePreorder(id: string) {

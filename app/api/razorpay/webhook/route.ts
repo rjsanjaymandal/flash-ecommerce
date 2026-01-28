@@ -47,11 +47,15 @@ export async function POST(req: Request) {
 
     // Insert/Log event if new
     if (!existingEvent) {
-        await supabase.from('webhook_events').insert({
-            event_id: eventId,
-            event_type: event.event,
-            payload: event
-        })
+        try {
+            await supabase.from('webhook_events').insert({
+                event_id: eventId,
+                event_type: event.event,
+                payload: event
+            })
+        } catch (err) {
+            console.error('[Webhook] Failed to log event to ledger (Suppressed):', err)
+        }
     }
 
     // 3. Handle 'order.paid' or 'payment.captured'
@@ -95,26 +99,30 @@ export async function POST(req: Request) {
 
         console.warn(`[Webhook] Payment Failed for Order ${orderId}: ${payment.error_description}`)
         
-        await supabase.from('system_logs').insert({
-            severity: 'WARN',
-            component: 'WEBHOOK_PAYMENT_FAILED',
-            message: `Payment Failed for Order ${orderId}: ${payment.error_description}`,
-            metadata: { 
-                orderId, 
-                paymentId: payment.id, 
-                event_id: eventId,
-                error_code: payment.error_code,
-                error_description: payment.error_description,
-                payment_method: payment.method,
-                card_id: payment.card_id,
-                vpa: payment.vpa
-            }
-        })
+        try {
+            await supabase.from('system_logs').insert({
+                severity: 'WARN',
+                component: 'WEBHOOK_PAYMENT_FAILED',
+                message: `Payment Failed for Order ${orderId}: ${payment.error_description}`,
+                metadata: { 
+                    orderId, 
+                    paymentId: payment.id, 
+                    event_id: eventId,
+                    error_code: payment.error_code,
+                    error_description: payment.error_description,
+                    payment_method: payment.method,
+                    card_id: payment.card_id,
+                    vpa: payment.vpa
+                }
+            })
 
-        await supabase.from('webhook_events').update({ 
-            processed: true, 
-            processing_error: `Payment failed: ${payment.error_description}` 
-        }).eq('event_id', eventId)
+            await supabase.from('webhook_events').update({ 
+                processed: true, 
+                processing_error: `Payment failed: ${payment.error_description}` 
+            }).eq('event_id', eventId)
+        } catch (err) {
+            console.error('[Webhook] Failed to log failure/update ledger (Suppressed):', err)
+        }
     }
 
     return NextResponse.json({ status: 'ok' })

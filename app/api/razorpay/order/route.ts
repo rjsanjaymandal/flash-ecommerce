@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import Razorpay from 'razorpay'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createStaticClient } from '@/lib/supabase/server'
 import { checkRateLimit } from '@/lib/rate-limit'
 
 // Initialize inside handler or use a safe check if global
@@ -11,12 +11,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Razorpay not configured' }, { status: 500 })
   }
 
-  // Use Service Role to allow fetching any order by ID (safe since we only need total)
-  // Or use standard client if we trust the user is logged in/owns the order.
-  // Standard client is better for RLS security, but if checkout is guest, we need to be careful.
-  // Assuming 'createClient' handles cookie auth.
-  // Use Service Role to allow guest checkout (fetching orders without user_id session match)
-  const supabase = createAdminClient()
+  // Use Static Client to fetch order details (works for guests vs registered)
+  const supabase = createStaticClient()
 
   try {
     const { order_id, isPartialCod } = await req.json()
