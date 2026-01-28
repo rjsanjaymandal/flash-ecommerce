@@ -12,9 +12,10 @@ export class EmailWorker {
         console.log(`[EmailWorker] Processing ORDER_PAID for ${orderId}`)
 
         try {
+            // Consolidated Query: Fetch everything in one go (Order + Items + Profile)
             const { data: orderData, error } = await supabase
                 .from('orders')
-                .select('*, order_items(*)')
+                .select('*, order_items(*), profiles(email)')
                 .eq('id', orderId)
                 .single() as any
 
@@ -22,9 +23,9 @@ export class EmailWorker {
                 return err(error?.message || 'Order not found')
             }
 
-            const email = (orderData as any).user_email || 
-                          (await supabase.from('profiles').select('email').eq('id', orderData.user_id).single() as any).data?.email
-
+            // Extract email with multiple fallbacks
+            const email = orderData.user_email || orderData.profiles?.email
+            
             if (!email) {
                 return err('No email found for user associated with order')
             }

@@ -216,12 +216,7 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: SupabaseCli
         .map((id: string) => details?.find((d) => d.id === id))
         .filter(Boolean) as Product[]
         
-    const processedData = (orderedData || []).map((p: any) => ({
-         ...p,
-         average_rating: Number(p.average_rating || 0),
-         review_count: Number(p.review_count || 0),
-         preorder_count: p.preorders && Array.isArray(p.preorders) ? (p.preorders[0] as any)?.count || 0 : 0
-    }))
+    const processedData = (orderedData || []).map(formatProduct)
 
     return {
         data: processedData,
@@ -263,15 +258,7 @@ export async function getFeaturedProducts(): Promise<Product[]> {
                 .order('created_at', { ascending: false })
                 .limit(8)
             
-             return (data || []).map((p: any) => {
-                const ratings = p.reviews?.map((r: any) => r.rating) || []
-                const avg = ratings.length > 0 ? ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length : 0
-                return {
-                    ...p,
-                    average_rating: avg,
-                    review_count: ratings.length
-                } as Product
-            })
+             return (data || []).map(formatProduct)
         },
         ['featured-products'],
         { tags: ['featured-products'], revalidate: 3600 } 
@@ -300,10 +287,14 @@ async function fetchProductBySlug(slug: string): Promise<Product | null> {
 }
 
 function formatProduct(p: any): Product {
+    const ratings = p.reviews?.map((r: any) => r.rating).filter((r: any): r is number => r !== null) || []
+    const avg = ratings.length > 0 ? ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length : 0
+    
     return {
         ...p,
-        average_rating: Number(p.average_rating || 0),
-        review_count: Number(p.review_count || 0)
+        average_rating: avg || Number(p.average_rating || 0),
+        review_count: ratings.length || Number(p.review_count || 0),
+        preorder_count: p.preorders && Array.isArray(p.preorders) ? (p.preorders[0] as any)?.count || 0 : 0
     } as Product
 }
 
@@ -498,12 +489,16 @@ export async function deleteProduct(id: string) {
     const supabase = createAdminClient()
     const { error } = await supabase.from('products').delete().eq('id', id)
     if (error) throw error
-    // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
-    revalidateTag('products')
-    // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
-    revalidateTag('featured-products')
-    revalidatePath('/admin/products')
-    revalidatePath('/shop')
+    
+    // Defensive Revalidation
+    try {
+        revalidateTag('products')
+        revalidateTag('featured-products')
+        revalidatePath('/admin/products')
+        revalidatePath('/shop')
+    } catch (e) {
+        console.warn('[deleteProduct] Revalidation failed:', e)
+    }
 }
 
 export async function getProductsByIds(ids: string[]): Promise<Product[]> {

@@ -55,9 +55,10 @@ export function StoreSync() {
       if (items.length === 0) return;
 
       try {
+        // Consolidated Query: Fetch stock and price in one go
         const { data: stocks } = await supabase
           .from("product_stock")
-          .select("product_id, size, color, quantity")
+          .select("product_id, size, color, quantity, product:products(price)")
           .in(
             "product_id",
             items.map((i) => i.productId),
@@ -65,26 +66,17 @@ export function StoreSync() {
 
         if (!stocks) return;
 
-        // Also fetch current prices to detect changes
-        const { data: products } = await supabase
-          .from("products")
-          .select("id, price")
-          .in(
-            "id",
-            items.map((i) => i.productId),
-          );
-
         let changed = false;
         const changes: string[] = [];
 
         const newItems = items.map((item) => {
-          const stockEntry = stocks.find(
+          const stockEntry = (stocks as any[]).find(
             (s) =>
               s.product_id === item.productId &&
               s.size === item.size &&
               s.color === item.color,
           );
-          const productEntry = products?.find((p) => p.id === item.productId);
+          const productEntry = stockEntry?.product;
 
           const available = stockEntry?.quantity ?? 0;
           let updatedItem = { ...item, maxQuantity: available };

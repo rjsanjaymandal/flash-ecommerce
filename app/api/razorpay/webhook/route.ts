@@ -102,12 +102,19 @@ export async function POST(req: Request) {
             metadata: { 
                 orderId, 
                 paymentId: payment.id, 
-                error: payment.error_code,
-                reason: payment.error_description 
+                event_id: eventId,
+                error_code: payment.error_code,
+                error_description: payment.error_description,
+                payment_method: payment.method,
+                card_id: payment.card_id,
+                vpa: payment.vpa
             }
         })
 
-        await supabase.from('webhook_events').update({ processed: true, processing_error: payment.error_description }).eq('event_id', eventId)
+        await supabase.from('webhook_events').update({ 
+            processed: true, 
+            processing_error: `Payment failed: ${payment.error_description}` 
+        }).eq('event_id', eventId)
     }
 
     return NextResponse.json({ status: 'ok' })
