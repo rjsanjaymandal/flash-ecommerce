@@ -2,7 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ShoppingBag, Menu, Heart, ChevronDown, Search } from "lucide-react";
+import {
+  ShoppingBag,
+  Menu,
+  Heart,
+  ChevronDown,
+  Search,
+  LogOut,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import FlashImage from "@/components/ui/flash-image";
 import { useWishlistStore } from "@/store/use-wishlist-store";
@@ -96,7 +103,7 @@ export function StorefrontNavbar() {
           <div
             className={cn(
               "w-full flex items-center justify-between transition-opacity duration-200",
-              isSearchOpen ? "opacity-0 pointer-events-none" : "opacity-100"
+              isSearchOpen ? "opacity-0 pointer-events-none" : "opacity-100",
             )}
           >
             {/* Mobile Menu & Logo */}
@@ -150,7 +157,7 @@ export function StorefrontNavbar() {
                   "text-[13px] font-bold uppercase tracking-wider transition-all px-4 py-2 rounded-full",
                   pathname === "/lab"
                     ? "text-primary bg-primary/10"
-                    : "text-muted-foreground hover:text-primary hover:bg-primary/5"
+                    : "text-muted-foreground hover:text-primary hover:bg-primary/5",
                 )}
               >
                 Lab
@@ -161,7 +168,7 @@ export function StorefrontNavbar() {
                   "text-[13px] font-bold uppercase tracking-wider transition-all px-4 py-2 rounded-full",
                   pathname === "/contact"
                     ? "text-primary bg-primary/10"
-                    : "text-muted-foreground hover:text-primary hover:bg-primary/5"
+                    : "text-muted-foreground hover:text-primary hover:bg-primary/5",
                 )}
               >
                 Contact
@@ -250,6 +257,18 @@ export function StorefrontNavbar() {
                           </Button>
                         </Link>
                       )}
+
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => signOut()}
+                        className="rounded-full gap-2 px-3 font-bold hover:bg-red-500/5 hover:text-red-600 border border-transparent hover:border-red-500/20 transition-all hidden md:flex"
+                      >
+                        <LogOut className="h-4 w-4" />
+                        <span className="text-[10px] uppercase tracking-widest">
+                          Sign Out
+                        </span>
+                      </Button>
                     </div>
                   ) : (
                     <Link href="/login">

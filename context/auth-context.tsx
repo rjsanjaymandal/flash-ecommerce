@@ -58,7 +58,7 @@ export function AuthProvider({
         if (error) {
           console.error(
             "Error fetching profile:",
-            JSON.stringify(error, null, 2)
+            JSON.stringify(error, null, 2),
           );
           // Only set profile to null if it's a real error, not just 'no rows' if we expect one (though .single() errors on no rows)
           setProfile(null);
@@ -70,7 +70,7 @@ export function AuthProvider({
         console.error("Unexpected error fetching profile:", err);
       }
     },
-    [supabase]
+    [supabase],
   );
 
   useEffect(() => {
@@ -85,7 +85,7 @@ export function AuthProvider({
           console.log(
             "[AuthContext] Initial Session:",
             currentSession ? "Found" : "Missing",
-            currentSession?.user?.email
+            currentSession?.user?.email,
           );
           setSession(currentSession);
           setUser(currentSession?.user ?? null);
@@ -98,7 +98,7 @@ export function AuthProvider({
         } else {
           console.log(
             "[AuthContext] Hydrated from Server:",
-            initialUser?.email
+            initialUser?.email,
           );
         }
       } catch (error) {
@@ -134,11 +134,25 @@ export function AuthProvider({
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut();
+      // 1. Attempt API sign out with timeout
+      const signOutPromise = supabase.auth.signOut();
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Sign out timed out")), 5000),
+      );
+
+      await Promise.race([signOutPromise, timeoutPromise]).catch((err) => {
+        console.warn(
+          "[signOut] API sign out failed or timed out, proceeding with local cleanup:",
+          err,
+        );
+      });
+
+      // 2. Local Cleanup (Always runs)
       setUser(null);
       setSession(null);
       setProfile(null);
-      // Clear stores immediately
+
+      // Clear stores
       useCartStore.getState().setItems([]);
       useWishlistStore.getState().setItems([]);
 
@@ -146,10 +160,13 @@ export function AuthProvider({
       localStorage.removeItem("flash-wishlist-storage");
 
       toast.success("Signed out successfully");
-      window.location.href = "/"; // Fresh start
+
+      // 3. Force redirect and reload to clear any remaining in-memory state
+      window.location.href = "/";
     } catch (error) {
       console.error("Sign out error:", error);
-      toast.error("Failed to sign out");
+      // Even if everything fails, try to force redirect to home
+      window.location.href = "/";
     }
   };
 

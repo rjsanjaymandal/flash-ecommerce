@@ -17,6 +17,7 @@ import {
   Twitter,
   Youtube,
   User,
+  LogOut,
 } from "lucide-react";
 import Link from "next/link";
 import FlashImage from "@/components/ui/flash-image";
@@ -38,7 +39,7 @@ interface HamburgerMenuProps {
 
 export function HamburgerMenu({ categories }: HamburgerMenuProps) {
   const [open, setOpen] = useState(false);
-  const { user, profile } = useAuth();
+  const { user, profile, signOut } = useAuth();
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -177,6 +178,19 @@ export function HamburgerMenu({ categories }: HamburgerMenuProps) {
                     </Button>
                   </Link>
                 </div>
+              )}
+              {user && (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    signOut();
+                    setOpen(false);
+                  }}
+                  className="w-full rounded-2xl border-red-500/20 bg-red-500/5 text-red-600 hover:bg-red-500/10 hover:border-red-500/30 font-black uppercase tracking-[0.2em] text-[10px] h-12 mt-2 transition-all flex items-center justify-center gap-2"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Terminate Session
+                </Button>
               )}
             </div>
 
