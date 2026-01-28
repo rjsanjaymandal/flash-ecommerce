@@ -1,30 +1,38 @@
-import { createClient } from '@/lib/supabase/server'
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
+import { SITE_URL } from '@/lib/constants'
 
 export async function GET(request: Request) {
-  const requestUrl = new URL(request.url)
-  const { searchParams } = requestUrl
+  const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
-  // if "next" is in param, use it as the redirect URL
   const next = searchParams.get('next') ?? '/'
 
-  // Handle 0.0.0.0 issue on some hosts
-  if (requestUrl.hostname === '0.0.0.0') {
-    const host = request.headers.get('host')
-    if (host) {
-      requestUrl.host = host
-    }
-  }
-  const origin = requestUrl.origin
-
   if (code) {
-    const supabase = await createClient()
+    const cookieStore = await cookies()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() { return cookieStore.getAll() },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            )
+          },
+        },
+      }
+    )
+    
     const { error } = await supabase.auth.exchangeCodeForSession(code)
+    
     if (!error) {
-      return NextResponse.redirect(`${origin}${next}`)
+      // Use SITE_URL to prevent 0.0.0.0 redirects
+      return NextResponse.redirect(`${SITE_URL}${next}`)
     }
   }
 
-  // return the user to an error page with instructions
-  return NextResponse.redirect(`${origin}/auth/auth-code-error`)
+  // Login failed
+  return NextResponse.redirect(`${SITE_URL}/auth/auth-code-error`)
 }

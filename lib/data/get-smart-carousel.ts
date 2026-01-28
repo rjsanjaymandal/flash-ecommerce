@@ -1,11 +1,7 @@
-import { createAdminClient } from "@/lib/supabase/admin"
+import { createStaticClient } from "@/lib/supabase/server"
 
 export async function getSmartCarouselData() {
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-        console.error('[getSmartCarouselData] Missing environment variables (SUPABASE_SERVICE_ROLE_KEY)');
-        return [];
-    }
-    const supabase = createAdminClient()
+    const supabase = createStaticClient()
     
     // Select specific fields as requested + product_stock for filtering
     const { data } = await supabase

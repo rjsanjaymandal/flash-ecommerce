@@ -250,7 +250,7 @@ export async function getProductsSecure(filter: ProductFilter = {}, client: Supa
 export async function getFeaturedProducts(): Promise<Product[]> {
     return unstable_cache(
         async () => {
-             const supabase = createAdminClient()
+             const supabase = createStaticClient()
              const { data } = await supabase
                 .from('products')
                 .select('*, categories(name), product_stock(*), reviews(rating)')
