@@ -108,7 +108,16 @@ export class PaymentProcessor {
      * and trigger the confirmation email.
      */
     static async processPayment(orderId: string, paymentId: string): Promise<Result<{ message: string }, string>> {
-        const supabase = createAdminClient()
+        let supabase;
+        try {
+            supabase = createAdminClient()
+        } catch (e) {
+            console.error('[PaymentProcessor] Failed to initialize Admin Client:', e)
+            return err('Internal Server Error: Database connectivity issue.')
+        }
+        
+        // Final sanity check before calling supabase
+        if (!supabase) return err('Internal Error: Admin client inactive.')
         
         // 0. Deep Verification: Fetch Razorpay Payment Details First
         if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {

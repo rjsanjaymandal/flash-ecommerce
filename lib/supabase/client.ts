@@ -6,7 +6,15 @@ export function createClient() {
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
   if (!supabaseUrl || !supabaseKey || supabaseUrl === 'YOUR_SUPABASE_URL_HERE') {
-    throw new Error('Supabase environment variables are missing')
+    console.warn('[Supabase] Missing environment variables. Site may be unstable during render.')
+    // Fallback to dummy values to prevent crash, real calls will still fail but render will survive
+    return createBrowserClient<Database>(
+      supabaseUrl || 'https://placeholder.supabase.co', 
+      supabaseKey || 'placeholder', 
+      {
+        global: { fetch: (...args) => fetch(...args) }
+      }
+    )
   }
 
   return createBrowserClient<Database>(supabaseUrl, supabaseKey, {
