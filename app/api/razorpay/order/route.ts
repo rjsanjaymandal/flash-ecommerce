@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import Razorpay from 'razorpay'
-import { createStaticClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { checkRateLimit } from '@/lib/rate-limit'
 
 // Initialize inside handler or use a safe check if global
@@ -11,8 +11,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Razorpay not configured' }, { status: 500 })
   }
 
-  // Use Static Client to fetch order details (works for guests vs registered)
-  const supabase = createStaticClient()
+  // Use Admin Client to fetch order details (Static client can't see new orders due to RLS)
+  const supabase = createAdminClient()
 
   try {
     const { order_id, isPartialCod } = await req.json()
