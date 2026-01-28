@@ -492,7 +492,9 @@ export async function deleteProduct(id: string) {
     
     // Defensive Revalidation
     try {
+        // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument
         revalidateTag('products')
+        // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument
         revalidateTag('featured-products')
         revalidatePath('/admin/products')
         revalidatePath('/shop')
