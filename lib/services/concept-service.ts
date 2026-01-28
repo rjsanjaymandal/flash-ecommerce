@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createStaticClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin' // For admin-only actions
 import { revalidatePath, unstable_cache } from 'next/cache'
 import { Database } from '@/types/supabase'
@@ -23,7 +23,7 @@ export async function getConcepts() {
 export async function getActiveConcepts() {
     return unstable_cache(
         async () => {
-            const supabase = createAdminClient()
+            const supabase = createStaticClient()
             const { data } = await supabase
                 .from('concepts')
                 .select('*')

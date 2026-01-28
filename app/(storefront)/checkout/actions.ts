@@ -1,6 +1,7 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase/admin'
+import { createStaticClient } from '@/lib/supabase/server'
 import { Database } from '@/types/supabase'
 import { CartItem } from '@/store/use-cart-store'
 import { checkRateLimit } from '@/lib/rate-limit'
@@ -23,12 +24,7 @@ export async function createOrder(data: {
     discount_amount?: number,
     email?: string
 }) {
-    // Initialize Admin Client (Safe because 'use server' prevents client-side leaks)
-    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-        console.error('[createOrder] FATAL: SUPABASE_SERVICE_ROLE_KEY is missing')
-        throw new Error('Server configuration error. Please contact support.')
-    }
-    const supabase = createAdminClient()
+    const supabase = createStaticClient()
     console.log(`[createOrder] Starting for user: ${data.user_id}, items: ${data.items.length}`)
     console.log(`[createOrder] Payload:`, JSON.stringify({ 
         total: data.total, 
@@ -93,8 +89,9 @@ export async function createOrder(data: {
             throw new Error("Security check failed: Price mismatch detected. Please refresh your cart.")
         }
 
-        // 1. Create Order (Status PENDING)
-        const { data: order, error: orderError } = await supabase
+        // 1. Create Order (Status PENDING) - Switch to Admin Client for insertion
+        const adminSupabase = createAdminClient()
+        const { data: order, error: orderError } = await adminSupabase
             .from('orders')
             .insert({
                 user_id: data.user_id,
@@ -131,7 +128,7 @@ export async function createOrder(data: {
             name_snapshot: item.name // Ensure snapshot is preserved
         }))
 
-        const { error: itemsError } = await supabase
+        const { error: itemsError } = await adminSupabase
             .from('order_items')
             .insert(orderItems)
         
@@ -167,7 +164,7 @@ export async function createOrder(data: {
         // We call the RPC to immediately decrement stock.
         // If this fails (insufficient stock), we must roll back (delete order) and inform user.
         try {
-            const { error: reservationError } = await supabase.rpc('reserve_stock', { 
+            const { error: reservationError } = await adminSupabase.rpc('reserve_stock', { 
                 p_order_id: order.id 
             })
 
@@ -183,7 +180,7 @@ export async function createOrder(data: {
                 error: e.message,
                 details: e
             })
-            await supabase.from('orders').delete().eq('id', order.id)
+            await adminSupabase.from('orders').delete().eq('id', order.id)
             
             // Show friendly error
             // Show friendly error
@@ -203,9 +200,9 @@ export async function createOrder(data: {
         // 4. Update Coupon Usage
         if (data.coupon_code) {
              try {
-                const { data: coupon } = await supabase.from('coupons').select('id, used_count').eq('code', data.coupon_code.toUpperCase()).single()
+                const { data: coupon } = await adminSupabase.from('coupons').select('id, used_count').eq('code', data.coupon_code.toUpperCase()).single()
                 if (coupon) {
-                    await supabase.from('coupons').update({ used_count: (coupon.used_count || 0) + 1 }).eq('id', coupon.id)
+                    await adminSupabase.from('coupons').update({ used_count: (coupon.used_count || 0) + 1 }).eq('id', coupon.id)
                 }
             } catch (e) {
                 console.error('Failed to increment coupon usage:', e)
@@ -224,7 +221,7 @@ export async function createOrder(data: {
 }
 
 export async function validateCoupon(code: string, orderTotal: number) {
-    const supabase = createAdminClient()
+    const supabase = createStaticClient()
     
     const { data: coupon, error } = await supabase
         .from('coupons')
