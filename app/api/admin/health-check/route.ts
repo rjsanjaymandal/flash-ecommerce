@@ -47,13 +47,28 @@ export async function GET() {
     status.email = !!process.env.RESEND_API_KEY;
     if (!status.email) issues.push("RESEND_API_KEY is missing.");
 
-    // Calculate Score
+    // 5. Check Push Notifications (VAPID)
+    const hasVapid = !!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && !!process.env.VAPID_PRIVATE_KEY;
+    if (!hasVapid) issues.push("VAPID keys (Push Notifications) are missing.");
+
+    // 6. Check Shipping (Fship)
+    const hasFship = !!process.env.FSHIP_CLIENT_ID && !!process.env.FSHIP_SECRET_KEY;
+    if (!hasFship) issues.push("Fship (Shipping) keys are missing.");
+
+    // 7. Check Site URL (for Auth Redirects)
+    const hasSiteUrl = !!process.env.NEXT_PUBLIC_SITE_URL && process.env.NEXT_PUBLIC_SITE_URL.startsWith('http');
+    if (!hasSiteUrl) issues.push("NEXT_PUBLIC_SITE_URL is missing or invalid (needed for Auth).");
+
+    // Calculate Score (Recalculated for more keys)
     let points = 0;
-    if (status.supabase) points += 40;
-    if (status.service_role) points += 20;
+    if (status.supabase) points += 25;
+    if (status.service_role) points += 15;
     if (status.razorpay) points += 20;
-    if (status.email) points += 20;
-    status.overall_score = points;
+    if (status.email) points += 10;
+    if (hasVapid) points += 10;
+    if (hasFship) points += 10;
+    if (hasSiteUrl) points += 10;
+    status.overall_score = Math.min(points, 100);
 
     return NextResponse.json(status);
   } catch (error) {

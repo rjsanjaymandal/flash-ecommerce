@@ -19,6 +19,7 @@ import {
   FlaskConical,
   Bell,
   Terminal,
+  Activity,
 } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 
@@ -38,6 +39,7 @@ export const navItems = [
 
 export const secondaryItems = [
   { href: "/admin/settings", label: "Settings", icon: Settings },
+  { href: "/admin/health", label: "Health", icon: Activity },
   { href: "/admin/feedback", label: "Feedback", icon: MessageSquare },
   { href: "/admin/system-logs", label: "System Logs", icon: Terminal },
 ];
