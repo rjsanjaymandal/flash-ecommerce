@@ -1,9 +1,9 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function checkRateLimit(key: string, limit: number, windowSeconds: number) {
-  const supabase = createAdminClient();
-  
   try {
+    const supabase = createAdminClient();
+    
     const { data: result, error } = await supabase.rpc('check_rate_limit', {
       p_key: key,
       p_limit: limit,

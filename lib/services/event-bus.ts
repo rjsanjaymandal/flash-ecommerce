@@ -24,9 +24,9 @@ export class EventBus {
         type: T,
         payload: AppEventPayload[T]
     ): Promise<Result<{ id: string }, string>> {
-        const supabase = createAdminClient()
-        
         try {
+            const supabase = createAdminClient()
+            
             const { data, error } = await supabase
                 .from('app_events' as any)
                 .insert({

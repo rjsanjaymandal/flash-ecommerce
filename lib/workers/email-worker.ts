@@ -8,10 +8,9 @@ export class EmailWorker {
      * Handles the 'ORDER_PAID' event by sending confirmation emails.
      */
     static async handleOrderPaid(orderId: string): Promise<Result<boolean, string>> {
-        const supabase = createAdminClient()
-        console.log(`[EmailWorker] Processing ORDER_PAID for ${orderId}`)
-
         try {
+            const supabase = createAdminClient()
+            console.log(`[EmailWorker] Processing ORDER_PAID for ${orderId}`)
             // Consolidated Query: Fetch everything in one go (Order + Items + Profile)
             const { data: orderData, error } = await supabase
                 .from('orders')
@@ -68,24 +67,33 @@ export class EmailWorker {
             }).catch(e => console.error("Failed to send admin alert", e));
 
             // Log Success
-            await supabase.from('system_logs').insert({
-                severity: 'INFO',
-                component: 'EMAIL_WORKER',
-                message: `Confirmation emails dispatched for ${orderId}`,
-                metadata: { orderId: orderId, customerEmail: email }
-            })
+            try {
+                await supabase.from('system_logs').insert({
+                    severity: 'INFO',
+                    component: 'EMAIL_WORKER',
+                    message: `Confirmation emails dispatched for ${orderId}`,
+                    metadata: { orderId: orderId, customerEmail: email }
+                })
+            } catch (logErr) {
+                console.error('[EmailWorker] Logging Success Failed (Suppressed):', logErr)
+            }
 
             return ok(true)
 
         } catch (error: unknown) {
             console.error('[EmailWorker] Failed:', error)
             
-            await supabase.from('system_logs').insert({
-                severity: 'ERROR',
-                component: 'EMAIL_WORKER',
-                message: `Failed to send email: ${(error as Error).message}`,
-                metadata: { orderId: orderId, error: String(error) } as any
-            })
+            try {
+                const supabase = createAdminClient()
+                await supabase.from('system_logs').insert({
+                    severity: 'ERROR',
+                    component: 'EMAIL_WORKER',
+                    message: `Failed to send email: ${(error as Error).message}`,
+                    metadata: { orderId: orderId, error: String(error) } as any
+                })
+            } catch (logErr) {
+                console.error('[EmailWorker] Logging Error Failed (Suppressed):', logErr)
+            }
 
             return err((error as Error).message)
         }

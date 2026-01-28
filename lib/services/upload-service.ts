@@ -3,14 +3,15 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function uploadImage(formData: FormData) {
-  const file = formData.get('file') as File
-  const bucket = 'products'
+  try {
+    const file = formData.get('file') as File
+    const bucket = 'products'
 
-  if (!file) {
-      throw new Error('No file provided')
-  }
+    if (!file) {
+        throw new Error('No file provided')
+    }
 
-  const supabase = createAdminClient()
+    const supabase = createAdminClient()
   const fileExt = file.name.split('.').pop()
   const fileName = `prod_${Date.now()}_${Math.random()}.${fileExt}`
 
@@ -35,4 +36,8 @@ export async function uploadImage(formData: FormData) {
       .getPublicUrl(fileName)
 
   return publicUrl
+  } catch (err) {
+      console.error('[uploadImage] Failed:', err)
+      throw new Error('Image upload service is currently unavailable. Please try again later.')
+  }
 }

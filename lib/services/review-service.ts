@@ -35,43 +35,63 @@ export async function getReviews(page = 1, limit = 10, search = '') {
 }
 
 export async function deleteReview(id: string) {
-    const supabase = createAdminClient()
-    
-    // Get product_id for revalidation
-    const { data: review } = await supabase.from('reviews').select('product_id').eq('id', id).single()
-    
-    const { error } = await supabase.from('reviews').delete().eq('id', id)
-    if (error) throw error
-    
-    revalidatePath('/admin/reviews')
-    if (review?.product_id) {
-        revalidatePath(`/product/${review.product_id}`)
+    try {
+        const supabase = createAdminClient()
+        
+        // Get product_id for revalidation
+        const { data: review } = await supabase.from('reviews').select('product_id').eq('id', id).single()
+        
+        const { error } = await supabase.from('reviews').delete().eq('id', id)
+        if (error) throw error
+        
+        revalidatePath('/admin/reviews')
+        if (review?.product_id) {
+            revalidatePath(`/product/${review.product_id}`)
+        }
+    } catch (err) {
+        console.error('[deleteReview] Failed:', err)
+        throw new Error('Could not delete review. Please check server logs.')
     }
 }
 
 export async function toggleReviewFeature(id: string, isFeatured: boolean) {
-    const supabase = createAdminClient()
-    const { data: review } = await supabase.from('reviews').select('product_id').eq('id', id).single()
-    const { error } = await supabase.from('reviews').update({ is_featured: isFeatured } as any).eq('id', id)
-    if (error) throw error
-    revalidatePath('/admin/reviews')
-    if (review?.product_id) revalidatePath(`/product/${review.product_id}`)
+    try {
+        const supabase = createAdminClient()
+        const { data: review } = await supabase.from('reviews').select('product_id').eq('id', id).single()
+        const { error } = await supabase.from('reviews').update({ is_featured: isFeatured } as any).eq('id', id)
+        if (error) throw error
+        revalidatePath('/admin/reviews')
+        if (review?.product_id) revalidatePath(`/product/${review.product_id}`)
+    } catch (err) {
+        console.error('[toggleReviewFeature] Failed:', err)
+        throw new Error('Failed to toggle review feature status.')
+    }
 }
 
 export async function replyToReview(id: string, replyText: string) {
-    const supabase = createAdminClient()
-    const { data: review } = await supabase.from('reviews').select('product_id').eq('id', id).single()
-    const { error } = await supabase.from('reviews').update({ reply_text: replyText } as any).eq('id', id)
-    if (error) throw error
-    revalidatePath('/admin/reviews')
-    if (review?.product_id) revalidatePath(`/product/${review.product_id}`)
+    try {
+        const supabase = createAdminClient()
+        const { data: review } = await supabase.from('reviews').select('product_id').eq('id', id).single()
+        const { error } = await supabase.from('reviews').update({ reply_text: replyText } as any).eq('id', id)
+        if (error) throw error
+        revalidatePath('/admin/reviews')
+        if (review?.product_id) revalidatePath(`/product/${review.product_id}`)
+    } catch (err) {
+        console.error('[replyToReview] Failed:', err)
+        throw new Error('Failed to post reply. Please try again.')
+    }
 }
 
 export async function approveReview(id: string, isApproved: boolean) {
-    const supabase = createAdminClient()
-    const { data: review } = await supabase.from('reviews').select('product_id').eq('id', id).single()
-    const { error } = await supabase.from('reviews').update({ is_approved: isApproved } as any).eq('id', id)
-    if (error) throw error
-    revalidatePath('/admin/reviews')
-    if (review?.product_id) revalidatePath(`/product/${review.product_id}`)
+    try {
+        const supabase = createAdminClient()
+        const { data: review } = await supabase.from('reviews').select('product_id').eq('id', id).single()
+        const { error } = await supabase.from('reviews').update({ is_approved: isApproved } as any).eq('id', id)
+        if (error) throw error
+        revalidatePath('/admin/reviews')
+        if (review?.product_id) revalidatePath(`/product/${review.product_id}`)
+    } catch (err) {
+        console.error('[approveReview] Failed:', err)
+        throw new Error('Review status update failed.')
+    }
 }
