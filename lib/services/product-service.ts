@@ -505,7 +505,7 @@ export async function deleteProduct(id: string) {
 
 export async function getProductsByIds(ids: string[]): Promise<Product[]> {
     if (!ids || ids.length === 0) return []
-    const supabase = createAdminClient()
+    const supabase = createStaticClient()
     
     const { data, error } = await supabase
       .from('products')
@@ -531,7 +531,7 @@ export async function getProductsByIds(ids: string[]): Promise<Product[]> {
 
 export async function getValidProducts(ids: string[]): Promise<Product[]> {
     if (!ids || ids.length === 0) return []
-    const supabase = createAdminClient()
+    const supabase = createStaticClient()
     
     // Only fetch ACTIVE products
     const { data, error } = await supabase
@@ -681,13 +681,13 @@ export async function bulkUpdateProductStatus(ids: string[], isActive: boolean) 
 // decrementStock removed - unsafe public exposure. Use RPC 'decrement_stock' via Service Role instead.
 
 export async function getWaitlistedProducts(userId: string): Promise<Product[]> {
-    const supabase = createAdminClient()
+    const supabase = await createClient()
     
     // 1. Get Preorders
     const { data: preorders, error } = await supabase
-        .from('preorders')
-        .select('product_id')
-        .eq('user_id', userId)
+      .from('preorders')
+      .select('product_id')
+      .eq('user_id', userId)
     
     if (error || !preorders || preorders.length === 0) return []
 

@@ -1,4 +1,3 @@
-import { createClient } from "@/lib/supabase/client";
 import { formatCurrency } from "@/lib/utils";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -18,7 +17,7 @@ import { BrandGlow } from "@/components/storefront/brand-glow";
 import { Button } from "@/components/ui/button";
 import NextImage from "next/image";
 import imageLoader from "@/lib/image-loader";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { OrderStatusListener } from "@/components/checkout/order-status-listener";
 import { TrackingTimeline } from "@/components/storefront/tracking-timeline";
 
@@ -36,16 +35,8 @@ export default async function OrderConfirmationPage({
     psig: signature,
   } = await searchParams;
 
-  // Use Admin Client to fetch order details securely server-side
-  // We need admin client because policies might restrict "select" on orders
-  // if the user was a guest logic wasn't fully set for strictly RLS on "viewing" unowned orders by ID.
-  // Ideally, RLS allows "Users can see own orders".
-  // But for a robust confirmation page that might be redirected to immediately (and session might be slighty lagging or guest),
-  // fetching by ID is safe IF we don't expose sensitive info inappropriately.
-  // Actually, let's try standard client first, assuming RLS allows "Users can view own".
-  // If guest, we might need a secure token or just rely on the fact they have the UUID.
-  // For now, let's use Admin to ensure we GET the data to show them, as they just paid.
-  const supabase = createAdminClient();
+  // Use session client to fetch order details securely server-side
+  const supabase = await createClient();
 
   const { data: order, error } = await supabase
     .from("orders")
@@ -59,7 +50,7 @@ export default async function OrderConfirmationPage({
           main_image_url
         )
       )
-    `
+    `,
     )
     .eq("id", id)
     .single();
