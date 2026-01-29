@@ -7,6 +7,7 @@ import { OrganizationJsonLd } from "@/components/seo/organization-json-ld";
 import { WebSiteJsonLd } from "@/components/seo/website-json-ld";
 import { getUnifiedAuth } from "@/lib/supabase/auth-helper";
 import { Analytics } from "@vercel/analytics/react";
+import { GoogleAnalytics } from "@next/third-parties/google";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -97,6 +98,7 @@ export default async function RootLayout({
         <OrganizationJsonLd />
         <WebSiteJsonLd />
         <Analytics />
+        <GoogleAnalytics gaId="G-2DR5KWRR1R" />
       </body>
     </html>
   );
