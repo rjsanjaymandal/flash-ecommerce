@@ -33,15 +33,16 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: "Flash Fashion | Premium Anime Streetwear & Queer Clothing India",
+    default: "Flash Fashion | Flash Clothing & Premium Anime Streetwear India",
     template: "%s | Flash Fashion",
   },
   description:
-    "Flash Fashion - India's premium anime streetwear brand. Explore gender-neutral queer fashion, cyberpunk-inspired clothing, and intelligent nano-fabric apparel. Fast fashion, fantastic fabric.",
+    "Flash Fashion - The ultimate destination for Flash Clothing and Anime Streetwear in India. Experience the Flash revolution with gender-neutral, cyberpunk, and intelligent nano-fabric apparel.",
   keywords: [
     "flash fashion",
+    "flash clothing",
+    "flash",
     "flash fashion india",
-    "flash fashion clothing",
     "flash clothing brand",
     "anime streetwear",
     "queer fashion",
@@ -51,7 +52,6 @@ export const metadata: Metadata = {
     "cyberpunk aesthetic",
     "japanese streetwear",
     "premium clothing india",
-    "lgbtq fashion brand",
     "streetwear for all",
   ],
   metadataBase: new URL("https://flashhfashion.in"),
@@ -67,9 +67,9 @@ export const metadata: Metadata = {
     apple: "/apple-icon",
   },
   openGraph: {
-    title: "Flash Fashion | Premium Anime Streetwear & Queer Clothing India",
+    title: "Flash Fashion | Flash Clothing & Anime Streetwear India",
     description:
-      "Flash Fashion - India's premium anime streetwear brand. Gender-neutral queer fashion and intelligent clothing for the modern rebel.",
+      "Flash Fashion - The ultimate destination for Flash Clothing and Anime Streetwear in India. Experience the Flash revolution.",
     url: "https://flashhfashion.in",
     siteName: "Flash Fashion",
     images: [
@@ -85,14 +85,14 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Flash Fashion | Anime Streetwear & Queer Clothing India",
+    title: "Flash Fashion | Flash Clothing & Anime Streetwear India",
     description:
-      "Flash Fashion - India's premium anime streetwear brand. Premium clothing and intelligent fabric for all.",
+      "Flash Fashion - The ultimate destination for Flash Clothing and Anime Streetwear in India.",
     images: ["/flash-logo.jpg"],
     creator: "@flashhfashion",
   },
   category: "clothing",
-  classification: "Anime Streetwear, Queer Fashion, Intelligent Clothing",
+  classification: "Flash Clothing, Anime Streetwear, Queer Fashion",
   verification: {
     google: "CqVr1TGrfamesut-wOLLkyz2PQUjYb-ihMDqj9zL2X0",
   },
