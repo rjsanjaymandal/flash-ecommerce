@@ -19,7 +19,6 @@ export function OrganizationJsonLd() {
       "anime streetwear, queer fashion, nano fabric, intelligent clothing, gender neutral fashion, harajuku aesthetic",
     contactPoint: {
       "@type": "ContactPoint",
-      telephone: "+91-9876543210",
       contactType: "customer service",
       areaServed: "IN",
       availableLanguage: ["en", "hi"],

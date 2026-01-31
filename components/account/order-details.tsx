@@ -224,14 +224,14 @@ export function OrderDetails({ order, items }: OrderDetailsProps) {
                   </div>
 
                   {order.tracking_number ? (
-                    <div className="bg-zinc-50/50 rounded-[2rem] border-2 border-zinc-100 overflow-hidden">
+                    <div className="bg-zinc-50/50 rounded-4xl border-2 border-zinc-100 overflow-hidden">
                       <TrackingTimeline
                         awb={order.tracking_number}
                         className="p-4 md:p-6"
                       />
                     </div>
                   ) : (
-                    <div className="bg-zinc-50/30 rounded-[2rem] border-2 border-dashed border-zinc-100 p-12 text-center">
+                    <div className="bg-zinc-50/30 rounded-4xl border-2 border-dashed border-zinc-100 p-12 text-center">
                       <div className="h-16 w-16 bg-zinc-100 rounded-full flex items-center justify-center mx-auto mb-6 opacity-50 relative">
                         <Truck className="h-8 w-8 text-zinc-400" />
                         <div className="absolute inset-0 rounded-full border-2 border-zinc-200 animate-ping opacity-20" />
@@ -264,7 +264,7 @@ export function OrderDetails({ order, items }: OrderDetailsProps) {
                     key={item.id}
                     className="p-4 md:p-10 flex flex-col sm:flex-row gap-4 md:gap-10 group hover:bg-zinc-50/30 transition-all duration-500"
                   >
-                    <div className="h-20 w-20 md:h-40 md:w-32 bg-zinc-100 rounded-xl md:rounded-[2rem] overflow-hidden shrink-0 self-start shadow-xl border-2 md:border-4 border-white group-hover:scale-105 transition-transform duration-500 relative">
+                    <div className="h-20 w-20 md:h-40 md:w-32 bg-zinc-100 rounded-xl md:rounded-4xl overflow-hidden shrink-0 self-start shadow-xl border-2 md:border-4 border-white group-hover:scale-105 transition-transform duration-500 relative">
                       {item.products?.main_image_url ? (
                         <FlashImage
                           src={item.products.main_image_url}
@@ -285,13 +285,13 @@ export function OrderDetails({ order, items }: OrderDetailsProps) {
                             {item.products ? (
                               <Link
                                 href={`/product/${item.products.slug}`}
-                                className="font-black text-lg md:text-3xl tracking-tighter uppercase italic leading-tight hover:text-primary transition-colors block break-words"
+                                className="font-black text-lg md:text-3xl tracking-tighter uppercase italic leading-tight hover:text-primary transition-colors block wrap-break-word"
                               >
                                 {item.name_snapshot || item.products.name}
                               </Link>
                             ) : (
                               <div className="flex items-center gap-3">
-                                <span className="font-black text-lg md:text-3xl tracking-tighter uppercase italic leading-tight text-zinc-400 block break-words line-through decoration-zinc-300">
+                                <span className="font-black text-lg md:text-3xl tracking-tighter uppercase italic leading-tight text-zinc-400 block wrap-break-word line-through decoration-zinc-300">
                                   {item.name_snapshot || "Unknown Product"}
                                 </span>
                                 <Badge

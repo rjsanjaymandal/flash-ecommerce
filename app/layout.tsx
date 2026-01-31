@@ -25,8 +25,8 @@ export const viewport: Viewport = {
   themeColor: "#000000",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false, // Intentional for "App-like" feel requests
+  maximumScale: 5, // Improved for accessibility
+  userScalable: true, // Improved for accessibility/SEO
   viewportFit: "cover",
 };
 
@@ -51,12 +51,31 @@ export const metadata: Metadata = {
     "streetwear for all",
   ],
   metadataBase: new URL("https://flashhfashion.in"),
+  alternates: {
+    canonical: "/",
+    languages: {
+      "en-US": "/en-US",
+    },
+  },
+  manifest: "/manifest.json",
+  icons: {
+    icon: "/icon",
+    apple: "/apple-icon",
+  },
   openGraph: {
     title: "FLASH | Premium Anime Streetwear & Intelligent Queer Fashion",
     description:
-      "Cyberpunk aesthetics meets nano-fabric engineering. Gender-neutral anime streetwear and intelligent clothing.",
+      "Cyberpunk aesthetics meets nano-fabric engineering. Gender-neutral anime streetwear and intelligent clothing for the modern rebel.",
     url: "https://flashhfashion.in",
     siteName: "FLASH",
+    images: [
+      {
+        url: "/flash-logo.jpg",
+        width: 1200,
+        height: 630,
+        alt: "FLASH Anime Streetwear",
+      },
+    ],
     locale: "en_US",
     type: "website",
   },
@@ -65,7 +84,11 @@ export const metadata: Metadata = {
     title: "FLASH | Anime Streetwear & Intelligent Queer Fashion",
     description:
       "Cyberpunk aesthetics meets nano-fabric engineering. Premium anime apparel and intelligent clothing for all.",
+    images: ["/flash-logo.jpg"],
+    creator: "@flashhfashion",
   },
+  category: "electronics",
+  classification: "Anime Streetwear, Queer Fashion, Intelligent Clothing",
   verification: {
     google: "CqVr1TGrfamesut-wOLLkyz2PQUjYb-ihMDqj9zL2X0",
   },
