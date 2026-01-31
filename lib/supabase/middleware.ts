@@ -59,14 +59,20 @@ export async function updateSession(request: NextRequest) {
       }
 
       // Check Role
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('role')
         .eq('id', user.id)
         .single()
 
-      if (profile?.role !== 'admin') {
-          console.warn('[Middleware] Non-admin user attempted access:', user.id)
+      if (profileError || !profile) {
+          console.error('[Middleware] Profile fetch failed for user:', user.id, profileError?.message)
+          const redirectUrl = new URL('/', SITE_URL)
+          return NextResponse.redirect(redirectUrl)
+      }
+
+      if (profile.role !== 'admin') {
+          console.warn('[Middleware] Non-admin access denied:', { userId: user.id, role: profile.role })
           const redirectUrl = new URL('/', SITE_URL)
           return NextResponse.redirect(redirectUrl)
       }

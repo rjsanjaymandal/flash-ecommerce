@@ -13,6 +13,7 @@ import { Database } from "@/types/supabase";
 import { useCartStore } from "@/store/use-cart-store";
 import { useWishlistStore } from "@/store/use-wishlist-store";
 import { toast } from "sonner";
+import { signOutAction } from "@/app/actions/auth-actions";
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 
@@ -134,20 +135,7 @@ export function AuthProvider({
 
   const signOut = async () => {
     try {
-      // 1. Attempt API sign out with timeout
-      const signOutPromise = supabase.auth.signOut();
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Sign out timed out")), 5000),
-      );
-
-      await Promise.race([signOutPromise, timeoutPromise]).catch((err) => {
-        console.warn(
-          "[signOut] API sign out failed or timed out, proceeding with local cleanup:",
-          err,
-        );
-      });
-
-      // 2. Local Cleanup (Always runs)
+      // 1. Local Cleanup (Always runs immediately to feel snappy)
       setUser(null);
       setSession(null);
       setProfile(null);
@@ -159,10 +147,10 @@ export function AuthProvider({
       localStorage.removeItem("flash-cart-storage");
       localStorage.removeItem("flash-wishlist-storage");
 
-      toast.success("Signed out successfully");
+      // 2. Perform server-side sign out and redirect
+      await signOutAction();
 
-      // 3. Force redirect and reload to clear any remaining in-memory state
-      window.location.href = "/";
+      toast.success("Signed out successfully");
     } catch (error) {
       console.error("Sign out error:", error);
       // Even if everything fails, try to force redirect to home

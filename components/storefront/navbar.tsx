@@ -257,18 +257,6 @@ export function StorefrontNavbar() {
                           </Button>
                         </Link>
                       )}
-
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => signOut()}
-                        className="rounded-full gap-2 px-3 font-bold hover:bg-red-500/5 hover:text-red-600 border border-transparent hover:border-red-500/20 transition-all hidden md:flex"
-                      >
-                        <LogOut className="h-4 w-4" />
-                        <span className="text-[10px] uppercase tracking-widest">
-                          Sign Out
-                        </span>
-                      </Button>
                     </div>
                   ) : (
                     <Link href="/login">

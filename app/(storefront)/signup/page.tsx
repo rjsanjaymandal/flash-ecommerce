@@ -1,22 +1,14 @@
-'use client'
+"use client";
 
-import { useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Loader2 } from "lucide-react"
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function SignupPage() {
-  const router = useRouter()
+  const router = useRouter();
 
   useEffect(() => {
-    router.replace('/login?view=signup')
-  }, [])
+    router.replace("/login");
+  }, [router]);
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/20">
-        <div className="flex flex-col items-center gap-4">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="text-muted-foreground">Redirecting to secure signup...</p>
-        </div>
-    </div>
-  )
+  return null;
 }
