@@ -282,12 +282,26 @@ export function OrderDetails({ order, items }: OrderDetailsProps) {
                       <div className="space-y-4">
                         <div className="flex flex-col md:flex-row justify-between items-start gap-4">
                           <div className="space-y-1 w-full flex-1">
-                            <Link
-                              href={`/product/${item.products?.slug}`}
-                              className="font-black text-lg md:text-3xl tracking-tighter uppercase italic leading-tight hover:text-primary transition-colors block break-words"
-                            >
-                              {item.name_snapshot || item.products?.name}
-                            </Link>
+                            {item.products ? (
+                              <Link
+                                href={`/product/${item.products.slug}`}
+                                className="font-black text-lg md:text-3xl tracking-tighter uppercase italic leading-tight hover:text-primary transition-colors block break-words"
+                              >
+                                {item.name_snapshot || item.products.name}
+                              </Link>
+                            ) : (
+                              <div className="flex items-center gap-3">
+                                <span className="font-black text-lg md:text-3xl tracking-tighter uppercase italic leading-tight text-zinc-400 block break-words line-through decoration-zinc-300">
+                                  {item.name_snapshot || "Unknown Product"}
+                                </span>
+                                <Badge
+                                  variant="secondary"
+                                  className="text-[10px] font-bold bg-zinc-100 text-zinc-500 border-zinc-200"
+                                >
+                                  Discontinued
+                                </Badge>
+                              </div>
+                            )}
                             <div className="flex flex-wrap gap-2 pt-2">
                               <Badge
                                 variant="outline"
@@ -315,15 +329,17 @@ export function OrderDetails({ order, items }: OrderDetailsProps) {
                         </div>
                       </div>
                       <div className="flex flex-wrap justify-start items-center gap-x-4 gap-y-2 mt-8">
-                        <Button
-                          variant="link"
-                          asChild
-                          className="text-primary p-0 h-auto text-[9px] md:text-[10px] font-black uppercase tracking-widest"
-                        >
-                          <Link href={`/product/${item.products?.slug}`}>
-                            View Product Details
-                          </Link>
-                        </Button>
+                        {item.products && (
+                          <Button
+                            variant="link"
+                            asChild
+                            className="text-primary p-0 h-auto text-[9px] md:text-[10px] font-black uppercase tracking-widest"
+                          >
+                            <Link href={`/product/${item.products.slug}`}>
+                              View Product Details
+                            </Link>
+                          </Button>
+                        )}
                         <Separator
                           orientation="vertical"
                           className="h-3 bg-zinc-200 hidden xs:block"

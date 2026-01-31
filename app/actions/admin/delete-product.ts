@@ -98,8 +98,8 @@ export async function deleteProductAction(productId: string): Promise<DeleteProd
             .eq('id', productId)
         
         if (deleteError) {
-             console.error('Failed to delete product row:', deleteError)
-             return { error: 'Failed to delete product from database' }
+             console.error('Failed to delete product row:', JSON.stringify(deleteError, null, 2))
+             return { error: `Failed to delete: ${deleteError.message || deleteError.details || 'Database error'}` }
         }
 
         // 6. Hardened Revalidation
