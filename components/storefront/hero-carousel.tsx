@@ -81,23 +81,45 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
 
   const getTagline = (product: HeroProduct) => {
-    const taglines = [
-      "Level Up Your Aesthetic",
-      "Limited Edition Drop",
-      "420 GSM Heavyweight Quality",
-      "The Future of Streetwear",
-      "Engineered for Performance",
-      "420 GSM Hoodie Season",
-      "Bold. Unfiltered. Authentic.",
-      "Summer Collection 2025",
-    ];
     const hash = (str: string) => {
       let h = 0;
       for (let i = 0; i < str.length; i++)
         h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
       return Math.abs(h);
     };
-    return taglines[hash(product.id) % taglines.length];
+
+    const name = product.name.toLowerCase();
+
+    // Logic-driven taglines
+    if (name.includes("hoodie")) {
+      const hoodieTaglines = [
+        "430 GSM Heavyweight Quality",
+        "430 GSM Hoodie Season",
+        "Engineered for Performance",
+        "Level Up Your Aesthetic",
+      ];
+      return hoodieTaglines[hash(product.id) % hoodieTaglines.length];
+    }
+
+    if (name.includes("t-shirt") || name.includes("tee")) {
+      const shirtTaglines = [
+        "Premium Combed Cotton",
+        "Breathable Luxury Fabric",
+        "The Future of Streetwear",
+        "Bold. Unfiltered. Authentic.",
+      ];
+      return shirtTaglines[hash(product.id) % shirtTaglines.length];
+    }
+
+    const defaultTaglines = [
+      "Level Up Your Aesthetic",
+      "Limited Edition Drop",
+      "The Future of Streetwear",
+      "Bold. Unfiltered. Authentic.",
+      "Summer Collection 2026",
+    ];
+
+    return defaultTaglines[hash(product.id) % defaultTaglines.length];
   };
 
   const handleNext = React.useCallback(() => {
@@ -231,7 +253,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                     className="ml-3 inline-flex items-center gap-1.5 bg-white/10 backdrop-blur-md border border-white/20 px-3 py-1 rounded text-[10px] font-black uppercase tracking-widest text-white shadow-lg"
                   >
                     <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-                    420 GSM Quality
+                    430 GSM Quality
                   </motion.span>
                 )}
               </motion.div>
