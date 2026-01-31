@@ -19,3 +19,11 @@ export function calculateDiscount(price: number, originalPrice?: number | null):
   if (!originalPrice || originalPrice <= price) return null
   return Math.round(((originalPrice - price) / originalPrice) * 100)
 }
+
+export function formatDate(date: string | Date) {
+  return new Date(date).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}

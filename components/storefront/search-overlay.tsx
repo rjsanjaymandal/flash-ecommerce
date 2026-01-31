@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { X, Search, ChevronRight, Loader2, ShoppingBag } from "lucide-react";
+import {
+  X,
+  Search,
+  ChevronRight,
+  Loader2,
+  ShoppingBag,
+  Flame,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import FlashImage from "@/components/ui/flash-image";
@@ -43,6 +50,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query, 300);
   const [results, setResults] = useState<SearchResult[]>([]);
+  const [trending, setTrending] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
@@ -52,6 +60,19 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
     if (isOpen) {
       document.body.style.overflow = "hidden";
       setTimeout(() => inputRef.current?.focus(), 100);
+
+      // Fetch Trending on Open
+      const fetchTrending = async () => {
+        const { data } = await supabase
+          .from("products")
+          .select("id, name, slug, price, main_image_url")
+          .eq("is_active", true)
+          .order("price", { ascending: false }) // Show expensive/premium as trending
+          .limit(4);
+
+        if (data) setTrending(data as SearchResult[]);
+      };
+      fetchTrending();
     } else {
       document.body.style.overflow = "unset";
       setQuery("");
@@ -144,24 +165,39 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
               {!query && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                   <div className="space-y-3">
-                    <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-                      Trending Now
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                      {/* Hardcoded trending for now, can be dynamic later */}
-                      {[
-                        "Oversized Tees",
-                        "Hoodies",
-                        "Cargo Pants",
-                        "New Drops",
-                      ].map((term) => (
-                        <button
-                          key={term}
-                          onClick={() => setQuery(term)}
-                          className="px-4 py-2 rounded-full bg-secondary/50 border border-transparent hover:border-primary/20 hover:bg-secondary text-sm font-medium transition-all"
+                    <div className="flex items-center gap-2 text-primary animate-pulse">
+                      <Flame className="h-4 w-4" />
+                      <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+                        Trending Now
+                      </h3>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {trending.map((product) => (
+                        <Link
+                          key={product.id}
+                          href={`/product/${product.slug}`}
+                          onClick={onClose}
+                          className="group relative aspect-square rounded-xl overflow-hidden border border-border/50 bg-muted"
                         >
-                          {term}
-                        </button>
+                          {product.main_image_url && (
+                            <FlashImage
+                              src={product.main_image_url}
+                              alt={product.name}
+                              fill
+                              className="object-cover transition-transform duration-500 group-hover:scale-110"
+                            />
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
+                          <div className="absolute bottom-0 left-0 p-3 w-full">
+                            <p className="text-white font-bold text-sm truncate">
+                              {product.name}
+                            </p>
+                            <p className="text-white/80 text-xs font-mono">
+                              {formatCurrency(product.price)}
+                            </p>
+                          </div>
+                        </Link>
                       ))}
                     </div>
                   </div>

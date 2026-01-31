@@ -17,6 +17,7 @@ import {
   Mail,
   Zap,
   Clock,
+  Loader2,
 } from "lucide-react";
 import {
   Table,
@@ -39,6 +40,7 @@ import FlashImage from "@/components/ui/flash-image";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { type Order } from "@/lib/services/order-service";
+import { findAndRecoverAbandonedCarts } from "@/app/actions/recovery-actions";
 
 interface DashboardStats {
   totalRevenue: number;
@@ -92,6 +94,23 @@ export function DashboardClient({
   const [stats, setStats] = useState(initialStats);
   const [recentOrders, setRecentOrders] = useState(initialOrders);
   const [activity, setActivity] = useState(initialActivity);
+  const [isRecovering, setIsRecovering] = useState(false);
+
+  const handleRecovery = async () => {
+    setIsRecovering(true);
+    try {
+      const result = await findAndRecoverAbandonedCarts();
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success(result.message);
+      }
+    } catch (err) {
+      toast.error("Failed to run recovery");
+    } finally {
+      setIsRecovering(false);
+    }
+  };
 
   // Real-time Sound Effect (optional)
   // const playNotification = () => new Audio('/sounds/ping.mp3').play().catch(() => {})
@@ -227,6 +246,20 @@ export function DashboardClient({
           animate={{ opacity: 1, x: 0 }}
           className="flex items-center gap-3"
         >
+          <Button
+            onClick={handleRecovery}
+            disabled={isRecovering}
+            variant="outline"
+            size="sm"
+            className="hidden sm:flex rounded-full border-2 font-bold uppercase tracking-widest text-[10px] h-10 px-6 gap-2"
+          >
+            {isRecovering ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <Mail className="h-3 w-3" />
+            )}
+            {isRecovering ? "Running..." : "Run Cart Recovery"}
+          </Button>
           <Button
             variant="outline"
             size="sm"

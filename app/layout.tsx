@@ -8,6 +8,7 @@ import { WebSiteJsonLd } from "@/components/seo/website-json-ld";
 import { getUnifiedAuth } from "@/lib/supabase/auth-helper";
 import { Analytics } from "@vercel/analytics/react";
 import { GoogleAnalytics } from "@next/third-parties/google";
+import { PWARegister } from "@/components/pwa-register"; // Imported PWA Register
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -125,6 +126,7 @@ export default async function RootLayout({
         <WebSiteJsonLd />
         <Analytics />
         <GoogleAnalytics gaId="G-2DR5KWRR1R" />
+        <PWARegister />
       </body>
     </html>
   );
