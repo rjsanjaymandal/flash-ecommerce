@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import {
   Loader2,
-  DollarSign,
+  IndianRupee,
   Users,
   ShoppingBag,
   TrendingUp,
@@ -81,7 +81,7 @@ export default function AnalyticsPage() {
               hour: parseInt(range) <= 2 ? "numeric" : undefined,
             }),
             total: s.total_sales,
-          }))
+          })),
         );
         setTopProducts(topResult.data || []);
       } catch (error) {
@@ -108,7 +108,7 @@ export default function AnalyticsPage() {
     {
       title: "Total Revenue",
       value: formatCurrency(metrics?.total_revenue || 0),
-      icon: DollarSign,
+      icon: IndianRupee,
       color: "text-emerald-500",
       bg: "bg-emerald-500/10",
     },

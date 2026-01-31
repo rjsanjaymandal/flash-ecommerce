@@ -19,7 +19,7 @@ import {
   ExternalLink,
   Mail,
   Users,
-  DollarSign,
+  IndianRupee,
   ShoppingBag,
   TrendingUp,
   Bell,
@@ -236,7 +236,7 @@ export function WaitlistClient({
             <CardTitle className="text-sm font-medium">
               Potential Revenue
             </CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <IndianRupee className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-emerald-600">

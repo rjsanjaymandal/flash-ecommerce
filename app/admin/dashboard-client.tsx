@@ -7,8 +7,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { SystemCard } from "@/components/admin/system-card";
 import {
-  DollarSign,
+  IndianRupee,
   Package,
   ShoppingCart,
   ArrowUpRight,
@@ -18,6 +19,7 @@ import {
   Zap,
   Clock,
   Loader2,
+  TrendingUp,
 } from "lucide-react";
 import {
   Table,
@@ -276,44 +278,38 @@ export function DashboardClient({
           </Button>
         </motion.div>
       </div>
-
       {/* Dynamic Stats Grid */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 grid-cols-2 lg:grid-cols-4">
         {[
           {
             title: "Revenue",
             value: `₹${stats.totalRevenue.toLocaleString()}`,
             growth: stats.revenueGrowth,
-            icon: DollarSign,
+            icon: <IndianRupee className="h-4 w-4" />,
             color: "emerald",
+            sub: "Total Earnings",
           },
           {
             title: "Avg. Order",
             value: `₹${Math.round(stats.averageOrderValue || 0).toLocaleString()}`,
-            icon: ArrowUpRight,
+            icon: <TrendingUp className="h-4 w-4" />,
             color: "blue",
             sub: "Ticket Size",
           },
           {
-            title: "Total Orders",
+            title: "Orders",
             value: stats.totalOrders,
             growth: stats.orderGrowth,
-            icon: ShoppingCart,
+            icon: <ShoppingCart className="h-4 w-4" />,
             color: "violet",
+            sub: "Total Processed",
           },
           {
-            title: "Active Catalog",
+            title: "Catalog",
             value: stats.totalProducts,
-            icon: Package,
+            icon: <Package className="h-4 w-4" />,
             color: "amber",
-            sub: "Live Items",
-          },
-          {
-            title: "Waitlist Demand",
-            value: waitlistStats?.count || 0,
-            icon: Clock,
-            color: "rose",
-            sub: `Potential: ₹${(waitlistStats?.potentialRevenue || 0).toLocaleString()}`,
+            sub: "Active SKUs",
           },
         ].map((item, _i) => (
           <motion.div
@@ -322,273 +318,229 @@ export function DashboardClient({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: _i * 0.1 }}
           >
-            <Card className="border-2 hover:border-primary/20 transition-all duration-500 group relative overflow-hidden h-full">
-              <div
-                className={cn(
-                  "absolute top-0 right-0 w-24 h-24 -mr-12 -mt-12 rounded-full opacity-[0.03] group-hover:scale-150 transition-transform duration-700",
-                  item.color === "emerald" && "bg-emerald-500",
-                  item.color === "blue" && "bg-blue-500",
-                  item.color === "violet" && "bg-violet-500",
-                  item.color === "amber" && "bg-amber-500",
-                  item.color === "rose" && "bg-rose-500",
-                )}
-              />
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                  {item.title}
-                </CardTitle>
-                <div
-                  className={cn(
-                    "h-8 w-8 rounded-xl flex items-center justify-center border-2 transition-transform group-hover:rotate-12",
-                    item.color === "emerald" &&
-                      "bg-emerald-50 border-emerald-100 text-emerald-600",
-                    item.color === "blue" &&
-                      "bg-blue-50 border-blue-100 text-blue-600",
-                    item.color === "violet" &&
-                      "bg-violet-50 border-violet-100 text-violet-600",
-                    item.color === "amber" &&
-                      "bg-amber-50 border-amber-100 text-amber-600",
-                    item.color === "rose" &&
-                      "bg-rose-50 border-rose-100 text-rose-600",
-                  )}
-                >
-                  <item.icon className="h-4 w-4" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl md:text-3xl font-black italic tracking-tighter">
+            <SystemCard
+              title={item.title}
+              subtitle={item.sub}
+              icon={item.icon}
+              className="h-full"
+            >
+              <div className="flex items-end justify-between">
+                <div className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">
                   {item.value}
                 </div>
-                {item.growth !== undefined ? (
-                  <p
+              </div>
+              {item.growth !== undefined && (
+                <div
+                  className={cn(
+                    "mt-4 flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider",
+                    item.growth >= 0 ? "text-emerald-600" : "text-rose-600",
+                  )}
+                >
+                  <span
                     className={cn(
-                      "text-[10px] font-black uppercase tracking-tighter mt-1 flex items-center gap-1",
-                      item.growth >= 0 ? "text-emerald-500" : "text-rose-500",
+                      "flex h-4 w-4 items-center justify-center rounded-full",
+                      item.growth >= 0 ? "bg-emerald-100" : "bg-rose-100",
                     )}
                   >
-                    {item.growth >= 0 ? (
-                      <ArrowUpRight className="h-2.5 w-2.5" />
-                    ) : (
-                      <ArrowUpRight className="h-2.5 w-2.5 rotate-90" />
-                    )}
-                    {Math.abs(item.growth).toFixed(1)}% vs last month
-                  </p>
-                ) : (
-                  <p className="text-[10px] font-black uppercase tracking-tighter mt-1 text-muted-foreground">
-                    {item.sub}
-                  </p>
-                )}
-              </CardContent>
-            </Card>
+                    <ArrowUpRight
+                      className={cn("h-3 w-3", item.growth < 0 && "rotate-90")}
+                    />
+                  </span>
+                  {Math.abs(item.growth).toFixed(1)}% vs last month
+                </div>
+              )}
+            </SystemCard>
           </motion.div>
         ))}
       </div>
-
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
         {/* Main Chart - Enhanced Glassmorphism */}
-        <Card className="col-span-full lg:col-span-4 border-2 overflow-hidden bg-white/50 backdrop-blur-xl">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-lg font-black uppercase tracking-tighter italic">
-                Growth Dynamics
-              </CardTitle>
-              <CardDescription>
-                Performance trends for the current period.
-              </CardDescription>
-            </div>
-            <div className="flex gap-2">
+        <div className="col-span-full lg:col-span-4">
+          <SystemCard
+            title="Growth Dynamics"
+            subtitle="Performance trends for the current period"
+            icon={<Zap className="h-4 w-4" />}
+            className="h-full"
+            action={
               <Badge
                 variant="secondary"
-                className="rounded-full bg-zinc-100 text-zinc-600 font-bold uppercase text-[9px]"
+                className="rounded-full bg-slate-100 text-slate-600 font-bold uppercase text-[9px] dark:bg-slate-800 dark:text-slate-400"
               >
                 2025
               </Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="pl-2">
+            }
+          >
             <RevenueChart data={chartData} />
-          </CardContent>
-        </Card>
+          </SystemCard>
+        </div>
 
         {/* Intelligence Feed - Premium List UI */}
-        <Card className="col-span-full lg:col-span-3 border-2 bg-zinc-900 text-white overflow-hidden flex flex-col">
-          <CardHeader className="flex flex-row items-center justify-between border-b border-white/10 pb-4">
-            <div>
-              <CardTitle className="text-lg font-black uppercase tracking-tighter italic text-white flex items-center gap-2">
-                <Activity className="h-4 w-4 text-primary" />
-                Live Signals
-              </CardTitle>
-              <CardDescription className="text-zinc-500">
-                Real-time ecosystem events.
-              </CardDescription>
-            </div>
-            <div className="h-2 w-2 rounded-full bg-primary animate-ping" />
-          </CardHeader>
-          <CardContent className="flex-1 overflow-auto max-h-[400px] scrollbar-hide pt-6">
-            <div className="space-y-6">
-              {activity.length === 0 ? (
-                <div className="text-center text-zinc-600 py-20 flex flex-col items-center gap-4">
-                  <Zap className="h-10 w-10 opacity-20" />
-                  <p className="text-sm font-bold uppercase tracking-widest italic">
-                    Monitoring in Progress...
-                  </p>
-                </div>
-              ) : (
-                activity.map((item, i) => (
-                  <motion.div
-                    key={item.id}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.05 }}
-                    className="flex gap-4 group cursor-default"
-                  >
-                    <div
-                      className={cn(
-                        "h-10 w-10 shrink-0 rounded-xl flex items-center justify-center border transition-all group-hover:scale-110 group-hover:border-white/20",
-                        item.type === "order" &&
-                          "bg-primary/20 border-primary/30 text-primary",
-                        item.type === "review" &&
-                          "bg-amber-500/20 border-amber-500/30 text-amber-500",
-                        item.type === "newsletter" &&
-                          "bg-blue-500/20 border-blue-500/30 text-blue-500",
-                      )}
+        <div className="col-span-full lg:col-span-3">
+          <SystemCard
+            title="Live Signals"
+            subtitle="Real-time ecosystem events"
+            icon={<Activity className="h-4 w-4 text-emerald-500" />}
+            className="h-full flex flex-col"
+            action={
+              <div className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
+            }
+          >
+            <div className="overflow-auto max-h-[400px] scrollbar-hide -mx-2 px-2">
+              <div className="space-y-6">
+                {activity.length === 0 ? (
+                  <div className="text-center text-zinc-600 py-20 flex flex-col items-center gap-4">
+                    <Zap className="h-10 w-10 opacity-20" />
+                    <p className="text-sm font-bold uppercase tracking-widest italic">
+                      Monitoring in Progress...
+                    </p>
+                  </div>
+                ) : (
+                  activity.map((item, i) => (
+                    <motion.div
+                      key={item.id}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.05 }}
+                      className="flex gap-4 group cursor-default"
                     >
-                      {item.type === "order" && (
-                        <ShoppingCart className="h-5 w-5" />
-                      )}
-                      {item.type === "review" && (
-                        <MessageSquare className="h-5 w-5" />
-                      )}
-                      {item.type === "newsletter" && (
-                        <Mail className="h-5 w-5" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0 border-b border-white/5 pb-4">
-                      <p className="text-sm font-black italic uppercase leading-none truncate group-hover:text-primary transition-colors">
-                        {item.title}
-                      </p>
-                      <p className="text-xs text-zinc-500 truncate font-medium mt-1.5">
-                        {item.description}
-                      </p>
-                      <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest mt-1.5 flex items-center gap-2">
-                        <span className="h-1 w-1 rounded-full bg-zinc-700" />
-                        {mounted
-                          ? formatDistanceToNow(new Date(item.time), {
-                              addSuffix: true,
-                            })
-                          : "Just now"}
-                      </p>
-                    </div>
-                  </motion.div>
-                ))
-              )}
-            </div>
-          </CardContent>
-          <div className="p-4 bg-white/5 border-t border-white/10">
-            <Button
-              variant="ghost"
-              className="w-full text-zinc-400 hover:text-white hover:bg-white/10 text-[10px] font-black uppercase tracking-[0.2em] h-8"
-            >
-              View Intelligence Report
-            </Button>
-          </div>
-        </Card>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
-        {/* Recent Orders - Clean Management UI */}
-        <Card className="col-span-full lg:col-span-4 border-2 overflow-hidden">
-          <CardHeader className="flex flex-row items-center justify-between border-b bg-zinc-50/50">
-            <div>
-              <CardTitle className="text-lg font-black uppercase tracking-tighter italic">
-                Recent Transmissions
-              </CardTitle>
-              <CardDescription>Latest order signals received.</CardDescription>
-            </div>
-            <Button
-              asChild
-              size="sm"
-              variant="outline"
-              className="font-bold border-2 rounded-full uppercase tracking-widest text-[10px] h-8 px-4 pr-3"
-            >
-              <Link href="/admin/orders" className="flex items-center gap-1">
-                Log Book <ArrowUpRight className="h-3 w-3" />
-              </Link>
-            </Button>
-          </CardHeader>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader className="bg-muted/10">
-                <TableRow className="border-b-0 hover:bg-transparent">
-                  <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] px-6 h-12 text-muted-foreground">
-                    Order
-                  </TableHead>
-                  <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] h-12 text-muted-foreground text-center">
-                    Identity
-                  </TableHead>
-                  <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] h-12 text-muted-foreground text-center">
-                    Status
-                  </TableHead>
-                  <TableHead className="text-right text-[10px] font-black uppercase tracking-[0.2em] pr-6 h-12 text-muted-foreground">
-                    Total
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {recentOrders.map((order) => (
-                  <TableRow
-                    key={order.id}
-                    className="hover:bg-zinc-50 transition-colors border-b group"
-                  >
-                    <TableCell className="font-mono text-[11px] text-zinc-400 group-hover:text-primary transition-colors flex items-center gap-2 px-6 py-4">
-                      <span className="h-1.5 w-1.5 rounded-full bg-zinc-200 group-hover:bg-primary transition-colors" />
-                      #{order.id.slice(0, 8).toUpperCase()}
-                    </TableCell>
-                    <TableCell className="text-center py-4">
-                      <span className="text-xs font-black uppercase italic tracking-tight">
-                        {order.profiles?.name ||
-                          order.shipping_name ||
-                          "Anonymous"}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-center py-4">
-                      <Badge
-                        variant="outline"
+                      <div
                         className={cn(
-                          "uppercase text-[9px] font-bold px-3 py-0.5 rounded-full border-2",
-                          order.status === "paid" &&
-                            "bg-emerald-50 text-emerald-600 border-emerald-100",
-                          order.status === "pending" &&
-                            "bg-amber-50 text-amber-600 border-amber-100",
-                          order.status === "shipped" &&
-                            "bg-blue-50 text-blue-600 border-blue-100",
-                          order.status === "delivered" &&
-                            "bg-zinc-50 text-zinc-600 border-zinc-100",
+                          "h-10 w-10 shrink-0 rounded-xl flex items-center justify-center border transition-all group-hover:scale-110",
+                          item.type === "order" &&
+                            "bg-emerald-500/10 border-emerald-500/20 text-emerald-600",
+                          item.type === "review" &&
+                            "bg-amber-500/10 border-amber-500/20 text-amber-500",
+                          item.type === "newsletter" &&
+                            "bg-blue-500/10 border-blue-500/20 text-blue-500",
                         )}
                       >
-                        {order.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right font-black italic pr-6 text-sm py-4">
-                      ₹{order.total.toLocaleString()}
-                    </TableCell>
+                        {item.type === "order" && (
+                          <ShoppingCart className="h-5 w-5" />
+                        )}
+                        {item.type === "review" && (
+                          <MessageSquare className="h-5 w-5" />
+                        )}
+                        {item.type === "newsletter" && (
+                          <Mail className="h-5 w-5" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0 border-b border-slate-100 dark:border-slate-800 pb-4">
+                        <p className="text-sm font-black italic uppercase leading-none truncate group-hover:text-primary transition-colors">
+                          {item.title}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate font-medium mt-1.5">
+                          {item.description}
+                        </p>
+                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1.5 flex items-center gap-2">
+                          <span className="h-1 w-1 rounded-full bg-zinc-400" />
+                          {mounted
+                            ? formatDistanceToNow(new Date(item.time), {
+                                addSuffix: true,
+                              })
+                            : "Just now"}
+                        </p>
+                      </div>
+                    </motion.div>
+                  ))
+                )}
+              </div>
+            </div>
+          </SystemCard>
+        </div>
+      </div>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+        {/* Recent Orders - Clean Management UI */}
+        <div className="col-span-full lg:col-span-4">
+          <SystemCard
+            title="Recent Transmissions"
+            subtitle="Latest order signals received"
+            icon={<Package className="h-4 w-4" />}
+            className="h-full p-0"
+            action={
+              <Button
+                asChild
+                size="sm"
+                variant="outline"
+                className="font-bold border rounded-full uppercase tracking-widest text-[10px] h-7 px-4"
+              >
+                <Link href="/admin/orders" className="flex items-center gap-1">
+                  Log Book <ArrowUpRight className="h-3 w-3" />
+                </Link>
+              </Button>
+            }
+          >
+            <div className="overflow-hidden -mx-6 -my-6">
+              <Table>
+                <TableHeader className="bg-slate-50/50 dark:bg-slate-900/50">
+                  <TableRow className="border-b-0 hover:bg-transparent">
+                    <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] px-6 h-10 text-muted-foreground">
+                      Order
+                    </TableHead>
+                    <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] h-10 text-muted-foreground text-center">
+                      Identity
+                    </TableHead>
+                    <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] h-10 text-muted-foreground text-center">
+                      Status
+                    </TableHead>
+                    <TableHead className="text-right text-[10px] font-black uppercase tracking-[0.2em] pr-6 h-10 text-muted-foreground">
+                      Total
+                    </TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+                </TableHeader>
+                <TableBody>
+                  {recentOrders.map((order) => (
+                    <TableRow
+                      key={order.id}
+                      className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-800/50 group"
+                    >
+                      <TableCell className="font-mono text-[11px] text-zinc-500 group-hover:text-primary transition-colors flex items-center gap-2 px-6 py-4">
+                        <span className="h-1.5 w-1.5 rounded-full bg-zinc-300 group-hover:bg-primary transition-colors" />
+                        #{order.id.slice(0, 8).toUpperCase()}
+                      </TableCell>
+                      <TableCell className="text-center py-4">
+                        <span className="text-xs font-bold uppercase tracking-tight text-slate-700 dark:text-slate-300">
+                          {order.profiles?.name ||
+                            order.shipping_name ||
+                            "Anonymous"}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-center py-4">
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "uppercase text-[9px] font-bold px-2 py-0.5 rounded-md border",
+                            order.status === "paid" &&
+                              "bg-emerald-50 text-emerald-600 border-emerald-200",
+                            order.status === "pending" &&
+                              "bg-amber-50 text-amber-600 border-amber-200",
+                            order.status === "shipped" &&
+                              "bg-blue-50 text-blue-600 border-blue-200",
+                            order.status === "delivered" &&
+                              "bg-zinc-50 text-zinc-600 border-zinc-200",
+                          )}
+                        >
+                          {order.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right font-black italic pr-6 text-sm py-4 tabular-nums">
+                        ₹{order.total.toLocaleString()}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </SystemCard>
+        </div>
 
         {/* Hot Products & Vibe Share */}
         <div className="col-span-full lg:col-span-3 space-y-6">
-          <Card className="border-2 overflow-hidden">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-black uppercase tracking-tighter italic">
-                Hot Inventory
-              </CardTitle>
-              <CardDescription>Top performing drops.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <SystemCard
+            title="Hot Inventory"
+            subtitle="Top performing drops"
+            icon={<Zap className="h-4 w-4 text-amber-500" />}
+          >
+            <div className="space-y-4">
               {topProducts.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8 text-xs font-bold uppercase italic tracking-widest">
                   Awaiting Data...
@@ -599,7 +551,7 @@ export function DashboardClient({
                     key={product.id}
                     className="flex items-center gap-3 group"
                   >
-                    <div className="h-10 w-10 shrink-0 rounded-lg overflow-hidden border-2 group-hover:border-primary transition-colors relative">
+                    <div className="h-12 w-12 shrink-0 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800 relative shadow-sm">
                       {product.main_image_url ? (
                         <FlashImage
                           src={product.main_image_url}
@@ -609,7 +561,7 @@ export function DashboardClient({
                           className="object-cover group-hover:scale-110 transition-transform duration-500"
                         />
                       ) : (
-                        <div className="h-full w-full bg-muted flex items-center justify-center">
+                        <div className="h-full w-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
                           <Package className="h-4 w-4 opacity-20" />
                         </div>
                       )}
@@ -623,14 +575,14 @@ export function DashboardClient({
                           {product.sale_count} Sales
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 mt-1">
+                      <div className="flex items-center gap-2 mt-2">
                         <Badge
                           variant="secondary"
-                          className="text-[8px] h-4 py-0 font-black uppercase tracking-widest"
+                          className="text-[8px] h-4 py-0 font-bold uppercase tracking-widest bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
                         >
                           {product.categories?.name}
                         </Badge>
-                        <div className="flex-1 h-1 bg-zinc-100 rounded-full overflow-hidden">
+                        <div className="flex-1 h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                           <div
                             className="h-full bg-primary transition-all duration-1000 ease-out"
                             style={{
@@ -643,22 +595,18 @@ export function DashboardClient({
                   </div>
                 ))
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </SystemCard>
 
-          <Card className="border-2 overflow-hidden bg-zinc-50/50">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-black uppercase tracking-tighter italic">
-                Vibe Share
-              </CardTitle>
-              <CardDescription>
-                Category performance distribution.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex justify-center -mb-8">
+          <SystemCard
+            title="Vibe Share"
+            subtitle="Category performance"
+            icon={<Clock className="h-4 w-4 text-violet-500" />}
+          >
+            <div className="flex justify-center -my-4">
               <CategoryPieChart data={categoryData} />
-            </CardContent>
-          </Card>
+            </div>
+          </SystemCard>
         </div>
       </div>
     </div>

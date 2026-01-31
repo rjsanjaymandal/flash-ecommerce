@@ -18,8 +18,7 @@ export async function getCustomers(search: string = '', page: number = 1, limit:
 
   if (search) {
      const cleanSearch = search.trim()
-     // Search by name only as email/first_name/last_name don't exist in public profiles yet
-     query = query.ilike('name', `%${cleanSearch}%`)
+     query = query.or(`name.ilike.%${cleanSearch}%,email.ilike.%${cleanSearch}%`)
   }
 
   query = query.range(from, to)

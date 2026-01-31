@@ -144,38 +144,39 @@ export function AdminSidebar() {
               })}
             </nav>
           </div>
-        </div>
 
-        <div className="p-4 border-t border-slate-800/50 bg-[#0b1120]">
-          {mounted && (
-            <div className="flex items-center gap-3 mb-4 px-2">
-              <div className="h-10 w-10 rounded-full bg-linear-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-inner border-2 border-[#0f172a]">
-                {user?.email?.[0].toUpperCase() || "A"}
+          {/* User & Footer Actions (Merged into Scroll) */}
+          <div className="pt-6 mt-6 border-t border-slate-800/50">
+            {mounted && (
+              <div className="flex items-center gap-3 mb-4 px-2">
+                <div className="h-10 w-10 rounded-full bg-linear-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-inner border-2 border-[#0f172a]">
+                  {user?.email?.[0].toUpperCase() || "A"}
+                </div>
+                <div className="overflow-hidden">
+                  <p className="text-sm font-semibold text-white truncate">
+                    {user?.email?.split("@")[0] || "Admin"}
+                  </p>
+                  <p className="text-xs text-slate-500">Super Admin</p>
+                </div>
               </div>
-              <div className="overflow-hidden">
-                <p className="text-sm font-semibold text-white truncate">
-                  {user?.email?.split("@")[0] || "Admin"}
-                </p>
-                <p className="text-xs text-slate-500">Super Admin</p>
-              </div>
-            </div>
-          )}
+            )}
 
-          <button
-            onClick={() => signOut()}
-            className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-2.5 text-sm font-medium text-slate-300 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20 transition-all"
-          >
-            <LogOut className="h-4 w-4" />
-            Sign Out
-          </button>
-          <div className="mt-3 text-center">
-            <Link
-              href="/"
-              target="_blank"
-              className="text-xs text-indigo-400 hover:text-indigo-300 hover:underline flex items-center justify-center gap-1"
+            <button
+              onClick={() => signOut()}
+              className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-2.5 text-sm font-medium text-slate-300 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20 transition-all"
             >
-              View Live Store <ExternalLink className="h-3 w-3" />
-            </Link>
+              <LogOut className="h-4 w-4" />
+              Sign Out
+            </button>
+            <div className="mt-4 text-center pb-4">
+              <Link
+                href="/"
+                target="_blank"
+                className="text-xs text-indigo-400 hover:text-indigo-300 hover:underline flex items-center justify-center gap-1"
+              >
+                View Live Store <ExternalLink className="h-3 w-3" />
+              </Link>
+            </div>
           </div>
         </div>
       </div>
