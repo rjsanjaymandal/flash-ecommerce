@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useSearchStore } from "@/store/use-search-store";
-import { MegaMenu } from "./mega-menu";
+import { CategoryDropdown } from "./category-dropdown";
 import { HamburgerMenu } from "./hamburger-menu";
 import { SearchOverlay } from "@/components/storefront/search-overlay";
 import { NotificationBell } from "./notification-bell";
@@ -133,24 +133,16 @@ export function StorefrontNavbar() {
 
             {/* Desktop Nav */}
             <nav className="hidden lg:flex items-center gap-2">
-              {navLinks.map((link: NavLink) => (
-                <div key={link.href} className="group relative">
-                  <Link
-                    href={link.href}
-                    className="flex items-center gap-1.5 text-[13px] font-bold uppercase tracking-wider text-muted-foreground hover:text-primary transition-all px-4 py-2 hover:bg-primary/5 rounded-full"
-                  >
-                    {link.label}
-                    {link.children && link.children.length > 0 && (
-                      <ChevronDown className="h-3.5 w-3.5 opacity-50 group-hover:opacity-100 transition-opacity" />
-                    )}
-                  </Link>
-
-                  {/* Rich Mega Menu */}
-                  {link.children && link.children.length > 0 && (
-                    <MegaMenu category={link.category} />
-                  )}
-                </div>
-              ))}
+              <div className="group relative">
+                <Link
+                  href="/shop"
+                  className="flex items-center gap-1.5 text-[13px] font-bold uppercase tracking-wider text-muted-foreground hover:text-primary transition-all px-4 py-2 hover:bg-primary/5 rounded-full"
+                >
+                  Shop
+                  <ChevronDown className="h-3.5 w-3.5 opacity-50 group-hover:opacity-100 transition-opacity" />
+                </Link>
+                <CategoryDropdown categories={categories} />
+              </div>
               <Link
                 href="/lab"
                 className={cn(
