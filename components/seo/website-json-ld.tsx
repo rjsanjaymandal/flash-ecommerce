@@ -4,7 +4,7 @@ export function WebSiteJsonLd() {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "FLASH",
+    name: "Flash Fashion",
     url: "https://flashhfashion.in",
     potentialAction: {
       "@type": "SearchAction",
