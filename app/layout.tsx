@@ -37,8 +37,12 @@ export const metadata: Metadata = {
     template: "%s | Flash Fashion",
   },
   description:
-    "Flash Fashion - The ultimate destination for Flash Clothing and Anime Streetwear in India. Experience the Flash revolution with gender-neutral, cyberpunk, and intelligent nano-fabric apparel.",
+    "Flash Fashion - The ultimate clothing brand for best quality printed t-shirts and Anime Streetwear in India. Experience the Flash revolution with gender-neutral, cyberpunk, and intelligent nano-fabric apparel.",
   keywords: [
+    "clothing brand",
+    "best quality clothing",
+    "printed tshirts",
+    "best printed tshirts",
     "flash fashion",
     "flash clothing",
     "flash",

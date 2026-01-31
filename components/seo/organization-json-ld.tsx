@@ -1,9 +1,9 @@
-import { Organization, WithContext } from "schema-dts";
+import { ClothingStore, WithContext } from "schema-dts";
 
 export function OrganizationJsonLd() {
-  const jsonLd: WithContext<Organization> = {
+  const jsonLd: WithContext<ClothingStore> = {
     "@context": "https://schema.org",
-    "@type": "Organization",
+    "@type": "ClothingStore",
     name: "Flash Fashion",
     alternateName: "FLASH - Premium Anime Streetwear & Queer Clothing India",
     url: "https://flashhfashion.in",
@@ -13,10 +13,12 @@ export function OrganizationJsonLd() {
       "https://twitter.com/flashhfashion",
     ],
     description:
-      "Flash Fashion is India's premium streetwear brand at the intersection of Japanese anime aesthetic, queer fashion DNA, and intelligent nano-fabric engineering. Designed for all, regardless of gender.",
+      "Flash Fashion is India's premium streetwear brand offering best quality printed t-shirts, Japanese anime aesthetic, and intelligent nano-fabric engineering.",
     slogan: "Unapologetic Style. Intelligent Fabric. Fashion for All.",
     keywords:
-      "flash fashion, flash fashion india, anime streetwear, queer fashion, nano fabric, intelligent clothing, gender neutral fashion, harajuku aesthetic",
+      "clothing brand, printed tshirts, best quality clothing, anime streetwear, queer fashion, nano fabric",
+    priceRange: "₹500 - ₹5000",
+    paymentAccepted: "Cash, Credit Card, UPI",
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "customer service",

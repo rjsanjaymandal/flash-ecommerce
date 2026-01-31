@@ -24,6 +24,9 @@ const AsyncPersonalizedPicks = dynamic(() =>
     (mod) => mod.AsyncPersonalizedPicks,
   ),
 );
+const SeoContent = dynamic(() =>
+  import("@/components/storefront/seo-content").then((mod) => mod.SeoContent),
+);
 
 // Force rebuild
 
@@ -95,7 +98,10 @@ export default async function Home() {
         <AsyncPersonalizedPicks />
       </Suspense>
 
-      {/* 5. NEWSLETTER */}
+      {/* 6. SEO CONTENT (Why Choose Us) */}
+      <SeoContent />
+
+      {/* 7. NEWSLETTER */}
       <NewsletterSection />
     </div>
   );
