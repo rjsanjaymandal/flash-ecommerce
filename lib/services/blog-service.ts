@@ -30,12 +30,50 @@ export interface BlogPostMeta {
   content?: string
 }
 
+import { createAdminClient } from '@/lib/supabase/admin'
+
+/**
+ * Get all published blog posts using Admin Client (Safe for Static Generation / Sitemap)
+ * Does NOT use cookies()
+ */
+export const getStaticBlogPosts = async (): Promise<BlogPostMeta[]> => {
+  try {
+    const supabase = createAdminClient()
+    
+    // Note: Type assertion used until types are regenerated
+    const { data, error } = await (supabase as any)
+      .from('blog_posts')
+      .select('*')
+      .eq('is_published', true)
+      .order('published_at', { ascending: false })
+    
+    if (error) {
+      console.error('Error fetching static blog posts:', JSON.stringify(error, null, 2))
+      return []
+    }
+    
+    return (data || []).map((post: BlogPost) => ({
+      slug: post.slug,
+      title: post.title,
+      excerpt: post.excerpt || '',
+      coverImage: post.cover_image || '/blog/default-cover.jpg',
+      author: post.author,
+      publishedAt: post.published_at || post.created_at,
+      tags: post.tags || [],
+      featured: post.is_featured,
+    }))
+  } catch (error) {
+    console.error('Error reading static blog posts:', error)
+    return []
+  }
+}
+
 /**
  * Get all published blog posts
  */
 export const getBlogPosts = cache(async (): Promise<BlogPostMeta[]> => {
   try {
-    const supabase = await createClient()
+    const supabase = createAdminClient()
     
     const { data, error } = await (supabase as any)
       .from('blog_posts')
@@ -78,7 +116,7 @@ export const getFeaturedPosts = cache(async (): Promise<BlogPostMeta[]> => {
  */
 export const getBlogPost = cache(async (slug: string): Promise<BlogPostMeta | null> => {
   try {
-    const supabase = await createClient()
+    const supabase = createAdminClient()
     
     const { data: post, error } = await (supabase as any)
       .from('blog_posts')

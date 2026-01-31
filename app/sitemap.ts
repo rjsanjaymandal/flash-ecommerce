@@ -1,9 +1,9 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { MetadataRoute } from 'next'
-import { getBlogPosts } from '@/lib/services/blog-service'
+import { getStaticBlogPosts } from '@/lib/services/blog-service'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
   const baseUrl = 'https://flashhfashion.in'
 
   // Fetch all active products
@@ -21,7 +21,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }))
 
   // Fetch all blog posts
-  const blogPosts = await getBlogPosts()
+  const blogPosts = await getStaticBlogPosts()
   const blogUrls = blogPosts.map((post) => ({
     url: `${baseUrl}/blog/${post.slug}`,
     lastModified: new Date(post.publishedAt),
