@@ -5,7 +5,7 @@ import { ProductFormValues } from "@/lib/validations/product";
 import { updateProduct } from "@/lib/services/product-service";
 import { slugify } from "@/lib/slugify";
 import { useRouter } from "next/navigation";
-import { useMemo, useTransition } from "react";
+import { useTransition } from "react";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,27 +25,24 @@ export default function EditProductPageClient({
   const [isPending, startTransition] = useTransition();
 
   // Transform DB data to Form Data
-  const initialData: ProductFormValues = useMemo(
-    () => ({
-      name: product.name,
-      slug: product.slug,
-      description: product.description || "",
-      price: Number(product.price), // Ensure number
-      category_id: product.category_id || "",
-      main_image_url: product.main_image_url || "",
-      gallery_image_urls: product.gallery_image_urls || [],
-      expression_tags: product.expression_tags || [],
-      is_active: product.is_active ?? true,
-      is_carousel_featured: product.is_carousel_featured ?? false,
-      original_price: product.original_price,
-      variants: stock.map((s) => ({
-        size: s.size,
-        color: s.color,
-        quantity: s.quantity ?? 0,
-      })),
-    }),
-    [product, stock],
-  );
+  const initialData: ProductFormValues = {
+    name: product.name,
+    slug: product.slug,
+    description: product.description || "",
+    price: Number(product.price), // Ensure number
+    category_id: product.category_id || "",
+    main_image_url: product.main_image_url || "",
+    gallery_image_urls: product.gallery_image_urls || [],
+    expression_tags: product.expression_tags || [],
+    is_active: product.is_active ?? true,
+    is_carousel_featured: product.is_carousel_featured ?? false,
+    original_price: product.original_price,
+    variants: stock.map((s) => ({
+      size: s.size,
+      color: s.color,
+      quantity: s.quantity ?? 0,
+    })),
+  };
 
   const handleSubmit = (data: ProductFormValues) => {
     startTransition(async () => {

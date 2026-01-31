@@ -22,6 +22,7 @@ export const productSchema = z.object({
   }).optional(),
   expression_tags: z.array(z.string()),
   is_active: z.boolean(),
+  is_carousel_featured: z.boolean().default(false),
   variants: z.array(variantSchema)
 })
 

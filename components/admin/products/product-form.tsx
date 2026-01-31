@@ -107,7 +107,7 @@ export function ProductForm({
   // Form Initialization
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
-    defaultValues: {
+    defaultValues: initialData || {
       name: "",
       slug: "",
       description: "",
@@ -118,6 +118,7 @@ export function ProductForm({
       gallery_image_urls: [],
       expression_tags: [],
       is_active: true,
+      is_carousel_featured: false,
       images: undefined,
       variants: [],
     },
@@ -564,7 +565,7 @@ export function ProductForm({
               <CardHeader>
                 <CardTitle className="text-sm font-medium">Status</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4">
                 <FormField
                   control={control}
                   name="is_active"
@@ -573,6 +574,29 @@ export function ProductForm({
                       <div className="space-y-0.5">
                         <FormLabel className="text-base">Active</FormLabel>
                         <FormDescription>Store visibility.</FormDescription>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </div>
+                  )}
+                />
+
+                <FormField
+                  control={control}
+                  name="is_carousel_featured"
+                  render={({ field }) => (
+                    <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm bg-primary/5 border-primary/20">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base font-bold">
+                          Carousel Marketing
+                        </FormLabel>
+                        <FormDescription>
+                          Show in Hero Carousel.
+                        </FormDescription>
                       </div>
                       <FormControl>
                         <Switch

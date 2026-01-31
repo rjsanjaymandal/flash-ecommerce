@@ -14,12 +14,19 @@ import { Button } from "@/components/ui/button";
 import { Menu, LogOut, ExternalLink } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import { navItems, secondaryItems } from "./admin-sidebar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export function MobileAdminSidebar() {
   const pathname = usePathname();
   const { signOut, user } = useAuth();
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -76,7 +83,7 @@ export function MobileAdminSidebar() {
                       "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 group relative",
                       isActive
                         ? "bg-indigo-600 text-white shadow-md shadow-indigo-900/20"
-                        : "hover:bg-slate-800/50 hover:text-white"
+                        : "hover:bg-slate-800/50 hover:text-white",
                     )}
                   >
                     <item.icon
@@ -84,7 +91,7 @@ export function MobileAdminSidebar() {
                         "h-5 w-5 transition-transform group-hover:scale-110",
                         isActive
                           ? "text-indigo-200"
-                          : "text-slate-500 group-hover:text-slate-300"
+                          : "text-slate-500 group-hover:text-slate-300",
                       )}
                     />
                     {item.label}
@@ -111,7 +118,7 @@ export function MobileAdminSidebar() {
                       "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 group",
                       isActive
                         ? "bg-indigo-600/10 text-indigo-400"
-                        : "hover:bg-slate-800/50 hover:text-white"
+                        : "hover:bg-slate-800/50 hover:text-white",
                     )}
                   >
                     <item.icon
@@ -119,7 +126,7 @@ export function MobileAdminSidebar() {
                         "h-5 w-5",
                         isActive
                           ? "text-indigo-400"
-                          : "text-slate-500 group-hover:text-slate-300"
+                          : "text-slate-500 group-hover:text-slate-300",
                       )}
                     />
                     {item.label}

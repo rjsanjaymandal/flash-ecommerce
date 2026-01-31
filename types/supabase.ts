@@ -451,6 +451,7 @@ export type Database = {
           gallery_image_urls: string[] | null
           id: string
           is_active: boolean | null
+          is_carousel_featured: boolean | null
           main_image_url: string | null
           name: string
           price: number
@@ -468,6 +469,7 @@ export type Database = {
           gallery_image_urls?: string[] | null
           id?: string
           is_active?: boolean | null
+          is_carousel_featured?: boolean | null
           main_image_url?: string | null
           name: string
           price: number
@@ -485,6 +487,7 @@ export type Database = {
           gallery_image_urls?: string[] | null
           id?: string
           is_active?: boolean | null
+          is_carousel_featured?: boolean | null
           main_image_url?: string | null
           name?: string
           price?: number

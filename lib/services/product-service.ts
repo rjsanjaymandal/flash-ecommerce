@@ -38,6 +38,7 @@ export type ProductFilter = {
   max_price?: number
   size?: string
   color?: string
+  is_carousel_featured?: boolean
   ignoreStockSort?: boolean
 }
 
@@ -56,6 +57,10 @@ export type PaginatedResult<T> = {
 const applyProductFilters = (query: any, filter: ProductFilter) => {
     if (filter.is_active !== undefined) {
       query = query.eq('is_active', filter.is_active)
+    }
+
+    if (filter.is_carousel_featured !== undefined) {
+      query = query.eq('is_carousel_featured', filter.is_carousel_featured)
     }
 
     if (filter.category_id) {
@@ -320,6 +325,7 @@ function prepareProductData(data: ProductFormValues) {
     gallery_image_urls: data.gallery_image_urls || [],
     expression_tags: data.expression_tags || [],
     is_active: data.is_active ?? true,
+    is_carousel_featured: data.is_carousel_featured ?? false,
   }
 
   // Derive options from variants

@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useState } from "react";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -47,6 +48,11 @@ export const secondaryItems = [
 export function AdminSidebar() {
   const pathname = usePathname();
   const { signOut, user } = useAuth();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <aside className="fixed inset-y-0 left-0 z-20 hidden w-72 flex-col bg-[#0f172a] text-slate-300 transition-all duration-300 sm:flex shadow-xl print:hidden">
@@ -138,19 +144,20 @@ export function AdminSidebar() {
           </div>
         </div>
 
-        {/* Footer Actions */}
         <div className="p-4 border-t border-slate-800/50 bg-[#0b1120]">
-          <div className="flex items-center gap-3 mb-4 px-2">
-            <div className="h-10 w-10 rounded-full bg-linear-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-inner border-2 border-[#0f172a]">
-              {user?.email?.[0].toUpperCase() || "A"}
+          {mounted && (
+            <div className="flex items-center gap-3 mb-4 px-2">
+              <div className="h-10 w-10 rounded-full bg-linear-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-inner border-2 border-[#0f172a]">
+                {user?.email?.[0].toUpperCase() || "A"}
+              </div>
+              <div className="overflow-hidden">
+                <p className="text-sm font-semibold text-white truncate">
+                  {user?.email?.split("@")[0] || "Admin"}
+                </p>
+                <p className="text-xs text-slate-500">Super Admin</p>
+              </div>
             </div>
-            <div className="overflow-hidden">
-              <p className="text-sm font-semibold text-white truncate">
-                {user?.email?.split("@")[0] || "Admin"}
-              </p>
-              <p className="text-xs text-slate-500">Super Admin</p>
-            </div>
-          </div>
+          )}
 
           <button
             onClick={() => signOut()}
