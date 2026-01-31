@@ -1,0 +1,32 @@
+[
+  {
+    "slug": "flash-fashion-story",
+    "title": "The Flash Fashion Story: Where Anime Meets Streetwear",
+    "excerpt": "Discover how Flash Fashion was born from a passion for anime aesthetics, queer expression, and premium fabrics.",
+    "coverImage": "/blog/flash-story-cover.jpg",
+    "author": "Flash Fashion Team",
+    "publishedAt": "2026-01-15",
+    "tags": ["brand story", "anime fashion", "streetwear"],
+    "featured": true
+  },
+  {
+    "slug": "complete-the-look-anime-streetwear",
+    "title": "Complete the Look: How to Style Anime Streetwear in 2026",
+    "excerpt": "A comprehensive guide to layering, accessorizing, and owning the anime streetwear aesthetic.",
+    "coverImage": "/blog/style-guide-cover.jpg",
+    "author": "Flash Fashion Team",
+    "publishedAt": "2026-01-20",
+    "tags": ["style guide", "how to wear", "fashion tips"],
+    "featured": true
+  },
+  {
+    "slug": "nano-fabric-technology",
+    "title": "What is Nano-Fabric? The Science Behind Flash Fashion's Premium Materials",
+    "excerpt": "Explore the innovative fabric technology that makes Flash Fashion clothing durable, breathable, and ultra-comfortable.",
+    "coverImage": "/blog/nano-fabric-cover.jpg",
+    "author": "Flash Fashion Team",
+    "publishedAt": "2026-01-25",
+    "tags": ["technology", "materials", "innovation"],
+    "featured": false
+  }
+]

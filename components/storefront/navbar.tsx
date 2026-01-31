@@ -163,6 +163,17 @@ export function StorefrontNavbar() {
                 Lab
               </Link>
               <Link
+                href="/blog"
+                className={cn(
+                  "text-[13px] font-bold uppercase tracking-wider transition-all px-4 py-2 rounded-full",
+                  pathname?.startsWith("/blog")
+                    ? "text-primary bg-primary/10"
+                    : "text-muted-foreground hover:text-primary hover:bg-primary/5",
+                )}
+              >
+                Blog
+              </Link>
+              <Link
                 href="/contact"
                 className={cn(
                   "text-[13px] font-bold uppercase tracking-wider transition-all px-4 py-2 rounded-full",

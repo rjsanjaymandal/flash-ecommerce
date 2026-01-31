@@ -21,6 +21,7 @@ import {
   Bell,
   Terminal,
   Activity,
+  FileText,
 } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 
@@ -29,6 +30,7 @@ export const navItems = [
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
   { href: "/admin/products", label: "Products", icon: ShoppingBag },
+  { href: "/admin/blog", label: "Blog", icon: FileText },
   { href: "/admin/concepts", label: "Future Lab", icon: FlaskConical },
   { href: "/admin/coupons", label: "Coupons", icon: Ticket },
   { href: "/admin/categories", label: "Categories", icon: Layers },
