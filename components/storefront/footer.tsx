@@ -143,12 +143,12 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                {/* <Link
-                  href="/press"
+                <Link
+                  href="/flashh-fashion"
                   className="hover:text-primary transition-colors block py-1"
                 >
-                  Press
-                </Link> */}
+                  About FlashhFashion
+                </Link>
               </li>
               <li>
                 <Link
@@ -271,7 +271,7 @@ function FooterSection({
         <ChevronDown
           className={cn(
             "h-5 w-5 transition-transform duration-300",
-            isOpen && "rotate-180"
+            isOpen && "rotate-180",
           )}
         />
       </button>
