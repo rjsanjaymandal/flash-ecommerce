@@ -33,8 +33,8 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: "Flash Fashion | Flash Clothing & Premium Anime Streetwear India",
-    template: "%s | Flash Fashion",
+    default: "Flash Fashion (FlashhFashion) | Premium Anime Streetwear India",
+    template: "%s | Flash Fashion (FlashhFashion)",
   },
   description:
     "Flash Fashion - The ultimate clothing brand for best quality printed t-shirts and Anime Streetwear in India. Experience the Flash revolution with gender-neutral, cyberpunk, and intelligent nano-fabric apparel.",
@@ -43,8 +43,10 @@ export const metadata: Metadata = {
     "best quality clothing",
     "printed tshirts",
     "best printed tshirts",
+    "best printed tshirts",
     "flash fashion",
-    "flash clothing",
+    "flashhfashion",
+    "flashh fashion",
     "flash",
     "flash fashion india",
     "flash clothing brand",
@@ -57,6 +59,7 @@ export const metadata: Metadata = {
     "japanese streetwear",
     "premium clothing india",
     "streetwear for all",
+    "flashhfashion clothing",
   ],
   metadataBase: new URL("https://flashhfashion.in"),
   alternates: {

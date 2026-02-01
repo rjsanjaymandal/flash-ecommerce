@@ -10,9 +10,9 @@ export function SeoContent() {
             Why Flash Fashion is the Best Clothing Brand in India
           </h2>
           <p className="text-muted-foreground font-medium leading-relaxed">
-            Discover why thousands of rebels and trendsetters choose Flash
-            Fashion as their go-to destination for the **best quality clothing**
-            and **printed t-shirts**.
+            Discover why thousands of rebels and trendsetters choose
+            **FlashhFashion** (Flash Fashion) as their go-to destination for the
+            **best quality clothing** and **printed t-shirts**.
           </p>
         </div>
 
@@ -50,12 +50,12 @@ export function SeoContent() {
               <Zap className="h-6 w-6" />
             </div>
             <h3 className="text-lg font-bold uppercase tracking-tight mb-2">
-              Flash Fashion Revolution
+              The FlashhFashion Difference
             </h3>
             <p className="text-sm text-muted-foreground">
               More than just a **clothing brand**, we are a movement.
-              Gender-neutral, inclusive, and futuristic. Join the **Flash
-              Fashion** community today.
+              Gender-neutral, inclusive, and futuristic. Experience the **Flashh
+              Fashion** (FlashhFashion) community today.
             </p>
           </div>
         </div>

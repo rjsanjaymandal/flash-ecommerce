@@ -5,7 +5,11 @@ export function OrganizationJsonLd() {
     "@context": "https://schema.org",
     "@type": "ClothingStore",
     name: "Flash Fashion",
-    alternateName: "FLASH - Premium Anime Streetwear & Queer Clothing India",
+    alternateName: [
+      "FlashhFashion",
+      "Flashh Fashion India",
+      "FLASH - Premium Anime Streetwear & Queer Clothing India",
+    ],
     url: "https://flashhfashion.in",
     logo: "https://flashhfashion.in/icon.png",
     sameAs: [

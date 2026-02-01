@@ -91,8 +91,8 @@ export default async function Home() {
     <div className="min-h-screen bg-background text-foreground selection:bg-primary selection:text-primary-foreground pb-12">
       {/* SEO H1: Anime Streetwear Primary Keyword */}
       <h1 className="sr-only">
-        Flash Fashion | Flash Clothing, Anime Streetwear & Gender-Neutral
-        Apparel
+        FlashhFashion | Flash Fashion India - Anime Streetwear & Gender-Neutral
+        Clothing
       </h1>
 
       {/* 1. HERO CAROUSEL (Dynamic) */}
