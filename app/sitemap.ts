@@ -29,19 +29,45 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }))
 
+  // 3. Static Pages
+  const staticRoutes = [
+    '',
+    '/shop',
+    '/shop/new-arrivals',
+    '/shop/best-sellers',
+    '/blog',
+    '/about',
+    '/contact',
+    '/shipping',
+    '/returns',
+    '/privacy',
+    '/terms',
+  ].map((route) => ({
+    url: `${baseUrl}${route}`,
+    lastModified: new Date(),
+    changeFrequency: 'daily' as const,
+    priority: route === '' ? 1.0 : 0.8,
+  }))
+
+  // 4. Categories (Hardcoded for now to ensure coverage of key SEO pages)
+  const categories = [
+    'anime-streetwear',
+    'heavyweight-cotton',
+    'oversized-tees',
+    'hoodies',
+    'accessories',
+    'techwear'
+  ]
+  const categoryUrls = categories.map((cat) => ({
+    url: `${baseUrl}/shop/${cat}`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly' as const,
+    priority: 0.9,
+  }))
+
   return [
-    {
-      url: baseUrl,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 1.0,
-    },
-    {
-      url: `${baseUrl}/blog`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.9,
-    },
+    ...staticRoutes,
+    ...categoryUrls,
     ...productUrls,
     ...blogUrls,
   ]
