@@ -24,6 +24,11 @@ const AsyncPersonalizedPicks = dynamic(() =>
     (mod) => mod.AsyncPersonalizedPicks,
   ),
 );
+const BlueprintSection = dynamic(() =>
+  import("@/components/storefront/blueprint-section").then(
+    (mod) => mod.BlueprintSection,
+  ),
+);
 const SeoContent = dynamic(() =>
   import("@/components/storefront/seo-content").then((mod) => mod.SeoContent),
 );
@@ -53,6 +58,7 @@ function GridSkeleton() {
 
 import {
   getFeaturedProducts,
+  getProducts,
   type Product,
 } from "@/lib/services/product-service";
 import { getSmartCarouselData } from "@/lib/data/get-smart-carousel";
@@ -72,6 +78,13 @@ export default async function Home() {
     heroProducts = await getSmartCarouselData();
   } catch (error) {
     console.error("[Home] Failed to fetch carousel data:", error);
+  }
+
+  // Fetch Random Product for Blueprint Section (Dynamic from Carousel)
+  let blueprintProduct = null;
+  if (heroProducts.length > 0) {
+    const randomIndex = Math.floor(Math.random() * heroProducts.length);
+    blueprintProduct = heroProducts[randomIndex];
   }
 
   return (
@@ -97,6 +110,9 @@ export default async function Home() {
       <Suspense fallback={<GridSkeleton />}>
         <AsyncPersonalizedPicks />
       </Suspense>
+
+      {/* 5.5. THE BLUEPRINT (Quality Tech Specs) */}
+      <BlueprintSection product={blueprintProduct} />
 
       {/* 6. SEO CONTENT (Why Choose Us) */}
       <SeoContent />
