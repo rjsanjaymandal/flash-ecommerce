@@ -3,7 +3,6 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { SITE_URL } from '@/lib/constants'
 
 export async function updateSession(request: NextRequest) {
-  console.log('[Middleware] Running for path:', request.nextUrl.pathname)
   // 1. Create an initial response
   let response = NextResponse.next({
     request: {
@@ -13,7 +12,6 @@ export async function updateSession(request: NextRequest) {
 
   // 2. Create the Supabase client
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    console.warn('[Middleware] Supabase env vars missing, skipping session update');
     return response;
   }
 
@@ -49,7 +47,7 @@ export async function updateSession(request: NextRequest) {
 
   // 3. Refresh the session
   const { data: { user }, error } = await supabase.auth.getUser()
-  console.log('[Middleware] User:', user?.id, 'Error:', error?.message)
+
 
   // 4. Protected Routes
   if (request.nextUrl.pathname.startsWith('/admin')) {
@@ -66,13 +64,11 @@ export async function updateSession(request: NextRequest) {
         .single()
 
       if (profileError || !profile) {
-          console.error('[Middleware] Profile fetch failed for user:', user.id, profileError?.message)
           const redirectUrl = new URL('/', SITE_URL)
           return NextResponse.redirect(redirectUrl)
       }
 
       if (profile.role !== 'admin') {
-          console.warn('[Middleware] Non-admin access denied:', { userId: user.id, role: profile.role })
           const redirectUrl = new URL('/', SITE_URL)
           return NextResponse.redirect(redirectUrl)
       }
