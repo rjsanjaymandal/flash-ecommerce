@@ -299,17 +299,23 @@ export const useCartStore = create<CartState>()(
             const [cartRes, savedRes] = await Promise.all([
                 supabase
                     .from('cart_items')
-                    .select('id, product_id, quantity, size, color, product:products(name, price, main_image_url, slug, category_id)')
+                    .select('id, product_id, quantity, size, color, product:products(name, price, main_image_url, slug, category_id, product_stock(size, color, quantity))')
                     .eq('user_id', userId),
                 supabase
                     .from('wishlist_items')
-                    .select('id, product_id, product:products(name, price, main_image_url, slug, category_id)')
+                    .select('id, product_id, product:products(name, price, main_image_url, slug, category_id, product_stock(size, color, quantity))')
                     .eq('user_id', userId)
             ])
 
             if (cartRes.error) {
                 console.error("[CartSync] Failed to fetch server cart:", cartRes.error)
                 return
+            }
+
+            // Helper to find stock
+            const getStockLimit = (product: any, size: string, color: string) => {
+                const stock = product?.product_stock?.find((s: any) => s.size === size && s.color === color)
+                return stock?.quantity ?? 10
             }
 
             interface CartDBItem {
@@ -324,6 +330,7 @@ export const useCartStore = create<CartState>()(
                     main_image_url: string
                     slug: string
                     category_id: string
+                    product_stock: { size: string, color: string, quantity: number }[]
                 } | null
             }
 
@@ -336,6 +343,7 @@ export const useCartStore = create<CartState>()(
                     main_image_url: string
                     slug: string
                     category_id: string
+                    product_stock: { size: string, color: string, quantity: number }[]
                 } | null
             }
 
@@ -351,24 +359,30 @@ export const useCartStore = create<CartState>()(
                 size: dbItem.size || '',
                 color: dbItem.color || '',
                 quantity: dbItem.quantity,
-                maxQuantity: 10,
+                maxQuantity: getStockLimit(dbItem.product, dbItem.size, dbItem.color),
                 slug: dbItem.product?.slug || '',
                 categoryId: dbItem.product?.category_id || ''
             })).filter(i => i.price > 0 && i.slug && i.categoryId)
 
-            const serverSavedItems: CartItem[] = serverSavedRaw.map((dbItem) => ({
-                id: dbItem.id,
-                productId: dbItem.product_id,
-                name: dbItem.product?.name || 'Unknown Product',
-                price: Number(dbItem.product?.price || 0),
-                image: dbItem.product?.main_image_url || null,
-                size: 'Universal', // Clearer than 'Standard' for generic wishlist items
-                color: 'N/A',
-                quantity: 1,
-                maxQuantity: 10,
-                slug: dbItem.product?.slug || '',
-                categoryId: dbItem.product?.category_id || ''
-            })).filter(i => i.price > 0 && i.slug && i.categoryId)
+            const serverSavedItems: CartItem[] = serverSavedRaw.map((dbItem) => {
+                const stock = dbItem.product?.product_stock || []
+                // If single variant, use it. Otherwise, default to Universal.
+                const singleVariant = stock.length === 1 ? stock[0] : null
+                
+                return {
+                    id: dbItem.id,
+                    productId: dbItem.product_id,
+                    name: dbItem.product?.name || 'Unknown Product',
+                    price: Number(dbItem.product?.price || 0),
+                    image: dbItem.product?.main_image_url || null,
+                    size: singleVariant ? singleVariant.size : 'Universal', 
+                    color: singleVariant ? singleVariant.color : 'N/A',
+                    quantity: 1,
+                    maxQuantity: singleVariant ? singleVariant.quantity : 10,
+                    slug: dbItem.product?.slug || '',
+                    categoryId: dbItem.product?.category_id || ''
+                }
+            }).filter(i => i.price > 0 && i.slug && i.categoryId)
 
             // 2. Intelligent Merge
             const localItems = get().items

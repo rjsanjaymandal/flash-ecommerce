@@ -211,7 +211,14 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: SupabaseCli
     // 4. Fetch Details
     const { data: details, error: detailError } = await supabase
         .from('products')
-        .select('*, categories(name), product_stock(*), preorders(count)')
+        .select(`
+            id, name, slug, price, original_price, main_image_url, 
+            gallery_image_urls, is_active, is_carousel_featured, category_id, created_at,
+            categories(name), 
+            product_stock(*), 
+            preorders(count),
+            reviews(rating)
+        `)
         .in('id', targetIds)
     
     if (detailError) throw detailError
@@ -219,7 +226,7 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: SupabaseCli
     // Re-order details to match the sorted slice
     const orderedData = targetIds
         .map((id: string) => details?.find((d) => d.id === id))
-        .filter(Boolean) as Product[]
+        .filter(Boolean) as unknown as Product[]
         
     const processedData = (orderedData || []).map(formatProduct)
 
@@ -583,20 +590,30 @@ export async function getRelatedProducts(product: Product): Promise<Product[]> {
                  // Try to find items with overlapping tags
                  const { data } = await supabase
                     .from('products')
-                    .select('*, categories(name), product_stock(*), reviews(rating)')
+                    .select(`
+                        id, name, slug, price, original_price, main_image_url, 
+                        gallery_image_urls, is_active, is_carousel_featured, category_id, 
+                        expression_tags, created_at,
+                        categories(name), product_stock(*), reviews(rating)
+                    `)
                     .overlaps('expression_tags', tags)
                     .neq('id', product.id)
                     .eq('is_active', true)
                     .limit(limit)
                  
-                 candidates = data || []
+                 candidates = (data as unknown as Product[]) || []
             }
 
             // If we don't have enough candidates, fill with category matches
             if (candidates.length < 4 && product.category_id) {
                 const { data: filler } = await supabase
                     .from('products')
-                    .select('*, categories(name), product_stock(*), reviews(rating)')
+                    .select(`
+                        id, name, slug, price, original_price, main_image_url, 
+                        gallery_image_urls, is_active, is_carousel_featured, category_id, 
+                        expression_tags, created_at,
+                        categories(name), product_stock(*), reviews(rating)
+                    `)
                     .eq('category_id', product.category_id)
                     .neq('id', product.id)
                     .eq('is_active', true)
@@ -606,7 +623,7 @@ export async function getRelatedProducts(product: Product): Promise<Product[]> {
                 const existingIds = new Set(candidates.map(c => c.id))
                 ;(filler || []).forEach((item: any) => {
                     if (!existingIds.has(item.id)) {
-                        candidates.push(item)
+                        candidates.push(item as unknown as Product)
                     }
                 })
             }
@@ -636,7 +653,8 @@ export async function getRelatedProducts(product: Product): Promise<Product[]> {
             scored.sort((a, b) => b.score - a.score)
 
             // Take top 4 for the UI
-            const finalProducts = scored.slice(0, 4).map((s) => s.item as Product)
+            // Take top 4 for the UI
+            const finalProducts = scored.slice(0, 4).map((s) => s.item as unknown as Product)
 
             return finalProducts.map((p) => {
                 const ratings = p.reviews?.map((r) => r.rating).filter((r): r is number => r !== null) || []
