@@ -11,20 +11,41 @@ CREATE TABLE IF NOT EXISTS public.notifications (
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
+-- Ensure columns exist (if table existed but columns didn't)
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='notifications' AND column_name='type') THEN
+        ALTER TABLE public.notifications ADD COLUMN type TEXT CHECK (type IN ('info', 'success', 'warning', 'error')) DEFAULT 'info';
+    END IF;
+END $$;
+
 -- Enable RLS
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 
 -- Policies
+DROP POLICY IF EXISTS "Users can view own notifications" ON public.notifications;
 CREATE POLICY "Users can view own notifications"
     ON public.notifications FOR SELECT
     USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update own notifications" ON public.notifications;
 CREATE POLICY "Users can update own notifications"
     ON public.notifications FOR UPDATE
     USING (auth.uid() = user_id);
 
 -- Enable Realtime
-ALTER PUBLICATION supabase_realtime ADD TABLE public.notifications;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_publication_tables
+    WHERE pubname = 'supabase_realtime'
+    AND schemaname = 'public'
+    AND tablename = 'notifications'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.notifications;
+  END IF;
+END $$;
 
 -- Index for performance
 CREATE INDEX IF NOT EXISTS idx_notifications_user_unread 

@@ -14,6 +14,9 @@ GENERATED ALWAYS AS (
 CREATE INDEX IF NOT EXISTS idx_products_search ON public.products USING GIN (search_vector);
 
 -- 2. Advanced Search RPC
+-- Use DROP FUNCTION to handle potential signature changes or conflicts
+DROP FUNCTION IF EXISTS search_products_v2(TEXT, INTEGER);
+
 CREATE OR REPLACE FUNCTION search_products_v2(
   query_text TEXT, 
   limit_val INTEGER DEFAULT 5
@@ -52,6 +55,8 @@ GRANT EXECUTE ON FUNCTION search_products_v2(TEXT, INTEGER) TO public;
 
 -- 3. Trending Products Algorithm
 -- Score = (Sales * 2) + (Review Count * 0.5) + (Average Rating * 10)
+DROP FUNCTION IF EXISTS get_trending_products(INTEGER);
+
 CREATE OR REPLACE FUNCTION get_trending_products(limit_val INTEGER DEFAULT 10)
 RETURNS SETOF public.products AS $$
 BEGIN

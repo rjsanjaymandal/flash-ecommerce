@@ -31,9 +31,11 @@ alter table public.concepts enable row level security;
 alter table public.concept_votes enable row level security;
 
 -- 5. Policies for concepts
+drop policy if exists "Public read concepts" on public.concepts;
 create policy "Public read concepts" on public.concepts
   for select using (true);
 
+drop policy if exists "Admin manage concepts" on public.concepts;
 create policy "Admin manage concepts" on public.concepts
   for all using (
     exists (
@@ -43,12 +45,15 @@ create policy "Admin manage concepts" on public.concepts
   );
 
 -- 6. Policies for concept_votes
+drop policy if exists "Public read votes" on public.concept_votes;
 create policy "Public read votes" on public.concept_votes
   for select using (true);
 
+drop policy if exists "Users insert own votes" on public.concept_votes;
 create policy "Users insert own votes" on public.concept_votes
   for insert with check (auth.uid() = user_id);
 
+drop policy if exists "Admin manage votes" on public.concept_votes;
 create policy "Admin manage votes" on public.concept_votes
   for all using (
     exists (

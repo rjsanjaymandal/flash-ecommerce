@@ -88,7 +88,7 @@ export function BlueprintSection({ product }: BlueprintSectionProps) {
           <div className="grid grid-cols-2 md:grid-cols-1 gap-3 p-4 md:p-0 md:block relative z-30 bg-zinc-950/50 md:bg-transparent">
             <BlueprintPoint
               label="Heavyweight"
-              value="270 GSM"
+              value="240 GSM"
               icon={Layers}
               position="md:top-1/4 md:left-[15%]"
               delay={0.3}

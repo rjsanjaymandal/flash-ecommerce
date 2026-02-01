@@ -3,6 +3,10 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 -- Create a robust search function using websearch_to_tsquery for natural language search
 -- and also ILIKE for partial matches as a fallback
+
+-- CRITICAL: Drop first because return type might have changed from previous migration
+DROP FUNCTION IF EXISTS search_products_v2(TEXT, INTEGER);
+
 CREATE OR REPLACE FUNCTION search_products_v2(
   query_text TEXT,
   limit_val INTEGER DEFAULT 10

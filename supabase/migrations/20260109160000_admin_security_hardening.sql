@@ -58,12 +58,14 @@ CREATE TABLE IF NOT EXISTS public.admin_audit_logs (
 ALTER TABLE public.admin_audit_logs ENABLE ROW LEVEL SECURITY;
 
 -- Only Admins can insert audit logs (via server actions)
+DROP POLICY IF EXISTS "Admins can insert audit logs" ON public.admin_audit_logs;
 CREATE POLICY "Admins can insert audit logs"
 ON public.admin_audit_logs
 FOR INSERT
 WITH CHECK (public.is_admin());
 
 -- Only Admins can view audit logs
+DROP POLICY IF EXISTS "Admins can view audit logs" ON public.admin_audit_logs;
 CREATE POLICY "Admins can view audit logs"
 ON public.admin_audit_logs
 FOR SELECT

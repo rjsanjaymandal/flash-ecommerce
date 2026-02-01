@@ -9,8 +9,8 @@ import type { Tables } from "@/types/supabase";
 type Category = Tables<"categories">;
 type Product = Tables<"products">;
 
-export const revalidate = 0;
-export const dynamic = "force-dynamic";
+export const revalidate = 900;
+// export const dynamic = "auto";
 
 export async function generateMetadata({
   params,

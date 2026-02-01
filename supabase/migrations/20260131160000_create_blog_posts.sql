@@ -29,12 +29,14 @@ CREATE INDEX IF NOT EXISTS idx_blog_posts_published_at ON public.blog_posts(publ
 ALTER TABLE public.blog_posts ENABLE ROW LEVEL SECURITY;
 
 -- Public read access for published posts
+DROP POLICY IF EXISTS "Public can read published posts" ON public.blog_posts;
 CREATE POLICY "Public can read published posts"
     ON public.blog_posts
     FOR SELECT
     USING (is_published = true);
 
 -- Admin full access
+DROP POLICY IF EXISTS "Admins can manage all posts" ON public.blog_posts;
 CREATE POLICY "Admins can manage all posts"
     ON public.blog_posts
     FOR ALL
@@ -54,6 +56,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS blog_posts_updated_at ON public.blog_posts;
 CREATE TRIGGER blog_posts_updated_at
     BEFORE UPDATE ON public.blog_posts
     FOR EACH ROW

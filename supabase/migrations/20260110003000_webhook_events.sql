@@ -17,6 +17,7 @@ ALTER TABLE public.webhook_events ENABLE ROW LEVEL SECURITY;
 GRANT ALL ON public.webhook_events TO service_role;
 GRANT SELECT ON public.webhook_events TO authenticated; -- Admins (via policy) might want to view
 
+DROP POLICY IF EXISTS "Admins can view webhook events" ON public.webhook_events;
 CREATE POLICY "Admins can view webhook events"
 ON public.webhook_events FOR SELECT
 USING (public.is_admin());

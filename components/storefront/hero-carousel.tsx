@@ -225,6 +225,8 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                 fill
                 className="object-cover lg:object-contain bg-zinc-50 dark:bg-zinc-950"
                 priority={true}
+                resizeMode="cover"
+                sizes="100vw"
               />
             )}
 

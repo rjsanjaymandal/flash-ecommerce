@@ -13,6 +13,7 @@ ADD COLUMN IF NOT EXISTS paid_amount NUMERIC DEFAULT 0,
 ADD COLUMN IF NOT EXISTS due_amount NUMERIC DEFAULT 0;
 
 -- 3. Add constraint for payment_method
+ALTER TABLE orders DROP CONSTRAINT IF EXISTS check_payment_method;
 ALTER TABLE orders 
 ADD CONSTRAINT check_payment_method 
 CHECK (payment_method IN ('PREPAID', 'COD', 'PARTIAL_COD'));

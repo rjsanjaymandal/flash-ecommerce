@@ -16,6 +16,7 @@ create index if not exists idx_app_events_status on app_events(status, created_a
 -- RLS: Only service role can access this (backend only)
 alter table app_events enable row level security;
 
+DROP POLICY IF EXISTS "Service Role Full Access" ON app_events;
 create policy "Service Role Full Access"
 on app_events
 for all

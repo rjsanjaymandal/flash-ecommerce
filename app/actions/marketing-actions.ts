@@ -7,12 +7,22 @@ import { WelcomeEmail } from '@/components/emails/welcome-email'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-export async function subscribeToNewsletter(formData: FormData) {
-  const email = formData.get('email') as string
+import { z } from 'zod';
 
-  if (!email || !email.includes('@')) {
-      return { error: 'Please enter a valid email address.' }
+const schema = z.object({
+  email: z.string().email('Please enter a valid email address.'),
+});
+
+export async function subscribeToNewsletter(formData: FormData) {
+  const parsed = schema.safeParse({
+    email: formData.get('email'),
+  });
+
+  if (!parsed.success) {
+      return { error: parsed.error.issues[0].message };
   }
+
+  const { email } = parsed.data;
 
   const supabase = await createClient()
 
