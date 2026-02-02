@@ -15,6 +15,8 @@ export interface BlogPost {
   published_at: string | null
   created_at: string
   updated_at: string
+  meta_title?: string | null
+  meta_description?: string | null
 }
 
 // Shorter alias for backward compatibility with file-based system
@@ -28,6 +30,8 @@ export interface BlogPostMeta {
   tags: string[]
   featured: boolean
   content?: string
+  meta_title?: string | null
+  meta_description?: string | null
 }
 
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -137,6 +141,8 @@ export const getBlogPost = cache(async (slug: string): Promise<BlogPostMeta | nu
       tags: post.tags || [],
       featured: post.is_featured,
       content: post.content,
+      meta_title: post.meta_title,
+      meta_description: post.meta_description,
     }
   } catch (error) {
     console.error(`Error reading blog post ${slug}:`, error)

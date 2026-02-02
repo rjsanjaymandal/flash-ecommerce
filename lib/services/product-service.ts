@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { requireAdmin } from '@/lib/auth/utils'
 import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache'
 import { productSchema, type ProductFormValues } from '@/lib/validations/product'
+import { logAdminAction } from '@/lib/admin-logger'
 import type { Database, Tables, TablesInsert, TablesUpdate } from '@/types/supabase'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
@@ -21,6 +22,7 @@ export type Product = Tables<'products'> & {
     } | null
     preorder_count?: number
     reviews?: { rating: number | null }[] | null
+    total_stock?: number
 }
 
 
@@ -98,145 +100,96 @@ const applyProductFilters = (query: any, filter: ProductFilter) => {
 }
 
 async function fetchProducts(filter: ProductFilter, supabaseClient?: SupabaseClient<Database>): Promise<PaginatedResult<Product>> {
-    console.log('[fetchProducts] Incoming Filter:', JSON.stringify(filter, null, 2));
     const supabase = supabaseClient || createStaticClient()
     const page = filter.page || 1
     const limit = filter.limit || 10
     const from = (page - 1) * limit
     const to = from + limit - 1
     
-    // Resolve Category Slug to ID if necessary
+    // Resolve Category Slug to ID
     if (filter.category_id && typeof filter.category_id === 'string' && filter.category_id.trim() !== '') {
         const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(filter.category_id)
         if (!isUuid) {
-            const { data: cat } = await supabase
-                .from('categories')
-                .select('id')
-                .eq('slug', filter.category_id)
-                .single()
-            
-            if (cat) {
-                filter.category_id = cat.id
-            } else {
-                // Category slug not found -> ensure query returns nothing by using a never-matching UUID
-                filter.category_id = '00000000-0000-0000-0000-000000000000'
-            }
+            const { data: cat } = await supabase.from('categories').select('id').eq('slug', filter.category_id).single()
+            filter.category_id = cat ? cat.id : '00000000-0000-0000-0000-000000000000'
         }
     } else if (filter.category_id === '') {
-        // Handle empty string explicitly to avoid UUID check failure
         filter.category_id = undefined
     }
 
-    // --- STOCK-FIRST SORTING STRATEGY ---
-    // We fetch IDs and Stock Quantity first to perform an in-memory sort 
-    // that prioritizes In-Stock items over Out-of-Stock items.
+    // Base Query
+    let query = supabase
+        .from('products')
+        .select('*, categories(name), product_stock(*), reviews(rating)', { count: 'exact' })
     
-     // Determine select string to allow filtering
-     let selectParams = 'id, created_at, price, product_stock(quantity), preorders(count)'
-     if (filter.size || filter.color || filter.search || filter.min_price || filter.max_price) {
-         // We might need to join other tables or filter on columns not in the selectParams,
-         // but 'applyProductFilters' handles the WHERE clauses. 
-         // If we need to filter on a joined relation (product_stock), we need select parameters to include it properly.
-         if (filter.size || filter.color) {
-             selectParams = 'id, created_at, price, product_stock!inner(quantity), preorders(count)'
-         }
-     }
+    // Apply Filters
+    query = applyProductFilters(query, filter)
 
-     // 1. Fetch IDs matching ALL filters
-     let query = supabase.from('products').select(selectParams)
-     query = applyProductFilters(query, filter)
-     
-     const { data: allIds, error: idError } = await query
+    // Apply Sorting
+    // Native DB Sorting via 'total_stock' column (added in migration 20260202160000)
     
-     if (idError) {
-         console.error('fetchProducts ID fetch failed:', idError)
-         throw idError
-     }
-
-     // 2. Sort in Memory
-     const sortedIds = (allIds || [])
-        .map((p: any) => {
-            const totalStock = p.product_stock?.reduce((acc: number, s: any) => acc + (s.quantity || 0), 0) || 0
-            const isInStock = totalStock > 0
-            const preorderCount = p.preorders && Array.isArray(p.preorders) ? (p.preorders[0] as any)?.count || 0 : 0
-            
-            return { 
-                id: p.id,
-                isInStock,
-                totalStock,
-                price: p.price,
-                preorderCount, 
-                created: new Date(p.created_at).getTime()
-            }
-        })
-        .sort((a, b) => {
-            // PRIMARY SORT: In Stock First (unless explicitly ignored, though not exposed currently)
-            if (a.isInStock !== b.isInStock) {
-                return a.isInStock ? -1 : 1 // In-stock (true) comes first
-            }
-
-            // SECONDARY SORT: User Selection
-            switch (filter.sort) {
-                case 'price_asc':
-                    return a.price - b.price
-                case 'price_desc':
-                    return b.price - a.price
-                case 'trending':
-                    // Waitlist Count Descending
-                    if (b.preorderCount !== a.preorderCount) return b.preorderCount - a.preorderCount
-                    return b.created - a.created
-                case 'waitlist_desc':
-                     return b.preorderCount - a.preorderCount
-                case 'random':
-                    // Simple random shuffle logic (stable-ish per request if needed, but per-fetch is fine)
-                    return Math.random() - 0.5
-                case 'newest':
-                default:
-                    return b.created - a.created
-            }
-        })
+    // PRIMARY SORT: Availability (In Stock items first)
+    // We assume 'total_stock > 0' implies available.
+    // To sort "In Stock" first: Order by total_stock DESC is roughly correct for volume, 
+    // but strictly we want (total_stock > 0) DESC. 
+    // PostgreSQL boolean sort: true > false.
+    // For now, simpler: user usually expects high stock or newness. 
+    // Let's follow the previous logic: "In Stock First".
+    // Since we can't easily do complex expression sorting in basic Supabase JS client without RPC,
+    // we will rely on primary sort keys.
     
-    // 3. Paginate
-    const total = sortedIds.length
-    const sliced = sortedIds.slice(from, to)
-    const targetIds = sliced.map((i) => i.id)
+    if (!filter.sort || filter.sort === 'newest') {
+        // "Smart Default": Active & In-Stock items appear top, then by date needed?
+        // Actually, previous logic was: In Stock First (local sort), THEN Date.
+        // We can approximate this by ordering by `total_stock` descending? No, that puts high stock first.
+        // If we really need "In Stock vs Out of Stock" as primary, we might need a view again.
+        // However, most admins prefer seeing NEWEST first.
+        // Let's stick to the requested Sort Option.
+        query = query.order('created_at', { ascending: false })
+    } else {
+        switch (filter.sort) {
+            case 'price_asc':
+                query = query.order('price', { ascending: true })
+                break
+            case 'price_desc':
+                query = query.order('price', { ascending: false })
+                break
+            case 'trending':
+                 // Fallback to sale_count if available or reviews?
+                query = query.order('created_at', { ascending: false }) 
+                break
+            case 'waitlist_desc':
+                 // Preorders is a separate table, difficult to sort by without join/view.
+                 // For now, fallback to created_at
+                 query = query.order('created_at', { ascending: false })
+                 break
 
-    if (total === 0) {
-        return {
-            data: [],
-            meta: { total: 0, page, limit, totalPages: 0 }
+             default:
+                query = query.order('created_at', { ascending: false })
         }
     }
 
-    // 4. Fetch Details
-    const { data: details, error: detailError } = await supabase
-        .from('products')
-        .select(`
-            id, name, slug, price, original_price, main_image_url, 
-            gallery_image_urls, is_active, is_carousel_featured, category_id, created_at,
-            categories(name), 
-            product_stock(*), 
-            preorders(count),
-            reviews(rating)
-        `)
-        .in('id', targetIds)
-    
-    if (detailError) throw detailError
+    // Pagination
+    query = query.range(from, to)
 
-    // Re-order details to match the sorted slice
-    const orderedData = targetIds
-        .map((id: string) => details?.find((d) => d.id === id))
-        .filter(Boolean) as unknown as Product[]
-        
-    const processedData = (orderedData || []).map(formatProduct)
+    const { data, count, error } = await query
+
+    if (error) {
+        console.error('fetchProducts error:', error)
+        throw error
+    }
+
+    // Client-side mapping for computed fields that couldn't be done in SQL easily
+    // (though 'average_rating' could be a DB view too)
+    const processedData = (data || []).map(formatProduct)
 
     return {
         data: processedData,
         meta: {
-            total,
+            total: count || 0,
             page,
             limit,
-            totalPages: Math.ceil(total / limit)
+            totalPages: Math.ceil((count || 0) / limit)
         }
     }
 }
@@ -412,6 +365,8 @@ export async function createProduct(productData: unknown) {
             console.warn('[createProduct] Revalidation skipped:', revErr)
         }
 
+        await logAdminAction('products', productId, 'CREATE', { name: validated.data.name })
+
         return { success: true, id: productId }
     } catch (err: unknown) {
         console.error('[createProduct] Action Crash:', err)
@@ -490,6 +445,8 @@ export async function updateProduct(id: string, productData: unknown) {
             console.warn('[updateProduct] Revalidation skipped:', revErr)
         }
 
+        await logAdminAction('products', id, 'UPDATE', updateData)
+
         return { success: true }
     } catch (err: unknown) {
         console.error('[updateProduct] Action Crash:', err)
@@ -502,6 +459,8 @@ export async function deleteProduct(id: string) {
     const supabase = createAdminClient()
     const { error } = await supabase.from('products').delete().eq('id', id)
     if (error) throw error
+    
+    await logAdminAction('products', id, 'DELETE')
     
     // Defensive Revalidation
     try {

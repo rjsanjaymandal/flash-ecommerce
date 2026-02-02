@@ -1,5 +1,7 @@
 "use client";
 
+import FlashImage from "@/components/ui/flash-image";
+
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/store/use-cart-store";
@@ -392,245 +394,214 @@ export function ProductDetailClient({
       />
 
       <div className="container mx-auto px-4 lg:px-8">
-        {/* Refined Breadcrumbs */}
-        <nav className="flex items-center text-xs lg:text-sm text-muted-foreground mb-8 lg:mb-12 overflow-x-auto whitespace-nowrap pb-2 scrollbar-hide">
+        {/* Refined Minimal Breadcrumbs */}
+        <nav className="flex items-center text-[10px] lg:text-xs text-muted-foreground mb-8 lg:mb-16 uppercase tracking-[0.2em] font-medium">
           <Link
             href="/"
-            className="hover:text-primary transition-colors shrink-0"
+            className="hover:text-foreground transition-colors shrink-0"
           >
             Home
           </Link>
-          <span className="mx-2 text-muted-foreground/40">/</span>
+          <span className="mx-3 text-border">/</span>
           <Link
             href="/shop"
-            className="hover:text-primary transition-colors shrink-0"
+            className="hover:text-foreground transition-colors shrink-0"
           >
             Shop
           </Link>
-
           {product.categories?.name && (
             <>
-              <span className="mx-2 text-muted-foreground/40">/</span>
+              <span className="mx-3 text-border">/</span>
               <Link
                 href={`/shop?category=${product.category_id}`}
-                className="hover:text-primary transition-colors shrink-0 font-medium text-foreground/80"
+                className="hover:text-foreground transition-colors shrink-0"
               >
                 {product.categories.name}
               </Link>
             </>
           )}
-
-          <span className="mx-2 text-muted-foreground/40">/</span>
-          <span className="font-bold text-foreground truncate max-w-[120px] sm:max-w-xs md:max-w-md">
-            {product.name}
-          </span>
         </nav>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 xl:gap-20">
-          {/* LEFT: Gallery (Takes 7 cols) */}
-          <div className="lg:col-span-7">
-            <ProductGallery
-              images={product.gallery_image_urls || []}
-              name={product.name}
-              mainImage={product.images?.desktop || product.main_image_url}
-            />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24">
+          {/* LEFT: Immersive Vertical Gallery (8 Cols) */}
+          <div className="lg:col-span-8 space-y-4">
+            {/* Mobile Carousel (Hidden on Desktop) */}
+            <div className="lg:hidden">
+              <ProductGallery
+                images={product.gallery_image_urls || []}
+                name={product.name}
+                mainImage={product.images?.desktop || product.main_image_url}
+              />
+            </div>
+
+            {/* Desktop Vertical Stack (Hidden on Mobile) */}
+            <div className="hidden lg:flex flex-col gap-4">
+              {[
+                product.images?.desktop || product.main_image_url,
+                ...(product.gallery_image_urls || []),
+              ]
+                .filter(Boolean)
+                .map((img, idx) => (
+                  <div
+                    key={idx}
+                    className="relative w-full aspect-[4/5] bg-neutral-50 overflow-hidden"
+                  >
+                    <FlashImage
+                      src={img}
+                      alt={`${product.name} - View ${idx + 1}`}
+                      fill
+                      className="object-cover"
+                      priority={idx < 2}
+                    />
+                  </div>
+                ))}
+            </div>
           </div>
 
-          {/* RIGHT: Product Info (Takes 5 cols) */}
-          <div className="lg:col-span-5 flex flex-col h-full pt-2 lg:sticky lg:top-24 self-start">
+          {/* RIGHT: Sticky "Control Center" (4 Cols) */}
+          <div className="lg:col-span-4 flex flex-col h-full pt-2 lg:sticky lg:top-8 self-start">
             <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="bg-card/50 backdrop-blur-sm rounded-none lg:p-0"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
             >
-              {/* Title & Price */}
-              <div className="border-b border-border/60 pb-8 mb-8">
-                <div className="flex justify-between items-start mb-4">
-                  <h1 className="text-4xl lg:text-5xl font-black tracking-tighter text-foreground uppercase leading-[0.9] max-w-[85%]">
-                    <span className="text-gradient">{product.name}</span>
-                  </h1>
-                  <ShareButton title={product.name} />
-                </div>
-                <div className="flex items-center justify-between">
+              {/* Header Info */}
+              <div className="mb-8">
+                <h1 className="text-2xl lg:text-3xl font-regular uppercase tracking-[0.1em] text-foreground leading-tight mb-2">
+                  {product.name}
+                </h1>
+
+                <div className="flex items-center justify-between mt-4">
                   <div className="flex flex-col">
-                    <p className="text-3xl font-black tracking-tighter text-foreground">
+                    <p className="text-xl font-medium tracking-wide text-foreground">
                       {formatCurrency(product.price)}
                     </p>
-                    {discountPercent && (
-                      <div className="flex items-center gap-2 mt-1">
-                        <p className="text-lg text-muted-foreground line-through decoration-red-500/30 decoration-2 font-medium">
+                    {!!product.original_price &&
+                      product.original_price > product.price && (
+                        <p className="text-xs text-muted-foreground line-through decoration-transparent tracking-wider mt-0.5">
                           {formatCurrency(product.original_price)}
                         </p>
-                        <span className="bg-red-500/10 text-red-500 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider">
-                          Save {discountPercent}%
-                        </span>
-                      </div>
-                    )}
-                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest mt-1">
-                      Inclusive of all taxes
-                    </p>
+                      )}
                   </div>
 
+                  {/* Quiet Review Count */}
                   {initialReviews.count > 0 && (
-                    <div className="flex flex-col items-end">
-                      <div className="flex items-center gap-1.5 text-amber-400">
-                        <Star className="h-4 w-4 fill-current" />
-                        <span className="font-black text-lg text-foreground">
-                          {initialReviews.average}
-                        </span>
-                      </div>
-                      <Link
-                        href="#reviews"
-                        className="text-[10px] bg-muted px-2 py-1 rounded-full font-bold uppercase tracking-widest text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors"
-                      >
+                    <Link
+                      href="#reviews"
+                      className="flex items-center gap-1 text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors group"
+                    >
+                      <Star className="w-3 h-3 text-foreground" />
+                      <span className="mt-0.5 border-b border-transparent group-hover:border-foreground">
                         {initialReviews.count} Reviews
-                      </Link>
-                    </div>
+                      </span>
+                    </Link>
                   )}
                 </div>
+
+                <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mt-6">
+                  Tax Included. Free Shipping.
+                </p>
               </div>
+
+              {/* Hype/Stock Tickers (Refined) */}
+              {viewerCount > 2 && (
+                <div className="flex items-center gap-2 mb-6 opacity-70">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">
+                    {viewerCount} viewing now
+                  </span>
+                </div>
+              )}
 
               {/* Selectors */}
-              <ProductSelectors
-                sizeOptions={sizeOptions}
-                colorOptions={colorOptions}
-                selectedSize={selectedSize}
-                selectedColor={selectedColor}
-                onSelectSize={(s) => {
-                  setSelectedSize(s);
-                  setQuantity(1);
-                  setSelectedColor("");
-                }}
-                onSelectColor={(c) => {
-                  setSelectedColor(c);
-                  setQuantity(1);
-                }}
-                onOpenSizeGuide={() => setIsSizeGuideOpen(true)}
-                isAvailable={isAvailable}
-                isSizeAvailable={isSizeAvailable}
-                getStock={getStock}
-              />
-
-              {/* Hype Badge: Live Viewers */}
-              {viewerCount > 1 && (
-                <motion.div
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="flex items-center gap-2 mb-4 text-xs font-bold text-red-500 animate-pulse"
-                >
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                  </span>
-                  {viewerCount} people are looking at this right now
-                </motion.div>
-              )}
-
-              {/* Low Stock Warning */}
-              {maxQty > 0 && maxQty < 5 && selectedSize && selectedColor && (
-                <motion.div
-                  initial={{ opacity: 0, y: -5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="p-3 mb-4 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center gap-3"
-                >
-                  <div className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-                  </div>
-                  <p className="text-xs font-bold uppercase tracking-wide text-amber-500">
-                    Hurry! Only {maxQty} left in this size.
-                  </p>
-                </motion.div>
-              )}
-
-              {/* Actions */}
-              <div className="space-y-6" ref={mainActionRef}>
-                <div className="flex flex-col gap-3">
-                  <div className="flex gap-3">
-                    <Button
-                      size="lg"
-                      className={cn(
-                        "flex-1 h-14 text-sm font-black uppercase tracking-[0.15em] rounded-xl shadow-lg hover:shadow-xl transition-all duration-300",
-                        isOutOfStock
-                          ? "bg-amber-400 text-amber-950 hover:bg-amber-500"
-                          : "bg-foreground text-background hover:bg-foreground/90 hover:scale-[1.01]",
-                      )}
-                      disabled={
-                        isOutOfStock
-                          ? isLoadingWaitlist
-                          : !selectedSize || !selectedColor
-                      }
-                      onClick={() =>
-                        isOutOfStock ? handlePreOrder() : handleAddToCart()
-                      }
-                    >
-                      {isOutOfStock ? (
-                        <span className="flex items-center gap-2">
-                          {isLoadingWaitlist ? (
-                            <span className="animate-pulse">Checking...</span>
-                          ) : (
-                            <>
-                              <Clock className="h-4 w-4" />
-                              {isOnWaitlist ? "On Waitlist" : "Join Waitlist"}
-                            </>
-                          )}
-                        </span>
-                      ) : (
-                        <span className="flex items-center gap-2">
-                          <Plus className="h-4 w-4" />
-                          Add to Bag
-                        </span>
-                      )}
-                    </Button>
-
-                    <Button
-                      size="lg"
-                      variant="outline"
-                      className={cn(
-                        "h-14 w-14 rounded-xl border-2 transition-all duration-300 px-0 shrink-0",
-                        isWishlisted
-                          ? "border-red-500/50 bg-red-500/5 text-red-500"
-                          : "hover:border-primary/30 hover:bg-primary/5",
-                      )}
-                      onClick={() =>
-                        isWishlisted
-                          ? removeItem(product.id)
-                          : addItem({
-                              productId: product.id,
-                              name: product.name,
-                              price: product.price,
-                              image: product.main_image_url,
-                              slug: product.slug || "",
-                            })
-                      }
-                    >
-                      <Heart
-                        className={cn(
-                          "h-5 w-5 transition-colors",
-                          isWishlisted
-                            ? "fill-red-500 stroke-red-500"
-                            : "text-foreground",
-                        )}
-                      />
-                    </Button>
-                  </div>
-
-                  {!isOutOfStock && (
-                    <Button
-                      size="lg"
-                      className="w-full h-14 text-sm font-black uppercase tracking-[0.15em] rounded-xl gradient-primary text-white shadow-xl shadow-primary/25 hover:shadow-primary/40 hover:scale-[1.01] transition-all"
-                      disabled={Boolean(!selectedSize || !selectedColor)}
-                      onClick={handleBuyNow}
-                    >
-                      Buy It Now
-                    </Button>
-                  )}
-                </div>
+              <div className="mb-8 border-t border-border/40 pt-8">
+                <ProductSelectors
+                  sizeOptions={sizeOptions}
+                  colorOptions={colorOptions}
+                  selectedSize={selectedSize}
+                  selectedColor={selectedColor}
+                  onSelectSize={(s) => {
+                    setSelectedSize(s);
+                    setQuantity(1);
+                    setSelectedColor("");
+                  }}
+                  onSelectColor={(c) => {
+                    setSelectedColor(c);
+                    setQuantity(1);
+                  }}
+                  onOpenSizeGuide={() => setIsSizeGuideOpen(true)}
+                  isAvailable={isAvailable}
+                  isSizeAvailable={isSizeAvailable}
+                  getStock={getStock}
+                />
               </div>
 
-              {/* Short Description Accordion */}
-              <div className="mt-8">
+              {/* Primary Actions */}
+              <div className="space-y-3 mb-12">
+                <Button
+                  size="lg"
+                  className={cn(
+                    "w-full h-12 text-xs font-bold uppercase tracking-[0.2em] rounded-none transition-all duration-300",
+                    isOutOfStock
+                      ? "bg-neutral-200 text-neutral-500 hover:bg-neutral-300"
+                      : "bg-foreground text-background hover:bg-foreground/90",
+                  )}
+                  disabled={
+                    isOutOfStock
+                      ? isLoadingWaitlist
+                      : !selectedSize || !selectedColor
+                  }
+                  onClick={() =>
+                    isOutOfStock ? handlePreOrder() : handleAddToCart()
+                  }
+                >
+                  {isOutOfStock
+                    ? isOnWaitlist
+                      ? "You're on the list"
+                      : "Join Waitlist"
+                    : "Add to Bag"}
+                </Button>
+
+                {!isOutOfStock && (
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="w-full h-12 text-xs font-bold uppercase tracking-[0.2em] rounded-none border-foreground text-foreground hover:bg-foreground hover:text-background transition-all"
+                    onClick={handleBuyNow}
+                    disabled={!selectedSize || !selectedColor}
+                  >
+                    Buy Now
+                  </Button>
+                )}
+
+                <button
+                  onClick={() =>
+                    isWishlisted
+                      ? removeItem(product.id)
+                      : addItem({
+                          productId: product.id,
+                          name: product.name,
+                          price: product.price,
+                          image: product.main_image_url,
+                          slug: product.slug || "",
+                        })
+                  }
+                  className="w-full py-2 flex items-center justify-center gap-2 text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <Heart
+                    className={cn(
+                      "w-3.5 h-3.5",
+                      isWishlisted
+                        ? "fill-red-500 text-red-500"
+                        : "text-current",
+                    )}
+                  />
+                  {isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
+                </button>
+              </div>
+
+              {/* Details Accordion (Clean List) */}
+              <div className="border-t border-border/40">
                 <ProductDescriptionAccordion
                   description={product.description}
                 />

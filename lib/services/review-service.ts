@@ -95,3 +95,39 @@ export async function approveReview(id: string, isApproved: boolean) {
         throw new Error('Review status update failed.')
     }
 }
+
+// Secure Review Creation with Verified Purchase Check
+export async function createReview(userId: string, productId: string, rating: number, comment: string) {
+    const supabase = await createClient()
+
+    // 1. Verify Purchase: Must have a PAID order containing this product
+    const { data: verifiedOrder } = await supabase
+        .from('order_items')
+        .select('order_id, orders!inner(status, user_id)')
+        .eq('product_id', productId)
+        .eq('orders.user_id', userId)
+        .in('orders.status', ['paid', 'delivered']) 
+        .limit(1)
+        .single()
+    
+    // 2. Insert Review (Mark as verified if order exists)
+    // Note: If you want to BLOCK non-buyers, throw error here.
+    // Use case: Allow all reviews, but tag verified ones? Or Block?
+    // Enterprise Strategy: Allow all, but prioritize Verified. 
+    // However, for "Verified Purchase" badge, we just store the boolean.
+    
+    const isVerified = !!verifiedOrder
+
+    const { error } = await supabase.from('reviews').insert({
+        user_id: userId,
+        product_id: productId,
+        rating,
+        comment,
+        is_verified: isVerified,
+        is_approved: false // Default to pending moderation
+    })
+
+    if (error) throw error
+    revalidatePath(`/product/${productId}`)
+    return { success: true, isVerified }
+}

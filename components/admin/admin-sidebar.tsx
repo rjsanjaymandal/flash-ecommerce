@@ -33,9 +33,9 @@ export const navItems = [
   { href: "/admin/blog", label: "Blog", icon: FileText },
   { href: "/admin/concepts", label: "Future Lab", icon: FlaskConical },
   { href: "/admin/coupons", label: "Coupons", icon: Ticket },
+  { href: "/admin/waitlist", label: "Waitlist", icon: Clock },
   { href: "/admin/categories", label: "Categories", icon: Layers },
   { href: "/admin/customers", label: "Customers", icon: User },
-  { href: "/admin/waitlist", label: "Waitlist", icon: Clock },
   { href: "/admin/reviews", label: "Reviews", icon: MessageSquare },
   { href: "/admin/notifications", label: "Notifications", icon: Bell },
 ];
