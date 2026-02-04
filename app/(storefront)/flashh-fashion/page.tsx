@@ -58,19 +58,19 @@ export default function FlashhFashionDefinitionPage() {
 
           <p className="lead text-xl md:text-2xl font-medium text-muted-foreground mb-12">
             You might have seen it written as <strong>Flash Fashion</strong> or{" "}
-            <strong>FlashhFashion</strong>. Is it a typo? No. It's a code.
+            <strong>FlashhFashion</strong>. Is it a typo? No. It&apos;s a code.
           </p>
 
           <hr className="my-12 border-zinc-200 dark:border-zinc-800" />
 
           <h2 className="text-3xl font-bold uppercase tracking-tight">
-            The Double 'H' Meaning
+            The Double &apos;H&apos; Meaning
           </h2>
           <p>
             <strong>FlashhFashion</strong> (pronounced <em>Flash-Fashion</em>)
-            is the official identity of India's fastest-growing Anime Streetwear
-            ecosystem. The extra 'H' isn't improper grammar—it stands for our
-            two core pillars:
+            is the official identity of India&apos;s fastest-growing Anime
+            Streetwear ecosystem. The extra &apos;H&apos; isn&apos;t improper
+            grammar—it stands for our two core pillars:
           </p>
 
           <div className="grid md:grid-cols-2 gap-6 my-12 not-prose">
@@ -79,9 +79,10 @@ export default function FlashhFashionDefinitionPage() {
                 01. Heavyweight
               </h3>
               <p className="text-muted-foreground">
-                We don't do cheap fabric. Every <strong>FlashhFashion</strong>{" "}
-                tee is crafted directly from 240-280 GSM French Terry Cotton. It
-                falls heavy, sits right, and lasts forever.
+                We don&apos;t do cheap fabric. Every{" "}
+                <strong>FlashhFashion</strong> tee is crafted directly from
+                240-280 GSM French Terry Cotton. It falls heavy, sits right, and
+                lasts forever.
               </p>
             </div>
             <div className="p-6 rounded-2xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
@@ -97,7 +98,7 @@ export default function FlashhFashionDefinitionPage() {
           </div>
 
           <h2 className="text-3xl font-bold uppercase tracking-tight">
-            Why "Flashh" Matters
+            Why &quot;Flashh&quot; Matters
           </h2>
           <p>
             In a world of fast fashion, <strong>FlashhFashion</strong> slows
@@ -107,8 +108,9 @@ export default function FlashhFashionDefinitionPage() {
           </p>
 
           <blockquote className="border-l-4 border-primary pl-6 py-2 my-8 italic text-xl">
-            "FlashhFashion is not just a brand name. It is a promise of quality
-            that weighs heavy on the body and light on the conscience."
+            &quot;FlashhFashion is not just a brand name. It is a promise of
+            quality that weighs heavy on the body and light on the
+            conscience.&quot;
           </blockquote>
 
           <h3 className="text-2xl font-bold uppercase mt-12">

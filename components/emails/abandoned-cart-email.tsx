@@ -42,7 +42,7 @@ export const AbandonedCartEmail = ({
               </div>
             </Section>
             <Heading className="text-black text-[24px] font-normal text-center p-0 my-[30px] mx-0">
-              It's still waiting for you...
+              It&apos;s still waiting for you...
             </Heading>
             <Text className="text-black text-[14px] leading-[24px]">
               Hey {userFirstname},
@@ -60,7 +60,7 @@ export const AbandonedCartEmail = ({
               </Button>
             </Section>
             <Text className="text-black text-[14px] leading-[24px]">
-              Don't let your style slip away.
+              Don&apos;t let your style slip away.
             </Text>
           </Container>
         </Body>

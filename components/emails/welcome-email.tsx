@@ -46,8 +46,9 @@ export const WelcomeEmail = ({
               Hello {userFirstname},
             </Text>
             <Text className="text-black text-[14px] leading-[24px]">
-              You're officially on the list. You'll be the first to know about
-              our new drops, exclusive collaborations, and flash sales.
+              You&apos;re officially on the list. You&apos;ll be the first to
+              know about our new drops, exclusive collaborations, and flash
+              sales.
             </Text>
             <Section className="text-center mt-[32px] mb-[32px]">
               <Button

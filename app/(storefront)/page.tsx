@@ -83,8 +83,8 @@ export default async function Home() {
   // Fetch Random Product for Blueprint Section (Dynamic from Carousel)
   let blueprintProduct = null;
   if (heroProducts.length > 0) {
-    const randomIndex = Math.floor(Math.random() * heroProducts.length);
-    blueprintProduct = heroProducts[randomIndex];
+    // Use the first product deterministically to avoid hydration errors
+    blueprintProduct = heroProducts[0];
   }
 
   return (

@@ -1,115 +1,165 @@
-import { cn } from "@/lib/utils"
-import { Flame } from "lucide-react"
-import { useState } from "react"
-import dynamic from "next/dynamic"
+import { cn } from "@/lib/utils";
+import { Flame } from "lucide-react";
+import { useState } from "react";
+import dynamic from "next/dynamic";
 
+interface SharedSelectorProps {
+  selected: string;
+  onSelect: (value: string) => void;
+  options: string[];
+  isAvailable: (value: string) => boolean;
+}
+
+interface SizeSelectorProps extends SharedSelectorProps {
+  onOpenSizeGuide: () => void;
+}
+
+type ColorSelectorProps = SharedSelectorProps;
+
+// Separate Size Selector
+export function ProductSizeSelector({
+  options,
+  selected,
+  onSelect,
+  isAvailable,
+  onOpenSizeGuide,
+}: SizeSelectorProps) {
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-baseline border-b border-black mb-4 pb-2">
+        <span className="text-xs uppercase tracking-widest font-medium text-black">
+          Select Size
+        </span>
+        <button
+          onClick={onOpenSizeGuide}
+          className="text-[10px] uppercase tracking-widest text-muted-foreground hover:text-black transition-colors"
+        >
+          Size Guide
+        </button>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {options.map((size) => {
+          const available = isAvailable(size);
+          const isSelected = selected === size;
+
+          return (
+            <button
+              key={size}
+              onClick={() => onSelect(size)}
+              disabled={!available}
+              className={cn(
+                "h-10 px-4 text-[11px] uppercase tracking-widest transition-all duration-200 border",
+                isSelected
+                  ? "border-black text-black font-medium"
+                  : "border-transparent text-neutral-500 hover:text-black hover:bg-neutral-50",
+                !available &&
+                  "opacity-30 cursor-not-allowed text-neutral-300 decoration-neutral-300 line-through",
+              )}
+            >
+              {size}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// Separate Color Selector (Visual Style)
+export function ProductColorSelector({
+  options,
+  selected,
+  onSelect,
+  isAvailable,
+}: ColorSelectorProps) {
+  return (
+    <div className="space-y-4">
+      <span className="text-xs uppercase tracking-widest font-medium text-black/60 block mb-2">
+        Variation: <span className="text-black">{selected || "Select"}</span>
+      </span>
+
+      <div className="flex flex-wrap gap-3">
+        {options.map((color) => {
+          // We normally would map color names to images here, for now using text blocks effectively
+          // In a real app we'd need color swatches or small images.
+          // For now, mimicking the "Visual Thumbnail" with a colored block or just style text.
+          // Screenshot shows small images. If we don't have images for colors specifically mapped,
+          // we'll stick to a clean text/block selector but style it premium.
+          const available = isAvailable(color);
+          const isSelected = selected === color;
+
+          return (
+            <button
+              key={color}
+              disabled={!available}
+              onClick={() => onSelect(color)}
+              className={cn(
+                "h-12 w-12 flex items-center justify-center text-[10px] uppercase tracking-tighter border transition-all duration-200",
+                isSelected
+                  ? "border-black bg-black text-white"
+                  : "border-black/10 hover:border-black text-black/80",
+                !available &&
+                  "opacity-40 cursor-not-allowed line-through diagonal-fractions",
+              )}
+            >
+              {/* Ideally this would be an image */}
+              {color.slice(0, 3)}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// Legacy export if needed, or composite for simple usage
 interface ProductSelectorsProps {
-    sizeOptions: string[]
-    colorOptions: string[]
-    selectedSize: string
-    selectedColor: string
-    onSelectSize: (size: string) => void
-    onSelectColor: (color: string) => void
-    onOpenSizeGuide: () => void
-    isAvailable: (size: string, color: string) => boolean
-    isSizeAvailable: (size: string) => boolean
-    getStock: (size: string, color: string) => number
+  sizeOptions: string[];
+  colorOptions: string[];
+  selectedSize: string;
+  selectedColor: string;
+  onSelectSize: (size: string) => void;
+  onSelectColor: (color: string) => void;
+  onOpenSizeGuide: () => void;
+  isAvailable: (size: string, color: string) => boolean;
+  isSizeAvailable: (size: string) => boolean;
+  getStock: (size: string, color: string) => number;
+  centered?: boolean;
 }
 
 export function ProductSelectors({
-    sizeOptions,
-    colorOptions,
-    selectedSize,
-    selectedColor,
-    onSelectSize,
-    onSelectColor,
-    onOpenSizeGuide,
-    isAvailable,
-    isSizeAvailable,
-    getStock
+  sizeOptions,
+  colorOptions,
+  selectedSize,
+  selectedColor,
+  onSelectSize,
+  onSelectColor,
+  onOpenSizeGuide,
+  isAvailable,
+  isSizeAvailable,
+  //   getStock,
+  centered = false,
 }: ProductSelectorsProps) {
-    
-    // Urgency Logic
-    const currentStock = getStock(selectedSize, selectedColor)
-    const showUrgency = selectedSize && selectedColor && currentStock > 0 && currentStock < 5
-
-    return (
-        <div className="space-y-10 mb-10">
-            {/* Size Selector */}
-            <div className="space-y-6">
-                <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-[0.3em]">
-                    <span className="text-primary italic">Select Size</span>
-                    <button 
-                        onClick={onOpenSizeGuide}
-                        className="underline hover:text-primary transition-colors opacity-60"
-                    >
-                        Size Guide
-                    </button>
-                </div>
-                <div className="grid grid-cols-4 sm:grid-cols-6 gap-3">
-                    {sizeOptions.map((size) => {
-                        const available = isSizeAvailable(size)
-                        const isSelected = selectedSize === size
-                        
-                        return (
-                            <button
-                                key={size}
-                                onClick={() => onSelectSize(size)}
-                                className={cn(
-                                    "h-14 w-full rounded-2xl border transition-all duration-300 text-sm font-black uppercase relative overflow-hidden",
-                                    isSelected
-                                        ? "border-primary bg-primary text-white shadow-xl shadow-primary/20 scale-105" 
-                                        : "border-border hover:border-primary/50 hover:bg-primary/5",
-                                    !available && "opacity-30 cursor-not-allowed grayscale"
-                                )}
-                            >
-                                {size}
-                                {!available && <div className="absolute inset-0 flex items-center justify-center opacity-20"><div className="w-full h-px bg-current rotate-45" /></div>}
-                            </button>
-                        )
-                    })}
-                </div>
-            </div>
-
-            {/* Color Selector */}
-            <div className="space-y-6">
-                <div className="flex justify-between items-center">
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary italic">Select Color</span>
-                    {showUrgency && (
-                        <div className="flex items-center gap-1.5 text-amber-500 animate-pulse">
-                            <Flame className="h-3.5 w-3.5 fill-current" />
-                            <span className="text-[10px] font-black uppercase tracking-widest">Only {currentStock} Left!</span>
-                        </div>
-                    )}
-                </div>
-                
-                <div className="flex flex-wrap gap-3">
-                    {colorOptions.map((color) => {
-                        const available = selectedSize 
-                            ? isAvailable(selectedSize, color)
-                            : true // If no size selected, show all colors as potentially available (or check if color exists in any size)
-
-                        const isSelected = selectedColor === color
-
-                        return (
-                            <button
-                                key={color}
-                                disabled={!!(selectedSize && !available)}
-                                onClick={() => onSelectColor(color)}
-                                className={cn(
-                                    "h-12 px-8 rounded-2xl border transition-all duration-300 text-[10px] font-black uppercase tracking-widest relative overflow-hidden",
-                                    isSelected 
-                                        ? "border-primary bg-primary text-white shadow-xl shadow-primary/20 scale-105" 
-                                        : "border-border hover:border-primary/50 hover:bg-primary/5",
-                                    (selectedSize && !available) && "opacity-30 cursor-not-allowed grayscale"
-                                )}
-                            >
-                                {color}
-                            </button>
-                        )
-                    })}
-                </div>
-            </div>
-        </div>
-    )
+  // Composite wrapper if used elsewhere
+  return (
+    <div className={cn("space-y-8", centered ? "text-center" : "")}>
+      <div className={centered ? "flex justify-center" : ""}>
+        <ProductColorSelector
+          options={colorOptions}
+          selected={selectedColor}
+          onSelect={onSelectColor}
+          isAvailable={(c) => true}
+        />
+      </div>
+      <div className={centered ? "flex justify-center" : ""}>
+        <ProductSizeSelector
+          options={sizeOptions}
+          selected={selectedSize}
+          onSelect={onSelectSize}
+          onOpenSizeGuide={onOpenSizeGuide}
+          isAvailable={isSizeAvailable}
+        />
+      </div>
+    </div>
+  );
 }

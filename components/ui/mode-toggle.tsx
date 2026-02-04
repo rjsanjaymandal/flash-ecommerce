@@ -19,7 +19,6 @@ export function ModeToggle() {
   const options = [
     { id: "light", label: "Atelier", icon: Sun },
     { id: "dark", label: "Cyber", icon: Moon },
-    { id: "system", label: "Auto", icon: Monitor },
   ];
 
   return (
@@ -36,7 +35,7 @@ export function ModeToggle() {
               "relative h-8 w-8 rounded-full transition-all flex items-center justify-center group sm:h-9 sm:w-9",
               isActive
                 ? "text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+                : "text-muted-foreground hover:text-foreground hover:bg-white/5",
             )}
             title={option.label}
           >
@@ -53,7 +52,7 @@ export function ModeToggle() {
                 "h-4 w-4 relative z-10 transition-transform duration-300 sm:h-4.5 sm:w-4.5",
                 isActive
                   ? "scale-110 rotate-0"
-                  : "group-hover:scale-110 opacity-70"
+                  : "group-hover:scale-110 opacity-70",
               )}
             />
           </button>

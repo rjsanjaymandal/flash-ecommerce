@@ -39,7 +39,7 @@ interface HamburgerMenuProps {
 
 export function HamburgerMenu({ categories }: HamburgerMenuProps) {
   const [open, setOpen] = useState(false);
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, isAdmin, signOut } = useAuth();
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -101,6 +101,28 @@ export function HamburgerMenu({ categories }: HamburgerMenuProps) {
                 </span>
                 <ChevronRight className="h-4 w-4 opacity-50 group-hover:translate-x-1 transition-transform" />
               </Link>
+
+              <Link
+                href="/lab"
+                onClick={() => setOpen(false)}
+                className="flex items-center justify-between p-3 rounded-xl hover:bg-accent text-muted-foreground hover:text-foreground transition-all group"
+              >
+                <span className="text-lg font-black uppercase tracking-tight">
+                  Lab
+                </span>
+                <ChevronRight className="h-4 w-4 opacity-50 group-hover:translate-x-1 transition-transform" />
+              </Link>
+
+              <Link
+                href="/contact"
+                onClick={() => setOpen(false)}
+                className="flex items-center justify-between p-3 rounded-xl hover:bg-accent text-muted-foreground hover:text-foreground transition-all group"
+              >
+                <span className="text-lg font-black uppercase tracking-tight">
+                  Contact
+                </span>
+                <ChevronRight className="h-4 w-4 opacity-50 group-hover:translate-x-1 transition-transform" />
+              </Link>
               {categories.map((cat) => (
                 <div key={cat.id}>
                   <Link
@@ -150,21 +172,34 @@ export function HamburgerMenu({ categories }: HamburgerMenuProps) {
                 Using Flash As
               </span>
               {user ? (
-                <Link href="/account" onClick={() => setOpen(false)}>
-                  <div className="flex items-center gap-4 p-3 rounded-2xl bg-background border border-border hover:border-primary/50 transition-colors">
-                    <div className="h-10 w-10 rounded-full gradient-primary flex items-center justify-center text-xs font-black text-white shrink-0">
-                      {user.email?.[0].toUpperCase()}
+                <>
+                  <Link href="/account" onClick={() => setOpen(false)}>
+                    <div className="flex items-center gap-4 p-3 rounded-2xl bg-background border border-border hover:border-primary/50 transition-colors">
+                      <div className="h-10 w-10 rounded-full gradient-primary flex items-center justify-center text-xs font-black text-white shrink-0">
+                        {user.email?.[0].toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-foreground uppercase tracking-tight truncate">
+                          {profile?.name || "Member"}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground font-medium truncate">
+                          {user.email}
+                        </p>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-bold text-foreground uppercase tracking-tight truncate">
-                        {profile?.name || "Member"}
-                      </p>
-                      <p className="text-[10px] text-muted-foreground font-medium truncate">
-                        {user.email}
-                      </p>
-                    </div>
-                  </div>
-                </Link>
+                  </Link>
+                  {isAdmin && (
+                    <Link
+                      href="/admin"
+                      onClick={() => setOpen(false)}
+                      className="block mt-3"
+                    >
+                      <Button className="w-full rounded-2xl bg-zinc-900 text-white border border-zinc-800 hover:bg-black font-black uppercase tracking-widest text-[10px] h-12 shadow-lg">
+                        Admin Dashboard
+                      </Button>
+                    </Link>
+                  )}
+                </>
               ) : (
                 <div className="grid grid-cols-2 gap-3">
                   <Link href="/login" onClick={() => setOpen(false)}>
@@ -179,6 +214,7 @@ export function HamburgerMenu({ categories }: HamburgerMenuProps) {
                   </Link>
                 </div>
               )}
+
               {user && (
                 <Button
                   variant="outline"

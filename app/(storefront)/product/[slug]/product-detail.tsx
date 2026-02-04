@@ -2,7 +2,7 @@
 
 import FlashImage from "@/components/ui/flash-image";
 
-import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/store/use-cart-store";
 import {
@@ -10,13 +10,16 @@ import {
   selectIsInWishlist,
 } from "@/store/use-wishlist-store";
 import { cn, formatCurrency, calculateDiscount } from "@/lib/utils";
-import { Star, Plus, Heart, Clock } from "lucide-react";
+import { Phone, MapPin, Package, RefreshCcw, Plus, Share2 } from "lucide-react"; // Icons for services
 import { toast } from "sonner";
 import Link from "next/link";
 import { togglePreorder } from "@/app/actions/preorder";
 import { ProductGallery } from "@/components/products/product-gallery";
-import { ProductSelectors } from "@/components/products/product-selectors";
-import { ProductDescriptionAccordion } from "@/components/products/product-description-accordion";
+import {
+  ProductColorSelector,
+  ProductSizeSelector,
+} from "@/components/products/product-selectors";
+
 import dynamic from "next/dynamic";
 
 const SizeGuideModal = dynamic(
@@ -26,10 +29,8 @@ const SizeGuideModal = dynamic(
     ),
   { ssr: false },
 );
-import { MobileStickyBar } from "@/components/storefront/mobile-sticky-bar";
+
 import { FAQJsonLd } from "@/components/seo/faq-json-ld";
-import { ShareButton } from "@/components/products/share-button";
-import { motion } from "framer-motion";
 import { RecommendedProducts } from "@/components/storefront/recommended-products";
 import { useRealTimeHype, StockItem } from "@/hooks/use-real-time-stock";
 import { useAuth } from "@/context/auth-context";
@@ -45,13 +46,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { motion } from "framer-motion";
 
 // Fallback Standards
 const STANDARD_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL"];
 
 // Types
-// type StockItem = { ... } // Replaced by import or compatible shape
-
 type ProductDetailProps = {
   product: {
     id: string;
@@ -104,21 +104,34 @@ export function ProductDetailClient({
   const [savedGuestEmail, _setSavedGuestEmail] = useState("");
   const [isUnjoinDialogOpen, setIsUnjoinDialogOpen] = useState(false);
 
+  const handleShare = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: product.name,
+          text: product.description,
+          url: window.location.href,
+        });
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        toast.success("Link copied to clipboard");
+      }
+    } catch (err) {
+      console.error("Error sharing:", err);
+    }
+  };
+
   const [showStickyBar, _setShowStickyBar] = useState(false);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
+  const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
 
   const { user } = useAuth();
 
   // Real-time Stock & Hype Check
-  // Renamed hook usage
-  const {
-    stock: realTimeStock,
-    loading: loadingStock,
-    viewerCount,
-  } = useRealTimeHype(product.id, product.product_stock);
-
-  // Ref for the main action button to sticky bar intersection
-  const mainActionRef = useRef<HTMLDivElement>(null);
+  const { stock: realTimeStock, loading: loadingStock } = useRealTimeHype(
+    product.id,
+    product.product_stock,
+  );
 
   // Helper to get or create guest ID
   const getGuestId = useCallback(() => {
@@ -147,26 +160,39 @@ export function ProductDetailClient({
       if (indexB !== -1) return 1;
       return a.localeCompare(b);
     });
-  }, [product.size_options, realTimeStock, STANDARD_SIZES]);
+  }, [product.size_options, realTimeStock]);
 
-  const discountPercent = useMemo(
-    () => calculateDiscount(product.price, product.original_price),
-    [product.price, product.original_price],
-  );
+  // Helper: Normalize color strings (fix typos, standard formatting)
+  const normalizeColor = (c: string) => {
+    if (!c) return "";
+    let clean = c.trim().toLowerCase().replace(/\s+/g, " ");
+    // Specific fixes based on user feedback
+    if (clean === "offf white") clean = "off white";
+    if (clean === "off-white") clean = "off white";
+    // Title Case for display
+    return clean
+      .split(" ")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+  };
 
-  const colorOptions = product.color_options?.length
-    ? product.color_options
-    : (Array.from(
-        new Set(realTimeStock?.map((s) => s.color) || ["Standard"]),
-      ).sort() as string[]);
+  const colorOptions = useMemo(() => {
+    const rawOptions = product.color_options?.length
+      ? product.color_options
+      : realTimeStock?.map((s) => s.color) || ["Standard"];
 
-  // Stock Logic
+    // Deduplicate based on normalized values
+    return Array.from(new Set(rawOptions.map(normalizeColor))).sort();
+  }, [product.color_options, realTimeStock]);
+
+  // Stock Logic (Normalized)
   const stockMap = useMemo(() => {
     const map: Record<string, number> = {};
     if (!realTimeStock) return map;
     realTimeStock.forEach((item) => {
-      const key = `${item.size}-${item.color}`;
-      map[key] = item.quantity;
+      // Use normalized color for the key to merge duplicates
+      const key = `${item.size}-${normalizeColor(item.color)}`;
+      map[key] = (map[key] || 0) + item.quantity;
     });
     return map;
   }, [realTimeStock]);
@@ -182,10 +208,10 @@ export function ProductDetailClient({
 
   const getStock = (size: string, color: string) =>
     stockMap[`${size}-${color}`] || 0;
-  const isAvailable = (size: string, color: string) =>
-    (stockMap[`${size}-${color}`] || 0) > 0;
+  //   const isAvailable = (size: string, color: string) =>
+  //     (stockMap[`${size}-${color}`] || 0) > 0;
   const isSizeAvailable = (size: string) =>
-    realTimeStock?.some((s) => s.size === size && s.quantity > 0);
+    realTimeStock?.some((s) => s.size === size && s.quantity > 0) ?? true;
 
   const maxQty = getStock(selectedSize, selectedColor);
 
@@ -195,38 +221,27 @@ export function ProductDetailClient({
   const isOutOfStock = isGlobalOutOfStock || isSelectionOutOfStock;
 
   // Handlers
-  // Handlers
   const handlePreOrder = async () => {
-    // OPTIMISTIC UI: If we think we are joined...
     if (isOnWaitlist) {
-      // GUEST HANDLING: No optimistic toggle. Just remind them.
       if (!user) {
         toast.info("You are already on the waitlist! (Guest)");
         return;
       }
-
-      // AUTH USER HANDLING: Ask for confirmation
       setIsUnjoinDialogOpen(true);
       return;
     }
-
-    // If NOT joined, proceed to join flow
     setIsLoadingWaitlist(true);
     try {
-      // Attempt 1: Try as logged in / existing session
       const result = await togglePreorder(product.id);
-
       if (
         result.error &&
         (result.error.includes("sign in") ||
           result.error.includes("identifying"))
       ) {
-        // Not logged in -> Open Dialog
         setIsWaitlistDialogOpen(true);
       } else if (result.error) {
         toast.error(result.error);
       } else {
-        // Logged in success
         setIsOnWaitlist(true);
         toast.success("Added to waitlist!");
         if (result.status === "added")
@@ -241,14 +256,12 @@ export function ProductDetailClient({
 
   const handleConfirmUnjoin = async () => {
     const previousState = true;
-    setIsOnWaitlist(false); // Optimistic remove
+    setIsOnWaitlist(false);
     toast.success("Removed from waitlist.");
-
     try {
       const result = await togglePreorder(product.id);
-
       if (result.error) {
-        setIsOnWaitlist(previousState); // Revert
+        setIsOnWaitlist(previousState);
         toast.dismiss();
         toast.error(result.error);
       } else {
@@ -289,11 +302,11 @@ export function ProductDetailClient({
     options = { openCart: true, showToast: true },
   ) => {
     if (!selectedSize || !selectedColor) {
-      toast.error("Please select a size and color");
+      toast.error("Select a size and color");
       return false;
     }
     if (maxQty <= 0) {
-      toast.error("Selected combination is out of stock");
+      toast.error("Out of stock");
       return false;
     }
     try {
@@ -314,7 +327,7 @@ export function ProductDetailClient({
       );
       return true;
     } catch (_err) {
-      toast.error("Failed to add to bag");
+      toast.error("Failed to add");
       return false;
     }
   };
@@ -324,289 +337,187 @@ export function ProductDetailClient({
     router.prefetch("/checkout");
   }, [router]);
 
-  const handleBuyNow = async () => {
-    if (!selectedSize || !selectedColor) {
-      toast.error("Please select a size and color");
-      return;
-    }
-
-    if (isOutOfStock) {
-      toast.error("Item is out of stock");
-      return;
-    }
-
-    // FIRE AND FORGET - Do not await DB sync
-    // State updates synchronously in Zustand before the remote sync
-    addToCart(
-      {
-        productId: product.id,
-        categoryId: product.category_id || "",
-        name: product.name,
-        price: product.price,
-        image: product.main_image_url,
-        size: selectedSize,
-        color: selectedColor,
-        quantity: quantity,
-        maxQuantity: maxQty,
-        slug: product.slug || "",
-      },
-      { openCart: false, showToast: false },
-    );
-
-    router.push("/checkout");
-  };
-
   // FAQ Data
   const faqData = [
     {
-      question: "What material is this?",
+      question: "Material",
       answer: "Premium Fabric Blend designed for comfort and durability.",
     },
     {
-      question: "How is the fit?",
+      question: "Fit",
       answer: "Relaxed, gender-neutral fit. True to size.",
-    },
-    {
-      question: "Shipping policy?",
-      answer:
-        "Free global shipping on orders over ₹2000. Processed in 24 hours.",
-    },
-    {
-      question: "Return policy?",
-      answer: "Returns accepted within 14 days of delivery.",
     },
   ];
 
   return (
-    <div className="min-h-screen bg-background pt-6 pb-20">
+    <div className="min-h-screen bg-background">
       <FAQJsonLd questions={faqData} />
-      <MobileStickyBar
-        isVisible={showStickyBar}
-        price={formatCurrency(product.price)}
-        isOutOfStock={Boolean(isOutOfStock)}
-        isOnWaitlist={isOnWaitlist}
-        disabled={
-          isOutOfStock ? isLoadingWaitlist : !selectedSize || !selectedColor
-        }
-        onAddToCart={handleAddToCart}
-        onBuyNow={handleBuyNow}
-        onPreOrder={handlePreOrder}
-      />
 
-      <div className="container mx-auto px-4 lg:px-8">
-        {/* Refined Minimal Breadcrumbs */}
-        <nav className="flex items-center text-[10px] lg:text-xs text-muted-foreground mb-8 lg:mb-16 uppercase tracking-[0.2em] font-medium">
-          <Link
-            href="/"
-            className="hover:text-foreground transition-colors shrink-0"
-          >
-            Home
-          </Link>
-          <span className="mx-3 text-border">/</span>
-          <Link
-            href="/shop"
-            className="hover:text-foreground transition-colors shrink-0"
-          >
-            Shop
-          </Link>
-          {product.categories?.name && (
-            <>
-              <span className="mx-3 text-border">/</span>
-              <Link
-                href={`/shop?category=${product.category_id}`}
-                className="hover:text-foreground transition-colors shrink-0"
-              >
-                {product.categories.name}
-              </Link>
-            </>
-          )}
-        </nav>
+      {/* GALLERY SECTION (Full Width) */}
+      <div className="w-full">
+        <ProductGallery
+          images={product.gallery_image_urls || []}
+          name={product.name}
+          mainImage={product.images?.desktop || product.main_image_url}
+        />
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24">
-          {/* LEFT: Immersive Vertical Gallery (8 Cols) */}
-          <div className="lg:col-span-8 space-y-4">
-            {/* Mobile Carousel (Hidden on Desktop) */}
-            <div className="lg:hidden">
-              <ProductGallery
-                images={product.gallery_image_urls || []}
-                name={product.name}
-                mainImage={product.images?.desktop || product.main_image_url}
-              />
-            </div>
-
-            {/* Desktop Vertical Stack (Hidden on Mobile) */}
-            <div className="hidden lg:flex flex-col gap-4">
-              {[
-                product.images?.desktop || product.main_image_url,
-                ...(product.gallery_image_urls || []),
-              ]
-                .filter(Boolean)
-                .map((img, idx) => (
-                  <div
-                    key={idx}
-                    className="relative w-full aspect-[4/5] bg-neutral-50 overflow-hidden"
-                  >
-                    <FlashImage
-                      src={img}
-                      alt={`${product.name} - View ${idx + 1}`}
-                      fill
-                      className="object-cover"
-                      priority={idx < 2}
-                    />
-                  </div>
-                ))}
-            </div>
-          </div>
-
-          {/* RIGHT: Sticky "Control Center" (4 Cols) */}
-          <div className="lg:col-span-4 flex flex-col h-full pt-2 lg:sticky lg:top-8 self-start">
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
-            >
-              {/* Header Info */}
-              <div className="mb-8">
-                <h1 className="text-2xl lg:text-3xl font-regular uppercase tracking-[0.1em] text-foreground leading-tight mb-2">
-                  {product.name}
-                </h1>
-
-                <div className="flex items-center justify-between mt-4">
-                  <div className="flex flex-col">
-                    <p className="text-xl font-medium tracking-wide text-foreground">
-                      {formatCurrency(product.price)}
-                    </p>
-                    {!!product.original_price &&
-                      product.original_price > product.price && (
-                        <p className="text-xs text-muted-foreground line-through decoration-transparent tracking-wider mt-0.5">
-                          {formatCurrency(product.original_price)}
-                        </p>
-                      )}
-                  </div>
-
-                  {/* Quiet Review Count */}
-                  {initialReviews.count > 0 && (
-                    <Link
-                      href="#reviews"
-                      className="flex items-center gap-1 text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors group"
-                    >
-                      <Star className="w-3 h-3 text-foreground" />
-                      <span className="mt-0.5 border-b border-transparent group-hover:border-foreground">
-                        {initialReviews.count} Reviews
-                      </span>
-                    </Link>
-                  )}
-                </div>
-
-                <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mt-6">
-                  Tax Included. Free Shipping.
-                </p>
-              </div>
-
-              {/* Hype/Stock Tickers (Refined) */}
-              {viewerCount > 2 && (
-                <div className="flex items-center gap-2 mb-6 opacity-70">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">
-                    {viewerCount} viewing now
-                  </span>
-                </div>
-              )}
-
-              {/* Selectors */}
-              <div className="mb-8 border-t border-border/40 pt-8">
-                <ProductSelectors
-                  sizeOptions={sizeOptions}
-                  colorOptions={colorOptions}
-                  selectedSize={selectedSize}
-                  selectedColor={selectedColor}
-                  onSelectSize={(s) => {
-                    setSelectedSize(s);
-                    setQuantity(1);
-                    setSelectedColor("");
-                  }}
-                  onSelectColor={(c) => {
-                    setSelectedColor(c);
-                    setQuantity(1);
-                  }}
-                  onOpenSizeGuide={() => setIsSizeGuideOpen(true)}
-                  isAvailable={isAvailable}
-                  isSizeAvailable={isSizeAvailable}
-                  getStock={getStock}
-                />
-              </div>
-
-              {/* Primary Actions */}
-              <div className="space-y-3 mb-12">
-                <Button
-                  size="lg"
-                  className={cn(
-                    "w-full h-12 text-xs font-bold uppercase tracking-[0.2em] rounded-none transition-all duration-300",
-                    isOutOfStock
-                      ? "bg-neutral-200 text-neutral-500 hover:bg-neutral-300"
-                      : "bg-foreground text-background hover:bg-foreground/90",
-                  )}
-                  disabled={
-                    isOutOfStock
-                      ? isLoadingWaitlist
-                      : !selectedSize || !selectedColor
-                  }
-                  onClick={() =>
-                    isOutOfStock ? handlePreOrder() : handleAddToCart()
-                  }
-                >
-                  {isOutOfStock
-                    ? isOnWaitlist
-                      ? "You're on the list"
-                      : "Join Waitlist"
-                    : "Add to Bag"}
-                </Button>
-
-                {!isOutOfStock && (
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="w-full h-12 text-xs font-bold uppercase tracking-[0.2em] rounded-none border-foreground text-foreground hover:bg-foreground hover:text-background transition-all"
-                    onClick={handleBuyNow}
-                    disabled={!selectedSize || !selectedColor}
-                  >
-                    Buy Now
-                  </Button>
-                )}
-
+      {/* SPLIT INFO SECTION (Grid) */}
+      <div className="w-full max-w-[1400px] mx-auto px-6 lg:px-12 pt-8 pb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-y-2 lg:gap-x-24">
+          {/* LEFT COLUMN: Identity & Visuals (Col-7) */}
+          <div className="col-span-1 lg:col-span-7 flex flex-col gap-6">
+            <div className="space-y-6">
+              {/* Breadcrumb-ish / Collection Name & Share */}
+              <div className="flex items-center justify-between">
+                <span className="text-[9px] uppercase tracking-[0.3em] text-muted-foreground font-medium">
+                  Collection 2026
+                </span>
                 <button
-                  onClick={() =>
-                    isWishlisted
-                      ? removeItem(product.id)
-                      : addItem({
-                          productId: product.id,
-                          name: product.name,
-                          price: product.price,
-                          image: product.main_image_url,
-                          slug: product.slug || "",
-                        })
-                  }
-                  className="w-full py-2 flex items-center justify-center gap-2 text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
+                  onClick={handleShare}
+                  className="p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                  aria-label="Share product"
                 >
-                  <Heart
-                    className={cn(
-                      "w-3.5 h-3.5",
-                      isWishlisted
-                        ? "fill-red-500 text-red-500"
-                        : "text-current",
-                    )}
-                  />
-                  {isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
+                  <Share2 className="w-4 h-4 text-foreground" />
                 </button>
               </div>
 
-              {/* Details Accordion (Clean List) */}
-              <div className="border-t border-border/40">
-                <ProductDescriptionAccordion
-                  description={product.description}
+              <h1 className="text-4xl lg:text-5xl font-serif text-foreground leading-tight tracking-tight">
+                {product.name}
+              </h1>
+
+              <div className="text-2xl font-medium tracking-tight text-foreground/70">
+                {formatCurrency(product.price)}
+              </div>
+            </div>
+
+            {/* Visual Color Variations */}
+            <div>
+              <ProductColorSelector
+                options={colorOptions}
+                selected={selectedColor}
+                onSelect={setSelectedColor}
+                isAvailable={() => true}
+              />
+            </div>
+
+            <div className="w-full h-px bg-border my-4" />
+
+            {/* Description Block (Desktop Only) */}
+            <div className="space-y-4 hidden lg:block">
+              <h3 className="text-xs uppercase tracking-widest font-bold text-foreground">
+                Product Description
+              </h3>
+              <div className="text-sm leading-relaxed text-muted-foreground max-w-xl font-medium">
+                <div
+                  className="prose prose-sm prose-neutral dark:prose-invert max-w-none text-muted-foreground font-medium [&>p]:mb-4 [&>ul]:list-disc [&>ul]:pl-5"
+                  dangerouslySetInnerHTML={{ __html: product.description }}
                 />
               </div>
-            </motion.div>
+            </div>
+          </div>
+
+          {/* RIGHT COLUMN: Action & Service (Col-5) */}
+          <div className="col-span-1 lg:col-span-5 flex flex-col gap-5 lg:pt-8">
+            {/* Size & Add to Cart */}
+            <div className="space-y-8 p-0 lg:p-0">
+              <ProductSizeSelector
+                options={sizeOptions}
+                selected={selectedSize}
+                onSelect={setSelectedSize}
+                isAvailable={isSizeAvailable}
+                onOpenSizeGuide={() => setIsSizeGuideOpen(true)}
+              />
+
+              <Button
+                size="lg"
+                className={cn(
+                  "w-full h-14 text-sm font-bold uppercase tracking-[0.2em] rounded-none transition-all duration-300",
+                  isOutOfStock
+                    ? "bg-muted text-muted-foreground hover:bg-muted/80"
+                    : "bg-primary text-primary-foreground hover:bg-primary/90",
+                )}
+                disabled={isOutOfStock ? isLoadingWaitlist : false}
+                onClick={() =>
+                  isOutOfStock ? handlePreOrder() : handleAddToCart()
+                }
+              >
+                {isOutOfStock
+                  ? isOnWaitlist
+                    ? "You're on the list"
+                    : "Join Waitlist"
+                  : selectedSize
+                    ? "Add to Shopping Bag"
+                    : "Select Size"}
+              </Button>
+            </div>
+
+            {/* Description Block (Mobile Only - Collapsible) */}
+            <div className="pt-4 block lg:hidden border-t border-border">
+              <button
+                onClick={() => setIsDescriptionOpen(!isDescriptionOpen)}
+                className="w-full flex items-center justify-between group"
+              >
+                <h3 className="text-xs uppercase tracking-widest font-bold text-foreground group-hover:opacity-70 transition-opacity">
+                  Product Description
+                </h3>
+                <span className="text-sm font-light text-muted-foreground">
+                  {isDescriptionOpen ? "−" : "+"}
+                </span>
+              </button>
+
+              <div
+                className={cn(
+                  "grid transition-all duration-300 ease-in-out overflow-hidden",
+                  isDescriptionOpen
+                    ? "grid-rows-[1fr] opacity-100 mt-4"
+                    : "grid-rows-[0fr] opacity-0 mt-0",
+                )}
+              >
+                <div className="min-h-0">
+                  <div className="text-sm leading-relaxed text-muted-foreground max-w-xl font-medium">
+                    <div
+                      className="prose prose-sm prose-neutral dark:prose-invert max-w-none text-muted-foreground font-medium [&>p]:mb-4 [&>ul]:list-disc [&>ul]:pl-5"
+                      dangerouslySetInnerHTML={{ __html: product.description }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Service Links */}
+            <div className="space-y-6 pt-4 border-t border-border">
+              <div className="flex items-start gap-3">
+                <Phone
+                  className="w-4 h-4 mt-0.5 text-foreground"
+                  strokeWidth={1.5}
+                />
+                <div className="space-y-1">
+                  <Link
+                    href="/contact"
+                    className="text-xs uppercase tracking-widest font-bold underline decoration-1 underline-offset-4 decoration-foreground/30 hover:decoration-foreground block text-foreground"
+                  >
+                    Contact Us
+                  </Link>
+                  <p className="text-[11px] text-muted-foreground leading-normal">
+                    Our Client Advisors are available to answer your questions.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Accordion / Services */}
+            <div className="pt-4">
+              <div className="group">
+                <button className="flex items-center gap-2 text-xs uppercase tracking-widest font-bold mb-2 text-foreground">
+                  <Plus className="w-3 h-3" /> Flash Services
+                </button>
+                <p className="text-[11px] text-muted-foreground pl-5">
+                  Complimentary Shipping, Complimentary Exchanges & Returns,
+                  Secure Payments.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -634,8 +545,7 @@ export function ProductDetailClient({
           <AlertDialogHeader>
             <AlertDialogTitle>Remove from Waitlist?</AlertDialogTitle>
             <AlertDialogDescription>
-              You will no longer receive notifications when this product is back
-              in stock. You can always join again later.
+              you can always join again later.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -654,10 +564,14 @@ export function ProductDetailClient({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Recommended (Full Width Below) */}
       <RecommendedProducts
         categoryId={product.category_id || ""}
         currentProductId={product.id}
       />
+
+      {/* Import missing icon */}
     </div>
   );
 }

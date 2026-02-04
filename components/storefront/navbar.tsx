@@ -97,7 +97,7 @@ export function StorefrontNavbar() {
 
   return (
     <>
-      <header className="relative w-full border-b border-border/40 bg-background/60 backdrop-blur-xl pt-[env(safe-area-inset-top)]">
+      <header className="relative w-full bg-background pt-[env(safe-area-inset-top)] z-50">
         <div className="relative mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           {/* Main Content - Fades out when search is open  */}
           <div
@@ -108,8 +108,6 @@ export function StorefrontNavbar() {
           >
             {/* Mobile Menu & Logo */}
             <div className="flex items-center gap-2">
-              <HamburgerMenu categories={categories} />
-
               <Link
                 href="/"
                 className="flex items-center gap-2 group"
@@ -273,6 +271,11 @@ export function StorefrontNavbar() {
                   )}
                 </>
               )}
+
+              {/* Hamburger Menu - Moved to Right */}
+              <div className="ml-1">
+                <HamburgerMenu categories={categories} />
+              </div>
             </div>
           </div>
         </div>
