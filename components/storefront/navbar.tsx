@@ -11,6 +11,7 @@ import {
   LogOut,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import FlashImage from "@/components/ui/flash-image";
 import { useWishlistStore } from "@/store/use-wishlist-store";
 import { useCartStore, selectCartCount } from "@/store/use-cart-store";
@@ -21,7 +22,10 @@ import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useSearchStore } from "@/store/use-search-store";
 import { CategoryDropdown } from "./category-dropdown";
-import { HamburgerMenu } from "./hamburger-menu";
+const HamburgerMenu = dynamic(
+  () => import("./hamburger-menu").then((mod) => mod.HamburgerMenu),
+  { ssr: false },
+);
 import { SearchOverlay } from "@/components/storefront/search-overlay";
 import { NotificationBell } from "./notification-bell";
 import { motion, AnimatePresence } from "framer-motion";

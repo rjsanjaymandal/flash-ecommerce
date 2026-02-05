@@ -78,6 +78,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19.2.3",
     "@types/web-push": "^3.6.4",
+    "baseline-browser-mapping": "^2.9.19",
     "eslint": "^9",
     "eslint-config-next": "16.0.7",
     "supabase": "^2.67.1",
