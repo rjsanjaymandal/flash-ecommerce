@@ -22,13 +22,14 @@ export default async function ProductsPage({
       limit: 10,
       sort: "newest",
     },
-    adminClient
+    adminClient,
   );
 
   const typedProducts = (products || []).map((p) => ({
     ...p,
     created_at: p.created_at || new Date().toISOString(),
     is_active: p.is_active || false,
+    is_carousel_featured: !!p.is_carousel_featured,
     category_id: p.category_id || undefined,
     product_stock: p.product_stock?.map((s) => ({
       ...s,

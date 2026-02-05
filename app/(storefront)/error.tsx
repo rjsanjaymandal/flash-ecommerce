@@ -33,7 +33,7 @@ export default function Error({
           </h1>
           <p className="text-muted-foreground text-sm font-medium leading-relaxed">
             We encountered a temporary connection issue. Your experience is our
-            priority—let's get you back on track.
+            priority—let&apos;s get you back on track.
           </p>
         </div>
 

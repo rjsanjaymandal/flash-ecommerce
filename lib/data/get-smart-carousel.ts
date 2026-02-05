@@ -22,7 +22,7 @@ export async function getSmartCarouselData() {
         .eq('is_active', true)
         .eq('is_carousel_featured', true)
         .order('created_at', { ascending: false })
-        .limit(20) // Fetch buffer to account for out-of-stock items
+        .limit(40) // Increased buffer to ensure 15 in-stock items are available
 
     if (!data) return []
 
@@ -32,7 +32,7 @@ export async function getSmartCarouselData() {
             const totalStock = p.product_stock?.reduce((sum: number, s: any) => sum + s.quantity, 0) || 0
             return totalStock > 0
         })
-        .slice(0, 5) // Limit to top 5
+        .slice(0, 15) // Increased limit to 15 products
 
     return smartData
 }

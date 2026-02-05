@@ -670,6 +670,29 @@ export async function bulkUpdateProductStatus(ids: string[], isActive: boolean) 
     revalidatePath('/shop')
 }
 
+export async function toggleProductCarousel(id: string, isFeatured: boolean) {
+    await requireAdmin()
+    const supabase = createAdminClient()
+    const { error } = await supabase
+        .from('products')
+        .update({ is_carousel_featured: isFeatured })
+        .eq('id', id)
+    
+    if (error) throw error
+
+    // Revalidate paths and tags for the carousel
+    try {
+        revalidatePath('/')
+        revalidatePath('/admin/products')
+        // @ts-expect-error: Next.js types incorrectly require a second 'profile' argument
+        revalidateTag('featured-products')
+        // @ts-expect-error: Next.js types incorrectly require a second 'profile' argument
+        revalidateTag('products')
+    } catch (e) {
+        console.warn('[toggleProductCarousel] Revalidation failed:', e)
+    }
+}
+
 // decrementStock removed - unsafe public exposure. Use RPC 'decrement_stock' via Service Role instead.
 
 export async function getWaitlistedProducts(userId: string): Promise<Product[]> {

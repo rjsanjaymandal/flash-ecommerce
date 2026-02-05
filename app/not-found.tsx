@@ -21,8 +21,8 @@ export default function NotFound() {
           </h1>
 
           <p className="text-muted-foreground text-lg font-medium max-w-lg mx-auto leading-relaxed">
-            The page you're looking for has either been moved, deleted, or never
-            existed in this dimension.
+            The page you&apos;re looking for has either been moved, deleted, or
+            never existed in this dimension.
           </p>
         </div>
 

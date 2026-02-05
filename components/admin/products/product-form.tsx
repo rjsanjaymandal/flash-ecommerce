@@ -29,7 +29,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2, Save, X, Plus, Trash2, ArrowLeft } from "lucide-react";
+import {
+  Loader2,
+  Save,
+  X,
+  Plus,
+  Trash2,
+  ArrowLeft,
+  Sparkles,
+} from "lucide-react";
 import { uploadImage } from "@/lib/services/upload-service";
 import { slugify } from "@/lib/slugify";
 import { toast } from "sonner";
@@ -591,7 +599,8 @@ export function ProductForm({
                   render={({ field }) => (
                     <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm bg-primary/5 border-primary/20">
                       <div className="space-y-0.5">
-                        <FormLabel className="text-base font-bold">
+                        <FormLabel className="text-base font-bold flex items-center gap-2">
+                          <Sparkles className="h-4 w-4 text-amber-500" />
                           Carousel Marketing
                         </FormLabel>
                         <FormDescription>

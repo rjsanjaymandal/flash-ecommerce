@@ -25,9 +25,9 @@ export function SeoContent() {
               Best Quality Clothing
             </h3>
             <p className="text-sm text-muted-foreground">
-              We don't compromise. Our intelligent nano-fabrics are engineered
-              for durability, comfort, and style, setting a new standard for a
-              **premium clothing brand**.
+              We don&apos;t compromise. Our intelligent nano-fabrics are
+              engineered for durability, comfort, and style, setting a new
+              standard for a **premium clothing brand**.
             </p>
           </div>
 
@@ -41,7 +41,7 @@ export function SeoContent() {
             <p className="text-sm text-muted-foreground">
               Express yourself with our exclusive **printed t-shirts**.
               High-definition prints that never fade, featuring cyberpunk and
-              anime aesthetics you won't find anywhere else.
+              anime aesthetics you won&apos;t find anywhere else.
             </p>
           </div>
 

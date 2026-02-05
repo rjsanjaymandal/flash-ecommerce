@@ -1,7 +1,5 @@
 "use client";
 
-import FlashImage from "@/components/ui/flash-image";
-
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/store/use-cart-store";
@@ -10,7 +8,7 @@ import {
   selectIsInWishlist,
 } from "@/store/use-wishlist-store";
 import { cn, formatCurrency, calculateDiscount } from "@/lib/utils";
-import { Phone, MapPin, Package, RefreshCcw, Plus, Share2 } from "lucide-react"; // Icons for services
+import { Phone, Plus, Share2, Star } from "lucide-react"; // Icons for services
 import { toast } from "sonner";
 import Link from "next/link";
 import { togglePreorder } from "@/app/actions/preorder";
@@ -46,7 +44,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { motion } from "framer-motion";
 
 // Fallback Standards
 const STANDARD_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL"];
@@ -101,7 +98,6 @@ export function ProductDetailClient({
   const [isOnWaitlist, setIsOnWaitlist] = useState(false);
   const [isLoadingWaitlist, setIsLoadingWaitlist] = useState(false);
   const [isWaitlistDialogOpen, setIsWaitlistDialogOpen] = useState(false);
-  const [savedGuestEmail, _setSavedGuestEmail] = useState("");
   const [isUnjoinDialogOpen, setIsUnjoinDialogOpen] = useState(false);
 
   const handleShare = async () => {
@@ -121,7 +117,6 @@ export function ProductDetailClient({
     }
   };
 
-  const [showStickyBar, _setShowStickyBar] = useState(false);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
   const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
 
@@ -247,7 +242,7 @@ export function ProductDetailClient({
         if (result.status === "added")
           localStorage.setItem(`waitlist_${product.id}`, "true");
       }
-    } catch (_error) {
+    } catch (error) {
       toast.error("Something went wrong.");
     } finally {
       setIsLoadingWaitlist(false);
@@ -267,7 +262,7 @@ export function ProductDetailClient({
       } else {
         localStorage.removeItem(`waitlist_${product.id}`);
       }
-    } catch (_error) {
+    } catch (error) {
       setIsOnWaitlist(previousState);
       toast.dismiss();
       toast.error("Something went wrong.");
@@ -292,7 +287,7 @@ export function ProductDetailClient({
         localStorage.setItem(`waitlist_${product.id}`, "true");
         if (email) localStorage.setItem("user_email_preference", email);
       }
-    } catch (_error) {
+    } catch (error) {
       toast.error("Failed to join waitlist.");
     } finally {
       setIsLoadingWaitlist(false);
@@ -326,7 +321,7 @@ export function ProductDetailClient({
         options,
       );
       return true;
-    } catch (_err) {
+    } catch (error) {
       toast.error("Failed to add");
       return false;
     }
@@ -386,9 +381,42 @@ export function ProductDetailClient({
                 {product.name}
               </h1>
 
-              <div className="text-2xl font-medium tracking-tight text-foreground/70">
-                {formatCurrency(product.price)}
+              <div className="flex items-center gap-6">
+                <div className="text-2xl font-medium tracking-tight text-foreground/70">
+                  {formatCurrency(product.price)}
+                </div>
+                {product.original_price &&
+                  product.original_price > product.price && (
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm text-muted-foreground line-through">
+                        {formatCurrency(product.original_price)}
+                      </span>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded-sm">
+                        -
+                        {calculateDiscount(
+                          product.price,
+                          product.original_price,
+                        )}
+                        %
+                      </span>
+                    </div>
+                  )}
               </div>
+
+              {/* Rating Summary */}
+              {initialReviews.count > 0 && (
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center text-amber-500">
+                    <Star className="w-3 h-3 fill-current" />
+                    <span className="ml-1 text-xs font-bold">
+                      {initialReviews.average}
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-widest">
+                    ({initialReviews.count} Reviews)
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Visual Color Variations */}
@@ -529,7 +557,7 @@ export function ProductDetailClient({
         }}
         onSubmit={handleWaitlistSubmit}
         isSubmitting={isLoadingWaitlist}
-        initialEmail={savedGuestEmail}
+        initialEmail=""
       />
 
       <SizeGuideModal

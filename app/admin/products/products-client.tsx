@@ -27,6 +27,7 @@ import {
   RefreshCw,
   Users,
   Clock,
+  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
@@ -62,6 +63,7 @@ import {
 import {
   bulkDeleteProducts,
   bulkUpdateProductStatus,
+  toggleProductCarousel,
 } from "@/lib/services/product-service";
 import { deleteProductAction } from "@/app/actions/admin/delete-product";
 import { getWaitlistUsers } from "@/app/actions/admin-preorder";
@@ -99,6 +101,7 @@ interface AdminProduct {
     color: string;
     quantity: number;
   }[];
+  is_carousel_featured: boolean;
   preorder_count?: number;
 }
 
@@ -221,6 +224,25 @@ export function ProductsClient({
       router.refresh();
     } catch (_err) {
       toast.error("Bulk update failed");
+    }
+  };
+
+  const handleToggleCarousel = async (product: AdminProduct) => {
+    const newStatus = !product.is_carousel_featured;
+    const toastId = toast.loading(
+      newStatus ? "Adding to Carousel..." : "Removing from Carousel...",
+    );
+    try {
+      await toggleProductCarousel(product.id, newStatus);
+      toast.success(
+        newStatus
+          ? "Product featured in Carousel"
+          : "Product removed from Carousel",
+        { id: toastId },
+      );
+      router.refresh();
+    } catch (error) {
+      toast.error("Failed to update Carousel status", { id: toastId });
     }
   };
 
@@ -541,6 +563,9 @@ export function ProductsClient({
               <TableHead className="py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
                 Stock
               </TableHead>
+              <TableHead className="py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground/80 text-center">
+                Carousel
+              </TableHead>
               <TableHead className="py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
                 Price
               </TableHead>
@@ -594,8 +619,10 @@ export function ProductsClient({
                   <TableRow
                     key={product.id}
                     className={cn(
-                      "group transition-colors border-b last:border-0 text-sm hover:bg-muted/40",
+                      "group transition-all duration-300 border-b last:border-0 text-sm hover:bg-muted/40",
                       isSelected && "bg-primary/5 hover:bg-primary/10",
+                      product.is_carousel_featured &&
+                        "bg-amber-500/[0.02] border-l-2 border-l-amber-500/50",
                     )}
                   >
                     <TableCell className="px-4 align-middle">
@@ -693,6 +720,26 @@ export function ProductsClient({
                           </div>
                         </TooltipContent>
                       </Tooltip>
+                    </TableCell>
+                    <TableCell className="align-middle text-center">
+                      {product.is_carousel_featured ? (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="flex justify-center">
+                              <div className="p-2 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 shadow-sm animate-in zoom-in-50 duration-500">
+                                <Sparkles className="h-4 w-4" />
+                              </div>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            Featured in Home Carousel
+                          </TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        <div className="flex justify-center opacity-0 group-hover:opacity-20 transition-opacity">
+                          <Sparkles className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell className="align-middle">
                       <div className="flex flex-col">
@@ -795,6 +842,15 @@ export function ProductsClient({
                               >
                                 <div className="w-4 mr-2">↗</div> View in Store
                               </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleToggleCarousel(product)}
+                              className="flex items-center cursor-pointer text-amber-600 dark:text-amber-400 focus:text-amber-700 font-bold"
+                            >
+                              <Sparkles className="h-4 w-4 mr-2" />
+                              {product.is_carousel_featured
+                                ? "Remove from Carousel"
+                                : "Feature in Carousel"}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               className="text-destructive focus:text-destructive cursor-pointer group/delete"

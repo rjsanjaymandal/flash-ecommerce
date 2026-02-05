@@ -7,10 +7,11 @@ import { slugify } from "@/lib/slugify";
 import { useRouter } from "next/navigation";
 import { useMemo, useTransition } from "react";
 import { toast } from "sonner";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tables } from "@/types/supabase";
 import { Category } from "@/types/store-types";
+import { cn } from "@/lib/utils";
 
 export default function EditProductPageClient({
   product,
@@ -68,18 +69,52 @@ export default function EditProductPageClient({
     });
   };
 
+  const isFeatured = product.is_carousel_featured;
+
   return (
     <div className="mx-auto max-w-5xl space-y-6 pb-20 animate-in fade-in duration-500">
-      <div className="flex items-center gap-4 py-4 border-b">
-        <Button variant="ghost" size="icon" onClick={() => router.back()}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Edit Product</h1>
-          <p className="text-sm text-muted-foreground">
-            Update product details and stock.
-          </p>
+      <div
+        className={cn(
+          "flex items-center justify-between gap-4 py-6 px-6 rounded-2xl border transition-all duration-500 shadow-sm",
+          isFeatured
+            ? "bg-amber-500/[0.03] border-amber-500/30 shadow-amber-500/5"
+            : "bg-card border-border",
+        )}
+      >
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => router.back()}
+            className="rounded-full"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold tracking-tight">
+                Edit Product
+              </h1>
+              {isFeatured && (
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 text-[10px] font-black uppercase tracking-widest animate-in zoom-in-50 duration-500 shadow-sm border border-amber-200/50 dark:border-amber-500/20">
+                  <Sparkles className="h-3 w-3" />
+                  Featured in Carousel
+                </div>
+              )}
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Update product details and stock.
+            </p>
+          </div>
         </div>
+
+        {isFeatured && (
+          <div className="hidden md:block">
+            <div className="p-3 rounded-2xl bg-white dark:bg-zinc-900 border border-amber-500/20 shadow-xl shadow-amber-500/10 rotate-3">
+              <Sparkles className="h-6 w-6 text-amber-500" />
+            </div>
+          </div>
+        )}
       </div>
 
       <ProductForm
