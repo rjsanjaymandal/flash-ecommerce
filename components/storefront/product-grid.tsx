@@ -1,11 +1,9 @@
 import { getProducts } from "@/lib/services/product-service";
-import { ProductCard } from "@/components/storefront/product-card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { SlidersHorizontal } from "lucide-react";
-import { ItemListJsonLd } from "@/components/seo/item-list-json-ld";
-import { ProductList } from "./product-list";
+import { PaginatedProductGrid } from "./paginated-product-grid";
 
 interface ShopParams {
   category?: string;
@@ -18,8 +16,8 @@ interface ShopParams {
 }
 
 export async function ProductGrid({ params }: { params: ShopParams }) {
-  console.log("[ProductGrid] Params:", params);
-  const { data: products } = await getProducts({
+  // Fetch first page with standard limit
+  const { data: products, meta } = await getProducts({
     is_active: true,
     category_id: params.category,
     sort: params.sort as any,
@@ -28,27 +26,18 @@ export async function ProductGrid({ params }: { params: ShopParams }) {
     size: params.size,
     color: params.color,
     search: params.q,
+    limit: 24, // Determine page size here
+    page: 1,
   });
-
-  const itemListItems =
-    products?.map((p) => ({
-      name: p.name,
-      image: p.main_image_url || "",
-      url: `${process.env.NEXT_PUBLIC_SITE_URL}/product/${p.slug}`,
-      price: p.price,
-      currency: "INR",
-    })) || [];
 
   return (
     <div className="flex-1 min-w-0">
-      {itemListItems.length > 0 && <ItemListJsonLd products={itemListItems} />}
-
       {/* Secondary Toolbar (Sort) */}
       <div className="flex flex-col sm:flex-row gap-4 sm:items-center justify-between mb-10 pb-6 border-b border-border/40">
         <div className="flex items-center gap-3">
           <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-          <p className="text-xs font-black uppercase tracking-widest text-foreground/70">
-            {products?.length || 0} Artifacts Found
+          <p className="text-xs font-black uppercase tracking-[0.2em] text-foreground/70">
+            {meta.total} Products Found
           </p>
         </div>
 
@@ -87,8 +76,95 @@ export async function ProductGrid({ params }: { params: ShopParams }) {
         </div>
       </div>
 
+      {/* Active Filter Chips */}
+      {(params.q ||
+        params.category ||
+        params.min_price ||
+        params.max_price ||
+        params.size ||
+        params.color) && (
+        <div className="flex flex-wrap gap-2 mb-8 items-center">
+          <span className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground mr-1">
+            Active:
+          </span>
+          {params.q && (
+            <Link href={{ query: { ...params, q: undefined } }}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-6 rounded-none text-[10px] px-2 gap-1 border-dashed"
+              >
+                Search: {params.q} <SlidersHorizontal className="h-2 w-2" />
+              </Button>
+            </Link>
+          )}
+          {params.category && (
+            <Link href={{ query: { ...params, category: undefined } }}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-6 rounded-none text-[10px] px-2 gap-1 border-dashed"
+              >
+                Category <SlidersHorizontal className="h-2 w-2" />
+              </Button>
+            </Link>
+          )}
+          {(params.min_price || params.max_price) && (
+            <Link
+              href={{
+                query: {
+                  ...params,
+                  min_price: undefined,
+                  max_price: undefined,
+                },
+              }}
+            >
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-6 rounded-none text-[10px] px-2 gap-1 border-dashed"
+              >
+                Price Range <SlidersHorizontal className="h-2 w-2" />
+              </Button>
+            </Link>
+          )}
+          {params.size && (
+            <Link href={{ query: { ...params, size: undefined } }}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-6 rounded-none text-[10px] px-2 gap-1 border-dashed"
+              >
+                Size: {params.size} <SlidersHorizontal className="h-2 w-2" />
+              </Button>
+            </Link>
+          )}
+          {params.color && (
+            <Link href={{ query: { ...params, color: undefined } }}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-6 rounded-none text-[10px] px-2 gap-1 border-dashed"
+              >
+                Color: {params.color} <SlidersHorizontal className="h-2 w-2" />
+              </Button>
+            </Link>
+          )}
+          <Link
+            href="/shop"
+            className="text-[10px] uppercase tracking-widest font-black text-primary hover:underline ml-2"
+          >
+            Clear All
+          </Link>
+        </div>
+      )}
+
       {products && products.length > 0 ? (
-        <ProductList products={products} />
+        <PaginatedProductGrid
+          initialProducts={products}
+          initialMeta={meta}
+          searchParams={params}
+        />
       ) : (
         <div className="flex flex-col items-center justify-center py-24 text-center rounded-3xl border border-dashed border-border bg-muted/20">
           <div className="h-16 w-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm">

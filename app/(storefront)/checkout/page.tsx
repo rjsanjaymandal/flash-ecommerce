@@ -86,10 +86,8 @@ export default function CheckoutPage() {
     "PREPAID",
   );
 
-  // Check if script is already loaded (e.g. from previous navigation)
   useEffect(() => {
     if (window.Razorpay) {
-      console.log("Razorpay script already present on mount");
       setIsScriptLoaded(true);
     }
   }, []);
@@ -269,7 +267,6 @@ export default function CheckoutPage() {
         categoryId: i.categoryId,
       }));
 
-      console.log("Breadcrumb: Calling createOrder...");
       const order = await createOrder({
         user_id: user?.id || null,
         subtotal: cartTotal,
@@ -288,10 +285,8 @@ export default function CheckoutPage() {
         discount_amount: discountAmount,
         email: data.email,
       });
-      console.log("Breadcrumb: Order created successfully", order.id);
 
       // 3. Create Razorpay Order
-      console.log("Breadcrumb: Requesting Razorpay Order...");
       const response = await fetch("/api/razorpay/order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -301,14 +296,11 @@ export default function CheckoutPage() {
         }),
       });
       const rzpOrder = await response.json();
-      console.log("Breadcrumb: Razorpay Order response received", rzpOrder);
 
       if (!response.ok)
         throw new Error(rzpOrder.error || "Failed to create Razorpay order");
 
-      // 4. Open Razorpay Checkout
       const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
-      console.log("Razorpay Key ID Status:", keyId ? "Present" : "MISSING");
 
       if (!keyId) {
         throw new Error("Razorpay Key ID is missing. Please contact support.");
@@ -342,10 +334,6 @@ export default function CheckoutPage() {
               return await res.json();
             } catch (err) {
               if (retries > 0) {
-                console.log(
-                  `Verification failed, retrying in ${delay}ms...`,
-                  err,
-                );
                 await new Promise((resolve) => setTimeout(resolve, delay));
                 return verifyPaymentWithRetry(payload, retries - 1, delay * 2);
               }
@@ -412,9 +400,7 @@ export default function CheckoutPage() {
       }
 
       const rzp1 = new window.Razorpay(options);
-      console.log("Breadcrumb: Razorpay instance initialized");
       rzp1.open();
-      console.log("Breadcrumb: Razorpay opened successfully");
     } catch (err: any) {
       console.error("FATAL Checkout Error:", err);
       console.error("Error Object Type:", typeof err);

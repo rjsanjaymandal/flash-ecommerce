@@ -143,7 +143,6 @@ export function StoreSync() {
     async function loadData() {
       if (isSyncingRef.current) return;
 
-      console.log("[StoreSync] Auth status change. User:", user?.email);
       isSyncingRef.current = true;
       setIsLoading(true);
 
@@ -156,7 +155,6 @@ export function StoreSync() {
         useCartStore.getState().setHasHydrated(true);
 
         if (user) {
-          console.log("[StoreSync] Logged in. Triggering deep sync...");
           await useCartStore.getState().syncWithUser(user.id);
           const finalCart = useCartStore.getState().items;
           await validateStock(finalCart);
@@ -164,9 +162,6 @@ export function StoreSync() {
           // 2. Merge Guest Wishlist
           const localWishlist = useWishlistStore.getState().items;
           if (localWishlist.length > 0) {
-            console.log(
-              "[StoreSync] Found guest wishlist items. Merging to DB...",
-            );
             for (const item of localWishlist) {
               await supabase.from("wishlist_items").upsert(
                 {
@@ -199,8 +194,6 @@ export function StoreSync() {
             }));
             setWishlistItems(mappedWishlist);
           }
-        } else {
-          console.log("[StoreSync] Logged out or guest mode.");
         }
       } catch (error) {
         console.error("[StoreSync] Sync error:", error);

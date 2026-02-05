@@ -28,7 +28,7 @@ export function RecommendedProducts({
         // Fetch upsell products for this category, excluding the current product
         const results = await getUpsellProducts(
           [categoryId],
-          [currentProductId]
+          [currentProductId],
         );
         setProducts(results.slice(0, 4));
       } catch (error) {

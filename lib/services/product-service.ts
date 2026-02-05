@@ -145,23 +145,23 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: SupabaseCli
         // If we really need "In Stock vs Out of Stock" as primary, we might need a view again.
         // However, most admins prefer seeing NEWEST first.
         // Let's stick to the requested Sort Option.
-        query = query.order('created_at', { ascending: false })
+        query = query.order('created_at', { ascending: false }).order('id', { ascending: true })
     } else {
         switch (filter.sort) {
             case 'price_asc':
-                query = query.order('price', { ascending: true })
+                query = query.order('price', { ascending: true }).order('id', { ascending: true })
                 break
             case 'price_desc':
-                query = query.order('price', { ascending: false })
+                query = query.order('price', { ascending: false }).order('id', { ascending: true })
                 break
             case 'trending':
                  // Fallback to sale_count if available or reviews?
-                query = query.order('created_at', { ascending: false }) 
+                query = query.order('created_at', { ascending: false }).order('id', { ascending: true }) 
                 break
             case 'waitlist_desc':
                  // Preorders is a separate table, difficult to sort by without join/view.
                  // For now, fallback to created_at
-                 query = query.order('created_at', { ascending: false })
+                 query = query.order('created_at', { ascending: false }).order('id', { ascending: true })
                  break
 
              default:
@@ -176,7 +176,16 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: SupabaseCli
 
     if (error) {
         console.error('fetchProducts error:', error)
-        throw error
+        // For storefront reliability: Return empty data instead of crashing the whole page
+        return {
+            data: [],
+            meta: {
+                total: 0,
+                page,
+                limit,
+                totalPages: 0
+            }
+        }
     }
 
     // Client-side mapping for computed fields that couldn't be done in SQL easily

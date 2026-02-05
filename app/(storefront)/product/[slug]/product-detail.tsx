@@ -569,6 +569,7 @@ export function ProductDetailClient({
       <RecommendedProducts
         categoryId={product.category_id || ""}
         currentProductId={product.id}
+        title="Picked Just For You"
       />
 
       {/* Import missing icon */}

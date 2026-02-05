@@ -25,12 +25,6 @@ export async function createOrder(data: {
     email?: string
 }) {
     const supabase = createStaticClient()
-    console.log(`[createOrder] Starting for user: ${data.user_id}, items: ${data.items.length}`)
-    console.log(`[createOrder] Payload:`, JSON.stringify({ 
-        total: data.total, 
-        coupon: data.coupon_code, 
-        items: data.items.map(i => `${i.productId} (x${i.quantity})`) 
-    }))
 
     try {
         // --- SECURITY: Rate Limiting ---
@@ -144,8 +138,6 @@ export async function createOrder(data: {
             .in('product_id', productIds)
 
         if (stockCheckError) throw new Error("Inventory check failed. Please try again.")
-        
-        console.log(`[createOrder] Stock Check Results: Found ${stockItems?.length} records`)
 
         const stockMap = new Map<string, number>()
         stockItems?.forEach(item => {
