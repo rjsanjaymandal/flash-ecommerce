@@ -13,6 +13,7 @@ export interface CartItem {
   image: string | null
   size: string
   color: string
+  fit: string
   quantity: number
   maxQuantity: number
 }
@@ -24,9 +25,9 @@ interface CartState {
   isLoading: boolean
   isHydrated: boolean
   addItem: (item: CartItem, options?: { openCart?: boolean, showToast?: boolean }) => Promise<void>
-  removeItem: (productId: string, size: string, color: string) => Promise<void>
-  updateQuantity: (productId: string, size: string, color: string, quantity: number) => Promise<void>
-  toggleSaveForLater: (productId: string, size: string, color: string) => Promise<void>
+  removeItem: (productId: string, size: string, color: string, fit: string) => Promise<void>
+  updateQuantity: (productId: string, size: string, color: string, fit: string, quantity: number) => Promise<void>
+  toggleSaveForLater: (productId: string, size: string, color: string, fit: string) => Promise<void>
   clearCart: () => Promise<void>
   syncWithUser: (userId: string) => Promise<void>
   setItems: (items: CartItem[]) => void
@@ -80,7 +81,8 @@ export const useCartStore = create<CartState>()(
           (i) =>
             i.productId === item.productId &&
             i.size === item.size &&
-            i.color === item.color
+            i.color === item.color &&
+            i.fit === item.fit
         )
 
         const newItems = [...currentItems]
@@ -128,12 +130,13 @@ export const useCartStore = create<CartState>()(
                 product_id: item.productId,
                 size: item.size,
                 color: item.color,
+                fit: item.fit,
                 quantity: newQuantity
             }
             
             const { data, error } = await supabase
                 .from('cart_items')
-                .upsert(dbItem, { onConflict: 'user_id, product_id, size, color' })
+                .upsert(dbItem, { onConflict: 'user_id, product_id, size, color, fit' })
                 .select('id')
                 .single()
             
@@ -142,7 +145,7 @@ export const useCartStore = create<CartState>()(
             if (data?.id) {
                 set((state) => ({
                     items: state.items.map((i) => 
-                        i.productId === item.productId && i.size === item.size && i.color === item.color
+                        i.productId === item.productId && i.size === item.size && i.color === item.color && i.fit === item.fit
                         ? { ...i, id: data.id }
                         : i
                     )
@@ -151,13 +154,13 @@ export const useCartStore = create<CartState>()(
         })
       },
 
-      removeItem: async (productId, size, color) => {
+      removeItem: async (productId, size, color, fit) => {
         const currentItems = get().items
         
         // Optimistic
         set((state) => ({
             items: state.items.filter(
-                (i) => !(i.productId === productId && i.size === size && i.color === color)
+                (i) => !(i.productId === productId && i.size === size && i.color === color && i.fit === fit)
             )
         }))
 
@@ -169,7 +172,7 @@ export const useCartStore = create<CartState>()(
             const { error } = await supabase
                 .from('cart_items')
                 .delete()
-                .match({ user_id: user.id, product_id: productId, size, color })
+                .match({ user_id: user.id, product_id: productId, size, color, fit })
             
             if (error) {
                 toast.error("Failed to sync removal. Reverting.")
@@ -179,17 +182,17 @@ export const useCartStore = create<CartState>()(
         })
       },
 
-      updateQuantity: async (productId, size, color, quantity) => {
+      updateQuantity: async (productId, size, color, fit, quantity) => {
         const currentItems = get().items
         const itemIndex = currentItems.findIndex(
-            (i) => i.productId === productId && i.size === size && i.color === color
+            (i) => i.productId === productId && i.size === size && i.color === color && i.fit === fit
         )
 
         if (itemIndex === -1) return
 
         // Auto-remove if quantity <= 0
         if (quantity <= 0) {
-            get().removeItem(productId, size, color)
+            get().removeItem(productId, size, color, fit)
             return
         }
 
@@ -204,7 +207,7 @@ export const useCartStore = create<CartState>()(
         // Optimistic
         set((state) => ({
             items: state.items.map((i) =>
-                i.productId === productId && i.size === size && i.color === color
+                i.productId === productId && i.size === size && i.color === color && i.fit === fit
                 ? { ...i, quantity }
                 : i
             )
@@ -218,7 +221,7 @@ export const useCartStore = create<CartState>()(
             const { error } = await supabase
                 .from('cart_items')
                 .update({ quantity })
-                .match({ user_id: user.id, product_id: productId, size, color })
+                .match({ user_id: user.id, product_id: productId, size, color, fit })
             
             if (error) {
                 toast.error("Failed to sync quantity. Reverting.")
@@ -228,15 +231,15 @@ export const useCartStore = create<CartState>()(
         })
       },
 
-      toggleSaveForLater: async (productId, size, color) => {
+      toggleSaveForLater: async (productId, size, color, fit) => {
         const { items, savedItems } = get()
-        const itemInCart = items.find(i => i.productId === productId && i.size === size && i.color === color)
-        const itemInSaved = savedItems.find(i => i.productId === productId && i.size === size && i.color === color)
+        const itemInCart = items.find(i => i.productId === productId && i.size === size && i.color === color && i.fit === fit)
+        const itemInSaved = savedItems.find(i => i.productId === productId && i.size === size && i.color === color && i.fit === fit)
 
         if (itemInCart) {
           // Move from Cart to Saved
           set({
-            items: items.filter(i => !(i.productId === productId && i.size === size && i.color === color)),
+            items: items.filter(i => !(i.productId === productId && i.size === size && i.color === color && i.fit === fit)),
             savedItems: [...savedItems, itemInCart]
           })
           toast.success("Item saved for later")
@@ -247,7 +250,7 @@ export const useCartStore = create<CartState>()(
             if (!user) return
             
             // 1. Delete from cart
-            await supabase.from('cart_items').delete().match({ user_id: user.id, product_id: productId, size, color })
+            await supabase.from('cart_items').delete().match({ user_id: user.id, product_id: productId, size, color, fit })
             
             // 2. Add to wishlist
             await supabase.from('wishlist_items').upsert({ user_id: user.id, product_id: productId }, { onConflict: 'user_id, product_id' })
@@ -256,7 +259,7 @@ export const useCartStore = create<CartState>()(
           // Move from Saved to Cart
           set({
             items: [...items, itemInSaved],
-            savedItems: savedItems.filter(i => !(i.productId === productId && i.size === size && i.color === color)),
+            savedItems: savedItems.filter(i => !(i.productId === productId && i.size === size && i.color === color && i.fit === fit)),
             isCartOpen: true
           })
           toast.success("Item moved back to bag")
@@ -275,8 +278,9 @@ export const useCartStore = create<CartState>()(
                 product_id: productId, 
                 size, 
                 color, 
+                fit: itemInSaved.fit,
                 quantity: itemInSaved.quantity 
-            }, { onConflict: 'user_id, product_id, size, color' })
+            }, { onConflict: 'user_id, product_id, size, color, fit' })
           })
         }
       },
@@ -299,11 +303,11 @@ export const useCartStore = create<CartState>()(
             const [cartRes, savedRes] = await Promise.all([
                 supabase
                     .from('cart_items')
-                    .select('id, product_id, quantity, size, color, product:products(name, price, main_image_url, slug, category_id, product_stock(size, color, quantity, price_addon))')
+                    .select('id, product_id, quantity, size, color, fit, product:products(name, price, main_image_url, slug, category_id, product_stock(size, color, fit, quantity))')
                     .eq('user_id', userId),
                 supabase
                     .from('wishlist_items')
-                    .select('id, product_id, product:products(name, price, main_image_url, slug, category_id, product_stock(size, color, quantity, price_addon))')
+                    .select('id, product_id, product:products(name, price, main_image_url, slug, category_id, product_stock(size, color, fit, quantity))')
                     .eq('user_id', userId)
             ])
 
@@ -313,11 +317,10 @@ export const useCartStore = create<CartState>()(
             }
 
             // Helper to find stock & price addons
-            const getVariantInfo = (product: any, size: string, color: string) => {
-                const stock = product?.product_stock?.find((s: any) => s.size === size && s.color === color)
+            const getVariantInfo = (product: any, size: string, color: string, fit: string) => {
+                const stock = product?.product_stock?.find((s: any) => s.size === size && s.color === color && s.fit === fit)
                 return {
-                    quantity: stock?.quantity ?? 10,
-                    price_addon: Number(stock?.price_addon ?? 0)
+                    quantity: stock?.quantity ?? 10
                 }
             }
 
@@ -327,13 +330,14 @@ export const useCartStore = create<CartState>()(
                 quantity: number
                 size: string
                 color: string
+                fit: string
                 product: {
                     name: string
                     price: number
                     main_image_url: string
                     slug: string
                     category_id: string
-                    product_stock: { size: string, color: string, quantity: number, price_addon?: number }[]
+                    product_stock: { size: string, color: string, fit: string, quantity: number, price_addon?: number }[]
                 } | null
             }
 
@@ -346,7 +350,7 @@ export const useCartStore = create<CartState>()(
                     main_image_url: string
                     slug: string
                     category_id: string
-                    product_stock: { size: string, color: string, quantity: number, price_addon?: number }[]
+                    product_stock: { size: string, color: string, fit: string, quantity: number, price_addon?: number }[]
                 } | null
             }
 
@@ -354,15 +358,16 @@ export const useCartStore = create<CartState>()(
             const serverSavedRaw = savedRes.data as any[] || []
 
             const serverItems: CartItem[] = serverCartRaw.map((dbItem: CartDBItem) => {
-                const info = getVariantInfo(dbItem.product, dbItem.size, dbItem.color)
+                const info = getVariantInfo(dbItem.product, dbItem.size, dbItem.color, dbItem.fit)
                 return {
                     id: dbItem.id,
                     productId: dbItem.product_id,
                     name: dbItem.product?.name || 'Unknown Product',
-                    price: Number(dbItem.product?.price || 0) + info.price_addon,
+                    price: Number(dbItem.product?.price || 0),
                     image: dbItem.product?.main_image_url || null,
                     size: dbItem.size || '',
                     color: dbItem.color || '',
+                    fit: dbItem.fit || 'Regular',
                     quantity: dbItem.quantity,
                     maxQuantity: info.quantity,
                     slug: dbItem.product?.slug || '',
@@ -383,6 +388,7 @@ export const useCartStore = create<CartState>()(
                     image: dbItem.product?.main_image_url || null,
                     size: singleVariant ? singleVariant.size : 'Universal', 
                     color: singleVariant ? singleVariant.color : 'N/A',
+                    fit: singleVariant ? singleVariant.fit : 'Regular',
                     quantity: 1,
                     maxQuantity: singleVariant ? singleVariant.quantity : 10,
                     slug: dbItem.product?.slug || '',
@@ -396,13 +402,13 @@ export const useCartStore = create<CartState>()(
 
             // A. Load Server Items first (they have absolute truth IDs)
             serverItems.forEach(item => {
-                const key = `${item.productId}-${item.size}-${item.color}`
+                const key = `${item.productId}-${item.size}-${item.color}-${item.fit}`
                 mergedMap.set(key, item)
             })
 
             // B. Merge Local Items (checking if they are already accounted for)
             localItems.forEach(localItem => {
-                const key = `${localItem.productId}-${localItem.size}-${localItem.color}`
+                const key = `${localItem.productId}-${localItem.size}-${localItem.color}-${localItem.fit}`
                 const existing = mergedMap.get(key)
                 
                 if (existing) {
@@ -442,13 +448,14 @@ export const useCartStore = create<CartState>()(
                 product_id: item.productId,
                 size: item.size,
                 color: item.color,
+                fit: item.fit,
                 quantity: item.quantity
             }))
             
             if (dbPayload.length > 0) {
                  await supabase
                     .from('cart_items')
-                    .upsert(dbPayload, { onConflict: 'user_id, product_id, size, color' })
+                    .upsert(dbPayload, { onConflict: 'user_id, product_id, size, color, fit' })
             }
 
             // 5. Batch Sync Saved (Wishlist) back to Server

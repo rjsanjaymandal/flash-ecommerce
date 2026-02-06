@@ -102,6 +102,7 @@ export type Database = {
           size: string
           updated_at: string | null
           user_id: string
+          fit: string
         }
         Insert: {
           color: string
@@ -112,6 +113,7 @@ export type Database = {
           size: string
           updated_at?: string | null
           user_id: string
+          fit?: string
         }
         Update: {
           color?: string
@@ -122,6 +124,7 @@ export type Database = {
           size?: string
           updated_at?: string | null
           user_id?: string
+          fit?: string
         }
         Relationships: [
           {
@@ -286,6 +289,7 @@ export type Database = {
           quantity: number
           size: string | null
           unit_price: number
+          fit: string | null
         }
         Insert: {
           color?: string | null
@@ -296,6 +300,7 @@ export type Database = {
           quantity: number
           size?: string | null
           unit_price: number
+          fit?: string | null
         }
         Update: {
           color?: string | null
@@ -306,6 +311,7 @@ export type Database = {
           quantity?: number
           size?: string | null
           unit_price?: number
+          fit?: string | null
         }
         Relationships: [
           {
@@ -490,7 +496,9 @@ export type Database = {
           product_id: string | null
           quantity: number | null
           size: string
-          price_addon: number | null
+          fit: string
+          sku: string | null
+          cost_price: number | null
         }
         Insert: {
           color: string
@@ -498,7 +506,9 @@ export type Database = {
           product_id?: string | null
           quantity?: number | null
           size: string
-          price_addon?: number | null
+          fit?: string
+          sku?: string | null
+          cost_price?: number | null
         }
         Update: {
           color?: string
@@ -506,7 +516,10 @@ export type Database = {
           product_id?: string | null
           quantity?: number | null
           size?: string
-          price_addon?: number | null
+          fit?: string
+          sku?: string | null
+          barcode?: string | null
+          cost_price?: number | null
         }
         Relationships: [
           {
@@ -534,8 +547,14 @@ export type Database = {
           price: number
           original_price: number | null
           size_options: string[] | null
+          fit_options: string[] | null
           slug: string
           updated_at: string | null
+          status: "draft" | "active" | "archived" | null
+          seo_title: string | null
+          seo_description: string | null
+          sku: string | null
+          cost_price: number | null
         }
         Insert: {
           category_id?: string | null
@@ -552,8 +571,14 @@ export type Database = {
           price: number
           original_price?: number | null
           size_options?: string[] | null
+          fit_options?: string[] | null
           slug: string
           updated_at?: string | null
+          status?: "draft" | "active" | "archived" | null
+          seo_title?: string | null
+          seo_description?: string | null
+          sku?: string | null
+          cost_price?: number | null
         }
         Update: {
           category_id?: string | null
@@ -572,6 +597,11 @@ export type Database = {
           size_options?: string[] | null
           slug?: string
           updated_at?: string | null
+          status?: "draft" | "active" | "archived" | null
+          seo_title?: string | null
+          seo_description?: string | null
+          sku?: string | null
+          cost_price?: number | null
         }
         Relationships: [
           {

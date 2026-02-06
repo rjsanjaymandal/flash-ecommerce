@@ -13,6 +13,7 @@ export type Product = Tables<'products'> & {
     original_price?: number | null
     categories?: { name: string } | null
     product_stock?: Tables<'product_stock'>[]
+    fit_options?: string[] | null
     average_rating?: number
     review_count?: number
     images?: {
@@ -58,7 +59,12 @@ export type PaginatedResult<T> = {
 // Helper to apply filters consistently
 const applyProductFilters = (query: any, filter: ProductFilter) => {
     if (filter.is_active !== undefined) {
-      query = query.eq('is_active', filter.is_active)
+      if (filter.is_active) {
+          query = query.eq('status', 'active')
+      } else {
+          // If asking for inactive, we might mean draft/archived, but usually filter is for 'active' only
+          query = query.neq('status', 'active')
+      }
     }
 
     if (filter.is_carousel_featured !== undefined) {
@@ -228,7 +234,7 @@ export async function getFeaturedProducts(): Promise<Product[]> {
              const { data } = await supabase
                 .from('products')
                 .select('*, categories(name), product_stock(*), reviews(rating)')
-                .eq('is_active', true)
+                .eq('status', 'active')
                 .order('created_at', { ascending: false })
                 .limit(8)
             
@@ -295,6 +301,11 @@ function prepareProductData(data: ProductFormValues) {
     expression_tags: data.expression_tags || [],
     is_active: data.is_active ?? true,
     is_carousel_featured: data.is_carousel_featured ?? false,
+    status: data.status || "draft",
+    cost_price: data.cost_price ? Number(data.cost_price) : 0,
+    sku: data.sku || null,
+    seo_title: data.seo_title || null,
+    seo_description: data.seo_description || null,
   }
 
   // Derive options from variants
@@ -302,6 +313,7 @@ function prepareProductData(data: ProductFormValues) {
     const variants = data.variants
     cleanData.size_options = Array.from(new Set(variants.map((v) => v.size).filter(Boolean)))
     cleanData.color_options = Array.from(new Set(variants.map((v) => v.color).filter(Boolean)))
+    cleanData.fit_options = Array.from(new Set(variants.map((v) => v.fit).filter(Boolean)))
   }
   
   return cleanData
@@ -347,8 +359,8 @@ export async function createProduct(productData: unknown) {
                 product_id: productId,
                 size: v.size,
                 color: v.color,
-                quantity: Number(v.quantity) || 0,
-                price_addon: Number(v.price_addon) || 0
+                fit: v.fit || "Regular",
+                quantity: Number(v.quantity) || 0
             }))
 
             const { error: stockErr } = await supabase
@@ -431,8 +443,8 @@ export async function updateProduct(id: string, productData: unknown) {
                     product_id: id,
                     size: v.size,
                     color: v.color,
-                    quantity: Number(v.quantity) || 0,
-                    price_addon: Number(v.price_addon) || 0
+                    fit: v.fit || "Regular",
+                    quantity: Number(v.quantity) || 0
                 }))
                 const { error: stockErr } = await supabase.from('product_stock').insert(stockData)
                 if (stockErr) return { success: false, error: `Stock Sync Failed: ${stockErr.message}` }
@@ -521,7 +533,7 @@ export async function getValidProducts(ids: string[]): Promise<Product[]> {
       .from('products')
       .select('*, categories(name), product_stock(*), reviews(rating)')
       .in('id', ids)
-      .eq('is_active', true)
+      .eq('status', 'active')
     
     if (error) {
         console.error('Error validating products:', error)
@@ -568,7 +580,7 @@ export async function getRelatedProducts(product: Product): Promise<Product[]> {
                     `)
                     .overlaps('expression_tags', tags)
                     .neq('id', product.id)
-                    .eq('is_active', true)
+                    .eq('status', 'active')
                     .limit(limit)
                  
                  candidates = (data as unknown as Product[]) || []
@@ -586,7 +598,7 @@ export async function getRelatedProducts(product: Product): Promise<Product[]> {
                     `)
                     .eq('category_id', product.category_id)
                     .neq('id', product.id)
-                    .eq('is_active', true)
+                    .eq('status', 'active')
                     .limit(limit - candidates.length)
                 
                 // Merge unique items

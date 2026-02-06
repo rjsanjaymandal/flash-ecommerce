@@ -15,7 +15,6 @@ interface SizeSelectorProps extends SharedSelectorProps {
 }
 
 interface ColorSelectorProps extends SharedSelectorProps {
-  priceAddons?: Record<string, number>;
   customColorMap?: Record<string, string>;
 }
 
@@ -53,7 +52,7 @@ export function ProductSizeSelector({
               className={cn(
                 "h-10 px-4 text-[11px] uppercase tracking-widest transition-all duration-300 border relative group",
                 isSelected
-                  ? "border-black text-black font-bold bg-black/[0.03]"
+                  ? "border-black text-black font-bold bg-black/3"
                   : "border-transparent text-neutral-500 hover:text-black hover:bg-neutral-50",
                 !available &&
                   "opacity-30 cursor-not-allowed text-neutral-300 decoration-neutral-300 line-through",
@@ -80,7 +79,6 @@ export function ProductColorSelector({
   selected,
   onSelect,
   isAvailable,
-  priceAddons = {},
   customColorMap,
 }: ColorSelectorProps) {
   return (
@@ -96,8 +94,6 @@ export function ProductColorSelector({
           const available = isAvailable(color);
           const isSelected = selected === color;
           const hex = getColorHex(color, customColorMap);
-          const addon = priceAddons[color];
-
           return (
             <div key={color} className="relative group">
               <button
@@ -110,7 +106,7 @@ export function ProductColorSelector({
                     : "border-transparent hover:border-black/20 hover:scale-105",
                   !available && "opacity-30 cursor-not-allowed grayscale",
                 )}
-                title={addon ? `${color} (+₹${addon})` : color}
+                title={color}
               >
                 <div
                   className="w-full h-full rounded-full transition-transform duration-500 group-hover:scale-110"
@@ -135,14 +131,55 @@ export function ProductColorSelector({
                   </div>
                 )}
               </button>
-
-              {/* Optional Add-on Badge */}
-              {addon > 0 && (
-                <div className="absolute -top-1 -right-1 bg-black text-[8px] text-white px-1 py-0.5 rounded-sm font-bold scale-75 group-hover:scale-100 transition-transform">
-                  +₹{addon}
-                </div>
-              )}
             </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// Separate Fit Selector
+export function ProductFitSelector({
+  options,
+  selected,
+  onSelect,
+  isAvailable,
+}: SharedSelectorProps) {
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-baseline border-b border-black mb-4 pb-2">
+        <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-black">
+          Select Fit
+        </span>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {options.map((fit) => {
+          const available = isAvailable(fit);
+          const isSelected = selected === fit;
+
+          return (
+            <button
+              key={fit}
+              onClick={() => onSelect(fit)}
+              disabled={!available}
+              className={cn(
+                "h-10 px-4 text-[11px] uppercase tracking-widest transition-all duration-300 border relative group",
+                isSelected
+                  ? "border-black text-black font-bold bg-black/[0.03]"
+                  : "border-transparent text-neutral-500 hover:text-black hover:bg-neutral-50",
+                !available &&
+                  "opacity-30 cursor-not-allowed text-neutral-300 decoration-neutral-300 line-through",
+              )}
+            >
+              {fit}
+              {isSelected && (
+                <motion.div
+                  layoutId="activeFit"
+                  className="absolute bottom-0 left-0 right-0 h-[2px] bg-black"
+                />
+              )}
+            </button>
           );
         })}
       </div>
@@ -154,27 +191,35 @@ export function ProductColorSelector({
 interface ProductSelectorsProps {
   sizeOptions: string[];
   colorOptions: string[];
+  fitOptions?: string[];
   selectedSize: string;
   selectedColor: string;
+  selectedFit?: string;
   onSelectSize: (size: string) => void;
   onSelectColor: (color: string) => void;
+  onSelectFit?: (fit: string) => void;
   onOpenSizeGuide: () => void;
-  isAvailable: (size: string, color: string) => boolean;
+  isAvailable: (size: string, color: string, fit?: string) => boolean;
   isSizeAvailable: (size: string) => boolean;
-  getStock: (size: string, color: string) => number;
+  isFitAvailable?: (fit: string) => boolean;
+  getStock: (size: string, color: string, fit: string) => number;
   centered?: boolean;
 }
 
 export function ProductSelectors({
   sizeOptions,
   colorOptions,
+  fitOptions = [],
   selectedSize,
   selectedColor,
+  selectedFit,
   onSelectSize,
   onSelectColor,
+  onSelectFit,
   onOpenSizeGuide,
   isAvailable,
   isSizeAvailable,
+  isFitAvailable,
   //   getStock,
   centered = false,
 }: ProductSelectorsProps) {
@@ -189,6 +234,18 @@ export function ProductSelectors({
           isAvailable={(c) => true}
         />
       </div>
+
+      {fitOptions.length > 0 && onSelectFit && (
+        <div className={centered ? "flex justify-center" : ""}>
+          <ProductFitSelector
+            options={fitOptions}
+            selected={selectedFit || ""}
+            onSelect={onSelectFit}
+            isAvailable={isFitAvailable || ((f) => true)}
+          />
+        </div>
+      )}
+
       <div className={centered ? "flex justify-center" : ""}>
         <ProductSizeSelector
           options={sizeOptions}

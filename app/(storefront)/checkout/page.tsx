@@ -261,6 +261,7 @@ export default function CheckoutPage() {
         quantity: i.quantity,
         size: i.size,
         color: i.color,
+        fit: i.fit,
         image: i.image,
         maxQuantity: i.maxQuantity,
         slug: i.slug,
@@ -847,7 +848,7 @@ export default function CheckoutPage() {
                         {item.name}
                       </p>
                       <p className="text-muted-foreground text-xs font-medium mt-0.5">
-                        {item.size} / {item.color}{" "}
+                        {item.size} / {item.color} / {item.fit}{" "}
                         <span className="mx-1">x</span> {item.quantity}
                       </p>
                     </div>
@@ -857,7 +858,12 @@ export default function CheckoutPage() {
                       </span>
                       <button
                         onClick={() =>
-                          removeItem(item.productId, item.size, item.color)
+                          removeItem(
+                            item.productId,
+                            item.size,
+                            item.color,
+                            item.fit,
+                          )
                         }
                         className="text-xs text-muted-foreground hover:text-red-500 transition-colors flex items-center gap-1 group/remove"
                       >

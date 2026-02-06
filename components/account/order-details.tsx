@@ -25,6 +25,7 @@ import { Tables } from "@/types/supabase";
 import { TrackingTimeline } from "@/components/storefront/tracking-timeline";
 
 interface OrderItemWithProduct extends Tables<"order_items"> {
+  fit: string | null;
   products: {
     name: string;
     main_image_url: string | null;
@@ -315,6 +316,14 @@ export function OrderDetails({ order, items }: OrderDetailsProps) {
                               >
                                 Color: {item.color}
                               </Badge>
+                              {item.fit && (
+                                <Badge
+                                  variant="outline"
+                                  className="rounded-full px-2 py-0.5 md:px-3 md:py-1 font-black text-[8px] md:text-[9px] uppercase border-2 text-zinc-400 group-hover:text-black group-hover:border-black transition-colors"
+                                >
+                                  Fit: {item.fit}
+                                </Badge>
+                              )}
                               <Badge
                                 variant="outline"
                                 className="rounded-full px-2 py-0.5 md:px-3 md:py-1 font-black text-[8px] md:text-[9px] uppercase border-2 text-zinc-400 group-hover:text-black group-hover:border-black transition-colors"

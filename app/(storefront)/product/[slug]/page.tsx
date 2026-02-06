@@ -23,8 +23,9 @@ export async function generateMetadata({
 
   if (!product) return { title: "Product Not Found" };
 
-  const title = `${product.name} | Flash Fashion`;
+  const title = (product.seo_title || product.name) + " | Flash Fashion";
   const description = (
+    product.seo_description ||
     product.description ||
     `Cop the ${product.name}. High-quality anime streetwear, heavyweight cotton, and premium graphic design. Fast shipping available in India.`
   ).slice(0, 150);

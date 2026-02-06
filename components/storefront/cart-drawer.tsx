@@ -49,11 +49,12 @@ export function CartDrawer() {
     size: string,
     color: string,
     newQty: number,
+    fit: string,
   ) => {
-    const key = `${productId}-${size}-${color}`;
+    const key = `${productId}-${size}-${color}-${fit}`;
     setLoadingState(key, true);
     try {
-      await updateQuantity(productId, size, color, newQty);
+      await updateQuantity(productId, size, color, fit, newQty);
     } catch (error) {
       toast.error("Failed to update quantity");
     } finally {
@@ -171,7 +172,7 @@ export function CartDrawer() {
                   <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-5 px-5">
                     {savedItems.map((item) => (
                       <div
-                        key={`${item.productId}-${item.size}-${item.color}`}
+                        key={`${item.productId}-${item.size}-${item.color}-${item.fit}`}
                         className="shrink-0 w-24 space-y-2 group"
                       >
                         <div className="aspect-3/4 bg-muted/20 rounded-lg overflow-hidden border border-border/40 relative">
@@ -189,6 +190,7 @@ export function CartDrawer() {
                                 item.productId,
                                 item.size,
                                 item.color,
+                                item.fit,
                               )
                             }
                             className="absolute inset-0 bg-primary/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
@@ -210,7 +212,7 @@ export function CartDrawer() {
               <AnimatePresence initial={false}>
                 {items.map((item) => (
                   <motion.div
-                    key={`${item.productId}-${item.size}-${item.color}`}
+                    key={`${item.productId}-${item.size}-${item.color}-${item.fit}`}
                     layout
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -256,6 +258,7 @@ export function CartDrawer() {
                                   item.productId,
                                   item.size,
                                   item.color,
+                                  item.fit,
                                 )
                               }
                               className="text-muted-foreground hover:text-primary transition-colors p-1"
@@ -269,6 +272,7 @@ export function CartDrawer() {
                                   item.productId,
                                   item.size,
                                   item.color,
+                                  item.fit,
                                 )
                               }
                               className="text-muted-foreground hover:text-destructive transition-colors p-1"
@@ -280,7 +284,7 @@ export function CartDrawer() {
                         </div>
                         <div className="flex flex-wrap items-center gap-2">
                           <p className="text-xs text-muted-foreground font-medium">
-                            {item.size} / {item.color}
+                            {item.size} / {item.color} / {item.fit}
                           </p>
                           {item.maxQuantity > 0 && item.maxQuantity <= 5 && (
                             <Badge
@@ -317,6 +321,7 @@ export function CartDrawer() {
                                   item.size,
                                   item.color,
                                   item.quantity - 1,
+                                  item.fit,
                                 )
                               }
                             >
@@ -328,7 +333,7 @@ export function CartDrawer() {
                             </button>
                             <div className="w-8 text-center text-xs font-bold relative">
                               {loadingStates[
-                                `${item.productId}-${item.size}-${item.color}`
+                                `${item.productId}-${item.size}-${item.color}-${item.fit}`
                               ] ? (
                                 <div className="absolute inset-0 flex items-center justify-center bg-muted">
                                   <div className="h-3 w-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
@@ -342,7 +347,7 @@ export function CartDrawer() {
                               disabled={
                                 item.quantity >= item.maxQuantity ||
                                 loadingStates[
-                                  `${item.productId}-${item.size}-${item.color}`
+                                  `${item.productId}-${item.size}-${item.color}-${item.fit}`
                                 ]
                               }
                               onClick={() =>
@@ -351,6 +356,7 @@ export function CartDrawer() {
                                   item.size,
                                   item.color,
                                   item.quantity + 1,
+                                  item.fit,
                                 )
                               }
                             >
@@ -380,7 +386,7 @@ export function CartDrawer() {
                   <div className="space-y-4">
                     {savedItems.map((item) => (
                       <div
-                        key={`${item.productId}-${item.size}-${item.color}`}
+                        key={`${item.productId}-${item.size}-${item.color}-${item.fit}`}
                         className="flex gap-4 opacity-70 hover:opacity-100 transition-opacity"
                       >
                         <div className="h-20 w-16 bg-muted/30 rounded-lg overflow-hidden shrink-0 border border-border/40">
@@ -399,7 +405,7 @@ export function CartDrawer() {
                             {item.name}
                           </h4>
                           <p className="text-[10px] text-muted-foreground font-medium">
-                            {item.size} / {item.color}
+                            {item.size} / {item.color} / {item.fit}
                           </p>
                           <div className="flex items-center gap-4 mt-2">
                             <button
@@ -408,6 +414,7 @@ export function CartDrawer() {
                                   item.productId,
                                   item.size,
                                   item.color,
+                                  item.fit,
                                 )
                               }
                               className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline"
@@ -420,6 +427,7 @@ export function CartDrawer() {
                                   item.productId,
                                   item.size,
                                   item.color,
+                                  item.fit,
                                 )
                               }
                               className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-destructive"
@@ -478,7 +486,7 @@ export function CartDrawer() {
                     (i) => i.maxQuantity === 0 || i.quantity > i.maxQuantity,
                   );
                   oosItems.forEach((i) =>
-                    removeItem(i.productId, i.size, i.color),
+                    removeItem(i.productId, i.size, i.color, i.fit),
                   );
                   toast.success(`Removed ${oosItems.length} unavailable items`);
                 } else {

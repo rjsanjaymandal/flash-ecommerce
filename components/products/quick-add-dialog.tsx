@@ -57,8 +57,22 @@ export function QuickAddDialog({
     ),
   );
 
-  // State for color
+  // State for color and fit
   const [selectedColor, setSelectedColor] = useState<string>("");
+  const [selectedFit, setSelectedFit] = useState<string>("");
+
+  const availableFitsForSelection = Array.from(
+    new Set(
+      stock
+        .filter(
+          (s: any) =>
+            (!selectedSize || s.size === selectedSize) &&
+            (!selectedColor || s.color === selectedColor) &&
+            s.quantity > 0,
+        )
+        .map((s: any) => s.fit),
+    ),
+  );
 
   // Initialize/Reset color when size changes
   // If only 1 color available, auto-select it? Or let user pick?
@@ -78,8 +92,13 @@ export function QuickAddDialog({
       return;
     }
 
+    const finalFit = selectedFit || availableFitsForSelection[0] || "Regular";
+
     const stockItem = stock.find(
-      (item: any) => item.size === selectedSize && item.color === finalColor,
+      (item: any) =>
+        item.size === selectedSize &&
+        item.color === finalColor &&
+        item.fit === finalFit,
     );
     const maxQuantity = stockItem?.quantity || 0;
 
@@ -97,6 +116,7 @@ export function QuickAddDialog({
         image: product.main_image_url,
         size: selectedSize,
         color: finalColor,
+        fit: finalFit,
         quantity: 1,
         maxQuantity: maxQuantity,
         slug: product.slug || "",
@@ -112,6 +132,7 @@ export function QuickAddDialog({
 
     setSelectedSize("");
     setSelectedColor("");
+    setSelectedFit("");
   };
 
   return (
@@ -151,6 +172,7 @@ export function QuickAddDialog({
                     onClick={() => {
                       setSelectedSize(size);
                       setSelectedColor(""); // Reset color on size change
+                      setSelectedFit(""); // Reset fit on size change
                     }}
                     className={cn(
                       "h-14 rounded-xl border-2 text-sm font-bold transition-all relative overflow-hidden active:scale-95",
@@ -205,7 +227,10 @@ export function QuickAddDialog({
                     <button
                       key={color}
                       disabled={!isValidForSize}
-                      onClick={() => setSelectedColor(color)}
+                      onClick={() => {
+                        setSelectedColor(color);
+                        setSelectedFit(""); // Reset fit on color change
+                      }}
                       className={cn(
                         "h-10 px-4 min-w-[3rem] rounded-lg border-2 text-sm font-bold transition-all relative active:scale-95",
                         isSelected
@@ -222,6 +247,34 @@ export function QuickAddDialog({
             </div>
           )}
 
+          {/* Fit Selection (Only if multiple fits exist for selection) */}
+          {availableFitsForSelection.length > 1 && (
+            <div className="space-y-3">
+              <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
+                Select Fit
+              </div>
+              <div className="flex flex-wrap gap-3">
+                {availableFitsForSelection.map((fit: string) => {
+                  const isSelected = selectedFit === fit;
+                  return (
+                    <button
+                      key={fit}
+                      onClick={() => setSelectedFit(fit)}
+                      className={cn(
+                        "h-10 px-4 min-w-[3rem] rounded-lg border-2 text-sm font-bold transition-all relative active:scale-95",
+                        isSelected
+                          ? "border-primary bg-primary text-primary-foreground shadow-md scale-105"
+                          : "border-input hover:bg-muted/50",
+                      )}
+                    >
+                      {fit}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           <Button
             size="lg"
             className="w-full h-14 text-base rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
@@ -230,7 +283,8 @@ export function QuickAddDialog({
               !selectedSize ||
               (product.color_options?.length > 1 &&
                 !selectedColor &&
-                availableColorsForSize.length > 1)
+                availableColorsForSize.length > 1) ||
+              (availableFitsForSelection.length > 1 && !selectedFit)
             }
           >
             {buyNowMode ? "Proceed to Checkout" : "Add to Cart"}

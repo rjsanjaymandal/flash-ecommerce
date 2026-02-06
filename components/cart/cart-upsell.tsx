@@ -51,6 +51,7 @@ export function CartUpsell() {
       quantity: 1,
       size: variant.size,
       color: variant.color,
+      fit: variant.fit || "Regular",
       maxQuantity: variant.quantity,
       slug: product.slug,
     });
@@ -131,7 +132,7 @@ export function CartUpsell() {
                       <div className="grid grid-cols-2 gap-1 overflow-y-auto max-h-[70%]">
                         {inStockVariants.map((v: any) => (
                           <button
-                            key={`${v.size}-${v.color}`}
+                            key={`${v.size}-${v.color}-${v.fit}`}
                             onClick={() => onAddVariant(product, v)}
                             className="h-7 text-[9px] font-black uppercase rounded bg-foreground text-background hover:bg-primary hover:text-white transition-colors border border-foreground/10"
                           >

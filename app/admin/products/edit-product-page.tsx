@@ -43,12 +43,22 @@ export default function EditProductPageClient({
       is_active: product.is_active ?? true,
       is_carousel_featured: product.is_carousel_featured ?? false,
       original_price: product.original_price,
+      status: (product.status as "draft" | "active" | "archived") || "draft",
+      cost_price: Number(product.cost_price) || 0,
+      sku: product.sku || "",
+      track_quantity: true, // Defaulting to true as DB doesn't have this col yet, assuming always track for now or add col later.
+      seo_title: product.seo_title || "",
+      seo_description: product.seo_description || "",
       variants: stock.map((s) => ({
         size: s.size,
         color: s.color,
+        fit: s.fit || "Regular",
         quantity: s.quantity ?? 0,
         price_addon: (s as any).price_addon ?? 0,
+        cost_price: (s as any).cost_price ?? 0,
+        sku: (s as any).sku || "",
       })),
+      fit_options: (product as any).fit_options || [],
     }),
     [product, stock],
   );

@@ -43,7 +43,7 @@ export function useRealTimeHype(productId: string, initialStock: StockItem[] = [
                 (payload) => {
                     const newItem = payload.new as StockItem
                     if (newItem) {
-                        updateStock(newItem.product_id, newItem.size, newItem.color, newItem.quantity)
+                        updateStock(newItem.product_id, newItem.size, newItem.color, newItem.fit, newItem.quantity)
                     }
                 }
             )

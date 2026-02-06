@@ -31,10 +31,16 @@ export function QuickView({ product }: QuickViewProps) {
   const [selectedColor, setSelectedColor] = useState(
     product.color_options?.[0] || "Standard",
   );
+  const [selectedFit, setSelectedFit] = useState(
+    product.fit_options?.[0] || "Regular",
+  );
 
   const handleAddToCart = () => {
     const stockItem = product.product_stock?.find(
-      (item: any) => item.size === selectedSize && item.color === selectedColor,
+      (item: any) =>
+        item.size === selectedSize &&
+        item.color === selectedColor &&
+        item.fit === selectedFit,
     );
     const maxQuantity = stockItem?.quantity || 10; // Fallback if stock not found, though it should be
 
@@ -46,6 +52,7 @@ export function QuickView({ product }: QuickViewProps) {
       image: product.main_image_url,
       size: selectedSize,
       color: selectedColor,
+      fit: selectedFit,
       quantity: 1,
       maxQuantity: maxQuantity,
       slug: product.slug || "",
@@ -114,6 +121,29 @@ export function QuickView({ product }: QuickViewProps) {
                   ))}
                 </div>
               </div>
+
+              {product.fit_options && product.fit_options.length > 1 && (
+                <div>
+                  <label className="text-xs font-bold uppercase text-muted-foreground mb-2 block">
+                    Fit
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {product.fit_options.map((fit: string) => (
+                      <button
+                        key={fit}
+                        onClick={() => setSelectedFit(fit)}
+                        className={`h-10 px-4 rounded-lg border text-sm font-medium transition-all ${
+                          selectedFit === fit
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-input hover:bg-muted"
+                        }`}
+                      >
+                        {fit}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="flex flex-col gap-3 pt-4">
@@ -143,7 +173,8 @@ export function QuickView({ product }: QuickViewProps) {
                   const stockItem = product.product_stock?.find(
                     (item: any) =>
                       item.size === selectedSize &&
-                      item.color === selectedColor,
+                      item.color === selectedColor &&
+                      item.fit === selectedFit,
                   );
                   const maxQuantity = stockItem?.quantity || 10;
                   await addItem(
@@ -155,6 +186,7 @@ export function QuickView({ product }: QuickViewProps) {
                       image: product.main_image_url,
                       size: selectedSize,
                       color: selectedColor,
+                      fit: selectedFit,
                       quantity: 1,
                       maxQuantity: maxQuantity,
                       slug: product.slug || "",

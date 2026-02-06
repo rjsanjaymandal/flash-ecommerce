@@ -17,6 +17,7 @@ import { ProductGallery } from "@/components/products/product-gallery";
 import {
   ProductColorSelector,
   ProductSizeSelector,
+  ProductFitSelector,
 } from "@/components/products/product-selectors";
 
 import dynamic from "next/dynamic";
@@ -61,7 +62,8 @@ type ProductDetailProps = {
     gallery_image_urls?: string[];
     size_options: string[];
     color_options: string[];
-    product_stock: StockItem[];
+    fit_options?: string[];
+    product_stock: (StockItem & { fit: string })[];
     category_id?: string;
     images?: {
       thumbnail: string;
@@ -95,6 +97,7 @@ export function ProductDetailClient({
 
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [selectedColor, setSelectedColor] = useState<string>("");
+  const [selectedFit, setSelectedFit] = useState<string>("Regular");
   const [quantity, setQuantity] = useState(1);
 
   // Waitlist State
@@ -117,17 +120,7 @@ export function ProductDetailClient({
       .join(" ");
   };
 
-  // Derived: Current Variant Price Addon
-  const currentVariant = useMemo(() => {
-    return (product.product_stock as any[])?.find(
-      (s) =>
-        s.size === selectedSize &&
-        normalizeColor(s.color || "") === normalizeColor(selectedColor || ""),
-    );
-  }, [product.product_stock, selectedSize, selectedColor]);
-
-  const priceAddon = currentVariant?.price_addon || 0;
-  const adjustedPrice = product.price + priceAddon;
+  const adjustedPrice = product.price;
 
   const handleShare = async () => {
     try {
@@ -195,27 +188,21 @@ export function ProductDetailClient({
     return Array.from(new Set(rawOptions.map(normalizeColor))).sort();
   }, [product.color_options, realTimeStock]);
 
-  // Derived: Price Addons map for the color selector
-  const colorPriceAddons = useMemo(() => {
-    const map: Record<string, number> = {};
-    (product.product_stock as any[])?.forEach((s) => {
-      const color = normalizeColor(s.color || "");
-      const addon = Number(s.price_addon || 0);
-      // We take the max addon for a color across sizes, or just the first match
-      if (addon > (map[color] || 0)) {
-        map[color] = addon;
-      }
-    });
-    return map;
-  }, [product.product_stock]);
+  const fitOptions = useMemo(() => {
+    if (product.fit_options?.length) return product.fit_options;
+    const fits = realTimeStock?.map((s: any) => s.fit).filter(Boolean) || [];
+    return Array.from(new Set(fits)).length
+      ? Array.from(new Set(fits))
+      : ["Regular"];
+  }, [product.fit_options, realTimeStock]);
 
   // Stock Logic (Normalized)
   const stockMap = useMemo(() => {
     const map: Record<string, number> = {};
     if (!realTimeStock) return map;
-    realTimeStock.forEach((item) => {
+    realTimeStock.forEach((item: any) => {
       // Use normalized color for the key to merge duplicates
-      const key = `${item.size}-${normalizeColor(item.color)}`;
+      const key = `${item.size}-${normalizeColor(item.color || "")}-${item.fit || "Regular"}`;
       map[key] = (map[key] || 0) + item.quantity;
     });
     return map;
@@ -230,14 +217,21 @@ export function ProductDetailClient({
     );
   }, [realTimeStock]);
 
-  const getStock = (size: string, color: string) =>
-    stockMap[`${size}-${color}`] || 0;
+  const getStock = (size: string, color: string, fit: string) =>
+    stockMap[`${size}-${normalizeColor(color)}-${fit}`] || 0;
   //   const isAvailable = (size: string, color: string) =>
   //     (stockMap[`${size}-${color}`] || 0) > 0;
-  const isSizeAvailable = (size: string) =>
-    realTimeStock?.some((s) => s.size === size && s.quantity > 0) ?? true;
+  const isSizeAvailable = (size: string) => {
+    if (!selectedColor || !selectedFit) return true;
+    return getStock(size, selectedColor, selectedFit) > 0;
+  };
 
-  const maxQty = getStock(selectedSize, selectedColor);
+  const isFitAvailable = (fit: string) => {
+    if (!selectedSize || !selectedColor) return true;
+    return getStock(selectedSize, selectedColor, fit) > 0;
+  };
+
+  const maxQty = getStock(selectedSize, selectedColor, selectedFit);
 
   // Logic: OOS if Global stock is 0 OR if specific selection is 0
   const isGlobalOutOfStock = totalStock === 0 && !loadingStock;
@@ -325,8 +319,12 @@ export function ProductDetailClient({
   const handleAddToCart = async (
     options = { openCart: true, showToast: true },
   ) => {
-    if (!selectedSize || !selectedColor) {
-      toast.error("Select a size and color");
+    if (
+      !selectedSize ||
+      !selectedColor ||
+      (fitOptions.length > 1 && !selectedFit)
+    ) {
+      toast.error("Please complete your selection");
       return false;
     }
     if (maxQty <= 0) {
@@ -343,6 +341,7 @@ export function ProductDetailClient({
           image: product.main_image_url,
           size: selectedSize,
           color: selectedColor,
+          fit: selectedFit,
           quantity: quantity,
           maxQuantity: maxQty,
           slug: product.slug || "",
@@ -458,19 +457,31 @@ export function ProductDetailClient({
             </div>
 
             {/* Visual Color Variations */}
-            <div>
-              <ProductColorSelector
-                options={colorOptions}
-                selected={selectedColor}
-                onSelect={setSelectedColor}
-                isAvailable={(color) => {
-                  if (!selectedSize) return true;
-                  return getStock(selectedSize, color) > 0;
-                }}
-                priceAddons={colorPriceAddons}
-                customColorMap={colorMap}
-              />
-            </div>
+            {colorOptions.length > 1 && colorOptions[0] !== "Standard" && (
+              <div>
+                <ProductColorSelector
+                  options={colorOptions}
+                  selected={selectedColor}
+                  onSelect={setSelectedColor}
+                  isAvailable={(color) => {
+                    if (!selectedSize || !selectedFit) return true;
+                    return getStock(selectedSize, color, selectedFit) > 0;
+                  }}
+                  customColorMap={colorMap}
+                />
+              </div>
+            )}
+
+            {fitOptions.length > 1 && (
+              <div className="mt-6">
+                <ProductFitSelector
+                  options={fitOptions}
+                  selected={selectedFit}
+                  onSelect={setSelectedFit}
+                  isAvailable={isFitAvailable}
+                />
+              </div>
+            )}
 
             <div className="w-full h-px bg-border my-4" />
 
@@ -492,13 +503,15 @@ export function ProductDetailClient({
           <div className="col-span-1 lg:col-span-5 flex flex-col gap-5 lg:pt-8">
             {/* Size & Add to Cart */}
             <div className="space-y-8 p-0 lg:p-0">
-              <ProductSizeSelector
-                options={sizeOptions}
-                selected={selectedSize}
-                onSelect={setSelectedSize}
-                isAvailable={isSizeAvailable}
-                onOpenSizeGuide={() => setIsSizeGuideOpen(true)}
-              />
+              {sizeOptions.length > 1 && sizeOptions[0] !== "Standard" && (
+                <ProductSizeSelector
+                  options={sizeOptions}
+                  selected={selectedSize}
+                  onSelect={setSelectedSize}
+                  isAvailable={isSizeAvailable}
+                  onOpenSizeGuide={() => setIsSizeGuideOpen(true)}
+                />
+              )}
 
               <Button
                 size="lg"
@@ -517,9 +530,9 @@ export function ProductDetailClient({
                   ? isOnWaitlist
                     ? "You're on the list"
                     : "Join Waitlist"
-                  : selectedSize
+                  : selectedSize && selectedColor && selectedFit
                     ? "Add to Shopping Bag"
-                    : "Select Size"}
+                    : "Make Your Selection"}
               </Button>
             </div>
 
