@@ -8,8 +8,9 @@ import {
   selectIsInWishlist,
 } from "@/store/use-wishlist-store";
 import { cn, formatCurrency, calculateDiscount } from "@/lib/utils";
-import { Phone, Plus, Share2, Star } from "lucide-react"; // Icons for services
+import { Phone, Plus, Share2, Star, Check } from "lucide-react"; // Icons for services
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { togglePreorder } from "@/app/actions/preorder";
 import { ProductGallery } from "@/components/products/product-gallery";
@@ -76,11 +77,13 @@ type ProductDetailProps = {
     count: number;
     average: string;
   };
+  colorMap?: Record<string, string>;
 };
 
 export function ProductDetailClient({
   product,
   initialReviews,
+  colorMap,
 }: ProductDetailProps) {
   const router = useRouter();
   const addToCart = useCartStore((state) => state.addItem);
@@ -99,6 +102,32 @@ export function ProductDetailClient({
   const [isLoadingWaitlist, setIsLoadingWaitlist] = useState(false);
   const [isWaitlistDialogOpen, setIsWaitlistDialogOpen] = useState(false);
   const [isUnjoinDialogOpen, setIsUnjoinDialogOpen] = useState(false);
+
+  // Helper: Normalize color strings (fix typos, standard formatting)
+  const normalizeColor = (c: string) => {
+    if (!c) return "";
+    let clean = c.trim().toLowerCase().replace(/\s+/g, " ");
+    // Specific fixes based on user feedback
+    if (clean === "offf white") clean = "off white";
+    if (clean === "off-white") clean = "off white";
+    // Title Case for display
+    return clean
+      .split(" ")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+  };
+
+  // Derived: Current Variant Price Addon
+  const currentVariant = useMemo(() => {
+    return (product.product_stock as any[])?.find(
+      (s) =>
+        s.size === selectedSize &&
+        normalizeColor(s.color || "") === normalizeColor(selectedColor || ""),
+    );
+  }, [product.product_stock, selectedSize, selectedColor]);
+
+  const priceAddon = currentVariant?.price_addon || 0;
+  const adjustedPrice = product.price + priceAddon;
 
   const handleShare = async () => {
     try {
@@ -157,20 +186,6 @@ export function ProductDetailClient({
     });
   }, [product.size_options, realTimeStock]);
 
-  // Helper: Normalize color strings (fix typos, standard formatting)
-  const normalizeColor = (c: string) => {
-    if (!c) return "";
-    let clean = c.trim().toLowerCase().replace(/\s+/g, " ");
-    // Specific fixes based on user feedback
-    if (clean === "offf white") clean = "off white";
-    if (clean === "off-white") clean = "off white";
-    // Title Case for display
-    return clean
-      .split(" ")
-      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(" ");
-  };
-
   const colorOptions = useMemo(() => {
     const rawOptions = product.color_options?.length
       ? product.color_options
@@ -179,6 +194,20 @@ export function ProductDetailClient({
     // Deduplicate based on normalized values
     return Array.from(new Set(rawOptions.map(normalizeColor))).sort();
   }, [product.color_options, realTimeStock]);
+
+  // Derived: Price Addons map for the color selector
+  const colorPriceAddons = useMemo(() => {
+    const map: Record<string, number> = {};
+    (product.product_stock as any[])?.forEach((s) => {
+      const color = normalizeColor(s.color || "");
+      const addon = Number(s.price_addon || 0);
+      // We take the max addon for a color across sizes, or just the first match
+      if (addon > (map[color] || 0)) {
+        map[color] = addon;
+      }
+    });
+    return map;
+  }, [product.product_stock]);
 
   // Stock Logic (Normalized)
   const stockMap = useMemo(() => {
@@ -310,7 +339,7 @@ export function ProductDetailClient({
           productId: product.id,
           categoryId: product.category_id || "",
           name: product.name,
-          price: product.price,
+          price: adjustedPrice,
           image: product.main_image_url,
           size: selectedSize,
           color: selectedColor,
@@ -382,9 +411,18 @@ export function ProductDetailClient({
               </h1>
 
               <div className="flex items-center gap-6">
-                <div className="text-2xl font-medium tracking-tight text-foreground/70">
-                  {formatCurrency(product.price)}
-                </div>
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={adjustedPrice}
+                    initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
+                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                    exit={{ opacity: 0, y: -10, filter: "blur(4px)" }}
+                    transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                    className="text-2xl font-medium tracking-tight text-foreground/70"
+                  >
+                    {formatCurrency(adjustedPrice)}
+                  </motion.div>
+                </AnimatePresence>
                 {product.original_price &&
                   product.original_price > product.price && (
                     <div className="flex items-center gap-3">
@@ -394,7 +432,7 @@ export function ProductDetailClient({
                       <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded-sm">
                         -
                         {calculateDiscount(
-                          product.price,
+                          adjustedPrice,
                           product.original_price,
                         )}
                         %
@@ -425,7 +463,12 @@ export function ProductDetailClient({
                 options={colorOptions}
                 selected={selectedColor}
                 onSelect={setSelectedColor}
-                isAvailable={() => true}
+                isAvailable={(color) => {
+                  if (!selectedSize) return true;
+                  return getStock(selectedSize, color) > 0;
+                }}
+                priceAddons={colorPriceAddons}
+                customColorMap={colorMap}
               />
             </div>
 

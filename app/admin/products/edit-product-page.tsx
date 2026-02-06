@@ -17,10 +17,14 @@ export default function EditProductPageClient({
   product,
   stock,
   categories,
+  colorOptions,
+  colorMap,
 }: {
   product: Tables<"products">;
   stock: Tables<"product_stock">[];
   categories: Category[];
+  colorOptions: string[];
+  colorMap?: Record<string, string>;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -43,6 +47,7 @@ export default function EditProductPageClient({
         size: s.size,
         color: s.color,
         quantity: s.quantity ?? 0,
+        price_addon: (s as any).price_addon ?? 0,
       })),
     }),
     [product, stock],
@@ -77,7 +82,7 @@ export default function EditProductPageClient({
         className={cn(
           "flex items-center justify-between gap-4 py-6 px-6 rounded-2xl border transition-all duration-500 shadow-sm",
           isFeatured
-            ? "bg-amber-500/[0.03] border-amber-500/30 shadow-amber-500/5"
+            ? "bg-amber-500/5 border-amber-500/30 shadow-amber-500/5"
             : "bg-card border-border",
         )}
       >
@@ -120,6 +125,8 @@ export default function EditProductPageClient({
       <ProductForm
         initialData={initialData}
         categories={categories}
+        colorOptions={colorOptions}
+        colorMap={colorMap}
         isLoading={isPending}
         onSubmit={handleSubmit}
         onCancel={() => router.back()}

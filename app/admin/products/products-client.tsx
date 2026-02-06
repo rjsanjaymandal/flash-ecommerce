@@ -736,7 +736,7 @@ export function ProductsClient({
                           </TooltipContent>
                         </Tooltip>
                       ) : (
-                        <div className="flex justify-center opacity-0 group-hover:opacity-20 transition-opacity">
+                        <div className="flex justify-center opacity-10 group-hover:opacity-40 transition-opacity">
                           <Sparkles className="h-4 w-4 text-muted-foreground" />
                         </div>
                       )}
@@ -810,7 +810,7 @@ export function ProductsClient({
                       </div>
                     </TableCell>
                     <TableCell className="text-right align-middle pr-4">
-                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center justify-end gap-1 transition-opacity">
                         <Button
                           variant="ghost"
                           size="icon"

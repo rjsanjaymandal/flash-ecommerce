@@ -37,11 +37,13 @@ import {
   Trash2,
   ArrowLeft,
   Sparkles,
+  Palette,
 } from "lucide-react";
 import { uploadImage } from "@/lib/services/upload-service";
 import { slugify } from "@/lib/slugify";
 import { toast } from "sonner";
 import NextImage from "next/image";
+import Link from "next/link";
 import imageLoader from "@/lib/image-loader";
 import {
   useForm,
@@ -65,6 +67,7 @@ import { TagInput } from "@/components/admin/tag-input";
 import { cn } from "@/lib/utils";
 import FlashImage from "@/components/ui/flash-image";
 import { Category } from "@/types/store-types";
+import { VariantGenerator } from "./variant-generator";
 const RichTextEditor = dynamic(
   () =>
     import("@/components/admin/products/rich-text-editor").then(
@@ -81,23 +84,12 @@ const RichTextEditor = dynamic(
 );
 
 const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL", "Oversized"];
-const COLOR_OPTIONS = [
-  "Black",
-  "White",
-  "Navy",
-  "Beige",
-  "Red",
-  "Green",
-  "Blue",
-  "Pink",
-  "Grey",
-  "Yellow",
-  "Purple",
-];
 
 interface ProductFormProps {
   initialData?: ProductFormValues & { id?: string };
   categories: Category[];
+  colorOptions: string[];
+  colorMap?: Record<string, string>;
   isLoading: boolean;
   onSubmit: (data: ProductFormValues) => void;
   onCancel: () => void;
@@ -106,6 +98,8 @@ interface ProductFormProps {
 export function ProductForm({
   initialData,
   categories,
+  colorOptions,
+  colorMap,
   isLoading,
   onSubmit,
   onCancel,
@@ -381,16 +375,42 @@ export function ProductForm({
                     Manage available sizes and colors.
                   </CardDescription>
                 </div>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() =>
-                    append({ size: "M", color: "Black", quantity: 0 })
-                  }
-                >
-                  <Plus className="mr-2 h-4 w-4" /> Add Variant
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Link
+                    href="/admin/products/colors"
+                    className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors pr-2 border-r"
+                    target="_blank"
+                  >
+                    <Palette className="h-3.5 w-3.5" />
+                    Manage Colors
+                  </Link>
+                  <VariantGenerator
+                    colorOptions={colorOptions}
+                    colorMap={colorMap}
+                    existingVariants={fields.map((v) => ({
+                      size: v.size,
+                      color: v.color,
+                    }))}
+                    onGenerate={(newVariants) => {
+                      newVariants.forEach((v) => append(v));
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() =>
+                      append({
+                        size: "M",
+                        color: "Black",
+                        quantity: 0,
+                        price_addon: 0,
+                      })
+                    }
+                  >
+                    <Plus className="mr-2 h-4 w-4" /> Add Variant
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 {fields.length === 0 ? (
@@ -405,6 +425,7 @@ export function ProductForm({
                         <TableHead>Size</TableHead>
                         <TableHead>Color</TableHead>
                         <TableHead className="w-[100px]">Quantity</TableHead>
+                        <TableHead className="w-[100px]">Add-on (₹)</TableHead>
                         <TableHead className="w-[50px]"></TableHead>
                       </TableRow>
                     </TableHeader>
@@ -443,7 +464,7 @@ export function ProductForm({
                               control={control}
                               name={`variants.${idx}.color`}
                               render={({ field }) => {
-                                const isCustom = !COLOR_OPTIONS.includes(
+                                const isCustom = !colorOptions.includes(
                                   field.value,
                                 );
                                 return isCustom ? (
@@ -476,7 +497,7 @@ export function ProductForm({
                                     <SelectTrigger className="h-8 text-xs w-full">
                                       <div className="flex items-center gap-2">
                                         {field.value &&
-                                          COLOR_OPTIONS.includes(
+                                          colorOptions.includes(
                                             field.value,
                                           ) && (
                                             <div
@@ -493,7 +514,7 @@ export function ProductForm({
                                       </div>
                                     </SelectTrigger>
                                     <SelectContent className="bg-popover text-popover-foreground border shadow-md relative z-[100]">
-                                      {COLOR_OPTIONS.map((c) => (
+                                      {colorOptions.map((c) => (
                                         <SelectItem
                                           key={c}
                                           value={c}
@@ -534,6 +555,27 @@ export function ProductForm({
                                 <Input
                                   type="number"
                                   className="h-8"
+                                  {...field}
+                                  onChange={(e) =>
+                                    field.onChange(
+                                      e.target.value === ""
+                                        ? 0
+                                        : Number(e.target.value),
+                                    )
+                                  }
+                                />
+                              )}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <FormField
+                              control={control}
+                              name={`variants.${idx}.price_addon`}
+                              render={({ field }) => (
+                                <Input
+                                  type="number"
+                                  className="h-8"
+                                  step="1"
                                   {...field}
                                   onChange={(e) =>
                                     field.onChange(

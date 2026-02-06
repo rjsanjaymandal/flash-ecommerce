@@ -347,7 +347,8 @@ export async function createProduct(productData: unknown) {
                 product_id: productId,
                 size: v.size,
                 color: v.color,
-                quantity: Number(v.quantity) || 0
+                quantity: Number(v.quantity) || 0,
+                price_addon: Number(v.price_addon) || 0
             }))
 
             const { error: stockErr } = await supabase
@@ -430,7 +431,8 @@ export async function updateProduct(id: string, productData: unknown) {
                     product_id: id,
                     size: v.size,
                     color: v.color,
-                    quantity: Number(v.quantity) || 0
+                    quantity: Number(v.quantity) || 0,
+                    price_addon: Number(v.price_addon) || 0
                 }))
                 const { error: stockErr } = await supabase.from('product_stock').insert(stockData)
                 if (stockErr) return { success: false, error: `Stock Sync Failed: ${stockErr.message}` }

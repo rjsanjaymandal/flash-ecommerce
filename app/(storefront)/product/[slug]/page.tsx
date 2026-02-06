@@ -2,6 +2,7 @@
 import { getCachedProduct } from "@/lib/data/get-product";
 import { getRelatedProducts } from "@/lib/services/product-service";
 import { getReviews } from "@/app/actions/review-actions";
+import { getProductColors } from "@/lib/services/color-service";
 import { ProductDetailClient } from "./product-detail";
 import { ReviewSection } from "@/components/reviews/review-section";
 import { RecentlyViewed } from "@/components/products/recently-viewed";
@@ -67,11 +68,18 @@ export default async function ProductPage({
     notFound();
   }
 
-  // Fetch Reviews and Related in parallel
-  const [reviews, relatedProducts] = await Promise.all([
+  // Fetch Reviews, Related and Colors in parallel
+  const [reviews, relatedProducts, colors] = await Promise.all([
     getReviews(product.id),
     getRelatedProducts(product),
+    getProductColors(),
   ]);
+
+  // Create color map
+  const colorMap: Record<string, string> = {};
+  colors.forEach((c: any) => {
+    colorMap[c.name] = c.hex_code;
+  });
 
   // Calculate Review Stats
   const reviewCount = reviews.length;
@@ -97,6 +105,7 @@ export default async function ProductPage({
       <ProductDetailClient
         product={product}
         initialReviews={{ count: reviewCount, average: averageRating }}
+        colorMap={colorMap}
       />
 
       <div className="container mx-auto px-4 lg:px-8 space-y-20 pb-20">

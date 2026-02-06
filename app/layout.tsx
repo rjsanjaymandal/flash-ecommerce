@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
@@ -10,17 +9,9 @@ import { Analytics } from "@vercel/analytics/react";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { PWARegister } from "@/components/pwa-register"; // Imported PWA Register
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-  display: "swap",
-});
+// Fonts are now loaded via CSS @import in globals.css to bypass build-time fetch restrictions
+const geistSans = { variable: "" };
+const geistMono = { variable: "" };
 
 export const viewport: Viewport = {
   themeColor: "#000000",

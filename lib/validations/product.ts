@@ -4,6 +4,7 @@ export const variantSchema = z.object({
   size: z.string().min(1, "Size is required"),
   color: z.string().min(1, "Color is required"),
   quantity: z.number().min(0, "Quantity must be 0 or more"),
+  price_addon: z.number().min(0, "Add-on price must be 0 or more").default(0),
 })
 
 export const productSchema = z.object({

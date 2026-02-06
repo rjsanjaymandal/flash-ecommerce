@@ -409,6 +409,80 @@ export type Database = {
           },
         ]
       }
+      product_colors: {
+        Row: {
+          id: string
+          name: string
+          hex_code: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          hex_code: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          hex_code?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      blog_posts: {
+        Row: {
+          id: string
+          title: string
+          slug: string
+          content: string
+          excerpt: string | null
+          cover_image: string | null
+          author_id: string | null
+          category: string | null
+          published_at: string | null
+          created_at: string
+          updated_at: string
+          is_published: boolean
+        }
+        Insert: {
+          id?: string
+          title: string
+          slug: string
+          content: string
+          excerpt?: string | null
+          cover_image?: string | null
+          author_id?: string | null
+          category?: string | null
+          published_at?: string | null
+          created_at?: string
+          updated_at?: string
+          is_published?: boolean
+        }
+        Update: {
+          id?: string
+          title?: string
+          slug?: string
+          content?: string
+          excerpt?: string | null
+          cover_image?: string | null
+          author_id?: string | null
+          category?: string | null
+          published_at?: string | null
+          created_at?: string
+          updated_at?: string
+          is_published?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blog_posts_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       product_stock: {
         Row: {
           color: string
@@ -416,6 +490,7 @@ export type Database = {
           product_id: string | null
           quantity: number | null
           size: string
+          price_addon: number | null
         }
         Insert: {
           color: string
@@ -423,6 +498,7 @@ export type Database = {
           product_id?: string | null
           quantity?: number | null
           size: string
+          price_addon?: number | null
         }
         Update: {
           color?: string
@@ -430,6 +506,7 @@ export type Database = {
           product_id?: string | null
           quantity?: number | null
           size?: string
+          price_addon?: number | null
         }
         Relationships: [
           {

@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&display=swap");
 @import "tailwindcss";
 
 /* @tailwind base */
@@ -27,16 +29,19 @@
   --background: #f4f1ea; /* Almond/Paper */
   --foreground: #2b2926; /* Soft Ink */
 
+  --font-geist-sans: "Geist", system-ui, -apple-system, sans-serif;
+  --font-geist-mono: "Geist Mono", ui-monospace, SFMono-Regular, monospace;
+
   /* Primary: Vibrant Rust (High Energy) */
-  --primary: #ea580c; 
-  --primary-foreground: #ffffff; 
+  --primary: #ea580c;
+  --primary-foreground: #ffffff;
 
   /* Secondary: Warm Sand */
-  --secondary: #e7e5e4; 
+  --secondary: #e7e5e4;
   --secondary-foreground: #2b2926;
 
   /* Accent: Muted Clay */
-  --accent: #e5e5e5; 
+  --accent: #e5e5e5;
   --accent-foreground: #2b2926;
 
   /* Brand Palette */
@@ -49,7 +54,7 @@
   --popover: #ffffff;
   --popover-foreground: #2b2926;
 
-  --muted: #ebe5dd; 
+  --muted: #ebe5dd;
   --muted-foreground: #78716c;
 
   --destructive: #ef4444;
@@ -67,15 +72,15 @@
   --foreground: #f8fafc; /* Ice White */
 
   /* Primary: Acid Lime/Volt (Electric Flash) */
-  --primary: #a3e635; 
+  --primary: #a3e635;
   --primary-foreground: #020617;
 
   /* Secondary: Deep Slate */
-  --secondary: #0f172a; 
+  --secondary: #0f172a;
   --secondary-foreground: #f8fafc;
 
   /* Accent: Night Glass */
-  --accent: #1e293b; 
+  --accent: #1e293b;
   --accent-foreground: #f8fafc;
 
   /* Brand Palette (Neon) */
@@ -88,7 +93,7 @@
   --popover: #0f172a;
   --popover-foreground: #f8fafc;
 
-  --muted: #1e293b; 
+  --muted: #1e293b;
   --muted-foreground: #94a3b8;
 
   --destructive: #ef4444;
@@ -98,7 +103,6 @@
   --input: #1e293b;
   --ring: #a3e635;
 }
-
 
 body {
   background: var(--background);
@@ -122,7 +126,11 @@ body {
 }
 
 .gradient-primary {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--brand-rust) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary) 0%,
+    var(--brand-rust) 100%
+  );
 }
 
 .gradient-accent {
@@ -133,7 +141,11 @@ body {
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
-  background-image: linear-gradient(135deg, var(--primary) 0%, var(--brand-rust) 100%);
+  background-image: linear-gradient(
+    135deg,
+    var(--primary) 0%,
+    var(--brand-rust) 100%
+  );
 }
 
 /* Perspective Utilities */
@@ -185,13 +197,21 @@ body {
 
 /* Marquee Animations */
 @keyframes marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-100%); }
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
 }
 
 @keyframes marquee-vertical {
-  from { transform: translateY(0); }
-  to { transform: translateY(-100%); }
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-100%);
+  }
 }
 
 .animate-marquee {
