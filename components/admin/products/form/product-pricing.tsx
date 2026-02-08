@@ -24,7 +24,7 @@ export function ProductPricing() {
   const profit = price - cost;
 
   return (
-    <Card>
+    <Card className="rounded-none border-2">
       <CardHeader>
         <CardTitle>Pricing</CardTitle>
       </CardHeader>
@@ -42,6 +42,7 @@ export function ProductPricing() {
                     placeholder="0.00"
                     {...field}
                     onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                    className="rounded-none border-foreground/20 focus-visible:ring-0 focus-visible:border-foreground font-mono"
                   />
                 </FormControl>
                 <FormMessage />
@@ -60,6 +61,7 @@ export function ProductPricing() {
                     placeholder="0.00"
                     {...field}
                     value={field.value ?? ""}
+                    className="rounded-none border-foreground/20 focus-visible:ring-0 focus-visible:border-foreground font-mono"
                     onChange={(e) =>
                       field.onChange(
                         e.target.value ? parseFloat(e.target.value) : null,
@@ -87,6 +89,7 @@ export function ProductPricing() {
                     placeholder="0.00"
                     {...field}
                     onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                    className="rounded-none border-foreground/20 focus-visible:ring-0 focus-visible:border-foreground font-mono"
                   />
                 </FormControl>
                 <FormDescription>Customers won&apos;t see this</FormDescription>
@@ -96,12 +99,10 @@ export function ProductPricing() {
           />
           <div className="space-y-2 pt-2">
             <div className="text-sm font-medium">Margin</div>
-            <div className="text-sm text-muted-foreground flex items-center justify-between border rounded-md p-2 h-10 bg-muted/20">
-              <span>{Math.round(margin)}%</span>
+            <div className="text-sm text-muted-foreground flex items-center justify-between border-2 border-black rounded-none p-2 h-10 bg-black text-white font-mono uppercase text-[10px] tracking-widest">
+              <span>Margin: {Math.round(margin)}%</span>
               <span
-                className={cn(
-                  profit < 0 ? "text-destructive" : "text-green-600",
-                )}
+                className={cn(profit < 0 ? "text-red-400" : "text-green-400")}
               >
                 ₹{profit.toFixed(2)} Profit
               </span>

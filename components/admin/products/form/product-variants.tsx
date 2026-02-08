@@ -150,7 +150,7 @@ export function ProductVariants({ colorOptions }: ProductVariantsProps) {
   };
 
   return (
-    <Card>
+    <Card className="rounded-none border-2">
       <CardHeader>
         <CardTitle>Variants</CardTitle>
         <CardDescription>
@@ -158,7 +158,7 @@ export function ProductVariants({ colorOptions }: ProductVariantsProps) {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex items-center space-x-2 border p-4 rounded-md">
+        <div className="flex items-center space-x-2 border-2 border-black p-4 rounded-none bg-muted/5">
           <Switch
             id="has-variants"
             checked={hasVariants}
@@ -189,7 +189,7 @@ export function ProductVariants({ colorOptions }: ProductVariantsProps) {
               onClearSelection={() => setSelectedIndices([])}
             />
 
-            <div className="rounded-md border">
+            <div className="rounded-none border-2 border-black overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -255,7 +255,7 @@ export function ProductVariants({ colorOptions }: ProductVariantsProps) {
                         <TableCell>
                           <Input
                             type="number"
-                            className="w-24 h-8"
+                            className="w-24 h-8 rounded-none border-foreground/20 font-mono text-xs"
                             placeholder="0"
                             {...register(`variants.${index}.cost_price`, {
                               valueAsNumber: true,
@@ -264,7 +264,7 @@ export function ProductVariants({ colorOptions }: ProductVariantsProps) {
                         </TableCell>
                         <TableCell>
                           <Input
-                            className="w-32 h-8"
+                            className="w-32 h-8 rounded-none border-foreground/20 font-mono text-xs"
                             placeholder="SKU"
                             {...register(`variants.${index}.sku`)}
                           />
@@ -272,7 +272,7 @@ export function ProductVariants({ colorOptions }: ProductVariantsProps) {
                         <TableCell>
                           <Input
                             type="number"
-                            className="w-20 h-8"
+                            className="w-20 h-8 rounded-none border-foreground/20 font-mono text-xs"
                             {...register(`variants.${index}.quantity`, {
                               valueAsNumber: true,
                             })}

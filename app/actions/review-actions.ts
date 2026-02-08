@@ -106,15 +106,20 @@ export async function submitReview(formData: FormData) {
 }
 
 export async function getReviews(productId: string) {
-  const supabase = await createClient()
+  try {
+    const supabase = await createClient()
 
-  const { data: reviews } = await supabase
-    .from('reviews')
-    .select('*')
-    .eq('product_id', productId)
-    .eq('is_approved', true)
-    .order('created_at', { ascending: false })
-    .limit(50)
+    const { data: reviews } = await supabase
+      .from('reviews')
+      .select('*')
+      .eq('product_id', productId)
+      .eq('is_approved', true)
+      .order('created_at', { ascending: false })
+      .limit(50)
 
-  return reviews || []
+    return reviews || []
+  } catch (error) {
+    console.error('getReviews failed:', error)
+    return []
+  }
 }

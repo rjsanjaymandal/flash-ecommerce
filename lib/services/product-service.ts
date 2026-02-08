@@ -178,11 +178,36 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: SupabaseCli
     // Pagination
     query = query.range(from, to)
 
-    const { data, count, error } = await query
+    try {
+        const { data, count, error } = await query
 
-    if (error) {
-        console.error('fetchProducts error:', error)
-        // For storefront reliability: Return empty data instead of crashing the whole page
+        if (error) {
+            console.error('fetchProducts error:', error)
+            return {
+                data: [],
+                meta: {
+                    total: 0,
+                    page,
+                    limit,
+                    totalPages: 0
+                }
+            }
+        }
+
+        // Client-side mapping for computed fields
+        const processedData = (data || []).map(formatProduct)
+
+        return {
+            data: processedData,
+            meta: {
+                total: count || 0,
+                page,
+                limit,
+                totalPages: Math.ceil((count || 0) / limit)
+            }
+        }
+    } catch (err) {
+        console.error('fetchProducts critical error:', err)
         return {
             data: [],
             meta: {
@@ -191,20 +216,6 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: SupabaseCli
                 limit,
                 totalPages: 0
             }
-        }
-    }
-
-    // Client-side mapping for computed fields that couldn't be done in SQL easily
-    // (though 'average_rating' could be a DB view too)
-    const processedData = (data || []).map(formatProduct)
-
-    return {
-        data: processedData,
-        meta: {
-            total: count || 0,
-            page,
-            limit,
-            totalPages: Math.ceil((count || 0) / limit)
         }
     }
 }
@@ -230,15 +241,20 @@ export async function getProductsSecure(filter: ProductFilter = {}, client: Supa
 export async function getFeaturedProducts(): Promise<Product[]> {
     return unstable_cache(
         async () => {
-             const supabase = createStaticClient()
-             const { data } = await supabase
-                .from('products')
-                .select('*, categories(name), product_stock(*), reviews(rating)')
-                .eq('status', 'active')
-                .order('created_at', { ascending: false })
-                .limit(8)
-            
-             return (data || []).map(formatProduct)
+             try {
+                 const supabase = createStaticClient()
+                 const { data } = await supabase
+                    .from('products')
+                    .select('*, categories(name), product_stock(*), reviews(rating)')
+                    .eq('status', 'active')
+                    .order('created_at', { ascending: false })
+                    .limit(8)
+                
+                 return (data || []).map(formatProduct)
+             } catch (error) {
+                 console.error('getFeaturedProducts failed:', error)
+                 return []
+             }
         },
         ['featured-products'],
         { tags: ['featured-products'], revalidate: 3600 } 
@@ -250,20 +266,25 @@ async function fetchProductBySlug(slug: string): Promise<Product | null> {
     // Check for UUID/ID access
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug)
     
-    if (isUuid) {
-        const { data: idData } = await supabase.from('products').select('*, categories(name), product_stock(*)').eq('id', slug).single()
-        if (idData) return formatProduct(idData)
+    try {
+        if (isUuid) {
+            const { data: idData } = await supabase.from('products').select('*, categories(name), product_stock(*)').eq('id', slug).single()
+            if (idData) return formatProduct(idData)
+        }
+
+        const { data, error } = await supabase
+          .from('products')
+          .select('*, categories(name), product_stock(*)')
+          .eq('slug', slug)
+          .single()
+        
+        if (error) return null
+
+        return formatProduct(data)
+    } catch (error) {
+        console.error('fetchProductBySlug failed:', error)
+        return null
     }
-
-    const { data, error } = await supabase
-      .from('products')
-      .select('*, categories(name), product_stock(*)')
-      .eq('slug', slug)
-      .single()
-    
-    if (error) return null
-
-    return formatProduct(data)
 }
 
 function formatProduct(p: any): Product {
@@ -558,95 +579,97 @@ export async function getRelatedProducts(product: Product): Promise<Product[]> {
     const key = `related-${product.id}`
     return unstable_cache(
         async () => {
-            const supabase = createStaticClient()
-            
-            // AI-Style Recommendation Logic: "Complete the Look"
-            // 1. Fetch Candidates: Items with overlapping tags OR same category
-            // We fetch more items (12) to allow for in-memory scoring and re-ranking
-            const limit = 12 
-            
-            const tags = product.expression_tags || []
-            let candidates: Product[] = []
-
-            if (tags.length > 0) {
-                 // Try to find items with overlapping tags
-                 const { data } = await supabase
-                    .from('products')
-                    .select(`
-                        id, name, slug, price, original_price, main_image_url, 
-                        gallery_image_urls, is_active, is_carousel_featured, category_id, 
-                        expression_tags, created_at,
-                        categories(name), product_stock(*), reviews(rating)
-                    `)
-                    .overlaps('expression_tags', tags)
-                    .neq('id', product.id)
-                    .eq('status', 'active')
-                    .limit(limit)
-                 
-                 candidates = (data as unknown as Product[]) || []
-            }
-
-            // If we don't have enough candidates, fill with category matches
-            if (candidates.length < 4 && product.category_id) {
-                const { data: filler } = await supabase
-                    .from('products')
-                    .select(`
-                        id, name, slug, price, original_price, main_image_url, 
-                        gallery_image_urls, is_active, is_carousel_featured, category_id, 
-                        expression_tags, created_at,
-                        categories(name), product_stock(*), reviews(rating)
-                    `)
-                    .eq('category_id', product.category_id)
-                    .neq('id', product.id)
-                    .eq('status', 'active')
-                    .limit(limit - candidates.length)
+            try {
+                const supabase = createStaticClient()
                 
-                // Merge unique items
-                const existingIds = new Set(candidates.map(c => c.id))
-                ;(filler || []).forEach((item: any) => {
-                    if (!existingIds.has(item.id)) {
-                        candidates.push(item as unknown as Product)
-                    }
-                })
-            }
-
-            // 2. Scoring Algorithm to Rank "Complete the Look"
-            // Score = (Tag Overlap * 2) + (Cross-Category Bonus * 5)
-            const scored = candidates.map((item) => {
-                let score = 0
+                // AI-Style Recommendation Logic: "Complete the Look"
+                // 1. Fetch Candidates: Items with overlapping tags OR same category
+                // We fetch more items (12) to allow for in-memory scoring and re-ranking
+                const limit = 12 
                 
-                // Tag overlap
-                const itemTags = item.expression_tags || []
-                const intersection = tags.filter((t: string) => itemTags.includes(t))
-                score += intersection.length * 2
+                const tags = product.expression_tags || []
+                let candidates: Product[] = []
 
-                // Cross-Category Bonus (Give variety)
-                if (item.category_id !== product.category_id) {
-                    score += 5
+                if (tags.length > 0) {
+                     // Try to find items with overlapping tags
+                     const { data } = await supabase
+                        .from('products')
+                        .select(`
+                            id, name, slug, price, original_price, main_image_url, 
+                            category_id, expression_tags, 
+                            categories(name), product_stock(*), reviews(rating)
+                        `)
+                        .overlaps('expression_tags', tags)
+                        .neq('id', product.id)
+                        .eq('status', 'active')
+                        .limit(limit)
+                     
+                     candidates = (data as unknown as Product[]) || []
                 }
 
-                // Base score for simply existing (so we don't get 0s sorted randomly)
-                score += 1
+                // If we don't have enough candidates, fill with category matches
+                if (candidates.length < 4 && product.category_id) {
+                    const { data: filler } = await supabase
+                        .from('products')
+                        .select(`
+                            id, name, slug, price, original_price, main_image_url, 
+                            category_id, expression_tags, 
+                            categories(name), product_stock(*), reviews(rating)
+                        `)
+                        .eq('category_id', product.category_id)
+                        .neq('id', product.id)
+                        .eq('status', 'active')
+                        .limit(limit - candidates.length)
+                    
+                    // Merge unique items
+                    const existingIds = new Set(candidates.map(c => c.id))
+                    ;(filler || []).forEach((item: any) => {
+                        if (!existingIds.has(item.id)) {
+                            candidates.push(item as unknown as Product)
+                        }
+                    })
+                }
 
-                return { item, score }
-            })
+                // 2. Scoring Algorithm to Rank "Complete the Look"
+                // Score = (Tag Overlap * 2) + (Cross-Category Bonus * 5)
+                const scored = candidates.map((item) => {
+                    let score = 0
+                    
+                    // Tag overlap
+                    const itemTags = item.expression_tags || []
+                    const intersection = tags.filter((t: string) => itemTags.includes(t))
+                    score += intersection.length * 2
 
-            // Sort descending by score
-            scored.sort((a, b) => b.score - a.score)
+                    // Cross-Category Bonus (Give variety)
+                    if (item.category_id !== product.category_id) {
+                        score += 5
+                    }
 
-            // Take top 4 for the UI
-            // Take top 4 for the UI
-            const finalProducts = scored.slice(0, 4).map((s) => s.item as unknown as Product)
+                    // Base score for simply existing (so we don't get 0s sorted randomly)
+                    score += 1
 
-            return finalProducts.map((p) => {
-                const ratings = p.reviews?.map((r) => r.rating).filter((r): r is number => r !== null) || []
-                const avg = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0
-                return {
-                    ...p,
-                    average_rating: avg,
-                    review_count: ratings.length
-                } as Product
-            })
+                    return { item, score }
+                })
+
+                // Sort descending by score
+                scored.sort((a, b) => b.score - a.score)
+
+                // Take top 4 for the UI
+                const finalProducts = scored.slice(0, 4).map((s) => s.item as unknown as Product)
+
+                return finalProducts.map((p) => {
+                    const ratings = p.reviews?.map((r) => r.rating).filter((r): r is number => r !== null) || []
+                    const avg = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0
+                    return {
+                        ...p,
+                        average_rating: avg,
+                        review_count: ratings.length
+                    } as Product
+                })
+            } catch (error) {
+                console.error('getRelatedProducts failed:', error)
+                return []
+            }
         },
         ['related-products', key],
         { tags: ['products', 'related-products'], revalidate: 3600 } // 1 hour buffer

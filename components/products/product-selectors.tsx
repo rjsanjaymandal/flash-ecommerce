@@ -28,15 +28,15 @@ export function ProductSizeSelector({
 }: SizeSelectorProps) {
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-baseline border-b border-black mb-4 pb-2">
-        <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-black">
-          Select Size
+      <div className="flex justify-between items-baseline border-b border-foreground/10 mb-4 pb-2">
+        <span className="text-[10px] uppercase tracking-[0.3em] font-medium text-foreground/80">
+          Size
         </span>
         <button
           onClick={onOpenSizeGuide}
-          className="text-[10px] uppercase tracking-widest text-muted-foreground hover:text-black transition-colors"
+          className="text-[8px] uppercase tracking-[0.3em] text-muted-foreground hover:text-foreground transition-colors outline-none focus:outline-none"
         >
-          Size Guide
+          Guide
         </button>
       </div>
       <div className="flex flex-wrap gap-2">
@@ -50,21 +50,16 @@ export function ProductSizeSelector({
               onClick={() => onSelect(size)}
               disabled={!available}
               className={cn(
-                "h-10 px-4 text-[11px] uppercase tracking-widest transition-all duration-300 border relative group",
+                "h-10 px-4 text-[11px] uppercase tracking-widest transition-all duration-300 border relative group focus-visible:ring-0 focus-visible:ring-offset-0 outline-none",
                 isSelected
-                  ? "border-black text-black font-bold bg-black/3"
+                  ? "border-black text-black font-bold bg-black/5"
                   : "border-transparent text-neutral-500 hover:text-black hover:bg-neutral-50",
                 !available &&
                   "opacity-30 cursor-not-allowed text-neutral-300 decoration-neutral-300 line-through",
               )}
             >
               {size}
-              {isSelected && (
-                <motion.div
-                  layoutId="activeSize"
-                  className="absolute bottom-0 left-0 right-0 h-[2px] bg-black"
-                />
-              )}
+              {/* No explicit motion line, using solid fill for cleaner luxury look */}
             </button>
           );
         })}
@@ -100,16 +95,16 @@ export function ProductColorSelector({
                 disabled={!available}
                 onClick={() => onSelect(color)}
                 className={cn(
-                  "h-12 w-12 rounded-full border-2 transition-all duration-500 ease-out flex items-center justify-center relative overflow-hidden",
+                  "h-10 w-10 rounded-none border transition-all duration-500 ease-out flex items-center justify-center relative overflow-hidden focus-visible:ring-0 focus-visible:ring-offset-0 outline-none",
                   isSelected
-                    ? "border-black scale-110 shadow-lg"
-                    : "border-transparent hover:border-black/20 hover:scale-105",
+                    ? "border-foreground scale-110"
+                    : "border-foreground/10 hover:border-foreground/30",
                   !available && "opacity-30 cursor-not-allowed grayscale",
                 )}
                 title={color}
               >
                 <div
-                  className="w-full h-full rounded-full transition-transform duration-500 group-hover:scale-110"
+                  className="w-full h-full transition-transform duration-500 group-hover:scale-110"
                   style={{
                     backgroundColor: hex,
                     boxShadow:
@@ -122,7 +117,7 @@ export function ProductColorSelector({
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div
                       className={cn(
-                        "w-1.5 h-1.5 rounded-full",
+                        "w-1.5 h-1.5 rounded-none",
                         hex.toLowerCase() === "#ffffff"
                           ? "bg-black"
                           : "bg-white",
@@ -148,9 +143,9 @@ export function ProductFitSelector({
 }: SharedSelectorProps) {
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-baseline border-b border-black mb-4 pb-2">
-        <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-black">
-          Select Fit
+      <div className="flex justify-between items-baseline border-b border-foreground/10 mb-4 pb-2">
+        <span className="text-[10px] uppercase tracking-[0.3em] font-medium text-foreground/80">
+          Fit
         </span>
       </div>
       <div className="flex flex-wrap gap-2">
@@ -164,21 +159,16 @@ export function ProductFitSelector({
               onClick={() => onSelect(fit)}
               disabled={!available}
               className={cn(
-                "h-10 px-4 text-[11px] uppercase tracking-widest transition-all duration-300 border relative group",
+                "h-10 px-4 text-[11px] uppercase tracking-widest transition-all duration-300 border relative group focus-visible:ring-0 focus-visible:ring-offset-0 outline-none",
                 isSelected
-                  ? "border-black text-black font-bold bg-black/[0.03]"
+                  ? "border-black text-black font-bold bg-black/5"
                   : "border-transparent text-neutral-500 hover:text-black hover:bg-neutral-50",
                 !available &&
                   "opacity-30 cursor-not-allowed text-neutral-300 decoration-neutral-300 line-through",
               )}
             >
               {fit}
-              {isSelected && (
-                <motion.div
-                  layoutId="activeFit"
-                  className="absolute bottom-0 left-0 right-0 h-[2px] bg-black"
-                />
-              )}
+              {/* Clear luxury removal of motion bar */}
             </button>
           );
         })}

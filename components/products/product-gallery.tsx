@@ -59,14 +59,14 @@ export function ProductGallery({
             <AdaptiveImageContainer
               key={i}
               imageUrl={img}
-              className="snap-start shrink-0 w-1/2 h-full flex items-center justify-center p-12 border-r border-black/5 last:border-0"
+              className="snap-start shrink-0 w-1/2 h-full flex items-center justify-center p-12 border-r border-foreground/5 last:border-0"
             >
               <div className="relative w-full h-full max-h-[85vh]">
                 <FlashImage
                   src={img}
                   alt={`${name} view ${i + 1}`}
                   fill
-                  className="object-contain mix-blend-multiply [mask-image:radial-gradient(circle,black_85%,transparent_100%)]"
+                  className="object-contain"
                   priority={i < 2} // Prioritize first two
                   sizes="50vw"
                 />
@@ -78,7 +78,7 @@ export function ProductGallery({
         {/* Floating Control Deck (Bottom Right) */}
         <div className="absolute bottom-8 right-8 z-30 flex items-center gap-4">
           {/* Thumbnail Strip */}
-          <div className="flex items-center gap-2 bg-white/80 backdrop-blur-md p-2 rounded-sm shadow-sm border border-black/5">
+          <div className="flex items-center gap-2 bg-background/90 backdrop-blur-lg p-1.5 rounded-none border border-foreground/10">
             {allImages.map((img, i) => (
               <button
                 key={i}
@@ -94,11 +94,10 @@ export function ProductGallery({
                   }
                 }}
                 className={cn(
-                  "relative w-10 h-12 overflow-hidden transition-all duration-300 border",
-                  // Simple active logic range
+                  "relative w-8 h-10 overflow-hidden transition-all duration-300 border outline-none focus:outline-none focus-visible:ring-0 rounded-none",
                   i === activeIndex || i === activeIndex + 1
-                    ? "border-black opacity-100 ring-1 ring-black"
-                    : "border-transparent opacity-50 hover:opacity-100 hover:border-black/20",
+                    ? "border-foreground opacity-100"
+                    : "border-transparent opacity-30 hover:opacity-100 hover:border-foreground/20",
                 )}
               >
                 <FlashImage
@@ -113,19 +112,19 @@ export function ProductGallery({
           </div>
 
           {/* Navigation Arrows */}
-          <div className="flex items-center gap-1 bg-white/80 backdrop-blur-md p-1 rounded-sm shadow-sm border border-black/5 h-[66px]">
+          <div className="flex items-center gap-1 bg-background/90 backdrop-blur-lg p-1 rounded-none border border-foreground/10 h-[58px]">
             {" "}
             {/* Match height approx */}
             <button
               onClick={() => scrollContainer("left")}
-              className="w-8 h-full flex items-center justify-center hover:bg-black/5 transition-colors"
+              className="w-8 h-full flex items-center justify-center hover:bg-black/5 transition-colors outline-none focus:outline-none focus-visible:ring-0"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
-            <div className="w-[1px] h-8 bg-black/10" />
+            <div className="w-[1px] h-6 bg-foreground/10" />
             <button
               onClick={() => scrollContainer("right")}
-              className="w-8 h-full flex items-center justify-center hover:bg-black/5 transition-colors"
+              className="w-8 h-full flex items-center justify-center hover:bg-black/5 transition-colors outline-none focus:outline-none focus-visible:ring-0"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -155,7 +154,7 @@ export function ProductGallery({
                   src={img}
                   alt={`${name} view ${i + 1}`}
                   fill
-                  className="object-contain mix-blend-multiply [mask-image:radial-gradient(circle,black_85%,transparent_100%)]"
+                  className="object-contain"
                   priority={i === 0}
                   sizes="100vw"
                 />
@@ -170,15 +169,17 @@ export function ProductGallery({
             <div
               key={i}
               className={cn(
-                "w-1.5 h-1.5 rounded-full transition-all duration-300 shadow-sm",
-                i === activeIndex ? "bg-black scale-110" : "bg-black/20",
+                "w-1 h-1 rounded-none transition-all duration-300",
+                i === activeIndex
+                  ? "bg-foreground scale-125"
+                  : "bg-foreground/20",
               )}
             />
           ))}
         </div>
 
         {/* Count Badge */}
-        <div className="absolute top-4 right-4 bg-black/5 text-black/60 text-[9px] px-2 py-1 rounded-sm font-medium tracking-widest uppercase">
+        <div className="absolute top-4 right-4 bg-background/50 backdrop-blur-sm text-foreground text-[8px] px-2 py-1 rounded-none font-medium tracking-[0.3em] uppercase">
           {activeIndex + 1} / {allImages.length}
         </div>
       </div>

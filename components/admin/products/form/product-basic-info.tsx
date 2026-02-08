@@ -48,7 +48,7 @@ export function ProductBasicInfo() {
   }, [name, setValue, getValues]);
 
   return (
-    <Card>
+    <Card className="rounded-none border-2">
       <CardHeader>
         <CardTitle>Product Details</CardTitle>
       </CardHeader>
@@ -60,7 +60,11 @@ export function ProductBasicInfo() {
             <FormItem>
               <FormLabel>Title</FormLabel>
               <FormControl>
-                <Input placeholder="e.g. Classic White Tee" {...field} />
+                <Input
+                  placeholder="e.g. Classic White Tee"
+                  {...field}
+                  className="rounded-none border-foreground/20 focus-visible:ring-0 focus-visible:border-foreground"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -74,7 +78,11 @@ export function ProductBasicInfo() {
             <FormItem>
               <FormLabel>Slug (Optional - auto generated)</FormLabel>
               <FormControl>
-                <Input placeholder="classic-white-tee" {...field} />
+                <Input
+                  placeholder="classic-white-tee"
+                  {...field}
+                  className="rounded-none border-foreground/20 focus-visible:ring-0 focus-visible:border-foreground font-mono text-xs"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

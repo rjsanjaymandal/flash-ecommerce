@@ -14,36 +14,44 @@ import type { Category } from '@/types/store-types'
  * by treating them as roots.
  */
 async function fetchCategoriesTree(): Promise<Category[]> {
-    const supabase = createStaticClient()
-    
-    const { data: allCategories, error } = await supabase
-      .from('categories')
-      .select('*')
-      .eq('is_active', true)
-      .order('name')
-    
-    if (error) throw error
-    if (!allCategories) return []
+    try {
+        const supabase = createStaticClient()
+        
+        const { data: allCategories, error } = await supabase
+          .from('categories')
+          .select('*')
+          .eq('is_active', true)
+          .order('name')
+        
+        if (error) {
+            console.error('fetchCategoriesTree error:', error)
+            return []
+        }
+        if (!allCategories) return []
 
-    const categoryMap = new Map<string, Category>()
-    const rootCategories: Category[] = []
+        const categoryMap = new Map<string, Category>()
+        const rootCategories: Category[] = []
 
-    allCategories.forEach((cat) => {
-      categoryMap.set(cat.id, { ...cat, children: [] })
-    })
+        allCategories.forEach((cat) => {
+          categoryMap.set(cat.id, { ...cat, children: [] })
+        })
 
-    allCategories.forEach((cat) => {
-      const node = categoryMap.get(cat.id)!
-      // If parent exists and is also in the map (meaning it is active), link it.
-      if (cat.parent_id && categoryMap.has(cat.parent_id)) {
-        categoryMap.get(cat.parent_id)!.children?.push(node)
-      } else {
-        // Otherwise, it's a root (or an orphan of an inactive parent)
-        rootCategories.push(node)
-      }
-    })
+        allCategories.forEach((cat) => {
+          const node = categoryMap.get(cat.id)!
+          // If parent exists and is also in the map (meaning it is active), link it.
+          if (cat.parent_id && categoryMap.has(cat.parent_id)) {
+            categoryMap.get(cat.parent_id)!.children?.push(node)
+          } else {
+            // Otherwise, it's a root (or an orphan of an inactive parent)
+            rootCategories.push(node)
+          }
+        })
 
-    return rootCategories
+        return rootCategories
+    } catch (error) {
+        console.error('fetchCategoriesTree failed:', error)
+        return []
+    }
 }
 
 export async function getCategoriesTree(): Promise<Category[]> {
@@ -61,18 +69,26 @@ export async function getCategoriesTree(): Promise<Category[]> {
 export async function getLinearCategories(activeOnly = false): Promise<Category[]> {
     return unstable_cache(
         async () => {
-            const supabase = createStaticClient()
-            let query = supabase.from('categories').select('*').order('name')
-            if (activeOnly) {
-                query = query.eq('is_active', true)
+            try {
+                const supabase = createStaticClient()
+                let query = supabase.from('categories').select('*').order('name')
+                if (activeOnly) {
+                    query = query.eq('is_active', true)
+                }
+                const { data, error } = await query
+                if (error) {
+                    console.error('getLinearCategories error:', error)
+                    return []
+                }
+                
+                return (data || []).map((d) => ({
+                    ...d,
+                    children: []
+                })) as Category[]
+            } catch (error) {
+                console.error('getLinearCategories failed:', error)
+                return []
             }
-            const { data, error } = await query
-            if (error) throw error
-            
-            return (data || []).map((d) => ({
-                ...d,
-                children: []
-            })) as Category[]
         },
         [`categories-linear-${activeOnly}`],
         { tags: ['categories'], revalidate: 3600 }
@@ -83,21 +99,29 @@ export async function getRootCategories(limit?: number): Promise<Tables<'categor
   const key = `root-categories-${limit || 'all'}`
   return unstable_cache(
       async () => {
-          const supabase = createStaticClient()
-          let query = supabase
-            .from('categories')
-            .select('*')
-            .is('parent_id', null)
-            .eq('is_active', true)
-            .order('name')
+          try {
+              const supabase = createStaticClient()
+              let query = supabase
+                .from('categories')
+                .select('*')
+                .is('parent_id', null)
+                .eq('is_active', true)
+                .order('name')
 
-          if (limit) {
-            query = query.limit(limit)
+              if (limit) {
+                query = query.limit(limit)
+              }
+
+              const { data, error } = await query
+              if (error) {
+                  console.error('getRootCategories error:', error)
+                  return []
+              }
+              return data || []
+          } catch (error) {
+              console.error('getRootCategories failed:', error)
+              return []
           }
-
-          const { data, error } = await query
-          if (error) throw error
-          return data || []
       },
       ['root-categories', key],
       { tags: ['categories'], revalidate: 3600 }

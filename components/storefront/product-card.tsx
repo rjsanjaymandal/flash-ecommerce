@@ -68,11 +68,6 @@ export function ProductCard({
 }: ProductCardProps) {
   // Use optimized images if available, starting with thumbnail for grid, or mobile for slightly larger cards
   // Fallback to main_image_url
-  const optimizedSrc =
-    product.images?.thumbnail ||
-    product.images?.mobile ||
-    product.main_image_url;
-  const [imageSrc, setImageSrc] = useState(optimizedSrc || "/placeholder.svg");
   const [isNew, setIsNew] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -154,6 +149,24 @@ export function ProductCard({
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
   const [isBuyNowMode, setIsBuyNowMode] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+
+  // Swipeable Gallery State
+  const allImages = [
+    product.main_image_url || "/placeholder.svg",
+    ...(product.gallery_image_urls || []),
+  ].filter(Boolean);
+  const [imgIndex, setImgIndex] = useState(0);
+
+  const handleDragEnd = (event: any, info: any) => {
+    const swipeThreshold = 50;
+    if (info.offset.x < -swipeThreshold) {
+      // Swiped Left -> Next Image
+      setImgIndex((prev) => (prev + 1) % allImages.length);
+    } else if (info.offset.x > swipeThreshold) {
+      // Swiped Right -> Prev Image
+      setImgIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
+    }
+  };
 
   const handleBuyNow = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -439,25 +452,24 @@ export function ProductCard({
         {/* Image Container */}
         <Link
           href={`/product/${product.slug || product.id}`}
-          className="block relative aspect-[3/4] overflow-hidden rounded-md bg-card border border-border/60 shadow-sm group-hover:shadow-md group-hover:border-primary/20 transition-all duration-300"
+          className="block relative aspect-3/4 overflow-hidden rounded-none bg-zinc-50 border border-foreground/5 transition-all duration-300"
         >
           {/* Badges */}
-          <div className="absolute top-2 left-2 z-10 flex flex-col gap-1.5">
+          <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
             {isOutOfStock ? (
-              <Badge className="bg-neutral-900 text-white hover:bg-neutral-800 uppercase tracking-wider text-[9px] font-bold px-2 py-0.5 rounded-sm border-none shadow-sm">
+              <Badge className="bg-foreground text-background hover:bg-foreground uppercase tracking-[0.3em] text-[7px] sm:text-[8px] font-medium px-1.5 sm:px-2 py-0.5 rounded-none border-none shadow-none">
                 Sold Out
               </Badge>
             ) : (
               <>
                 {isNew && (
-                  <Badge className="bg-white text-black hover:bg-white/90 uppercase tracking-wider text-[9px] font-bold px-2 py-0.5 rounded-sm border-none shadow-sm backdrop-blur-md">
+                  <Badge className="bg-background text-foreground hover:bg-background uppercase tracking-[0.3em] text-[8px] font-medium px-2 py-0.5 rounded-none border-none shadow-none backdrop-blur-md">
                     New
                   </Badge>
                 )}
                 {calculateDiscount(product.price, product.original_price) && (
-                  <Badge className="bg-red-500 text-white uppercase tracking-wider text-[9px] font-bold px-2 py-0.5 rounded-sm border-none shadow-sm">
-                    {calculateDiscount(product.price, product.original_price)}%
-                    OFF
+                  <Badge className="bg-foreground text-background uppercase tracking-[0.3em] text-[8px] font-medium px-2 py-0.5 rounded-none border-none shadow-none">
+                    -{calculateDiscount(product.price, product.original_price)}%
                   </Badge>
                 )}
               </>
@@ -468,53 +480,59 @@ export function ProductCard({
           <button
             onClick={handleWishlistClick}
             className={cn(
-              "absolute top-2 right-2 z-10 h-7 w-7 flex items-center justify-center rounded-full bg-white/90 backdrop-blur-sm transition-all duration-200 hover:scale-110 shadow-sm opacity-0 group-hover:opacity-100",
-              isWishlisted
-                ? "text-red-500 opacity-100"
-                : "text-black hover:bg-white",
+              "absolute top-3 right-3 z-10 h-7 w-7 flex items-center justify-center rounded-none bg-background/80 backdrop-blur-sm transition-all duration-200 hover:scale-110 shadow-none opacity-0 group-hover:opacity-100",
+              isWishlisted ? "text-red-500 opacity-100" : "text-foreground",
             )}
           >
             <Heart
               className={cn(
                 "h-3.5 w-3.5 transition-colors",
-                isWishlisted
-                  ? "fill-current"
-                  : "group-hover/heart:fill-red-200",
+                isWishlisted ? "fill-current" : "",
               )}
             />
           </button>
 
-          {/* Main Image Layer */}
+          {/* Gallery Layer */}
           <div className="relative h-full w-full bg-zinc-100 overflow-hidden">
-            <FlashImage
-              src={imageSrc}
-              alt={product.name}
-              fill
-              resizeMode="cover"
-              className={cn(
-                "object-cover transition-all duration-700 ease-in-out",
-                isHovered && product.gallery_image_urls?.[0]
-                  ? "opacity-0 scale-110"
-                  : "opacity-100 scale-100",
-              )}
-              sizes="(max-width: 768px) 50vw, (max-width: 1210px) 33vw, 25vw"
-              priority={priority}
-              onError={() => setImageSrc("/placeholder.svg")}
-            />
+            <motion.div
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.2}
+              onDragEnd={handleDragEnd}
+              className="absolute inset-0 flex touch-none"
+              animate={{ x: `-${imgIndex * 100}%` }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            >
+              {allImages.map((src, idx) => (
+                <div key={idx} className="relative h-full w-full shrink-0">
+                  <FlashImage
+                    src={src}
+                    alt={`${product.name} - ${idx + 1}`}
+                    fill
+                    resizeMode="cover"
+                    className="object-cover"
+                    sizes="(max-width: 768px) 50vw, (max-width: 1210px) 33vw, 25vw"
+                    priority={priority && idx === 0}
+                  />
+                </div>
+              ))}
+            </motion.div>
 
-            {/* Hover Secondary Image */}
-            {product.gallery_image_urls?.[0] && (
-              <FlashImage
-                src={product.gallery_image_urls[0]}
-                alt={`${product.name} - alternate`}
-                fill
-                resizeMode="cover"
-                className={cn(
-                  "object-cover transition-all duration-700 ease-in-out absolute inset-0",
-                  isHovered ? "opacity-100 scale-100" : "opacity-0 scale-105",
-                )}
-                sizes="(max-width: 768px) 50vw, (max-width: 1210px) 33vw, 25vw"
-              />
+            {/* Pagination Dots */}
+            {allImages.length > 1 && (
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex gap-1.5 px-2 py-1 rounded-full bg-black/5 backdrop-blur-sm">
+                {allImages.map((_, idx) => (
+                  <div
+                    key={idx}
+                    className={cn(
+                      "h-1 transition-all duration-300 rounded-none",
+                      idx === imgIndex
+                        ? "w-4 bg-foreground"
+                        : "w-1 bg-foreground/20",
+                    )}
+                  />
+                ))}
+              </div>
             )}
           </div>
 
@@ -524,11 +542,11 @@ export function ProductCard({
               <>
                 <Button
                   size="sm"
-                  className="flex-1 bg-white text-black hover:bg-neutral-100 shadow-md font-bold h-9 rounded-sm transition-all duration-200 uppercase text-[10px] tracking-widest border border-transparent"
+                  className="flex-1 bg-foreground text-background hover:opacity-90 shadow-none font-medium h-9 rounded-none transition-all duration-200 uppercase text-[9px] tracking-[0.3em] border-none"
                   onClick={handleAddToCart}
                   disabled={isAddingToCart}
                 >
-                  {isAddingToCart ? "Adding..." : "Add to Cart"}
+                  {isAddingToCart ? "Adding..." : "Add to bag"}
                 </Button>
                 <div onClick={(e) => e.preventDefault()} className="shrink-0">
                   <QuickView product={product} />
@@ -538,10 +556,10 @@ export function ProductCard({
               <Button
                 size="sm"
                 className={cn(
-                  "flex-1 shadow-md font-bold h-9 rounded-sm transition-all duration-200 uppercase text-[10px] tracking-widest",
+                  "flex-1 shadow-none font-medium h-9 rounded-none transition-all duration-200 uppercase text-[9px] tracking-[0.3em]",
                   isOnWaitlist
-                    ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                    : "bg-neutral-900 hover:bg-neutral-800 text-white",
+                    ? "bg-muted text-muted-foreground"
+                    : "bg-foreground text-background hover:opacity-90",
                 )}
                 onClick={handlePreOrder}
                 disabled={isLoadingWaitlist}
@@ -550,7 +568,7 @@ export function ProductCard({
                   ? "..."
                   : isOnWaitlist
                     ? "Joined"
-                    : "Notify Me"}
+                    : "Notify me"}
               </Button>
             )}
           </div>
@@ -559,29 +577,29 @@ export function ProductCard({
         {/* Details */}
         <div className="space-y-2 px-0.5">
           <div className="flex flex-col gap-1">
-            <div className="flex justify-between items-start gap-2">
+            <div className="flex justify-between items-baseline gap-2">
               <Link
                 href={`/product/${product.slug || product.id}`}
-                className="hover:text-primary transition-colors flex-1 min-w-0"
+                className="hover:opacity-70 transition-opacity flex-1 min-w-0"
               >
-                <h3 className="font-bold text-xs lg:text-sm leading-tight text-foreground uppercase tracking-wide line-clamp-2 h-9">
+                <h3 className="font-serif text-[15px] leading-tight text-foreground tracking-tight line-clamp-2 h-9">
                   {product.name}
                 </h3>
               </Link>
-              <div className="flex flex-col items-end min-h-[2.5rem] justify-start">
-                <p className="font-bold text-xs lg:text-sm text-foreground tracking-tight tabular-nums whitespace-nowrap">
+              <div className="flex flex-col items-end min-h-10 justify-start">
+                <p className="font-serif text-[13px] text-foreground tracking-tight tabular-nums whitespace-nowrap">
                   {formatCurrency(product.price)}
                 </p>
                 {product.original_price &&
                   product.original_price > product.price && (
-                    <p className="text-[10px] text-red-500/80 line-through tracking-tight tabular-nums">
+                    <p className="text-[10px] text-muted-foreground line-through tracking-tight tabular-nums opacity-60">
                       {formatCurrency(product.original_price)}
                     </p>
                   )}
               </div>
             </div>
 
-            <div className="flex items-center justify-between text-[10px] text-muted-foreground/70 uppercase tracking-wider font-medium">
+            <div className="flex items-center justify-between text-[9px] sm:text-[10px] text-muted-foreground/70 uppercase tracking-[0.2em] sm:tracking-[0.3em] font-medium border-t border-foreground/5 pt-1.5">
               <span>{product.categories?.name || "Collection"}</span>
               {hasMultipleOptions && (
                 <span>{stock.length > 0 ? "+ Options" : ""}</span>
@@ -597,7 +615,7 @@ export function ProductCard({
               <Button
                 variant="outline"
                 size="sm"
-                className="h-9 rounded-sm text-[10px] font-bold uppercase tracking-widest border-zinc-200 shadow-sm hover:bg-zinc-50"
+                className="h-9 rounded-none text-[9px] font-medium uppercase tracking-[0.2em] border-foreground/10 hover:bg-zinc-50"
                 onClick={handleAddToCart}
                 disabled={isAddingToCart}
               >
@@ -605,7 +623,7 @@ export function ProductCard({
               </Button>
               <Button
                 size="sm"
-                className="h-9 rounded-sm text-[10px] font-bold uppercase tracking-widest shadow-sm bg-neutral-900 text-white hover:bg-neutral-800"
+                className="h-9 rounded-none text-[9px] font-medium uppercase tracking-[0.2em] bg-foreground text-background hover:opacity-90"
                 onClick={handleBuyNow}
                 disabled={isAddingToCart}
               >
@@ -616,10 +634,10 @@ export function ProductCard({
             <Button
               size="sm"
               className={cn(
-                "col-span-2 h-9 rounded-sm text-[10px] font-bold uppercase tracking-widest shadow-sm",
+                "col-span-2 h-9 rounded-none text-[9px] font-medium uppercase tracking-[0.2em]",
                 isOnWaitlist
-                  ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                  : "bg-neutral-900 hover:bg-neutral-800 text-white",
+                  ? "bg-muted text-muted-foreground"
+                  : "bg-foreground text-background hover:opacity-90",
               )}
               onClick={handlePreOrder}
               disabled={isLoadingWaitlist}

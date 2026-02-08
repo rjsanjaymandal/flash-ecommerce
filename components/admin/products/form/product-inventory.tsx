@@ -17,7 +17,7 @@ export function ProductInventory() {
   const trackQuantity = watch("track_quantity");
 
   return (
-    <Card>
+    <Card className="rounded-none border-2">
       <CardHeader>
         <CardTitle>Inventory</CardTitle>
       </CardHeader>
@@ -30,7 +30,11 @@ export function ProductInventory() {
               <FormItem>
                 <FormLabel>SKU (Stock Keeping Unit) - Optional</FormLabel>
                 <FormControl>
-                  <Input placeholder="" {...field} />
+                  <Input
+                    placeholder=""
+                    {...field}
+                    className="rounded-none border-foreground/20 focus-visible:ring-0 focus-visible:border-foreground font-mono"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -60,7 +64,7 @@ export function ProductInventory() {
 
         {trackQuantity && (
           <div className="pt-2">
-            <div className="text-sm text-muted-foreground p-3 border border-blue-100 bg-blue-50/50 rounded-md dark:bg-blue-900/10 dark:border-blue-800">
+            <div className="text-[10px] uppercase font-mono tracking-widest text-muted-foreground p-3 border-2 border-dashed border-muted-foreground/20 rounded-none">
               Quantity for standard items is managed here. If you add variants
               (Size/Color), quantity will be tracked per variant.
             </div>

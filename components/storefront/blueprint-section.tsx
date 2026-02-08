@@ -40,28 +40,25 @@ export function BlueprintSection({ product }: BlueprintSectionProps) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="text-4xl md:text-7xl font-black tracking-tighter text-white uppercase italic"
+            className="text-3xl md:text-6xl font-serif text-white leading-tight"
           >
-            THE{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/40">
-              BLUEPRINT
-            </span>
+            The <span className="opacity-50 italic">Blueprint</span>
           </motion.h2>
           <motion.p
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="text-zinc-500 font-mono text-xs md:text-sm mt-4 tracking-widest uppercase"
+            className="text-white/40 font-medium text-[10px] mt-4 tracking-[0.4em] uppercase"
           >
-            {product?.name || "Heavyweight Edition"}
+            {product?.name || "Premium Craftsmanship"}
           </motion.p>
         </div>
 
         {/* MAIN BLUEPRINT UI - NOW CLICKABLE */}
         <Link
           href={productUrl}
-          className="block group cursor-pointer relative max-w-5xl mx-auto md:aspect-[16/9] bg-zinc-900/50 rounded-3xl border border-white/10 backdrop-blur-sm overflow-hidden flex flex-col md:block hover:border-white/30 transition-colors duration-500"
+          className="block group cursor-pointer relative max-w-5xl mx-auto md:aspect-[16/9] bg-white/5 rounded-none border border-white/10 backdrop-blur-sm overflow-hidden flex flex-col md:block hover:border-white/20 transition-colors duration-500"
         >
           {/* CROSSHAIRS (Desktop Only) */}
           <div className="hidden md:block absolute top-8 left-8 w-8 h-8 border-l border-t border-white/20 group-hover:border-emerald-500/50 transition-colors duration-500" />
@@ -180,19 +177,17 @@ function BlueprintPoint({
 
       <div
         className={cn(
-          "bg-zinc-900/90 backdrop-blur-md border border-white/10 p-3 md:p-4 rounded-xl shadow-xl w-full md:w-auto flex flex-col md:block items-center md:items-start text-center md:text-left justify-center md:justify-start",
+          "bg-white/5 backdrop-blur-md border border-white/10 p-3 md:p-4 rounded-none shadow-none w-full md:w-auto flex flex-col md:block items-center md:items-start text-center md:text-left justify-center md:justify-start",
           direction === "left" ? "md:order-2" : "md:order-1",
         )}
       >
-        <div className="flex items-center gap-2 mb-1 md:mb-2">
-          <div className="p-1 rounded-md bg-white/10 text-white hidden md:block">
-            <Icon className="w-3.5 h-3.5" />
-          </div>
-          <span className="text-[10px] uppercase tracking-wider text-zinc-400 font-bold">
+        <div className="flex items-center gap-2 mb-1 md:mb-2 text-white/60">
+          <Icon className="w-3 h-3" />
+          <span className="text-[9px] uppercase tracking-[0.3em] font-medium">
             {label}
           </span>
         </div>
-        <div className="text-lg md:text-xl font-black text-white uppercase italic tracking-tighter leading-none">
+        <div className="text-lg md:text-xl font-serif text-white leading-none">
           {value}
         </div>
       </div>

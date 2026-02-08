@@ -10,8 +10,9 @@ import { GoogleAnalytics } from "@next/third-parties/google";
 import { PWARegister } from "@/components/pwa-register"; // Imported PWA Register
 
 // Fonts are now loaded via CSS @import in globals.css to bypass build-time fetch restrictions
-const geistSans = { variable: "" };
-const geistMono = { variable: "" };
+const fontSans = { variable: "--font-sans" };
+const fontSerif = { variable: "--font-serif" };
+const fontMono = { variable: "--font-mono" };
 
 export const viewport: Viewport = {
   themeColor: "#000000",
@@ -24,32 +25,25 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: "Flash Fashion (FlashhFashion) | Premium Anime Streetwear India",
-    template: "%s | Flash Fashion (FlashhFashion)",
+    default: "FLASH | Minimalist Luxury & Premium Streetwear India",
+    template: "%s | FLASH",
   },
   description:
-    "Flash Fashion - The ultimate clothing brand for best quality printed t-shirts and Anime Streetwear in India. Experience the Flash revolution with gender-neutral, cyberpunk, and intelligent nano-fabric apparel.",
+    "Explore FLASH - India's premier minimalist luxury label. Cinematic aesthetic meeting high-performance craftsmanship. Discover our collection of premium streetwear, heavyweight essentials, and artistic apparel.",
   keywords: [
-    "clothing brand",
-    "best quality clothing",
-    "printed tshirts",
-    "best printed tshirts",
-    "best printed tshirts",
+    "luxury clothing brand",
+    "minimalist luxury india",
+    "premium streetwear",
+    "high-end apparel",
     "flash fashion",
     "flashhfashion",
-    "flashh fashion",
-    "flash",
-    "flash fashion india",
-    "flash clothing brand",
-    "anime streetwear",
-    "queer fashion",
-    "gender neutral clothing",
-    "nano fabric materials",
-    "intelligent clothing",
-    "cyberpunk aesthetic",
-    "japanese streetwear",
-    "premium clothing india",
-    "streetwear for all",
+    "minimalist fashion",
+    "premium basics india",
+    "luxury streetwear delhi",
+    "designer streetwear india",
+    "cinematic fashion label",
+    "heavyweight cotton quality",
+    "luxury essentials",
     "flashhfashion clothing",
   ],
   metadataBase: new URL("https://flashhfashion.in"),
@@ -111,7 +105,7 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased overflow-x-hidden`}
+        className={`${fontSans.variable} ${fontSerif.variable} ${fontMono.variable} antialiased font-sans`}
       >
         <Providers
           initialUser={user}

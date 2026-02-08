@@ -487,46 +487,52 @@ export function ProductsClient({
 
       {/* Floating Action Bar */}
       {selectedIds.size > 0 && (
-        <div className="absolute top-14 left-0 right-0 z-10 flex items-center justify-between bg-primary text-primary-foreground p-2 px-4 rounded-lg shadow-lg animate-in fade-in slide-in-from-top-2 mx-1">
-          <div className="text-sm font-medium flex items-center gap-2">
-            <CheckCircle className="h-4 w-4" />
-            {selectedIds.size} Selected
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 bg-background border border-border p-2 px-6 rounded-full shadow-2xl animate-in fade-in slide-in-from-bottom-4">
+          <div className="text-sm font-medium flex items-center gap-2 border-r pr-4 mr-2">
+            <CheckCircle className="h-4 w-4 text-emerald-500" />
+            <span className="tabular-nums font-bold">{selectedIds.size}</span>
+            <span className="text-muted-foreground hidden sm:inline">
+              Selected
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <Button
               size="sm"
-              variant="secondary"
-              className="h-7 text-xs border-none"
+              variant="outline"
+              className="h-8 text-xs border-dashed gap-1 hover:border-primary/50"
               onClick={() => handleBulkStatus(true)}
             >
-              Mark Active
+              <div className="h-2 w-2 rounded-full bg-emerald-500" />
+              Active
             </Button>
             <Button
               size="sm"
-              variant="secondary"
-              className="h-7 text-xs border-none"
+              variant="outline"
+              className="h-8 text-xs border-dashed gap-1 hover:border-primary/50"
               onClick={() => handleBulkStatus(false)}
             >
-              Mark Draft
+              <div className="h-2 w-2 rounded-full bg-slate-400" />
+              Draft
             </Button>
+            <div className="w-px h-4 bg-border mx-1" />
             <Button
               size="sm"
               variant="destructive"
-              className="h-7 text-xs"
+              className="h-8 text-xs gap-1 shadow-sm"
               onClick={handleBulkDelete}
               disabled={isBulkDeleting}
             >
               {isBulkDeleting ? (
                 <Loader2 className="h-3 w-3 animate-spin" />
               ) : (
-                <Trash2 className="h-3 w-3 mr-1" />
+                <Trash2 className="h-3 w-3" />
               )}
-              Delete
+              Delete ({selectedIds.size})
             </Button>
             <Button
               size="icon"
               variant="ghost"
-              className="h-7 w-7 text-primary-foreground/80 hover:text-primary-foreground hover:bg-white/10"
+              className="h-8 w-8 ml-1 rounded-full text-muted-foreground hover:bg-muted"
               onClick={() => setSelectedIds(new Set())}
             >
               <XCircle className="h-4 w-4" />

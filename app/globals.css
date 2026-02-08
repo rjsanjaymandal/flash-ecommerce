@@ -1,5 +1,5 @@
-@import url("https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap");
 @import "tailwindcss";
 
 /* @tailwind base */
@@ -19,21 +19,23 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
+  --font-mono: var(--font-mono);
   --radius-lg: var(--radius);
 }
 
 :root {
-  /* "The Atelier" - Light Mode (Warm, Organic, Tactile) */
-  --background: #f4f1ea; /* Almond/Paper */
-  --foreground: #2b2926; /* Soft Ink */
+  /* "The Atelier" - Gucci-Inspired Luxury (Bone, Noir, Gold) */
+  --background: #f9f9f7; /* Bone/Luxury Paper */
+  --foreground: #111111; /* Noir Ink */
 
-  --font-geist-sans: "Geist", system-ui, -apple-system, sans-serif;
-  --font-geist-mono: "Geist Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-serif: "EB Garamond", serif;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, monospace;
 
-  /* Primary: Vibrant Rust (High Energy) */
-  --primary: #ea580c;
+  /* Primary: Noir (Classic Luxury) */
+  --primary: #111111;
   --primary-foreground: #ffffff;
 
   /* Secondary: Warm Sand */
@@ -232,4 +234,51 @@ body {
 .h-screen-safe {
   height: 100vh; /* Fallback */
   height: 100dvh;
+}
+@keyframes progress {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-progress {
+  animation: progress 2s ease-in-out infinite;
+}
+
+@layer base {
+  /* Suppress all default browser focus 'boxes' & rings on click - Aggressive Kill Switch */
+  *,
+  *::before,
+  *::after {
+    outline: none !important;
+    box-shadow: none !important;
+    --tw-ring-offset-width: 0px !important;
+    --tw-ring-width: 0px !important;
+    --tw-ring-color: transparent !important;
+  }
+  
+  :focus,
+  :active,
+  :focus-visible,
+  :focus-within {
+    outline: none !important;
+    box-shadow: none !important;
+    outline-style: none !important;
+  }
+
+  button, 
+  [role="button"],
+  input,
+  select,
+  textarea,
+  a {
+    -webkit-tap-highlight-color: transparent !important;
+    outline: none !important;
+  }
 }

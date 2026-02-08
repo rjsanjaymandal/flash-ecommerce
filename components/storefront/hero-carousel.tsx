@@ -47,7 +47,7 @@ function DashIndicators({
         <button
           key={i}
           onClick={() => onChange(i)}
-          className="relative h-1 w-8 lg:w-12 bg-white/20 rounded-full overflow-hidden transition-all duration-300"
+          className="relative h-[2px] w-8 lg:w-12 bg-white/20 overflow-hidden transition-all duration-300"
         >
           {i === current && (
             <motion.div
@@ -188,7 +188,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
       ref={containerRef}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
-      className="relative w-full h-[70vh] lg:h-[80vh] bg-zinc-100 dark:bg-zinc-900 overflow-hidden"
+      className="relative w-full h-[65vh] lg:h-[80vh] bg-zinc-100 dark:bg-zinc-900 overflow-hidden"
     >
       <AnimatePresence initial={false} custom={direction}>
         <motion.div
@@ -244,7 +244,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                 transition={{ delay: 0.3 }}
                 className="mb-4"
               >
-                <span className="inline-block bg-primary px-3 py-1 rounded text-[10px] font-black uppercase tracking-widest shadow-lg">
+                <span className="inline-block bg-white text-black px-3 py-1 rounded-none text-[8px] font-medium uppercase tracking-[0.3em]">
                   New Arrival
                 </span>
                 {currentProduct.name.toLowerCase().includes("hoodie") && (
@@ -252,20 +252,20 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.5 }}
-                    className="ml-3 inline-flex items-center gap-1.5 bg-white/10 backdrop-blur-md border border-white/20 px-3 py-1 rounded text-[10px] font-black uppercase tracking-widest text-white shadow-lg"
+                    className="ml-3 inline-flex items-center gap-1.5 bg-white/5 backdrop-blur-md border border-white/10 px-3 py-1 rounded-none text-[8px] font-medium uppercase tracking-[0.3em] text-white"
                   >
-                    <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+                    <span className="h-1 w-1 rounded-none bg-white animate-pulse" />
                     430 GSM Quality
                   </motion.span>
                 )}
               </motion.div>
 
-              <div className="min-h-[90px] lg:min-h-[160px] flex flex-col justify-end mb-6">
+              <div className="min-h-[80px] lg:min-h-[160px] flex flex-col justify-end mb-4">
                 <motion.h1
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.4 }}
-                  className="text-4xl lg:text-7xl xl:text-8xl font-black uppercase italic tracking-tighter leading-[0.85] line-clamp-2 drop-shadow-2xl"
+                  className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-serif text-white leading-tight tracking-tight drop-shadow-2xl"
                 >
                   {currentProduct.name}
                 </motion.h1>
@@ -275,13 +275,13 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.5 }}
-                className="flex items-center gap-4 mb-10"
+                className="flex items-center gap-3 lg:gap-4 mb-8"
               >
-                <div className="h-px w-8 lg:w-16 bg-white/40" />
-                <span className="text-sm lg:text-xl text-white/90 font-bold tracking-[0.2em] uppercase whitespace-nowrap overflow-hidden text-ellipsis max-w-[250px] lg:max-w-none">
+                <div className="h-px w-6 sm:w-8 lg:w-16 bg-white/40" />
+                <span className="text-[9px] lg:text-xs text-white/80 font-medium tracking-[0.3em] lg:tracking-[0.4em] uppercase whitespace-nowrap overflow-hidden text-ellipsis max-w-[180px] sm:max-w-[250px] lg:max-w-none">
                   {getTagline(currentProduct)}
                 </span>
-                <div className="h-px w-8 lg:w-16 bg-white/40" />
+                <div className="h-px w-6 sm:w-8 lg:w-16 bg-white/40" />
               </motion.div>
 
               <motion.div
@@ -292,12 +292,12 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
               >
                 <div className="flex flex-col">
                   <div className="flex items-baseline gap-3">
-                    <span className="text-4xl lg:text-6xl font-black">
+                    <span className="text-2xl sm:text-3xl lg:text-4xl font-serif">
                       {formatCurrency(currentProduct.price)}
                     </span>
                     {currentProduct.original_price &&
                       currentProduct.original_price > currentProduct.price && (
-                        <span className="text-white/40 line-through text-lg lg:text-2xl font-medium">
+                        <span className="text-white/40 line-through text-sm sm:text-base lg:text-lg font-serif">
                           {formatCurrency(currentProduct.original_price)}
                         </span>
                       )}
@@ -309,7 +309,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
 
                 <Button
                   size="lg"
-                  className="h-16 lg:h-20 px-10 lg:px-16 rounded-full text-lg font-black uppercase tracking-widest bg-white text-black hover:bg-white/90 active:scale-95 transition-all shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
+                  className="h-12 sm:h-14 lg:h-16 px-8 lg:px-16 rounded-none text-[9px] sm:text-[10px] font-medium uppercase tracking-[0.4em] bg-white text-black hover:opacity-90 active:scale-95 transition-all shadow-none mt-2 lg:mt-0"
                   onClick={handleBuyNow}
                 >
                   Shop the Drop
@@ -340,17 +340,17 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
           size="icon"
           variant="ghost"
           onClick={handlePrev}
-          className="h-14 w-14 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white pointer-events-auto border border-white/10"
+          className="h-12 w-12 rounded-none bg-white/5 hover:bg-white/10 backdrop-blur-md text-white pointer-events-auto border border-white/5"
         >
-          <ChevronLeft className="h-6 w-6" />
+          <ChevronLeft className="h-5 w-5" />
         </Button>
         <Button
           size="icon"
           variant="ghost"
           onClick={handleNext}
-          className="h-14 w-14 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white pointer-events-auto border border-white/10"
+          className="h-12 w-12 rounded-none bg-white/5 hover:bg-white/10 backdrop-blur-md text-white pointer-events-auto border border-white/5"
         >
-          <ChevronRight className="h-6 w-6" />
+          <ChevronRight className="h-5 w-5" />
         </Button>
       </div>
 

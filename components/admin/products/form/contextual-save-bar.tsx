@@ -39,12 +39,14 @@ export function ContextualSaveBar({
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: -100, opacity: 0 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="fixed top-0 left-0 right-0 z-50 bg-black text-white px-4 py-3 shadow-2xl flex items-center justify-between lg:pl-[280px]" // Account for sidebar width
+          className="fixed top-0 left-0 right-0 z-50 bg-black text-white px-4 py-3 shadow-2xl flex items-center justify-between lg:pl-[280px] border-b border-white/10" // Account for sidebar width
         >
           <div className="container mx-auto max-w-5xl flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <AlertCircle className="h-4 w-4 text-yellow-400" />
-              <span className="font-medium text-sm">Unsaved changes</span>
+              <span className="font-mono text-[10px] uppercase tracking-tighter">
+                Unsaved changes detected
+              </span>
             </div>
 
             <div className="flex items-center space-x-3">
@@ -53,7 +55,7 @@ export function ContextualSaveBar({
                 size="sm"
                 onClick={onDiscard}
                 disabled={isLoading}
-                className="text-white hover:text-white hover:bg-white/10"
+                className="text-white hover:text-white hover:bg-white/10 rounded-none uppercase text-[10px] font-bold tracking-widest"
               >
                 Discard
               </Button>
@@ -61,7 +63,7 @@ export function ContextualSaveBar({
                 size="sm"
                 onClick={onSave}
                 disabled={isLoading}
-                className="bg-green-600 hover:bg-green-700 text-white border-none shadow-none"
+                className="bg-white hover:bg-neutral-200 text-black border-none shadow-none rounded-none uppercase text-[10px] font-bold tracking-widest px-6"
               >
                 {isLoading ? (
                   <>

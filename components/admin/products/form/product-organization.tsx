@@ -27,7 +27,7 @@ export function ProductOrganization({ categories }: ProductOrganizationProps) {
   const { control } = useFormContext();
 
   return (
-    <Card>
+    <Card className="rounded-none border-2">
       <CardHeader>
         <CardTitle>Organization</CardTitle>
       </CardHeader>
@@ -40,7 +40,7 @@ export function ProductOrganization({ categories }: ProductOrganizationProps) {
               <FormLabel>Status</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger className="rounded-none border-foreground/20 font-mono text-[10px] uppercase tracking-widest">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                 </FormControl>
@@ -63,7 +63,7 @@ export function ProductOrganization({ categories }: ProductOrganizationProps) {
               <FormLabel>Category</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger className="rounded-none border-foreground/20">
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                 </FormControl>

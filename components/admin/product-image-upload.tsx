@@ -59,7 +59,7 @@ export function ProductImageUpload({
     <div className={cn("space-y-4", className)}>
       <div
         className={cn(
-          "relative rounded-xl border-2 border-dashed border-muted-foreground/25 transition-all hover:bg-accent/50",
+          "relative rounded-none border-2 border-dashed border-muted-foreground/25 transition-all hover:bg-black/5 hover:border-black",
           isUploading && "opacity-50 pointer-events-none",
           !preview &&
             "h-64 flex flex-col items-center justify-center cursor-pointer",
@@ -67,14 +67,20 @@ export function ProductImageUpload({
         )}
       >
         {isUploading ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <Loader2 className="h-10 w-10 animate-spin text-primary" />
-            <p className="mt-4 text-sm font-medium text-muted-foreground animate-pulse">
-              Optimizing variants...
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/5 z-20">
+            <div className="relative">
+              <RefreshCw className="h-12 w-12 animate-spin text-black opacity-20" />
+              <Loader2 className="absolute inset-0 h-12 w-12 animate-spin text-black" />
+            </div>
+            <p className="mt-4 text-[10px] font-mono font-black uppercase tracking-[0.2em] text-black animate-pulse">
+              Generating Optimized Variants...
             </p>
+            <div className="mt-2 w-32 h-1 bg-black/10 overflow-hidden">
+              <div className="h-full bg-black animate-progress" />
+            </div>
           </div>
         ) : preview ? (
-          <div className="relative w-full h-full group overflow-hidden rounded-xl">
+          <div className="relative w-full h-full group overflow-hidden rounded-none">
             <FlashImage
               src={preview}
               alt="Product Preview"
@@ -111,7 +117,7 @@ export function ProductImageUpload({
               </div>
             </div>
 
-            <div className="absolute bottom-3 right-3 px-2 py-1 bg-black/60 text-white text-[10px] font-bold uppercase rounded-full backdrop-blur-sm">
+            <div className="absolute bottom-3 right-3 px-2 py-1 bg-black text-white text-[10px] font-mono font-bold uppercase rounded-none backdrop-blur-sm">
               Optimized
             </div>
           </div>

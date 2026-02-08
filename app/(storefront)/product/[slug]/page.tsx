@@ -9,7 +9,15 @@ import { RecentlyViewed } from "@/components/products/recently-viewed";
 import { NewsletterSection } from "@/components/marketing/newsletter-section";
 import { ProductCarousel } from "@/components/products/product-carousel";
 import { ProductJsonLd } from "@/components/seo/product-json-ld";
+import { getProducts } from "@/lib/services/product-service";
 import { notFound } from "next/navigation";
+
+export async function generateStaticParams() {
+  const { data: products } = await getProducts({ limit: 20, sort: "trending" });
+  return products.map((product) => ({
+    slug: product.slug,
+  }));
+}
 
 export const revalidate = 60; // Revalidate every minute
 
@@ -63,7 +71,7 @@ export default async function ProductPage({
   const productData = getCachedProduct(slug);
 
   // We need product logic to get ID for reviews/related, so wait for product first
-  const product = (await productData) as any;
+  const product = await productData;
 
   if (!product) {
     notFound();
@@ -104,16 +112,30 @@ export default async function ProductPage({
         reviews={reviews as any[]}
       />
       <ProductDetailClient
-        product={product}
+        product={
+          {
+            ...product,
+            description: product.description || "",
+            main_image_url: product.main_image_url || "",
+          } as any
+        }
         initialReviews={{ count: reviewCount, average: averageRating }}
         colorMap={colorMap}
       />
 
       <div className="container mx-auto px-4 lg:px-8 space-y-20 pb-20">
         {/* Reviews */}
-        <ReviewSection productId={product.id} reviews={reviews as any[]} />
+        <ReviewSection
+          productId={product.id}
+          reviews={
+            reviews.map((r: any) => ({
+              ...r,
+              user_name: r.user_name || "Anonymous",
+              comment: r.comment || "",
+            })) as any[]
+          }
+        />
 
-        {/* Related Products */}
         <ProductCarousel products={relatedProducts} />
 
         {/* Recently Viewed */}

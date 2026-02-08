@@ -39,16 +39,16 @@ function GridSkeleton() {
   return (
     <div className="container mx-auto px-4 py-16">
       <div className="flex flex-col items-center text-center mb-12 space-y-4">
-        <Skeleton className="h-6 w-24 rounded-full" />
-        <Skeleton className="h-10 w-64" />
-        <Skeleton className="h-4 w-96" />
+        <Skeleton className="h-6 w-24 rounded-none" />
+        <Skeleton className="h-10 w-64 rounded-none" />
+        <Skeleton className="h-4 w-96 rounded-none" />
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="flex flex-col gap-3">
-            <Skeleton className="aspect-3/4 rounded-xl" />
-            <Skeleton className="h-4 w-3/4" />
-            <Skeleton className="h-4 w-1/4" />
+            <Skeleton className="aspect-3/4 rounded-none" />
+            <Skeleton className="h-4 w-3/4 rounded-none" />
+            <Skeleton className="h-4 w-1/4 rounded-none" />
           </div>
         ))}
       </div>
@@ -71,7 +71,29 @@ import {
 export const revalidate = 900;
 
 export default async function Home() {
-  const categories = await getRootCategories(4);
+  let categories: any[] = [];
+  try {
+    // Fetch more categories to ensure we find the target ones
+    const allCategories = await getRootCategories(10);
+
+    // Sort "T-Shirt" / "Oversized Tees" to the front
+    categories = allCategories
+      .sort((a, b) => {
+        const aIsTarget =
+          a.slug === "oversized-tees" ||
+          a.name.toLowerCase().includes("t-shirt");
+        const bIsTarget =
+          b.slug === "oversized-tees" ||
+          b.name.toLowerCase().includes("t-shirt");
+
+        if (aIsTarget && !bIsTarget) return -1;
+        if (!aIsTarget && bIsTarget) return 1;
+        return 0;
+      })
+      .slice(0, 4);
+  } catch (error) {
+    console.error("[Home] Failed to fetch categories:", error);
+  }
 
   let heroProducts: HeroProduct[] = [];
   try {
@@ -91,8 +113,7 @@ export default async function Home() {
     <div className="min-h-screen bg-background text-foreground selection:bg-primary selection:text-primary-foreground pb-12">
       {/* SEO H1: Anime Streetwear Primary Keyword */}
       <h1 className="sr-only">
-        FlashhFashion | Flash Fashion India - Anime Streetwear & Gender-Neutral
-        Clothing
+        FLASH | Minimalist Luxury Fashion & Premium Streetwear Label India
       </h1>
 
       {/* 1. HERO CAROUSEL (Dynamic) */}

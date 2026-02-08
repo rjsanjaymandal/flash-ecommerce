@@ -142,6 +142,8 @@ export function ProductDetailClient({
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
   const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
 
+  // Auto-Select Logic: If there's only 1 option for any attribute, select it automatically.
+
   const { user } = useAuth();
 
   // Real-time Stock & Hype Check
@@ -167,7 +169,7 @@ export function ProductDetailClient({
       ? [...product.size_options]
       : realTimeStock?.length
         ? Array.from(new Set(realTimeStock.map((s) => s.size)))
-        : [...STANDARD_SIZES];
+        : ["One Size"];
 
     return sizes.sort((a, b) => {
       const indexA = STANDARD_SIZES.indexOf(a);
@@ -190,11 +192,44 @@ export function ProductDetailClient({
 
   const fitOptions = useMemo(() => {
     if (product.fit_options?.length) return product.fit_options;
+    // If no fit options are defined, we DO NOT default to "Regular" for display.
+    // We want to hide the selector in this case.
     const fits = realTimeStock?.map((s: any) => s.fit).filter(Boolean) || [];
-    return Array.from(new Set(fits)).length
-      ? Array.from(new Set(fits))
-      : ["Regular"];
+    // Only show if there are actual distinct fits in valid stock
+    const uniqueFits = Array.from(new Set(fits));
+
+    // If the only available fit is "Regular" (and it wasn't explicit in fit_options), hide it.
+    if (uniqueFits.length === 1 && uniqueFits[0].toLowerCase() === "regular") {
+      return [];
+    }
+
+    if (uniqueFits.length > 0) return uniqueFits;
+
+    return [];
   }, [product.fit_options, realTimeStock]);
+
+  // Auto-Select Logic: If there's only 1 option for any attribute, select it automatically.
+  useEffect(() => {
+    // 1. Auto-Select Size
+    if (sizeOptions.length === 1 && !selectedSize) {
+      setSelectedSize(sizeOptions[0]);
+    }
+    // 2. Auto-Select Color
+    if (colorOptions.length === 1 && !selectedColor) {
+      setSelectedColor(colorOptions[0]);
+    }
+    // 3. Auto-Select Fit (Only if options exist)
+    if (fitOptions.length === 1 && !selectedFit) {
+      setSelectedFit(fitOptions[0]);
+    }
+  }, [
+    sizeOptions,
+    colorOptions,
+    fitOptions,
+    selectedSize,
+    selectedColor,
+    selectedFit,
+  ]);
 
   // Stock Logic (Normalized)
   const stockMap = useMemo(() => {
@@ -231,7 +266,9 @@ export function ProductDetailClient({
     return getStock(selectedSize, selectedColor, fit) > 0;
   };
 
-  const maxQty = getStock(selectedSize, selectedColor, selectedFit);
+  // If fit is hidden, use "Regular" for stock lookup as per default standard
+  const activeFit = selectedFit || "Regular";
+  const maxQty = getStock(selectedSize, selectedColor, activeFit);
 
   // Logic: OOS if Global stock is 0 OR if specific selection is 0
   const isGlobalOutOfStock = totalStock === 0 && !loadingStock;
@@ -322,7 +359,7 @@ export function ProductDetailClient({
     if (
       !selectedSize ||
       !selectedColor ||
-      (fitOptions.length > 1 && !selectedFit)
+      (fitOptions.length > 0 && !selectedFit)
     ) {
       toast.error("Please complete your selection");
       return false;
@@ -341,7 +378,7 @@ export function ProductDetailClient({
           image: product.main_image_url,
           size: selectedSize,
           color: selectedColor,
-          fit: selectedFit,
+          fit: selectedFit || "Regular", // Fallback for backend if fit hidden
           quantity: quantity,
           maxQuantity: maxQty,
           slug: product.slug || "",
@@ -386,26 +423,26 @@ export function ProductDetailClient({
       </div>
 
       {/* SPLIT INFO SECTION (Grid) */}
-      <div className="w-full max-w-[1400px] mx-auto px-6 lg:px-12 pt-8 pb-16">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-y-2 lg:gap-x-24">
+      <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-12 pt-8 pb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-y-6 lg:gap-x-24">
           {/* LEFT COLUMN: Identity & Visuals (Col-7) */}
           <div className="col-span-1 lg:col-span-7 flex flex-col gap-6">
             <div className="space-y-6">
               {/* Breadcrumb-ish / Collection Name & Share */}
               <div className="flex items-center justify-between">
-                <span className="text-[9px] uppercase tracking-[0.3em] text-muted-foreground font-medium">
+                <span className="text-[8px] uppercase tracking-[0.4em] text-muted-foreground font-medium">
                   Collection 2026
                 </span>
                 <button
                   onClick={handleShare}
-                  className="p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                  className="p-1 hover:opacity-50 transition-all outline-none focus:outline-none"
                   aria-label="Share product"
                 >
-                  <Share2 className="w-4 h-4 text-foreground" />
+                  <Share2 className="w-3.5 h-3.5 text-foreground stroke-[1.5]" />
                 </button>
               </div>
 
-              <h1 className="text-4xl lg:text-5xl font-serif text-foreground leading-tight tracking-tight">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-serif text-foreground leading-tight tracking-tight">
                 {product.name}
               </h1>
 
@@ -417,7 +454,7 @@ export function ProductDetailClient({
                     animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                     exit={{ opacity: 0, y: -10, filter: "blur(4px)" }}
                     transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                    className="text-2xl font-medium tracking-tight text-foreground/70"
+                    className="text-xl font-serif tracking-tight text-foreground/80"
                   >
                     {formatCurrency(adjustedPrice)}
                   </motion.div>
@@ -428,7 +465,7 @@ export function ProductDetailClient({
                       <span className="text-sm text-muted-foreground line-through">
                         {formatCurrency(product.original_price)}
                       </span>
-                      <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded-sm">
+                      <span className="text-[10px] uppercase tracking-[0.2em] text-foreground border border-foreground/20 px-2 py-0.5 rounded-none">
                         -
                         {calculateDiscount(
                           adjustedPrice,
@@ -443,13 +480,13 @@ export function ProductDetailClient({
               {/* Rating Summary */}
               {initialReviews.count > 0 && (
                 <div className="flex items-center gap-2">
-                  <div className="flex items-center text-amber-500">
-                    <Star className="w-3 h-3 fill-current" />
-                    <span className="ml-1 text-xs font-bold">
+                  <div className="flex items-center text-foreground">
+                    <Star className="w-2.5 h-2.5 fill-current" />
+                    <span className="ml-1 text-[10px] font-medium tracking-widest uppercase">
                       {initialReviews.average}
                     </span>
                   </div>
-                  <span className="text-[10px] text-muted-foreground uppercase tracking-widest">
+                  <span className="text-[8px] text-muted-foreground uppercase tracking-[0.3em]">
                     ({initialReviews.count} Reviews)
                   </span>
                 </div>
@@ -487,12 +524,12 @@ export function ProductDetailClient({
 
             {/* Description Block (Desktop Only) */}
             <div className="space-y-4 hidden lg:block">
-              <h3 className="text-xs uppercase tracking-widest font-bold text-foreground">
-                Product Description
+              <h3 className="text-[10px] uppercase tracking-[0.3em] font-medium text-foreground">
+                Description
               </h3>
-              <div className="text-sm leading-relaxed text-muted-foreground max-w-xl font-medium">
+              <div className="text-[13px] leading-relaxed text-muted-foreground max-w-xl font-medium">
                 <div
-                  className="prose prose-sm prose-neutral dark:prose-invert max-w-none text-muted-foreground font-medium [&>p]:mb-4 [&>ul]:list-disc [&>ul]:pl-5"
+                  className="prose prose-neutral dark:prose-invert max-w-none text-muted-foreground font-serif tracking-wide [&>p]:mb-4"
                   dangerouslySetInnerHTML={{ __html: product.description }}
                 />
               </div>
@@ -516,10 +553,10 @@ export function ProductDetailClient({
               <Button
                 size="lg"
                 className={cn(
-                  "w-full h-14 text-sm font-bold uppercase tracking-[0.2em] rounded-none transition-all duration-300",
+                  "w-full h-14 text-[10px] font-medium uppercase tracking-[0.3em] rounded-none transition-all duration-300 active:scale-[0.98] outline-none focus:outline-none",
                   isOutOfStock
                     ? "bg-muted text-muted-foreground hover:bg-muted/80"
-                    : "bg-primary text-primary-foreground hover:bg-primary/90",
+                    : "bg-foreground text-background hover:opacity-90",
                 )}
                 disabled={isOutOfStock ? isLoadingWaitlist : false}
                 onClick={() =>
@@ -528,11 +565,11 @@ export function ProductDetailClient({
               >
                 {isOutOfStock
                   ? isOnWaitlist
-                    ? "You're on the list"
-                    : "Join Waitlist"
+                    ? "Joined waitlist"
+                    : "Join waitlist"
                   : selectedSize && selectedColor && selectedFit
-                    ? "Add to Shopping Bag"
-                    : "Make Your Selection"}
+                    ? "Add to shopping bag"
+                    : "Make your selection"}
               </Button>
             </div>
 
@@ -540,7 +577,7 @@ export function ProductDetailClient({
             <div className="pt-4 block lg:hidden border-t border-border">
               <button
                 onClick={() => setIsDescriptionOpen(!isDescriptionOpen)}
-                className="w-full flex items-center justify-between group"
+                className="w-full flex items-center justify-between group outline-none focus:outline-none"
               >
                 <h3 className="text-xs uppercase tracking-widest font-bold text-foreground group-hover:opacity-70 transition-opacity">
                   Product Description
@@ -579,11 +616,11 @@ export function ProductDetailClient({
                 <div className="space-y-1">
                   <Link
                     href="/contact"
-                    className="text-xs uppercase tracking-widest font-bold underline decoration-1 underline-offset-4 decoration-foreground/30 hover:decoration-foreground block text-foreground"
+                    className="text-[11px] font-serif hover:underline underline-offset-4 decoration-foreground/30 block text-foreground tracking-wide"
                   >
                     Contact Us
                   </Link>
-                  <p className="text-[11px] text-muted-foreground leading-normal">
+                  <p className="text-[11px] text-muted-foreground leading-normal font-serif opacity-70">
                     Our Client Advisors are available to answer your questions.
                   </p>
                 </div>
@@ -593,8 +630,8 @@ export function ProductDetailClient({
             {/* Accordion / Services */}
             <div className="pt-4">
               <div className="group">
-                <button className="flex items-center gap-2 text-xs uppercase tracking-widest font-bold mb-2 text-foreground">
-                  <Plus className="w-3 h-3" /> Flash Services
+                <button className="flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] font-medium mb-2 text-foreground outline-none focus:outline-none">
+                  <Plus className="w-3 h-3" /> Services
                 </button>
                 <p className="text-[11px] text-muted-foreground pl-5">
                   Complimentary Shipping, Complimentary Exchanges & Returns,

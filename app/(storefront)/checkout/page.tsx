@@ -379,7 +379,7 @@ export default function CheckoutPage() {
         },
         prefill: {
           name: `${data.firstName} ${data.lastName}`,
-          email: user?.email || "guest@example.com",
+          email: user?.email || data.email || "guest@example.com",
           contact: data.phone,
         },
         theme: {

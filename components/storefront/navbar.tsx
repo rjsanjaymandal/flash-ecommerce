@@ -66,13 +66,6 @@ export function StorefrontNavbar() {
 
   // ... (keep defined vars)
 
-  // Debug Admin Access
-  console.log("Navbar Auth State:", {
-    email: user?.email,
-    role: profile?.role,
-    isAdmin,
-  });
-
   // Fetch Categories logic ... (omitted for brevity in replacement if unchanged, but I need to include it or rely on existing)
   // Re-including fetch to be safe as I am replacing the whole function body essentially or need to be careful with chunks.
   // Actually, I'll just target the `return` block mostly, but need to insert the state hook.
@@ -127,8 +120,8 @@ export function StorefrontNavbar() {
                     className="bg-background"
                   />
                 </div>
-                <span className="hidden lg:flex text-xl font-black tracking-tighter text-gradient items-center gap-1">
-                  FLASH
+                <span className="hidden lg:flex text-2xl font-serif tracking-[0.2em] text-foreground lowercase">
+                  flash
                 </span>
               </Link>
             </div>
@@ -138,20 +131,20 @@ export function StorefrontNavbar() {
               <div className="group relative">
                 <Link
                   href="/shop"
-                  className="flex items-center gap-1.5 text-[13px] font-bold uppercase tracking-wider text-muted-foreground hover:text-primary transition-all px-4 py-2 hover:bg-primary/5 rounded-full"
+                  className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.3em] text-muted-foreground hover:text-foreground transition-all px-4 py-2"
                 >
                   Shop
-                  <ChevronDown className="h-3.5 w-3.5 opacity-50 group-hover:opacity-100 transition-opacity" />
+                  <ChevronDown className="h-3 w-3 opacity-30 group-hover:opacity-100 transition-opacity" />
                 </Link>
                 <CategoryDropdown categories={categories} />
               </div>
               <Link
                 href="/lab"
                 className={cn(
-                  "text-[13px] font-bold uppercase tracking-wider transition-all px-4 py-2 rounded-full",
+                  "text-[10px] font-medium uppercase tracking-[0.3em] transition-all px-4 py-2",
                   pathname === "/lab"
-                    ? "text-primary bg-primary/10"
-                    : "text-muted-foreground hover:text-primary hover:bg-primary/5",
+                    ? "text-foreground font-black"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 Lab
@@ -159,10 +152,10 @@ export function StorefrontNavbar() {
               <Link
                 href="/blog"
                 className={cn(
-                  "text-[13px] font-bold uppercase tracking-wider transition-all px-4 py-2 rounded-full",
+                  "text-[10px] font-medium uppercase tracking-[0.3em] transition-all px-4 py-2",
                   pathname?.startsWith("/blog")
-                    ? "text-primary bg-primary/10"
-                    : "text-muted-foreground hover:text-primary hover:bg-primary/5",
+                    ? "text-foreground font-black"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 Blog
@@ -170,10 +163,10 @@ export function StorefrontNavbar() {
               <Link
                 href="/contact"
                 className={cn(
-                  "text-[13px] font-bold uppercase tracking-wider transition-all px-4 py-2 rounded-full",
+                  "text-[10px] font-medium uppercase tracking-[0.3em] transition-all px-4 py-2",
                   pathname === "/contact"
-                    ? "text-primary bg-primary/10"
-                    : "text-muted-foreground hover:text-primary hover:bg-primary/5",
+                    ? "text-foreground font-black"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 Contact
@@ -200,7 +193,7 @@ export function StorefrontNavbar() {
                 >
                   <Heart className="h-5 w-5" />
                   {mounted && wishlistCount > 0 && (
-                    <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full gradient-primary text-[9px] font-black text-white ring-2 ring-background">
+                    <span className="absolute top-1 right-1 flex h-3.5 w-3.5 items-center justify-center rounded-none bg-foreground text-[8px] font-medium text-background">
                       {wishlistCount}
                     </span>
                   )}
@@ -225,7 +218,7 @@ export function StorefrontNavbar() {
               >
                 <ShoppingBag className="h-5 w-5" />
                 {mounted && cartCount > 0 && (
-                  <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full gradient-primary text-[9px] font-black text-white ring-2 ring-background">
+                  <span className="absolute top-1 right-1 flex h-3.5 w-3.5 items-center justify-center rounded-none bg-foreground text-[8px] font-medium text-background">
                     {cartCount}
                   </span>
                 )}
@@ -256,7 +249,7 @@ export function StorefrontNavbar() {
                         <Link href="/admin" className="hidden md:block">
                           <Button
                             size="sm"
-                            className="rounded-full gradient-primary shadow-lg shadow-primary/20 text-[10px] font-black uppercase tracking-widest h-8"
+                            className="rounded-none bg-foreground text-background shadow-none text-[9px] font-medium uppercase tracking-[0.3em] h-7"
                           >
                             Admin
                           </Button>
@@ -264,10 +257,10 @@ export function StorefrontNavbar() {
                       )}
                     </div>
                   ) : (
-                    <Link href="/login">
+                    <Link href="/login" className="hidden sm:block">
                       <Button
                         size="sm"
-                        className="rounded-full px-6 font-black uppercase tracking-[0.15em] text-[10px] gradient-primary shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all duration-300"
+                        className="rounded-none px-6 font-medium uppercase tracking-[0.3em] text-[9px] bg-foreground text-background shadow-none hover:opacity-80 transition-all duration-300"
                       >
                         Join Now
                       </Button>

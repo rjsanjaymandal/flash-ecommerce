@@ -24,16 +24,16 @@ export function BulkVariantActions({
   if (selectedCount === 0) return null;
 
   return (
-    <div className="flex items-center space-x-4 p-2 bg-muted/40 rounded-md border animate-in slide-in-from-top-2 overflow-x-auto">
+    <div className="flex items-center space-x-4 p-2 bg-black text-white rounded-none border-2 border-black animate-in slide-in-from-top-2 overflow-x-auto">
       <div className="flex items-center space-x-2 shrink-0">
-        <span className="text-sm font-medium bg-primary/10 text-primary px-2 py-1 rounded-sm">
+        <span className="text-[10px] font-mono uppercase tracking-widest bg-white/10 text-white px-2 py-1 rounded-none">
           {selectedCount} selected
         </span>
         <Button
           variant="ghost"
           size="icon"
           onClick={onClearSelection}
-          className="h-6 w-6"
+          className="h-6 w-6 rounded-none hover:bg-white/10 text-white"
         >
           <X className="h-3 w-3" />
         </Button>
@@ -46,14 +46,14 @@ export function BulkVariantActions({
           placeholder="Set Cost"
           value={cost}
           onChange={(e) => setCost(e.target.value)}
-          className="h-8 w-24 text-xs"
+          className="h-8 w-24 text-[10px] rounded-none border-white/20 bg-white/5 text-white font-mono"
           type="number"
         />
         <Button
           size="sm"
-          variant="secondary"
+          variant="outline"
           disabled={!cost}
-          className="h-8 px-2"
+          className="h-8 px-4 rounded-none border-white/20 hover:bg-white hover:text-black font-mono text-[10px] uppercase tracking-tighter"
           onClick={() => {
             onUpdateCost(Number(cost));
             setCost("");
@@ -68,14 +68,14 @@ export function BulkVariantActions({
           placeholder="Set Stock"
           value={stock}
           onChange={(e) => setStock(e.target.value)}
-          className="h-8 w-24 text-xs"
+          className="h-8 w-24 text-[10px] rounded-none border-white/20 bg-white/5 text-white font-mono"
           type="number"
         />
         <Button
           size="sm"
-          variant="secondary"
+          variant="outline"
           disabled={!stock}
-          className="h-8 px-2"
+          className="h-8 px-4 rounded-none border-white/20 hover:bg-white hover:text-black font-mono text-[10px] uppercase tracking-tighter"
           onClick={() => {
             onUpdateStock(Number(stock));
             setStock("");

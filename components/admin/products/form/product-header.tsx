@@ -27,7 +27,7 @@ export function ProductHeader({
   return (
     <div className="flex items-center justify-between gap-4">
       <div className="flex items-center gap-4">
-        <Button variant="outline" size="icon" asChild>
+        <Button variant="outline" size="icon" asChild className="rounded-none">
           <Link href="/admin/products">
             <ArrowLeft className="h-4 w-4" />
           </Link>
@@ -35,17 +35,29 @@ export function ProductHeader({
         <div className="flex flex-col gap-1">
           <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
             {isDirty ? "Unsaved Changes" : "Edit Product"}
-            <Badge variant={status === "active" ? "default" : "secondary"}>
+            <Badge
+              variant={status === "active" ? "default" : "secondary"}
+              className="rounded-none font-mono uppercase text-[10px] px-2 py-0"
+            >
               {status || "Draft"}
             </Badge>
           </h1>
         </div>
       </div>
       <div className="flex items-center gap-2">
-        <Button variant="ghost" type="button" onClick={onDiscard}>
+        <Button
+          variant="ghost"
+          type="button"
+          onClick={onDiscard}
+          className="rounded-none"
+        >
           Discard
         </Button>
-        <Button type="submit" disabled={isLoading || isUploading}>
+        <Button
+          type="submit"
+          disabled={isLoading || isUploading}
+          className="rounded-none"
+        >
           {isLoading || isUploading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />

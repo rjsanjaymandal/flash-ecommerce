@@ -39,14 +39,14 @@ export function CategoryVibes({ categories }: CategoryVibesProps) {
       {/* BACKGROUND MARQUEE */}
       <div className="absolute top-20 left-0 right-0 opacity-[0.03] pointer-events-none select-none z-0">
         <Marquee className="[--duration:60s] [--gap:2rem]" reverse>
-          <span className="text-[12rem] font-black italic tracking-tighter mx-8">
-            PICK YOUR VIBE
+          <span className="text-[5rem] sm:text-[10rem] font-serif tracking-[0.2em] mx-8 lowercase">
+            the collections
           </span>
-          <span className="text-[12rem] font-black italic tracking-tighter mx-8 text-stroke-2">
-            UNAPOLOGETIC
+          <span className="text-[5rem] sm:text-[10rem] font-serif tracking-[0.2em] mx-8 opacity-50 lowercase">
+            aesthetic
           </span>
-          <span className="text-[12rem] font-black italic tracking-tighter mx-8">
-            BOLD
+          <span className="text-[5rem] sm:text-[10rem] font-serif tracking-[0.2em] mx-8 lowercase">
+            minimalist
           </span>
         </Marquee>
       </div>
@@ -55,22 +55,22 @@ export function CategoryVibes({ categories }: CategoryVibesProps) {
         <div className="flex flex-col items-start gap-4 mb-12">
           <BrandBadge
             variant="primary"
-            className="mb-2 shadow-lg shadow-primary/20"
+            className="mb-2 bg-foreground text-background rounded-none px-4 py-1"
           >
-            <Sparkles className="w-3 h-3 mr-1" /> The Collections
+            <Sparkles className="w-3 h-3 mr-2" /> The Collections
           </BrandBadge>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-5xl md:text-8xl font-black tracking-tighter text-foreground leading-[0.85] uppercase italic"
+            className="text-3xl md:text-6xl font-serif tracking-tight text-foreground leading-tight"
           >
-            PICK YOUR <span className="text-gradient">VIBE</span>
+            Pick your <span className="opacity-50 italic">category</span>
           </motion.h2>
         </div>
 
-        {/* DYNAMIC BENTO GRID */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 auto-rows-[300px]">
+        {/* DYNAMIC BENTO GRID / CAROUSEL */}
+        <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-6 -mx-4 px-4 md:grid md:grid-cols-12 md:gap-6 md:pb-0 md:mx-0 md:px-0 md:auto-rows-[300px] scrollbar-hide">
           {/* If we have exactly 3 categories, use a 6-3-3 split or 8-4 split structure */}
           {/* Current Logic: Just map and let CSS Grid flow, but with specific spans */}
 
@@ -102,9 +102,11 @@ export function CategoryVibes({ categories }: CategoryVibesProps) {
                 key={cat.id}
                 href={`/shop?category=${cat.id}`}
                 className={cn(
-                  "group relative overflow-hidden rounded-[2rem] bg-zinc-900 border border-white/10 transition-all duration-500 hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/10",
-                  "min-h-[300px] md:min-h-0",
-                  spanClass,
+                  "group relative overflow-hidden rounded-none bg-zinc-900 border border-foreground/5 transition-all duration-700 hover:border-foreground/20",
+                  "flex-none w-[85vw] sm:w-[50vw] md:w-auto", // Mobile: Fixed width carousel items
+                  "h-[400px] md:h-auto", // Mobile: Fixed height
+                  "snap-center", // Mobile: Snapping
+                  spanClass, // Desktop: Grid spans
                 )}
               >
                 {/* IMAGE */}
@@ -131,16 +133,16 @@ export function CategoryVibes({ categories }: CategoryVibesProps) {
                 {/* CONTENT */}
                 <div className="absolute inset-0 p-6 md:p-8 flex flex-col justify-end">
                   <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 ease-out">
-                    <h3 className="text-3xl md:text-5xl font-black tracking-tighter text-white uppercase italic leading-[0.9] mb-2 drop-shadow-lg">
+                    <h3 className="text-xl md:text-4xl font-serif text-white leading-tight mb-2 drop-shadow-lg">
                       {cat.name}
                     </h3>
 
                     <div className="flex items-center gap-2 text-white/80 group-hover:text-primary transition-colors duration-300">
-                      <span className="text-xs font-bold uppercase tracking-widest hidden md:inline-block">
-                        Shop Now
+                      <span className="text-[10px] font-medium uppercase tracking-[0.3em] hidden md:inline-block">
+                        explore
                       </span>
-                      <div className="p-2 rounded-full bg-white/10 backdrop-blur-sm group-hover:bg-primary group-hover:text-white transition-all duration-300">
-                        <ArrowUpRight className="w-4 h-4" />
+                      <div className="p-2 bg-white text-black group-hover:bg-white group-hover:scale-110 transition-all duration-500">
+                        <ArrowUpRight className="w-3.5 h-3.5" />
                       </div>
                     </div>
                   </div>
@@ -149,23 +151,7 @@ export function CategoryVibes({ categories }: CategoryVibesProps) {
             );
           })}
 
-          {/* "VIEW ALL" TILE */}
-          <Link
-            href="/shop"
-            className={cn(
-              "group relative overflow-hidden rounded-[2rem] bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex flex-col items-center justify-center p-6 text-center hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors",
-              categories.length === 3
-                ? "md:col-span-8 md:row-span-1"
-                : "md:col-span-3 md:row-span-1",
-            )}
-          >
-            <div className="relative z-10 flex items-center gap-4">
-              <span className="text-xl font-black uppercase tracking-wider">
-                View All Collections
-              </span>
-              <ArrowUpRight className="w-6 h-6 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-            </div>
-          </Link>
+          {/* "VIEW ALL" TILE REMOVED */}
         </div>
       </div>
     </section>

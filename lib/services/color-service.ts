@@ -9,18 +9,23 @@ export interface ProductColor {
 }
 
 export async function getProductColors(): Promise<ProductColor[]> {
-  const supabase = (await createClient());
-  const { data, error } = await supabase
-    .from("product_colors")
-    .select("*")
-    .order("name", { ascending: true });
+  try {
+    const supabase = (await createClient());
+    const { data, error } = await supabase
+      .from("product_colors")
+      .select("*")
+      .order("name", { ascending: true });
 
-  if (error) {
-    console.error("Error fetching product colors:", error);
+    if (error) {
+      console.error("Error fetching product colors:", error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('getProductColors failed:', error);
     return [];
   }
-
-  return data || [];
 }
 
 export async function addProductColor(name: string, hexCode: string) {

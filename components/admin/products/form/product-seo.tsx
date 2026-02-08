@@ -32,7 +32,7 @@ export function ProductSEO() {
   const previewUrl = `https://store.com/products/${slug}`;
 
   return (
-    <Card>
+    <Card className="rounded-none border-2">
       <CardHeader>
         <CardTitle>Search Engine Listing</CardTitle>
       </CardHeader>
@@ -41,11 +41,11 @@ export function ProductSEO() {
           <div className="text-sm font-medium text-muted-foreground">
             Preview
           </div>
-          <div className="p-4 rounded-md border bg-card">
+          <div className="p-4 rounded-none border-2 border-black/5 bg-muted/5 font-sans">
             <div className="text-sm text-blue-800 dark:text-blue-400 font-medium mb-0.5 hover:underline cursor-pointer">
               {previewTitle}
             </div>
-            <div className="text-xs text-green-700 dark:text-green-500 mb-1">
+            <div className="text-[10px] font-mono text-green-700 dark:text-green-500 mb-1">
               {previewUrl}
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">
@@ -61,7 +61,11 @@ export function ProductSEO() {
             <FormItem>
               <FormLabel>Page Title (Optional)</FormLabel>
               <FormControl>
-                <Input placeholder="" {...field} />
+                <Input
+                  placeholder=""
+                  {...field}
+                  className="rounded-none border-foreground/20 focus-visible:ring-0 focus-visible:border-foreground"
+                />
               </FormControl>
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>Standard is 70 chars</span>
@@ -83,7 +87,11 @@ export function ProductSEO() {
             <FormItem>
               <FormLabel>Meta Description (Optional)</FormLabel>
               <FormControl>
-                <Textarea className="min-h-[80px]" placeholder="" {...field} />
+                <Textarea
+                  className="min-h-[80px] rounded-none border-foreground/20 focus-visible:ring-0 focus-visible:border-foreground"
+                  placeholder=""
+                  {...field}
+                />
               </FormControl>
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>Standard is 320 chars</span>

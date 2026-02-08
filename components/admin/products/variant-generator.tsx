@@ -139,20 +139,23 @@ export function VariantGenerator({
           Bulk Generate
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[450px] p-0" align="end">
+      <PopoverContent
+        className="w-[450px] p-0 rounded-none border-2 border-black shadow-2xl"
+        align="end"
+      >
         <div className="flex flex-col h-[500px]">
-          <div className="p-4 border-b bg-muted/30">
-            <h4 className="font-bold text-sm tracking-tight">
-              Generate Variants
+          <div className="p-4 border-b-2 border-black bg-muted/30">
+            <h4 className="font-mono font-black text-xs uppercase tracking-widest">
+              Variant Configuration
             </h4>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-tighter mt-1">
               Select dimensions to combine.
             </p>
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 space-y-6">
             {/* Options Selector */}
-            <div className="flex gap-4 p-3 bg-primary/5 border border-primary/10 rounded-lg">
+            <div className="flex gap-4 p-3 bg-black text-white rounded-none border-2 border-black font-mono">
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="use-size"
@@ -205,10 +208,10 @@ export function VariantGenerator({
                       key={size}
                       type="button"
                       onClick={() => toggleSize(size)}
-                      className={`px-3 py-1.5 text-xs font-bold rounded-md border transition-all ${
+                      className={`px-3 py-1.5 text-[10px] font-mono font-black uppercase rounded-none border-2 transition-all ${
                         selectedSizes.includes(size)
-                          ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                          : "bg-background hover:bg-muted"
+                          ? "bg-black text-white border-black"
+                          : "bg-background border-foreground/10 hover:border-black"
                       }`}
                     >
                       {size}
@@ -227,7 +230,7 @@ export function VariantGenerator({
                   {colorOptions.map((color) => (
                     <div
                       key={color}
-                      className="flex items-center space-x-2 p-2 rounded-md border hover:bg-muted/50 cursor-pointer transition-colors"
+                      className="flex items-center space-x-2 p-2 rounded-none border-2 border-foreground/10 hover:border-black cursor-pointer transition-colors"
                       onClick={() => toggleColor(color)}
                     >
                       <Checkbox
@@ -265,10 +268,10 @@ export function VariantGenerator({
                       key={fit}
                       type="button"
                       onClick={() => toggleFit(fit)}
-                      className={`px-3 py-1.5 text-xs font-bold rounded-md border transition-all ${
+                      className={`px-3 py-1.5 text-[10px] font-mono font-black uppercase rounded-none border-2 transition-all ${
                         selectedFits.includes(fit)
-                          ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                          : "bg-background hover:bg-muted"
+                          ? "bg-black text-white border-black"
+                          : "bg-background border-foreground/10 hover:border-black"
                       }`}
                     >
                       {fit}
@@ -278,13 +281,13 @@ export function VariantGenerator({
               </div>
             )}
 
-            <div className="pt-4 border-t space-y-4">
-              <Label className="text-[10px] uppercase tracking-widest font-black text-primary">
+            <div className="pt-4 border-t-2 border-black space-y-4">
+              <Label className="text-[10px] font-mono uppercase tracking-widest font-black text-black">
                 Generation Defaults
               </Label>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label className="text-[9px] uppercase font-bold text-muted-foreground">
+                  <Label className="text-[9px] uppercase font-black font-mono text-muted-foreground">
                     Cost
                   </Label>
                   <Input
@@ -294,11 +297,11 @@ export function VariantGenerator({
                       const val = parseFloat(e.target.value);
                       setDefCost(isNaN(val) ? 0 : val);
                     }}
-                    className="h-8 text-xs font-bold border-amber-500/20 bg-amber-500/5 focus:bg-background"
+                    className="h-8 text-xs font-mono font-bold rounded-none border-foreground/20"
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-[9px] uppercase font-bold text-muted-foreground">
+                  <Label className="text-[9px] uppercase font-black font-mono text-muted-foreground">
                     Stock
                   </Label>
                   <Input
@@ -308,7 +311,7 @@ export function VariantGenerator({
                       const val = parseInt(e.target.value);
                       setDefQty(isNaN(val) ? 0 : val);
                     }}
-                    className="h-8 text-xs font-bold border-green-500/20 bg-green-50/50 dark:bg-green-500/5 focus:bg-background"
+                    className="h-8 text-xs font-mono font-bold rounded-none border-foreground/20"
                   />
                 </div>
               </div>

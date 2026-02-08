@@ -11,17 +11,22 @@ async function fetchProductBySlug(slug: string): Promise<Product | null> {
     // Check if input looks like a UUID (fallback for ID-based routing)
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug)
     
-    if (isUuid) {
-        // Try precise ID match first
-        const { data: idMatch } = await supabase.from('products').select('*, categories(name), product_stock(*)').eq('id', slug).single()
-        if (idMatch) return formatProduct(idMatch)
+    try {
+        if (isUuid) {
+            // Try precise ID match first
+            const { data: idMatch } = await supabase.from('products').select('*, categories(name), product_stock(*)').eq('id', slug).single()
+            if (idMatch) return formatProduct(idMatch)
+        }
+
+        const { data, error } = await query.eq('slug', slug).single()
+        
+        if (error) return null
+
+        return formatProduct(data)
+    } catch (error) {
+        console.error('fetchProductBySlug failed:', error)
+        return null
     }
-
-    const { data, error } = await query.eq('slug', slug).single()
-    
-    if (error) return null
-
-    return formatProduct(data)
 }
 
 function formatProduct(p: any): Product {

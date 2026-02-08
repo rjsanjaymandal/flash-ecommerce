@@ -24,18 +24,17 @@ export function NewsletterSection() {
   return (
     <section className="relative overflow-hidden bg-muted/20 py-16 sm:py-24 border-t border-border/40">
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="bg-card rounded-[2.5rem] shadow-2xl shadow-primary/5 overflow-hidden md:grid md:grid-cols-2 md:items-center border border-border relative group">
+        <div className="bg-background border border-foreground/5 rounded-none shadow-sm overflow-hidden md:grid md:grid-cols-2 md:items-center relative group">
           <div className="p-8 sm:p-12 lg:p-16 relative z-10">
             <div className="max-w-xl text-center md:text-left">
-              <h2 className="text-3xl font-black text-foreground sm:text-4xl uppercase tracking-tighter italic">
+              <h2 className="text-2xl sm:text-4xl font-serif text-foreground leading-tight">
                 Join the <br />
-                <span className="text-primary">Inner Circle</span>
+                <span className="opacity-50 italic">Inner Circle</span>
               </h2>
 
-              <p className="mt-4 text-muted-foreground leading-relaxed font-medium">
+              <p className="mt-4 text-muted-foreground leading-relaxed font-serif text-[15px]">
                 Join our community to get early access to new collections,
-                secret sales, and style tips delivered straight to your inbox.
-                No spam, ever.
+                secret sales, and style tips.
               </p>
 
               <form action={action} className="mt-8">
@@ -50,17 +49,17 @@ export function NewsletterSection() {
                       id="email"
                       name="email"
                       autoComplete="email"
-                      placeholder="john@example.com"
+                      placeholder="EMAIL ADDRESS"
                       required
-                      className="h-14 w-full rounded-2xl border-border bg-muted/50 px-6 text-sm font-medium shadow-sm transition hover:bg-card focus:border-primary focus:bg-card focus:ring-1 focus:ring-primary"
+                      className="h-14 w-full rounded-none border-foreground/10 bg-transparent px-6 text-[11px] tracking-widest transition-colors focus:border-foreground/30 focus:ring-0"
                     />
                   </div>
                   <Button
                     type="submit"
-                    className="h-14 group rounded-2xl bg-primary px-8 text-sm font-black uppercase tracking-widest text-white transition hover:bg-primary/90 hover:shadow-lg focus:outline-none focus:ring focus:ring-primary/40 shadow-xl shadow-primary/20"
+                    className="h-14 group rounded-none bg-foreground text-background px-8 text-[10px] font-medium uppercase tracking-[0.3em] transition hover:opacity-90 shadow-none"
                   >
                     <span className="mr-2">Join The List</span>
-                    <Send className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    <Send className="h-3.5 w-3.5" />
                   </Button>
                 </div>
               </form>
