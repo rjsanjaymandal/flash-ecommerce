@@ -13,7 +13,10 @@ import { getProducts } from "@/lib/services/product-service";
 import { notFound } from "next/navigation";
 
 export async function generateStaticParams() {
-  const { data: products } = await getProducts({ limit: 20, sort: "trending" });
+  const { data: products } = await getProducts({
+    limit: 100,
+    sort: "trending",
+  });
   return products.map((product) => ({
     slug: product.slug,
   }));

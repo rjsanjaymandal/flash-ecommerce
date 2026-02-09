@@ -53,6 +53,9 @@ export async function generateMetadata({
     description:
       category.description ||
       `Shop the latest ${category.name} drops. Premium anime-inspired apparel, Harajuku style hoodies, and urban graphic tees. Fast shipping on all orders.`,
+    alternates: {
+      canonical: `https://flashhfashion.in/shop/${slug}`,
+    },
   };
 }
 

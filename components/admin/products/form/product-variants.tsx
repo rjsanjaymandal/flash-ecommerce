@@ -141,6 +141,20 @@ export function ProductVariants({ colorOptions }: ProductVariantsProps) {
     }
   };
 
+  const handleBulkDelete = () => {
+    if (
+      confirm(
+        `Are you sure you want to delete ${selectedIndices.length} variants?`,
+      )
+    ) {
+      // Sort indices in descending order to avoid shift issues during removal
+      const sorted = [...selectedIndices].sort((a, b) => b - a);
+      sorted.forEach((index) => remove(index));
+      setSelectedIndices([]);
+      toast.success("Variants deleted");
+    }
+  };
+
   const updateSelected = (field: "quantity" | "cost_price", value: number) => {
     selectedIndices.forEach((index) => {
       setValue(`variants.${index}.${field}`, value, { shouldDirty: true });
@@ -186,6 +200,7 @@ export function ProductVariants({ colorOptions }: ProductVariantsProps) {
               selectedCount={selectedIndices.length}
               onUpdateCost={(c) => updateSelected("cost_price", c)}
               onUpdateStock={(s) => updateSelected("quantity", s)}
+              onDelete={handleBulkDelete}
               onClearSelection={() => setSelectedIndices([])}
             />
 

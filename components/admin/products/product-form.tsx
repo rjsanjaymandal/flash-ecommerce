@@ -56,7 +56,7 @@ export function ProductForm({
       is_carousel_featured: false,
       color_options: [],
       size_options: [],
-      fit_options: ["Regular", "Oversized"],
+      fit_options: [],
       variants: [],
       seo_title: "",
       seo_description: "",

@@ -38,7 +38,12 @@ export default function EditProductPageClient({
       price: Number(product.price), // Ensure number
       category_id: product.category_id || "",
       main_image_url: product.main_image_url || "",
-      gallery_image_urls: product.gallery_image_urls || [],
+      gallery_image_urls:
+        product.gallery_image_urls && product.gallery_image_urls.length > 0
+          ? product.gallery_image_urls
+          : product.main_image_url
+            ? [product.main_image_url]
+            : [],
       expression_tags: product.expression_tags || [],
       is_active: product.is_active ?? true,
       is_carousel_featured: product.is_carousel_featured ?? false,

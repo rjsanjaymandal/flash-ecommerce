@@ -43,6 +43,7 @@ export type ProductFilter = {
   color?: string
   is_carousel_featured?: boolean
   ignoreStockSort?: boolean
+  includeDetails?: boolean
 }
 
 export type PaginatedResult<T> = {
@@ -124,9 +125,14 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: SupabaseCli
     }
 
     // Base Query
+    // Optimization: Only fetch essential fields for list views unless details are requested
+    const selectFields = filter.includeDetails 
+        ? '*, categories(name), product_stock(*), reviews(rating)'
+        : 'id, name, slug, price, original_price, main_image_url, gallery_image_urls, status, is_active, category_id, created_at, is_carousel_featured, total_stock, categories(name), product_stock(*), reviews(rating)'
+
     let query = supabase
         .from('products')
-        .select('*, categories(name), product_stock(*), reviews(rating)', { count: 'exact' })
+        .select(selectFields, { count: 'exact' })
     
     // Apply Filters
     query = applyProductFilters(query, filter)
@@ -243,9 +249,9 @@ export async function getFeaturedProducts(): Promise<Product[]> {
         async () => {
              try {
                  const supabase = createStaticClient()
-                 const { data } = await supabase
+                  const { data } = await supabase
                     .from('products')
-                    .select('*, categories(name), product_stock(*), reviews(rating)')
+                    .select('id, name, slug, price, original_price, main_image_url, gallery_image_urls, status, is_active, category_id, created_at, is_carousel_featured, total_stock, categories(name), product_stock(*), reviews(rating)')
                     .eq('status', 'active')
                     .order('created_at', { ascending: false })
                     .limit(8)
@@ -525,7 +531,7 @@ export async function getProductsByIds(ids: string[]): Promise<Product[]> {
     
     const { data, error } = await supabase
       .from('products')
-      .select('*, categories(name), product_stock(*), reviews(rating)')
+      .select('id, name, slug, price, original_price, main_image_url, gallery_image_urls, status, is_active, category_id, created_at, is_carousel_featured, total_stock, categories(name), product_stock(*), reviews(rating)')
       .in('id', ids)
     
     if (error) throw error
@@ -538,7 +544,7 @@ export async function getProductsByIds(ids: string[]): Promise<Product[]> {
         const ratings = product.reviews?.map((r) => r.rating).filter((r): r is number => r !== null) || []
         const avg = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0
         return {
-            ...p,
+            ...product,
             average_rating: avg,
             review_count: ratings.length
         } as Product
@@ -552,7 +558,7 @@ export async function getValidProducts(ids: string[]): Promise<Product[]> {
     // Only fetch ACTIVE products
     const { data, error } = await supabase
       .from('products')
-      .select('*, categories(name), product_stock(*), reviews(rating)')
+      .select('id, name, slug, price, original_price, main_image_url, gallery_image_urls, status, is_active, category_id, created_at, is_carousel_featured, total_stock, categories(name), product_stock(*), reviews(rating)')
       .in('id', ids)
       .eq('status', 'active')
     
@@ -568,7 +574,7 @@ export async function getValidProducts(ids: string[]): Promise<Product[]> {
         const ratings = product.reviews?.map((r) => r.rating).filter((r): r is number => r !== null) || []
         const avg = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0
         return {
-            ...p,
+            ...product,
             average_rating: avg,
             review_count: ratings.length
         } as Product

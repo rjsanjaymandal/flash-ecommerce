@@ -3,6 +3,9 @@ import { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Terms & Conditions | FLASH",
   description: "Operating guidelines and legal terms for shopping at FLASH.",
+  alternates: {
+    canonical: "https://flashhfashion.in/terms",
+  },
 };
 
 export default function TermsPage() {

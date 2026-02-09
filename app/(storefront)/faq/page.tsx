@@ -40,6 +40,16 @@ const faqData = [
 ];
 
 import { FAQJsonLd } from "@/components/seo/faq-json-ld";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "FAQ | FLASH | Everything You Need to Know",
+  description:
+    "Questions about your FLASH order, shipping, returns, or our mission? Find all the answers in our comprehensive FAQ.",
+  alternates: {
+    canonical: "https://flashhfashion.in/faq",
+  },
+};
 
 export default function FAQPage() {
   return (
@@ -49,7 +59,7 @@ export default function FAQPage() {
 
       <div className="container mx-auto px-4 relative z-10 max-w-3xl">
         <div className="text-center mb-16 space-y-4">
-          <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic text-transparent bg-clip-text bg-gradient-to-r from-zinc-900 via-zinc-600 to-zinc-900">
+          <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic text-transparent bg-clip-text bg-linear-to-r from-zinc-900 via-zinc-600 to-zinc-900">
             The Lowdown
           </h1>
           <p className="text-lg md:text-xl font-medium text-zinc-500 max-w-xl mx-auto">

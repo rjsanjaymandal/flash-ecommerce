@@ -3,6 +3,9 @@ import { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Privacy Policy | FLASH",
   description: "How we protect and manage your data at FLASH.",
+  alternates: {
+    canonical: "https://flashhfashion.in/privacy",
+  },
 };
 
 export default function PrivacyPage() {

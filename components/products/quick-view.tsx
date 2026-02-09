@@ -122,28 +122,38 @@ export function QuickView({ product }: QuickViewProps) {
                 </div>
               </div>
 
-              {product.fit_options && product.fit_options.length > 1 && (
-                <div>
-                  <label className="text-xs font-bold uppercase text-muted-foreground mb-2 block">
-                    Fit
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {product.fit_options.map((fit: string) => (
-                      <button
-                        key={fit}
-                        onClick={() => setSelectedFit(fit)}
-                        className={`h-10 px-4 rounded-lg border text-sm font-medium transition-all ${
-                          selectedFit === fit
-                            ? "border-primary bg-primary text-primary-foreground"
-                            : "border-input hover:bg-muted"
-                        }`}
-                      >
-                        {fit}
-                      </button>
-                    ))}
+              {product.fit_options &&
+                (product.fit_options.length > 1 ||
+                  (product.fit_options.length === 1 &&
+                    product.fit_options[0].toLowerCase() !== "regular")) && (
+                  <div>
+                    <label className="text-xs font-bold uppercase text-muted-foreground mb-2 block">
+                      Fit
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {product.fit_options.map((fit: string) => {
+                        if (
+                          product.fit_options.length === 1 &&
+                          fit.toLowerCase() === "regular"
+                        )
+                          return null;
+                        return (
+                          <button
+                            key={fit}
+                            onClick={() => setSelectedFit(fit)}
+                            className={`h-10 px-4 rounded-lg border text-sm font-medium transition-all ${
+                              selectedFit === fit
+                                ? "border-primary bg-primary text-primary-foreground"
+                                : "border-input hover:bg-muted"
+                            }`}
+                          >
+                            {fit}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
             </div>
 
             <div className="flex flex-col gap-3 pt-4">

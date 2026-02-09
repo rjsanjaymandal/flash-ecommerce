@@ -195,85 +195,95 @@ export function QuickAddDialog({
             </div>
           </div>
 
-          {/* Color Selection (Only if colors exist and vary) */}
+          {/* Color Selection (Only if colors exist and vary, or if non-standard) */}
           {(product.color_options?.length > 0 ||
-            availableColorsForSize.length > 1) && (
-            <div className="space-y-3">
-              <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
-                Select Color
-              </div>
-              <div className="flex flex-wrap gap-3">
-                {Array.from(
-                  new Set([
-                    ...(product.color_options || []),
-                    ...availableColorsForSize,
-                  ]),
-                ).map((color: string) => {
-                  // Check if this color is valid for the selected size (if size selected)
-                  // If no size selected, check if color exists in ANY stock
-                  const isValidForSize =
-                    !selectedSize ||
-                    stock.some(
-                      (s: any) =>
-                        s.size === selectedSize &&
-                        s.color === color &&
-                        s.quantity > 0,
+            availableColorsForSize.length > 0) &&
+            !(
+              (product.color_options?.length === 1 &&
+                product.color_options[0] === "Standard") ||
+              (availableColorsForSize.length === 1 &&
+                availableColorsForSize[0] === "Standard")
+            ) && (
+              <div className="space-y-3">
+                <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
+                  Select Color
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  {Array.from(
+                    new Set([
+                      ...(product.color_options || []),
+                      ...availableColorsForSize,
+                    ]),
+                  ).map((color: string) => {
+                    // Check if this color is valid for the selected size (if size selected)
+                    // If no size selected, check if color exists in ANY stock
+                    const isValidForSize =
+                      !selectedSize ||
+                      stock.some(
+                        (s: any) =>
+                          s.size === selectedSize &&
+                          s.color === color &&
+                          s.quantity > 0,
+                      );
+                    const isSelected = selectedColor === color;
+
+                    if (color === "Standard") return null;
+
+                    return (
+                      <button
+                        key={color}
+                        disabled={!isValidForSize}
+                        onClick={() => {
+                          setSelectedColor(color);
+                          setSelectedFit(""); // Reset fit on color change
+                        }}
+                        className={cn(
+                          "h-10 px-4 min-w-[3rem] rounded-lg border-2 text-sm font-bold transition-all relative active:scale-95",
+                          isSelected
+                            ? "border-primary bg-primary text-primary-foreground shadow-md scale-105"
+                            : "border-input hover:bg-muted/50",
+                          !isValidForSize && "opacity-40 cursor-not-allowed",
+                        )}
+                      >
+                        {color}
+                      </button>
                     );
-                  const isSelected = selectedColor === color;
-
-                  if (color === "Standard") return null;
-
-                  return (
-                    <button
-                      key={color}
-                      disabled={!isValidForSize}
-                      onClick={() => {
-                        setSelectedColor(color);
-                        setSelectedFit(""); // Reset fit on color change
-                      }}
-                      className={cn(
-                        "h-10 px-4 min-w-[3rem] rounded-lg border-2 text-sm font-bold transition-all relative active:scale-95",
-                        isSelected
-                          ? "border-primary bg-primary text-primary-foreground shadow-md scale-105"
-                          : "border-input hover:bg-muted/50",
-                        !isValidForSize && "opacity-40 cursor-not-allowed",
-                      )}
-                    >
-                      {color}
-                    </button>
-                  );
-                })}
+                  })}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Fit Selection (Only if multiple fits exist for selection) */}
-          {availableFitsForSelection.length > 1 && (
-            <div className="space-y-3">
-              <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
-                Select Fit
+          {/* Fit Selection (Only if multiple fits exist, or non-regular single fit) */}
+          {availableFitsForSelection.length > 0 &&
+            !(
+              availableFitsForSelection.length === 1 &&
+              availableFitsForSelection[0].toLowerCase() === "regular"
+            ) && (
+              <div className="space-y-3">
+                <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
+                  Select Fit
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  {availableFitsForSelection.map((fit: string) => {
+                    const isSelected = selectedFit === fit;
+                    return (
+                      <button
+                        key={fit}
+                        onClick={() => setSelectedFit(fit)}
+                        className={cn(
+                          "h-10 px-4 min-w-[3rem] rounded-lg border-2 text-sm font-bold transition-all relative active:scale-95",
+                          isSelected
+                            ? "border-primary bg-primary text-primary-foreground shadow-md scale-105"
+                            : "border-input hover:bg-muted/50",
+                        )}
+                      >
+                        {fit}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-              <div className="flex flex-wrap gap-3">
-                {availableFitsForSelection.map((fit: string) => {
-                  const isSelected = selectedFit === fit;
-                  return (
-                    <button
-                      key={fit}
-                      onClick={() => setSelectedFit(fit)}
-                      className={cn(
-                        "h-10 px-4 min-w-[3rem] rounded-lg border-2 text-sm font-bold transition-all relative active:scale-95",
-                        isSelected
-                          ? "border-primary bg-primary text-primary-foreground shadow-md scale-105"
-                          : "border-input hover:bg-muted/50",
-                      )}
-                    >
-                      {fit}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+            )}
 
           <Button
             size="lg"

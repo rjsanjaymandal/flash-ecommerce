@@ -155,7 +155,7 @@ export function VariantGenerator({
 
           <div className="flex-1 overflow-y-auto p-4 space-y-6">
             {/* Options Selector */}
-            <div className="flex gap-4 p-3 bg-black text-white rounded-none border-2 border-black font-mono">
+            <div className="flex gap-4 p-3 bg-slate-800 text-white rounded-none border-2 border-slate-900 font-mono">
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="use-size"

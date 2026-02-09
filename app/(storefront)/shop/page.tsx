@@ -9,6 +9,16 @@ import { Suspense } from "react";
 // Force dynamic to ensure stock status is always fresh for the user
 export const dynamic = "force-dynamic";
 
+export const metadata = {
+  title:
+    "Shop All | Premium Minimalist Streetwear & Japanese Aesthetics | FLASH",
+  description:
+    "Explore the complete FLASH collection. Premium anime streetwear, Japanese-inspired heavyweight t-shirts, and minimalist luxury essentials. High-quality prints and tech fabrics designed in India.",
+  alternates: {
+    canonical: "https://flashhfashion.in/shop",
+  },
+};
+
 export default async function ShopPage(props: {
   searchParams: Promise<{
     category?: string;

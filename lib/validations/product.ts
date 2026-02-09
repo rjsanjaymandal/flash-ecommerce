@@ -34,7 +34,7 @@ export const productSchema = z.object({
   is_carousel_featured: z.boolean().default(false),
   color_options: z.array(z.string()).optional(),
   size_options: z.array(z.string()).optional(),
-  fit_options: z.array(z.string()).default(["Regular", "Oversized"]),
+  fit_options: z.array(z.string()).default([]),
   variants: z.array(variantSchema),
   // SEO Fields
   seo_title: z.string().max(70, "Meta title should be under 70 chars").optional(),

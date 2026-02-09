@@ -1,9 +1,13 @@
-import { Metadata } from 'next'
+import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: 'Size Guide | FLASH',
-  description: 'Find your perfect fit with the FLASH size chart.',
-}
+  title: "Size Guide | FLASH | Find Your Perfect Fit",
+  description:
+    "Unsure about your size? Use the FLASH size chart to find your perfect fit for oversized tees, hoodies, and more. Inclusive sizing for all bodies.",
+  alternates: {
+    canonical: "https://flashhfashion.in/size-guide",
+  },
+};
 
 export default function SizeGuidePage() {
   return (
@@ -12,9 +16,11 @@ export default function SizeGuidePage() {
         <h1 className="text-4xl md:text-5xl font-black italic tracking-tighter uppercase mb-8">
           Size <span className="text-primary italic">Guide</span>
         </h1>
-        
+
         <p className="lead text-muted-foreground">
-          Find your perfect fit. Our pieces are designed for a relaxed, inclusive silhouette. If you prefer a more tailored look, consider sizing down.
+          Find your perfect fit. Our pieces are designed for a relaxed,
+          inclusive silhouette. If you prefer a more tailored look, consider
+          sizing down.
         </p>
 
         <section>
@@ -110,9 +116,14 @@ export default function SizeGuidePage() {
         <section className="bg-muted/30 p-6 rounded-2xl mt-12 border border-border/50">
           <h3 className="mt-0 italic tracking-tight">How to measure?</h3>
           <p className="text-sm text-muted-foreground mb-0">
-            <strong>Chest:</strong> Measure around the fullest part of your chest, keeping the tape horizontal.<br/>
-            <strong>Length:</strong> Measure from the highest point of the shoulder down to the hem.<br/>
-            <strong>Shoulder:</strong> Measure from one shoulder point to the other across the back.
+            <strong>Chest:</strong> Measure around the fullest part of your
+            chest, keeping the tape horizontal.
+            <br />
+            <strong>Length:</strong> Measure from the highest point of the
+            shoulder down to the hem.
+            <br />
+            <strong>Shoulder:</strong> Measure from one shoulder point to the
+            other across the back.
           </p>
         </section>
 
@@ -121,5 +132,5 @@ export default function SizeGuidePage() {
         </div>
       </article>
     </div>
-  )
+  );
 }

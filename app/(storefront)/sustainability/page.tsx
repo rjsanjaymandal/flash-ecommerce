@@ -1,8 +1,12 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Sustainability | FLASH",
-  description: "Our commitment to eco-friendly fashion and ethical production.",
+  title: "Sustainability | FLASH | Eco-Conscious Fashion",
+  description:
+    "Learn about FLASH's commitment to slow fashion, zero-waste packaging, and ethical production practices in India. Conscious fashion for a better future.",
+  alternates: {
+    canonical: "https://flashhfashion.in/sustainability",
+  },
 };
 
 export default function SustainabilityPage() {

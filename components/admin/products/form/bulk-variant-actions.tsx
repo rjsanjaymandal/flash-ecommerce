@@ -2,13 +2,14 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { X, Check } from "lucide-react";
+import { X, Check, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 interface BulkVariantActionsProps {
   selectedCount: number;
   onUpdateCost: (cost: number) => void;
   onUpdateStock: (stock: number) => void;
+  onDelete: () => void;
   onClearSelection: () => void;
 }
 
@@ -16,6 +17,7 @@ export function BulkVariantActions({
   selectedCount,
   onUpdateCost,
   onUpdateStock,
+  onDelete,
   onClearSelection,
 }: BulkVariantActionsProps) {
   const [cost, setCost] = useState("");
@@ -24,7 +26,7 @@ export function BulkVariantActions({
   if (selectedCount === 0) return null;
 
   return (
-    <div className="flex items-center space-x-4 p-2 bg-black text-white rounded-none border-2 border-black animate-in slide-in-from-top-2 overflow-x-auto">
+    <div className="flex items-center space-x-4 p-2 bg-zinc-900 text-white rounded-none border-2 border-zinc-900 animate-in slide-in-from-top-2 overflow-x-auto shadow-xl">
       <div className="flex items-center space-x-2 shrink-0">
         <span className="text-[10px] font-mono uppercase tracking-widest bg-white/10 text-white px-2 py-1 rounded-none">
           {selectedCount} selected
@@ -84,6 +86,18 @@ export function BulkVariantActions({
           Apply
         </Button>
       </div>
+
+      <div className="h-4 w-px bg-white/10 shrink-0" />
+
+      <Button
+        size="sm"
+        variant="destructive"
+        onClick={onDelete}
+        className="h-8 px-4 rounded-none font-mono text-[10px] uppercase tracking-widest flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white border-none"
+      >
+        <Trash2 className="h-3 w-3" />
+        Delete Selected
+      </Button>
     </div>
   );
 }

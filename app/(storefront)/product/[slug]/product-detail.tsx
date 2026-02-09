@@ -184,28 +184,47 @@ export function ProductDetailClient({
   const colorOptions = useMemo(() => {
     const rawOptions = product.color_options?.length
       ? product.color_options
-      : realTimeStock?.map((s) => s.color) || ["Standard"];
+      : realTimeStock?.map((s) => s.color).filter(Boolean) || ["Standard"];
 
     // Deduplicate based on normalized values
-    return Array.from(new Set(rawOptions.map(normalizeColor))).sort();
-  }, [product.color_options, realTimeStock]);
+    const normalized = Array.from(
+      new Set(rawOptions.map(normalizeColor)),
+    ).sort();
 
-  const fitOptions = useMemo(() => {
-    if (product.fit_options?.length) return product.fit_options;
-    // If no fit options are defined, we DO NOT default to "Regular" for display.
-    // We want to hide the selector in this case.
-    const fits = realTimeStock?.map((s: any) => s.fit).filter(Boolean) || [];
-    // Only show if there are actual distinct fits in valid stock
-    const uniqueFits = Array.from(new Set(fits));
-
-    // If the only available fit is "Regular" (and it wasn't explicit in fit_options), hide it.
-    if (uniqueFits.length === 1 && uniqueFits[0].toLowerCase() === "regular") {
+    // Hide if only 1 option and it's "Standard"
+    if (normalized.length === 1 && normalized[0] === "Standard") {
       return [];
     }
 
-    if (uniqueFits.length > 0) return uniqueFits;
+    return normalized;
+  }, [product.color_options, realTimeStock]);
 
-    return [];
+  const fitOptions = useMemo(() => {
+    if (product.fit_options?.length) {
+      // If fits were explicitly defined, filter out "Regular" if it's the ONLY option
+      const explicitUnique = Array.from(new Set(product.fit_options));
+      if (
+        explicitUnique.length === 1 &&
+        explicitUnique[0].toLowerCase() === "regular"
+      ) {
+        return [];
+      }
+      return product.fit_options;
+    }
+
+    // Derived from stock
+    const fits = realTimeStock?.map((s: any) => s.fit).filter(Boolean) || [];
+    const uniqueFits = Array.from(new Set(fits));
+
+    // If the only available fit is "Regular" (and it wasn't explicit), hide it.
+    if (
+      uniqueFits.length === 0 ||
+      (uniqueFits.length === 1 && uniqueFits[0].toLowerCase() === "regular")
+    ) {
+      return [];
+    }
+
+    return uniqueFits;
   }, [product.fit_options, realTimeStock]);
 
   // Auto-Select Logic: If there's only 1 option for any attribute, select it automatically.
@@ -494,7 +513,7 @@ export function ProductDetailClient({
             </div>
 
             {/* Visual Color Variations */}
-            {colorOptions.length > 1 && colorOptions[0] !== "Standard" && (
+            {colorOptions.length > 0 && colorOptions[0] !== "Standard" && (
               <div>
                 <ProductColorSelector
                   options={colorOptions}
@@ -509,7 +528,7 @@ export function ProductDetailClient({
               </div>
             )}
 
-            {fitOptions.length > 1 && (
+            {fitOptions.length > 0 && (
               <div className="mt-6">
                 <ProductFitSelector
                   options={fitOptions}
@@ -540,15 +559,18 @@ export function ProductDetailClient({
           <div className="col-span-1 lg:col-span-5 flex flex-col gap-5 lg:pt-8">
             {/* Size & Add to Cart */}
             <div className="space-y-8 p-0 lg:p-0">
-              {sizeOptions.length > 1 && sizeOptions[0] !== "Standard" && (
-                <ProductSizeSelector
-                  options={sizeOptions}
-                  selected={selectedSize}
-                  onSelect={setSelectedSize}
-                  isAvailable={isSizeAvailable}
-                  onOpenSizeGuide={() => setIsSizeGuideOpen(true)}
-                />
-              )}
+              {sizeOptions.length > 0 &&
+                !(
+                  sizeOptions.length === 1 && sizeOptions[0] === "Standard"
+                ) && (
+                  <ProductSizeSelector
+                    options={sizeOptions}
+                    selected={selectedSize}
+                    onSelect={setSelectedSize}
+                    isAvailable={isSizeAvailable}
+                    onOpenSizeGuide={() => setIsSizeGuideOpen(true)}
+                  />
+                )}
 
               <Button
                 size="lg"
