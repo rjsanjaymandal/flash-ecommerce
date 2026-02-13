@@ -72,7 +72,7 @@ export function QuickAddDialog({
         )
         .map((s: any) => s.fit),
     ),
-  );
+  ).filter((fit): fit is string => Boolean(fit));
 
   // Initialize/Reset color when size changes
   // If only 1 color available, auto-select it? Or let user pick?
@@ -257,7 +257,7 @@ export function QuickAddDialog({
           {availableFitsForSelection.length > 0 &&
             !(
               availableFitsForSelection.length === 1 &&
-              availableFitsForSelection[0].toLowerCase() === "regular"
+              (availableFitsForSelection[0] || "").toLowerCase() === "regular"
             ) && (
               <div className="space-y-3">
                 <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">

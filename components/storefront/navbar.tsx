@@ -180,6 +180,7 @@ export function StorefrontNavbar() {
                 variant="ghost"
                 size="icon"
                 onClick={() => setIsSearchOpen(true)}
+                aria-label="Search"
                 className="rounded-full hover:bg-primary/5 text-muted-foreground hover:text-primary transition-colors h-10 w-10"
               >
                 <Search className="h-5 w-5" />
@@ -189,6 +190,7 @@ export function StorefrontNavbar() {
                 <Button
                   variant="ghost"
                   size="icon"
+                  aria-label={`Wishlist (${wishlistCount})`}
                   className="relative rounded-full hover:bg-primary/5 text-muted-foreground hover:text-primary transition-colors h-10 w-10"
                 >
                   <Heart className="h-5 w-5" />
@@ -214,6 +216,7 @@ export function StorefrontNavbar() {
                 variant="ghost"
                 size="icon"
                 onClick={() => setIsCartOpen(true)}
+                aria-label={`Cart (${cartCount})`}
                 className="relative rounded-full hover:bg-primary/5 text-muted-foreground hover:text-primary transition-colors h-10 w-10"
               >
                 <ShoppingBag className="h-5 w-5" />

@@ -128,7 +128,7 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: SupabaseCli
     // Optimization: Only fetch essential fields for list views unless details are requested
     const selectFields = filter.includeDetails 
         ? '*, categories(name), product_stock(*), reviews(rating)'
-        : 'id, name, slug, price, original_price, main_image_url, gallery_image_urls, status, is_active, category_id, created_at, is_carousel_featured, total_stock, categories(name), product_stock(*), reviews(rating)'
+        : 'id, name, slug, price, original_price, main_image_url, status, is_active, category_id, created_at, is_carousel_featured, total_stock, categories(name), product_stock(size, quantity), reviews(rating)'
 
     let query = supabase
         .from('products')
@@ -201,7 +201,7 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: SupabaseCli
         }
 
         // Client-side mapping for computed fields
-        const processedData = (data || []).map(formatProduct)
+        const processedData = (data as any[] || []).map(formatProduct)
 
         return {
             data: processedData,
@@ -294,7 +294,7 @@ async function fetchProductBySlug(slug: string): Promise<Product | null> {
 }
 
 function formatProduct(p: any): Product {
-    const ratings = p.reviews?.map((r: any) => r.rating).filter((r: any): r is number => r !== null) || []
+    const ratings = (p.reviews as { rating: number | null }[] | undefined)?.map((r) => r.rating).filter((r): r is number => r !== null) || []
     const avg = ratings.length > 0 ? ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length : 0
     
     return {

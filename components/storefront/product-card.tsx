@@ -479,6 +479,9 @@ export function ProductCard({
           {/* Wishlist Button */}
           <button
             onClick={handleWishlistClick}
+            aria-label={
+              isWishlisted ? "Remove from wishlist" : "Add to wishlist"
+            }
             className={cn(
               "absolute top-3 right-3 z-10 h-7 w-7 flex items-center justify-center rounded-none bg-background/80 backdrop-blur-sm transition-all duration-200 hover:scale-110 shadow-none opacity-0 group-hover:opacity-100",
               isWishlisted ? "text-red-500 opacity-100" : "text-foreground",

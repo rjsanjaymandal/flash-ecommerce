@@ -9,7 +9,15 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn, formatCurrency } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
-import { QuickAddDialog } from "@/components/products/quick-add-dialog";
+import dynamic from "next/dynamic";
+
+const QuickAddDialog = dynamic(
+  () =>
+    import("@/components/products/quick-add-dialog").then(
+      (mod) => mod.QuickAddDialog,
+    ),
+  { ssr: false },
+);
 
 export interface HeroProduct {
   id: string;
@@ -219,15 +227,22 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
           {/* IMAGE LAYER */}
           <div className="absolute inset-0 w-full h-full">
             {currentProduct.main_image_url && (
-              <FlashImage
-                src={currentProduct.main_image_url}
-                alt={currentProduct.name}
-                fill
-                className="object-cover lg:object-contain bg-zinc-50 dark:bg-zinc-950"
-                priority={true}
-                resizeMode="cover"
-                sizes="100vw"
-              />
+              <motion.div
+                initial={{ scale: 1.1, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 1.2, ease: "easeOut" }}
+                className="relative h-full w-full"
+              >
+                <FlashImage
+                  src={currentProduct.main_image_url}
+                  alt={currentProduct.name}
+                  fill
+                  className="object-cover lg:object-contain bg-zinc-50 dark:bg-zinc-950"
+                  priority={true}
+                  resizeMode="cover"
+                  sizes="100vw"
+                />
+              </motion.div>
             )}
 
             {/* Gradient Overlay for Text Readability */}

@@ -42,15 +42,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes = [
     '',
     '/shop',
-    '/shop/new-arrivals',
-    '/shop/best-sellers',
     '/blog',
+    '/faq',
     '/about',
     '/contact',
-    '/shipping',
-    '/returns',
-    '/privacy',
-    '/terms',
   ].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
@@ -58,12 +53,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: route === '' ? 1.0 : 0.8,
   }))
 
-  // 4. Categories (Hardcoded for now to ensure coverage of key SEO pages)
+  const legalRoutes = [
+    '/shipping',
+    '/returns',
+    '/privacy',
+    '/terms',
+  ].map((route) => ({
+    url: `${baseUrl}${route}`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly' as const,
+    priority: 0.3,
+  }))
+
   // 4. Categories (Dynamic)
   let categoryUrls: MetadataRoute.Sitemap = []
   try {
     const { data: categories } = await supabase
-      .from('categories') // Direct DB call to avoid cache/service layer complexity in sitemap if preferred, or use service
+      .from('categories')
       .select('slug, updated_at')
       .eq('is_active', true)
     
@@ -79,6 +85,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     ...staticRoutes,
+    ...legalRoutes,
     ...categoryUrls,
     ...productUrls,
     ...blogUrls,
