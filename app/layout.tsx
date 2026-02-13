@@ -87,6 +87,9 @@ export const metadata: Metadata = {
   classification: "Flash Clothing, Anime Streetwear, Queer Fashion",
   verification: {
     google: "CqVr1TGrfamesut-wOLLkyz2PQUjYb-ihMDqj9zL2X0",
+    other: {
+      "p:domain_verify": "d87d27ac0a1ffe26b15802fa277dde8c",
+    },
   },
   appleWebApp: {
     capable: true,
