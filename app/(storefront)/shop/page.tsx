@@ -4,6 +4,7 @@ import { ShopHeader } from "@/components/storefront/shop-header";
 import { ProductGrid } from "@/components/storefront/product-grid";
 import { ProductGridSkeleton } from "@/components/skeletons/product-grid-skeleton"; // Static import verified
 import { CategoryDiscoveryBar } from "@/components/storefront/category-discovery-bar";
+import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-json-ld";
 import { Suspense } from "react";
 
 // Force dynamic to ensure stock status is always fresh for the user
@@ -35,6 +36,19 @@ export default async function ShopPage(props: {
 
   return (
     <div className="min-h-screen bg-background pt-4 pb-20">
+      <BreadcrumbJsonLd
+        items={[
+          {
+            name: "Home",
+            item:
+              process.env.NEXT_PUBLIC_SITE_URL || "https://flashhfashion.in",
+          },
+          {
+            name: "Shop",
+            item: `${process.env.NEXT_PUBLIC_SITE_URL || "https://flashhfashion.in"}/shop`,
+          },
+        ]}
+      />
       <div className="container mx-auto px-4 lg:px-8">
         {/* Header Section */}
         <ShopHeader />

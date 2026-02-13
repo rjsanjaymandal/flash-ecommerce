@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, CalendarDays, Clock, Share2 } from "lucide-react";
 import { ArticleJsonLd } from "@/components/seo/article-json-ld";
+import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-json-ld";
 
 interface BlogPostPageProps {
   params: Promise<{ slug: string }>;
@@ -66,11 +67,28 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
   return (
     <>
+      <BreadcrumbJsonLd
+        items={[
+          {
+            name: "Home",
+            item:
+              process.env.NEXT_PUBLIC_SITE_URL || "https://flashhfashion.in",
+          },
+          {
+            name: "Blog",
+            item: `${process.env.NEXT_PUBLIC_SITE_URL || "https://flashhfashion.in"}/blog`,
+          },
+          {
+            name: post.title,
+            item: `${process.env.NEXT_PUBLIC_SITE_URL || "https://flashhfashion.in"}/blog/${post.slug}`,
+          },
+        ]}
+      />
       <ArticleJsonLd post={post} />
 
       <article className="min-h-screen">
         {/* Header */}
-        <header className="relative py-16 px-4 bg-gradient-to-br from-zinc-900 via-black to-zinc-900">
+        <header className="relative py-16 px-4 bg-linear-to-br from-zinc-900 via-black to-zinc-900">
           <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
           <div className="container mx-auto max-w-4xl relative z-10">
             <Link href="/blog">

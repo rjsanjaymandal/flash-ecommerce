@@ -4,6 +4,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { SlidersHorizontal } from "lucide-react";
 import { PaginatedProductGrid } from "./paginated-product-grid";
+import { ItemListJsonLd } from "@/components/seo/item-list-json-ld";
 
 interface ShopParams {
   category?: string;
@@ -160,11 +161,21 @@ export async function ProductGrid({ params }: { params: ShopParams }) {
       )}
 
       {products && products.length > 0 ? (
-        <PaginatedProductGrid
-          initialProducts={products}
-          initialMeta={meta}
-          searchParams={params}
-        />
+        <>
+          <ItemListJsonLd
+            products={products.map((p) => ({
+              name: p.name,
+              image: p.main_image_url || "",
+              url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://flashhfashion.in"}/product/${p.slug}`,
+              price: p.price,
+            }))}
+          />
+          <PaginatedProductGrid
+            initialProducts={products}
+            initialMeta={meta}
+            searchParams={params}
+          />
+        </>
       ) : (
         <div className="flex flex-col items-center justify-center py-24 text-center rounded-3xl border border-dashed border-border bg-muted/20">
           <div className="h-16 w-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm">

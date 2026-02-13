@@ -40,6 +40,7 @@ const faqData = [
 ];
 
 import { FAQJsonLd } from "@/components/seo/faq-json-ld";
+import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-json-ld";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -54,6 +55,19 @@ export const metadata: Metadata = {
 export default function FAQPage() {
   return (
     <div className="min-h-screen pt-28 pb-20 relative overflow-hidden">
+      <BreadcrumbJsonLd
+        items={[
+          {
+            name: "Home",
+            item:
+              process.env.NEXT_PUBLIC_SITE_URL || "https://flashhfashion.in",
+          },
+          {
+            name: "FAQ",
+            item: `${process.env.NEXT_PUBLIC_SITE_URL || "https://flashhfashion.in"}/faq`,
+          },
+        ]}
+      />
       <FAQJsonLd questions={faqData} />
       <BrandGlow className="top-20 opacity-30" />
 

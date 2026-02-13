@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CalendarDays, Clock, ArrowRight } from "lucide-react";
+import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-json-ld";
 
 export const metadata: Metadata = {
   title: "Blog | Flash Fashion Style Guide & Fashion Tips",
@@ -37,8 +38,21 @@ export default async function BlogPage() {
 
   return (
     <div className="min-h-screen">
+      <BreadcrumbJsonLd
+        items={[
+          {
+            name: "Home",
+            item:
+              process.env.NEXT_PUBLIC_SITE_URL || "https://flashhfashion.in",
+          },
+          {
+            name: "Blog",
+            item: `${process.env.NEXT_PUBLIC_SITE_URL || "https://flashhfashion.in"}/blog`,
+          },
+        ]}
+      />
       {/* Hero Section */}
-      <section className="relative py-20 px-4 bg-gradient-to-br from-zinc-900 via-black to-zinc-900">
+      <section className="relative py-20 px-4 bg-linear-to-br from-zinc-900 via-black to-zinc-900">
         <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
         <div className="container mx-auto max-w-6xl relative z-10">
           <div className="text-center space-y-4">
@@ -71,7 +85,7 @@ export default async function BlogPage() {
                   className="group"
                 >
                   <Card className="h-full overflow-hidden transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 bg-card/50 backdrop-blur">
-                    <div className="aspect-video bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                    <div className="aspect-video bg-linear-to-br from-primary/20 to-primary/5 flex items-center justify-center">
                       <span className="text-4xl opacity-50">📝</span>
                     </div>
                     <CardHeader>
@@ -126,7 +140,7 @@ export default async function BlogPage() {
                 className="group block"
               >
                 <article className="flex gap-6 p-4 rounded-lg border border-border/50 hover:border-primary/50 transition-all duration-300 hover:bg-card/50">
-                  <div className="hidden sm:flex w-24 h-24 shrink-0 bg-gradient-to-br from-primary/20 to-primary/5 rounded-lg items-center justify-center">
+                  <div className="hidden sm:flex w-24 h-24 shrink-0 bg-linear-to-br from-primary/20 to-primary/5 rounded-lg items-center justify-center">
                     <span className="text-2xl opacity-50">📝</span>
                   </div>
                   <div className="flex-1 min-w-0">
