@@ -88,9 +88,9 @@ export function WaitlistClient({
 
   const filtered = preorders.filter(
     (p) =>
-      p.product_name.toLowerCase().includes(search.toLowerCase()) ||
-      p.user_name.toLowerCase().includes(search.toLowerCase()) ||
-      p.email.toLowerCase().includes(search.toLowerCase()),
+      (p.product_name || "").toLowerCase().includes(search.toLowerCase()) ||
+      (p.user_name || "").toLowerCase().includes(search.toLowerCase()) ||
+      (p.email || "").toLowerCase().includes(search.toLowerCase()),
   );
 
   const handleExportCSV = () => {

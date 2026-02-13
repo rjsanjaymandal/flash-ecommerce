@@ -88,7 +88,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
       return Math.abs(h);
     };
 
-    const name = product.name.toLowerCase();
+    const name = (product.name || "").toLowerCase();
 
     // Logic-driven taglines
     if (name.includes("hoodie")) {
@@ -247,7 +247,9 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                 <span className="inline-block bg-white text-black px-3 py-1 rounded-none text-[8px] font-medium uppercase tracking-[0.3em]">
                   New Arrival
                 </span>
-                {currentProduct.name.toLowerCase().includes("hoodie") && (
+                {(currentProduct.name || "")
+                  .toLowerCase()
+                  .includes("hoodie") && (
                   <motion.span
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
