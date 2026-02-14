@@ -103,6 +103,7 @@ interface AdminProduct {
   }[];
   is_carousel_featured: boolean;
   preorder_count?: number;
+  total_stock?: number;
 }
 
 interface WaitlistUser {
@@ -265,9 +266,15 @@ export function ProductsClient({
   };
 
   // Helper to calculate total stock
-  const getStockStatus = (stock: AdminProduct["product_stock"]) => {
+  const getStockStatus = (product: AdminProduct) => {
     const total =
-      stock?.reduce((acc: number, curr) => acc + (curr.quantity || 0), 0) || 0;
+      product.total_stock ??
+      (product.product_stock?.reduce(
+        (acc: number, curr) => acc + (curr.quantity || 0),
+        0,
+      ) ||
+        0);
+
     if (total === 0)
       return {
         label: "Out of Stock",
@@ -293,19 +300,23 @@ export function ProductsClient({
   // Calculate items with total stock < 10
   const lowStockProducts = initialProducts.filter((p) => {
     const total =
-      p.product_stock?.reduce(
+      p.total_stock ??
+      (p.product_stock?.reduce(
         (acc: number, curr) => acc + (curr.quantity || 0),
         0,
-      ) || 0;
+      ) ||
+        0);
     return total < 10 && total > 0;
   });
 
   const outOfStockProducts = initialProducts.filter((p) => {
     const total =
-      p.product_stock?.reduce(
+      p.total_stock ??
+      (p.product_stock?.reduce(
         (acc: number, curr) => acc + (curr.quantity || 0),
         0,
-      ) || 0;
+      ) ||
+        0);
     return total === 0;
   });
 
@@ -317,7 +328,8 @@ export function ProductsClient({
       p.id,
       `"${p.name.replace(/"/g, '""')}"`, // Escape quotes
       p.price,
-      p.product_stock?.reduce((acc, s) => acc + s.quantity, 0) || 0,
+      p.total_stock ??
+        (p.product_stock?.reduce((acc, s) => acc + s.quantity, 0) || 0),
       p.is_active ? "Active" : "Draft",
       p.preorder_count || 0,
     ]);
@@ -607,7 +619,7 @@ export function ProductsClient({
               </TableRow>
             ) : (
               filteredProducts.map((product) => {
-                const stockStatus = getStockStatus(product.product_stock);
+                const stockStatus = getStockStatus(product);
                 const isSelected = selectedIds.has(product.id);
                 const preorderCount = product.preorder_count || 0;
 

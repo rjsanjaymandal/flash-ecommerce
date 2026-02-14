@@ -31,6 +31,7 @@ export default async function ProductsPage({
     is_active: p.is_active || false,
     is_carousel_featured: !!p.is_carousel_featured,
     category_id: p.category_id || undefined,
+    total_stock: p.total_stock,
     product_stock: p.product_stock?.map((s) => ({
       ...s,
       quantity: s.quantity || 0,
