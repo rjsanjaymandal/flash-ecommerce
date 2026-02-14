@@ -106,22 +106,23 @@ export async function deleteConcept(id: string) {
     .eq('id', id)
     .single()
     
-  if (concept?.image_url) {
-    // Extract file name from URL
-    // Public URL format: .../storage/v1/object/public/concepts/filename-variant.webp
+  if (concept?.image_url && concept.image_url.includes('supabase.co')) {
+    // Extract file name from URL for Supabase storage cleanup
     const parts = concept.image_url.split('/')
     const fileName = parts[parts.length - 1]
     
-    // Since we upload 3 variants, we should ideally delete all 3.
-    // The fileName has -desktop.webp, -mobile.webp, -thumbnail.webp
-    const baseName = fileName.replace('-desktop.webp', '')
+    // Attempt to delete variants if they exist (backward compatibility)
+    const baseName = fileName.replace('-desktop.webp', '').replace('-mobile.webp', '').replace('-thumbnail.webp', '').replace('.webp', '')
     
     await supabase.storage.from('concepts').remove([
       `${baseName}-desktop.webp`,
       `${baseName}-mobile.webp`,
-      `${baseName}-thumbnail.webp`
+      `${baseName}-thumbnail.webp`,
+      `${baseName}.webp`
     ])
   }
+  // Cloudinary deletion is usually handled via API if needed, 
+  // but for now we focus on not crashing the build and handling existing DB paths.
   
   // 2. Delete from DB
   const { error: deleteError } = await supabase

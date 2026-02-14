@@ -114,26 +114,22 @@ export function ProductForm({
 
     setIsUploading(true);
     try {
-      const fileExt = file.name.split(".").pop();
-      const fileName = `prod_${Date.now()}_${Math.random()}.${fileExt}`;
-      const { error } = await supabase.storage
-        .from("products")
-        .upload(fileName, file);
-      if (error) throw error;
+      const formData = new FormData();
+      formData.append("file", file);
 
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("products").getPublicUrl(fileName);
+      const { uploadOptimizedImage } =
+        await import("@/app/actions/upload-images");
+      const urls = await uploadOptimizedImage(formData, "products");
 
       if (type === "main") {
-        setFormData((prev) => ({ ...prev, main_image_url: publicUrl }));
+        setFormData((prev) => ({ ...prev, main_image_url: urls.desktop }));
       } else {
         setFormData((prev) => ({
           ...prev,
-          gallery_image_urls: [...prev.gallery_image_urls, publicUrl],
+          gallery_image_urls: [...prev.gallery_image_urls, urls.desktop],
         }));
       }
-      toast.success("Image uploaded");
+      toast.success("Image uploaded & optimized");
     } catch (err: unknown) {
       toast.error("Upload failed: " + (err as Error).message);
     } finally {

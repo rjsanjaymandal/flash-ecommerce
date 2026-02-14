@@ -82,10 +82,7 @@ export function CategoryForm({
       // Use the same optimized pipeline as products
       const { uploadOptimizedImage } =
         await import("@/app/actions/upload-images");
-      const urls = await uploadOptimizedImage(formData, "category-images", {
-        generateVariants: false, // Categories usually just need one high-res optimized image
-        maxWidth: 1200,
-      });
+      const urls = await uploadOptimizedImage(formData, "category-images");
 
       form.setValue("image_url", urls.desktop);
       toast.success("Image Optimized & Uploaded");

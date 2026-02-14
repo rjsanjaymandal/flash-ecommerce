@@ -184,7 +184,15 @@ export function Footer() {
                   href="/shipping"
                   className="hover:text-primary transition-colors block py-1"
                 >
-                  Shipping & Returns
+                  Shipping
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/returns"
+                  className="hover:text-primary transition-colors block py-1"
+                >
+                  Returns & Exchanges
                 </Link>
               </li>
               {/* <li>

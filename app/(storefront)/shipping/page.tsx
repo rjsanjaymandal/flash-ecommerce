@@ -63,8 +63,15 @@ export default function ShippingPage() {
         <h3 className="text-foreground text-xl font-semibold mt-6">Returns</h3>
         <p>
           If you are not satisfied with your purchase, you can return it within
-          14 days for a full refund. Please see our FAQ for more details on
-          returns.
+          14 days for a full refund or exchange. For more details on our return
+          conditions and process, please visit nuestro{" "}
+          <a
+            href="/returns"
+            className="text-primary hover:underline underline-offset-4"
+          >
+            Return Policy
+          </a>{" "}
+          page.
         </p>
       </div>
     </div>
