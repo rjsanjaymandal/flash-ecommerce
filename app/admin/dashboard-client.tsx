@@ -81,6 +81,8 @@ interface DashboardClientProps {
   activity?: DashboardActivity[];
   topProducts?: DashboardProduct[];
   waitlistStats?: { count: number; potentialRevenue: number };
+  auditLogs?: any[];
+  systemHealth?: { database: string; latency: string; status: string };
 }
 
 export function DashboardClient({
@@ -91,11 +93,14 @@ export function DashboardClient({
   activity: initialActivity = [],
   topProducts = [],
   waitlistStats,
+  auditLogs: initialAuditLogs = [],
+  systemHealth,
 }: DashboardClientProps) {
   const [mounted, setMounted] = useState(false);
   const [stats, setStats] = useState(initialStats);
   const [recentOrders, setRecentOrders] = useState(initialOrders);
   const [activity, setActivity] = useState(initialActivity);
+  const [auditLogs, setAuditLogs] = useState(initialAuditLogs);
   const [isRecovering, setIsRecovering] = useState(false);
 
   const handleRecovery = async () => {
@@ -132,7 +137,7 @@ export function DashboardClient({
           const newOrder = _payload.new as Order;
 
           // Update Aggregate Stats
-          setStats((prev) => ({
+          setStats((prev: DashboardStats) => ({
             ...prev,
             totalOrders: prev.totalOrders + 1,
             totalRevenue: prev.totalRevenue + (newOrder.total || 0),
@@ -142,7 +147,7 @@ export function DashboardClient({
           }));
 
           // Add to Recent Orders
-          setRecentOrders((prev) => [
+          setRecentOrders((prev: DashboardOrder[]) => [
             {
               id: newOrder.id,
               total: newOrder.total,
@@ -154,7 +159,7 @@ export function DashboardClient({
           ]);
 
           // Add to Activity Feed
-          setActivity((prev) => [
+          setActivity((prev: DashboardActivity[]) => [
             {
               id: `act-${Date.now()}`,
               type: "order",
@@ -189,23 +194,14 @@ export function DashboardClient({
       )
       .subscribe();
 
-    // 3. PROFILES CHANNEL (New Users)
-    const profileChannel = supabase
-      .channel("admin-dashboard-profiles")
+    // 4. AUDIT CHANNEL
+    const auditChannel = supabase
+      .channel("admin-audit-logs")
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "profiles" },
+        { event: "INSERT", schema: "public", table: "admin_audit_logs" },
         (_payload) => {
-          setActivity((prev) => [
-            {
-              id: `act-user-${Date.now()}`,
-              type: "newsletter", // Reusing icon for generic user
-              title: `New User Signup`,
-              description: `Someone just joined the ecosystem.`,
-              time: new Date().toISOString(),
-            },
-            ...prev.slice(0, 9),
-          ]);
+          setAuditLogs((prev: any[]) => [_payload.new, ...prev.slice(0, 5)]);
         },
       )
       .subscribe();
@@ -213,31 +209,44 @@ export function DashboardClient({
     return () => {
       supabase.removeChannel(orderChannel);
       supabase.removeChannel(productChannel);
-      supabase.removeChannel(profileChannel);
+      supabase.removeChannel(auditChannel);
     };
   }, []);
 
   return (
-    <div className="flex-1 space-y-8 p-4 md:p-8 pt-6 bg-zinc-50/30 min-h-screen">
+    <div className="flex-1 space-y-8 p-4 md:p-8 pt-6 bg-zinc-950 min-h-screen admin-theme">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           className="space-y-1"
         >
-          <h2 className="text-3xl font-black tracking-tight uppercase italic flex items-center gap-3">
-            <Zap className="h-8 w-8 text-primary fill-primary animate-pulse" />
-            COMMAND{" "}
-            <span className="text-muted-foreground font-light">CENTER</span>
+          <h2 className="text-2xl font-black tracking-[0.2em] uppercase flex items-center gap-3">
+            <Zap className="h-6 w-6 text-brand-rust fill-brand-rust" />
+            COMMAND <span className="text-zinc-600 font-light">CENTER</span>
           </h2>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-3">
             <Badge
               variant="outline"
-              className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-[10px] font-black uppercase tracking-widest animate-pulse"
+              className={cn(
+                "text-[9px] font-black uppercase tracking-[0.2em] px-2 py-0 border-zinc-800",
+                systemHealth?.status === "healthy"
+                  ? "bg-emerald-500/5 text-emerald-500"
+                  : "bg-amber-500/5 text-amber-500",
+              )}
             >
-              ● System Online
+              {systemHealth?.status === "healthy"
+                ? "Live Signal: Active"
+                : "Signal Degraded"}
             </Badge>
-            <p className="text-muted-foreground text-xs font-medium">
+            {systemHealth && (
+              <div className="flex items-center gap-2 text-[9px] font-bold text-zinc-500 uppercase tracking-widest bg-zinc-900/50 px-3 py-1 border border-zinc-800">
+                <span>Latency: {systemHealth.latency}</span>
+                <span className="h-1 w-1 bg-zinc-800" />
+                <span>DB Status: {systemHealth.database}</span>
+              </div>
+            )}
+            <p className="hidden lg:block text-muted-foreground text-xs font-medium">
               Intelligence feed active and synced.
             </p>
           </div>
@@ -253,28 +262,28 @@ export function DashboardClient({
             disabled={isRecovering}
             variant="outline"
             size="sm"
-            className="hidden sm:flex rounded-full border-2 font-bold uppercase tracking-widest text-[10px] h-10 px-6 gap-2"
+            className="hidden sm:flex rounded-none border-zinc-800 font-bold uppercase tracking-widest text-[9px] h-10 px-6 gap-2 bg-zinc-900/50"
           >
             {isRecovering ? (
               <Loader2 className="h-3 w-3 animate-spin" />
             ) : (
-              <Mail className="h-3 w-3" />
+              <Mail className="h-3 w-3 text-zinc-500" />
             )}
-            {isRecovering ? "Running..." : "Run Cart Recovery"}
+            {isRecovering ? "Syncing..." : "Recover Carts"}
           </Button>
           <Button
             variant="outline"
             size="sm"
-            className="hidden sm:flex rounded-full border-2 font-bold uppercase tracking-widest text-[10px] h-10 px-6"
+            className="hidden sm:flex rounded-none border-zinc-800 font-bold uppercase tracking-widest text-[9px] h-10 px-6 bg-zinc-900/50"
             asChild
           >
-            <Link href="/admin/orders">Order History</Link>
+            <Link href="/admin/orders">Order Log</Link>
           </Button>
           <Button
             size="sm"
-            className="rounded-full shadow-xl shadow-primary/20 font-bold uppercase tracking-widest text-[10px] h-10 px-6"
+            className="rounded-none bg-white text-black hover:bg-zinc-200 font-bold uppercase tracking-widest text-[9px] h-10 px-6 transition-all"
           >
-            Export Report
+            Output Export
           </Button>
         </motion.div>
       </div>
@@ -325,7 +334,7 @@ export function DashboardClient({
               className="h-full"
             >
               <div className="flex items-end justify-between">
-                <div className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">
+                <div className="text-3xl font-black tracking-tighter text-white">
                   {item.value}
                 </div>
               </div>
@@ -346,7 +355,7 @@ export function DashboardClient({
                       className={cn("h-3 w-3", item.growth < 0 && "rotate-90")}
                     />
                   </span>
-                  {Math.abs(item.growth).toFixed(1)}% vs last month
+                  {Math.abs(item.growth).toFixed(1)}% vs cycle
                 </div>
               )}
             </SystemCard>
@@ -366,7 +375,7 @@ export function DashboardClient({
                 variant="secondary"
                 className="rounded-full bg-slate-100 text-slate-600 font-bold uppercase text-[9px] dark:bg-slate-800 dark:text-slate-400"
               >
-                2025
+                SESSION 26
               </Badge>
             }
           >
@@ -377,67 +386,65 @@ export function DashboardClient({
         {/* Intelligence Feed - Premium List UI */}
         <div className="col-span-full lg:col-span-3">
           <SystemCard
-            title="Live Signals"
-            subtitle="Real-time ecosystem events"
-            icon={<Activity className="h-4 w-4 text-emerald-500" />}
+            title="Admin Audit Trail"
+            subtitle="Recent administrative actions"
+            icon={<Activity className="h-4 w-4 text-primary" />}
             className="h-full flex flex-col"
             action={
-              <div className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
+              <Badge variant="outline" className="text-[10px] uppercase">
+                Secure
+              </Badge>
             }
           >
             <div className="overflow-auto max-h-[400px] scrollbar-hide -mx-2 px-2">
-              <div className="space-y-6">
-                {activity.length === 0 ? (
+              <div className="space-y-4">
+                {auditLogs.length === 0 ? (
                   <div className="text-center text-zinc-600 py-20 flex flex-col items-center gap-4">
-                    <Zap className="h-10 w-10 opacity-20" />
+                    <Clock className="h-10 w-10 opacity-20" />
                     <p className="text-sm font-bold uppercase tracking-widest italic">
-                      Monitoring in Progress...
+                      No Recent Logs
                     </p>
                   </div>
                 ) : (
-                  activity.map((item, i) => (
+                  auditLogs.map((log, i) => (
                     <motion.div
-                      key={item.id}
+                      key={log.id}
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.05 }}
-                      className="flex gap-4 group cursor-default"
+                      className="flex gap-3 text-xs group"
                     >
                       <div
                         className={cn(
-                          "h-10 w-10 shrink-0 rounded-xl flex items-center justify-center border transition-all group-hover:scale-110",
-                          item.type === "order" &&
-                            "bg-emerald-500/10 border-emerald-500/20 text-emerald-600",
-                          item.type === "review" &&
-                            "bg-amber-500/10 border-amber-500/20 text-amber-500",
-                          item.type === "newsletter" &&
-                            "bg-blue-500/10 border-blue-500/20 text-blue-500",
+                          "h-8 w-8 shrink-0 rounded flex items-center justify-center border",
+                          log.action_type === "CREATE" &&
+                            "bg-emerald-50 text-emerald-600 border-emerald-100",
+                          log.action_type === "UPDATE" &&
+                            "bg-blue-50 text-blue-600 border-blue-100",
+                          log.action_type === "DELETE" &&
+                            "bg-rose-50 text-rose-600 border-rose-100",
                         )}
                       >
-                        {item.type === "order" && (
-                          <ShoppingCart className="h-5 w-5" />
-                        )}
-                        {item.type === "review" && (
-                          <MessageSquare className="h-5 w-5" />
-                        )}
-                        {item.type === "newsletter" && (
-                          <Mail className="h-5 w-5" />
-                        )}
+                        <Package className="h-4 w-4" />
                       </div>
-                      <div className="flex-1 min-w-0 border-b border-slate-100 dark:border-slate-800 pb-4">
-                        <p className="text-sm font-black italic uppercase leading-none truncate group-hover:text-primary transition-colors">
-                          {item.title}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold leading-tight">
+                          <span className="uppercase text-muted-foreground">
+                            {log.action_type}
+                          </span>{" "}
+                          {log.table_name}
                         </p>
-                        <p className="text-xs text-muted-foreground truncate font-medium mt-1.5">
-                          {item.description}
+                        <p className="text-[10px] text-muted-foreground truncate">
+                          ByID: {log.record_id.slice(0, 8)} •{" "}
+                          {log.admin?.email || "System"}
                         </p>
-                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1.5 flex items-center gap-2">
-                          <span className="h-1 w-1 rounded-full bg-zinc-400" />
+                        <p className="text-[9px] text-zinc-500 font-black uppercase mt-1">
                           {mounted
-                            ? formatDistanceToNow(new Date(item.time), {
-                                addSuffix: true,
-                              })
-                            : "Just now"}
+                            ? formatDistanceToNow(
+                                new Date(log.created_at || new Date()),
+                              )
+                            : "..."}{" "}
+                          ago
                         </p>
                       </div>
                     </motion.div>
@@ -571,8 +578,8 @@ export function DashboardClient({
                         <p className="text-xs font-black uppercase truncate italic group-hover:text-primary transition-colors">
                           {product.name}
                         </p>
-                        <span className="text-[10px] font-bold text-muted-foreground">
-                          {product.sale_count} Sales
+                        <span className="text-[9px] font-black text-zinc-500 uppercase">
+                          {product.sale_count} Units
                         </span>
                       </div>
                       <div className="flex items-center gap-2 mt-2">

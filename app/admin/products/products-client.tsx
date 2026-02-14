@@ -28,6 +28,7 @@ import {
   Users,
   Clock,
   Sparkles,
+  Layers,
 } from "lucide-react";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
@@ -63,6 +64,7 @@ import {
 import {
   bulkDeleteProducts,
   bulkUpdateProductStatus,
+  bulkUpdateProductCategory,
   toggleProductCarousel,
 } from "@/lib/services/product-service";
 import { deleteProductAction } from "@/app/actions/admin/delete-product";
@@ -225,6 +227,17 @@ export function ProductsClient({
       router.refresh();
     } catch (_err) {
       toast.error("Bulk update failed");
+    }
+  };
+
+  const handleBulkCategory = async (categoryId: string) => {
+    try {
+      await bulkUpdateProductCategory(Array.from(selectedIds), categoryId);
+      toast.success(`${selectedIds.size} products re-categorized`);
+      setSelectedIds(new Set());
+      router.refresh();
+    } catch (_err) {
+      toast.error("Bulk category update failed");
     }
   };
 
@@ -526,6 +539,34 @@ export function ProductsClient({
               <div className="h-2 w-2 rounded-full bg-slate-400" />
               Draft
             </Button>
+            <div className="w-px h-4 bg-border mx-1" />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-8 text-xs border-dashed gap-1 hover:border-primary/50"
+                >
+                  <Layers className="h-3 w-3" />
+                  Category
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="center" className="w-48">
+                <DropdownMenuLabel className="text-[10px] uppercase font-bold">
+                  Assign Category
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {categories.map((cat) => (
+                  <DropdownMenuItem
+                    key={cat.id}
+                    onClick={() => handleBulkCategory(cat.id)}
+                    className="text-xs"
+                  >
+                    {cat.name}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
             <div className="w-px h-4 bg-border mx-1" />
             <Button
               size="sm"

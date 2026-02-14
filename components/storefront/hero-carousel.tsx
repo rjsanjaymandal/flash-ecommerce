@@ -166,7 +166,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
 
   if (!products || products.length === 0) {
     return (
-      <section className="relative w-full h-[85vh] lg:h-[90vh] bg-background overflow-hidden animate-pulse">
+      <section className="relative w-full h-[65vh] lg:h-[80vh] min-h-[500px] lg:min-h-[700px] bg-background overflow-hidden animate-pulse">
         <div className="absolute inset-x-0 bottom-0 top-0 bg-zinc-100 lg:w-[55%] lg:right-0 lg:left-auto" />
       </section>
     );
@@ -196,7 +196,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
       ref={containerRef}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
-      className="relative w-full h-[65vh] lg:h-[80vh] bg-zinc-100 dark:bg-zinc-900 overflow-hidden"
+      className="relative w-full h-[65vh] lg:h-[80vh] min-h-[500px] lg:min-h-[700px] bg-zinc-100 dark:bg-zinc-900 overflow-hidden"
     >
       <AnimatePresence initial={false} custom={direction}>
         <motion.div

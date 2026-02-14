@@ -23,8 +23,8 @@ export function SystemCard({
   return (
     <div
       className={cn(
-        "group relative overflow-hidden rounded-xl border border-slate-200 bg-white/40 backdrop-blur-xl transition-all duration-300 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900/40",
-        "hover:border-indigo-500/30 dark:hover:border-indigo-400/30",
+        "group relative overflow-hidden rounded-none border border-zinc-800 bg-zinc-950/40 backdrop-blur-xl transition-all duration-500 hover:bg-zinc-950/60",
+        "hover:border-zinc-700",
         className,
       )}
     >
@@ -38,7 +38,7 @@ export function SystemCard({
         >
           <div className="flex items-center gap-3">
             {icon && (
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm transition-colors group-hover:border-indigo-200 group-hover:text-indigo-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400 dark:group-hover:border-indigo-900 dark:group-hover:text-indigo-400">
+              <div className="flex h-8 w-8 items-center justify-center rounded-none border border-zinc-800 bg-zinc-950 text-zinc-500 shadow-sm transition-colors group-hover:border-zinc-600 group-hover:text-white">
                 {icon}
               </div>
             )}
@@ -62,9 +62,9 @@ export function SystemCard({
       {/* Content */}
       <div className="p-6">{children}</div>
 
-      {/* Decorative Corner Accents */}
-      <div className="absolute -top-1 -right-1 h-3 w-3 border-r-2 border-t-2 border-transparent transition-colors group-hover:border-indigo-400/50" />
-      <div className="absolute -bottom-1 -left-1 h-3 w-3 border-b-2 border-l-2 border-transparent transition-colors group-hover:border-indigo-400/50" />
+      {/* Decorative Corner Accents (Rust) */}
+      <div className="absolute -top-1 -right-1 h-3 w-3 border-r-2 border-t-2 border-transparent transition-colors group-hover:border-brand-rust/50" />
+      <div className="absolute -bottom-1 -left-1 h-3 w-3 border-b-2 border-l-2 border-transparent transition-colors group-hover:border-brand-rust/50" />
     </div>
   );
 }

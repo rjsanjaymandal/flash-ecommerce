@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Inter, EB_Garamond } from "next/font/google"; // Modern font loading
 import "./globals.css";
 import { Providers } from "./providers";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
@@ -7,12 +8,19 @@ import { WebSiteJsonLd } from "@/components/seo/website-json-ld";
 import { getUnifiedAuth } from "@/lib/supabase/auth-helper";
 import { Analytics } from "@vercel/analytics/react";
 import { GoogleAnalytics } from "@next/third-parties/google";
-import { PWARegister } from "@/components/pwa-register"; // Imported PWA Register
+import { PWARegister } from "@/components/pwa-register";
 
-// Fonts are now loaded via CSS @import in globals.css to bypass build-time fetch restrictions
-const fontSans = { variable: "--font-sans" };
-const fontSerif = { variable: "--font-serif" };
-const fontMono = { variable: "--font-mono" };
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
+
+const ebGaramond = EB_Garamond({
+  subsets: ["latin"],
+  variable: "--font-serif",
+  display: "swap",
+});
 
 export const viewport: Viewport = {
   themeColor: "#000000",
@@ -108,7 +116,7 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${fontSans.variable} ${fontSerif.variable} ${fontMono.variable} antialiased font-sans`}
+        className={`${inter.variable} ${ebGaramond.variable} antialiased font-sans`}
       >
         <Providers
           initialUser={user}

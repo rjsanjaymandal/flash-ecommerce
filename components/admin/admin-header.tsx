@@ -2,8 +2,7 @@
 
 import { AdminBreadcrumbs } from "./admin-breadcrumbs";
 import { NotificationsDropdown } from "./notifications-dropdown";
-import { Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { AdminCommandPalette } from "./command-palette";
 
 export function AdminHeader() {
   return (
@@ -13,16 +12,7 @@ export function AdminHeader() {
       </div>
 
       <div className="flex items-center gap-4">
-        {/* Placeholder for Command Palette Trigger */}
-        <div className="hidden md:flex relative w-64">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Search... (Cmd+K)"
-            className="pl-9 h-9 bg-muted/30 border-muted-foreground/20 focus-visible:ring-1"
-            readOnly
-          />
-        </div>
+        <AdminCommandPalette />
 
         <div className="h-6 w-px bg-border mx-2 hidden md:block" />
 

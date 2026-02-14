@@ -57,30 +57,28 @@ export function AdminSidebar() {
   }, []);
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-20 hidden w-72 flex-col bg-[#0f172a] text-slate-300 transition-all duration-300 sm:flex shadow-xl print:hidden">
+    <aside className="fixed inset-y-0 left-0 z-20 hidden w-72 flex-col bg-zinc-950 text-zinc-400 transition-all duration-300 sm:flex border-r border-zinc-800/50 shadow-2xl print:hidden">
       <div className="flex h-full flex-col">
         {/* Brand */}
-        <div className="flex h-20 items-center px-8 border-b border-slate-800/50">
-          <Link href="/admin" className="flex items-center gap-3 group">
-            <div className="h-10 w-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-indigo-900/20 group-hover:scale-105 transition-transform">
-              F
-            </div>
-            <div className="flex flex-col">
-              <span className="text-xl font-bold text-white tracking-tight">
-                Flash<span className="font-light text-indigo-400">Panel</span>
-              </span>
-              <span className="text-[10px] uppercase tracking-wider font-semibold text-slate-500">
-                Enterprise
-              </span>
-            </div>
-          </Link>
-        </div>
+        <Link href="/admin" className="flex items-center gap-3 group">
+          <div className="h-10 w-10 rounded-lg bg-white flex items-center justify-center text-black font-black text-xl shadow-xl shadow-white/5 group-hover:scale-105 transition-transform border border-zinc-800">
+            F
+          </div>
+          <div className="flex flex-col">
+            <span className="text-xl font-bold text-white tracking-tighter">
+              FLASH<span className="font-light text-zinc-500">.OPS</span>
+            </span>
+            <span className="text-[9px] uppercase tracking-[0.3em] font-black text-zinc-600">
+              Industrial Unit
+            </span>
+          </div>
+        </Link>
 
         <div className="flex-1 overflow-y-auto py-6 px-4 space-y-8 scrollbar-hide">
           {/* Main Nav */}
           <div className="space-y-2">
-            <h3 className="px-4 text-xs font-bold text-indigo-400/80 mb-2 uppercase tracking-widest">
-              Overview
+            <h3 className="px-4 text-[9px] font-black text-zinc-600 mb-2 uppercase tracking-[0.3em]">
+              Logistics
             </h3>
             <nav className="space-y-1">
               {navItems.map((item) => {
@@ -90,18 +88,18 @@ export function AdminSidebar() {
                     key={item.href}
                     href={item.href as any}
                     className={cn(
-                      "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 group relative",
+                      "flex items-center gap-3 rounded-none px-4 py-3 text-xs font-bold uppercase tracking-widest transition-all duration-200 group relative",
                       isActive
-                        ? "bg-indigo-600 text-white shadow-md shadow-indigo-900/20"
-                        : "hover:bg-slate-800/50 hover:text-white",
+                        ? "bg-zinc-800 text-white border-l-2 border-brand-rust"
+                        : "hover:bg-zinc-900 hover:text-white",
                     )}
                   >
                     <item.icon
                       className={cn(
-                        "h-5 w-5 transition-transform group-hover:scale-110",
+                        "h-4 w-4 transition-transform group-hover:scale-110",
                         isActive
-                          ? "text-indigo-200"
-                          : "text-slate-500 group-hover:text-slate-300",
+                          ? "text-brand-rust"
+                          : "text-zinc-600 group-hover:text-zinc-400",
                       )}
                     />
                     {item.label}
@@ -124,18 +122,18 @@ export function AdminSidebar() {
                     key={item.href}
                     href={item.href as any}
                     className={cn(
-                      "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 group",
+                      "flex items-center gap-3 rounded-none px-4 py-3 text-xs font-bold uppercase tracking-widest transition-all duration-200 group",
                       isActive
-                        ? "bg-indigo-600/10 text-indigo-400"
-                        : "hover:bg-slate-800/50 hover:text-white",
+                        ? "bg-zinc-800/50 text-white"
+                        : "hover:bg-zinc-900/50 hover:text-white",
                     )}
                   >
                     <item.icon
                       className={cn(
-                        "h-5 w-5",
+                        "h-4 w-4",
                         isActive
-                          ? "text-indigo-400"
-                          : "text-slate-500 group-hover:text-slate-300",
+                          ? "text-brand-rust"
+                          : "text-zinc-600 group-hover:text-zinc-400",
                       )}
                     />
                     {item.label}
@@ -146,10 +144,10 @@ export function AdminSidebar() {
           </div>
 
           {/* User & Footer Actions (Merged into Scroll) */}
-          <div className="pt-6 mt-6 border-t border-slate-800/50">
+          <div className="pt-6 mt-6 border-t border-zinc-800/50">
             {mounted && (
               <div className="flex items-center gap-3 mb-4 px-2">
-                <div className="h-10 w-10 rounded-full bg-linear-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-inner border-2 border-[#0f172a]">
+                <div className="h-10 w-10 rounded-none bg-zinc-800 flex items-center justify-center text-white font-black shadow-inner border border-zinc-700">
                   {user?.email?.[0].toUpperCase() || "A"}
                 </div>
                 <div className="overflow-hidden">

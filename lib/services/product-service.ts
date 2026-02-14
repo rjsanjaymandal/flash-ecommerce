@@ -666,6 +666,13 @@ export async function bulkDeleteProducts(ids: string[]) {
     const supabase = createAdminClient()
     const { error } = await supabase.from('products').delete().in('id', ids)
     if (error) throw error
+
+    // Audit Logging
+    const { logAdminAction } = await import('@/lib/admin-logger')
+    ids.forEach(id => {
+        logAdminAction('products', id, 'DELETE')
+    })
+
     // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
     revalidateTag('products')
     // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
@@ -683,10 +690,39 @@ export async function bulkUpdateProductStatus(ids: string[], isActive: boolean) 
         .update({ is_active: isActive })
         .in('id', ids)
     if (error) throw error
+
+    // Audit Logging
+    const { logAdminAction } = await import('@/lib/admin-logger')
+    ids.forEach(id => {
+        logAdminAction('products', id, 'UPDATE', { is_active: isActive })
+    })
+
     // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
     revalidateTag('products')
     // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
     revalidateTag('featured-products')
+    revalidatePath('/admin/products')
+    revalidatePath('/shop')
+}
+
+export async function bulkUpdateProductCategory(ids: string[], categoryId: string) {
+    await requireAdmin()
+    if (!ids || ids.length === 0) return
+    const supabase = createAdminClient()
+    const { error } = await supabase
+        .from('products')
+        .update({ category_id: categoryId })
+        .in('id', ids)
+    if (error) throw error
+
+    // Audit Logging
+    const { logAdminAction } = await import('@/lib/admin-logger')
+    ids.forEach(id => {
+        logAdminAction('products', id, 'UPDATE', { category_id: categoryId })
+    })
+
+    // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
+    revalidateTag('products')
     revalidatePath('/admin/products')
     revalidatePath('/shop')
 }

@@ -23,6 +23,8 @@ export default async function AdminDashboard() {
     activity,
     topProducts,
     waitlistStats,
+    auditLogs,
+    systemHealth,
   ] = await Promise.all([
     getStats(),
     getMonthlyRevenue(),
@@ -31,6 +33,10 @@ export default async function AdminDashboard() {
     getRecentActivity(8),
     getTopProducts(5),
     getWaitlistStats(),
+    import("@/lib/services/audit-service").then((mod) =>
+      mod.getRecentAuditLogs(6),
+    ),
+    import("@/lib/services/audit-service").then((mod) => mod.getSystemHealth()),
   ]);
 
   return (
@@ -42,10 +48,12 @@ export default async function AdminDashboard() {
       activity={activity}
       topProducts={topProducts.map((product) => ({
         ...product,
-        sale_count: 0, // Placeholder as we don't have this metric yet
+        sale_count: (product as any).sale_count || 0,
         categories: product.categories || undefined,
       }))}
       waitlistStats={waitlistStats}
+      auditLogs={auditLogs}
+      systemHealth={systemHealth}
     />
   );
 }

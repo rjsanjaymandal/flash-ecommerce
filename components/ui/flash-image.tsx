@@ -48,9 +48,17 @@ export default function FlashImage({
     src.includes("supabase.co/storage/v1/object/public");
   const isCloudinary =
     typeof src === "string" && src.includes("res.cloudinary.com");
+  const isPexels = typeof src === "string" && src.includes("images.pexels.com");
+  const isRemote = typeof src === "string" && src.includes("images.remote.com");
 
   const finalUnoptimized =
-    unoptimized || (isExternal && !isUnsplash && !isSupabase && !isCloudinary);
+    unoptimized ||
+    (isExternal &&
+      !isUnsplash &&
+      !isSupabase &&
+      !isCloudinary &&
+      !isPexels &&
+      !isRemote);
 
   // Manual URL encoding for spaces and special characters to prevent browser parsing errors
   let safeSrc = src;

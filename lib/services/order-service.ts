@@ -207,6 +207,11 @@ export async function updateOrderStatus(orderId: string, newStatus: string) {
         .eq('id', orderId)
     
     if (error) throw error
+
+    // Audit Logging
+    const { logAdminAction } = await import('@/lib/admin-logger')
+    await logAdminAction('orders', orderId, 'UPDATE', { status: newStatus })
+
     return { success: true }
 }
 

@@ -42,24 +42,24 @@ export function MobileAdminSidebar() {
       </SheetTrigger>
       <SheetContent
         side="left"
-        className="p-0 bg-[#0f172a] text-slate-300 w-72 border-r-slate-800"
+        className="p-0 bg-zinc-950 text-zinc-400 w-72 border-r border-zinc-800"
       >
-        <SheetHeader className="h-20 flex items-center justify-center border-b border-slate-800/50 px-6">
+        <SheetHeader className="h-20 flex items-center justify-center border-b border-zinc-800/50 px-6">
           <SheetTitle className="sr-only">Admin Navigation</SheetTitle>
           <Link
             href="/admin"
             onClick={() => setOpen(false)}
-            className="flex items-center gap-3 w-full"
+            className="flex items-center gap-3 w-full group"
           >
-            <div className="h-10 w-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-indigo-900/20">
+            <div className="h-10 w-10 rounded-lg bg-white flex items-center justify-center text-black font-black text-xl shadow-xl shadow-white/5 border border-zinc-800">
               F
             </div>
             <div className="flex flex-col text-left">
-              <span className="text-xl font-bold text-white tracking-tight">
-                Flash<span className="font-light text-indigo-400">Panel</span>
+              <span className="text-xl font-bold text-white tracking-tighter">
+                FLASH<span className="font-light text-zinc-500">.OPS</span>
               </span>
-              <span className="text-[10px] uppercase tracking-wider font-semibold text-slate-500">
-                Enterprise
+              <span className="text-[9px] uppercase tracking-[0.3em] font-black text-zinc-600">
+                Industrial Unit
               </span>
             </div>
           </Link>
@@ -68,8 +68,8 @@ export function MobileAdminSidebar() {
         <div className="flex-1 overflow-y-auto py-6 px-4 space-y-8 scrollbar-hide h-[calc(100vh-160px)]">
           {/* Main Nav */}
           <div className="space-y-2">
-            <h3 className="px-4 text-xs font-bold text-indigo-400/80 mb-2 uppercase tracking-widest">
-              Overview
+            <h3 className="px-4 text-[9px] font-black text-zinc-600 mb-2 uppercase tracking-[0.3em]">
+              Logistics
             </h3>
             <nav className="space-y-1">
               {navItems.map((item) => {
@@ -80,18 +80,18 @@ export function MobileAdminSidebar() {
                     href={item.href as any}
                     onClick={() => setOpen(false)}
                     className={cn(
-                      "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 group relative",
+                      "flex items-center gap-3 rounded-none px-4 py-3 text-xs font-bold uppercase tracking-widest transition-all duration-200 group relative",
                       isActive
-                        ? "bg-indigo-600 text-white shadow-md shadow-indigo-900/20"
-                        : "hover:bg-slate-800/50 hover:text-white",
+                        ? "bg-zinc-800 text-white border-l-2 border-brand-rust"
+                        : "hover:bg-zinc-900 hover:text-white",
                     )}
                   >
                     <item.icon
                       className={cn(
-                        "h-5 w-5 transition-transform group-hover:scale-110",
+                        "h-4 w-4 transition-transform group-hover:scale-110",
                         isActive
-                          ? "text-indigo-200"
-                          : "text-slate-500 group-hover:text-slate-300",
+                          ? "text-brand-rust"
+                          : "text-zinc-600 group-hover:text-zinc-400",
                       )}
                     />
                     {item.label}
@@ -115,18 +115,18 @@ export function MobileAdminSidebar() {
                     href={item.href as any}
                     onClick={() => setOpen(false)}
                     className={cn(
-                      "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 group",
+                      "flex items-center gap-3 rounded-none px-4 py-3 text-xs font-bold uppercase tracking-widest transition-all duration-200 group",
                       isActive
-                        ? "bg-indigo-600/10 text-indigo-400"
-                        : "hover:bg-slate-800/50 hover:text-white",
+                        ? "bg-zinc-800/50 text-white"
+                        : "hover:bg-zinc-900/50 hover:text-white",
                     )}
                   >
                     <item.icon
                       className={cn(
-                        "h-5 w-5",
+                        "h-4 w-4",
                         isActive
-                          ? "text-indigo-400"
-                          : "text-slate-500 group-hover:text-slate-300",
+                          ? "text-brand-rust"
+                          : "text-zinc-600 group-hover:text-zinc-400",
                       )}
                     />
                     {item.label}
@@ -138,16 +138,16 @@ export function MobileAdminSidebar() {
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-800/50 bg-[#0b1120] absolute bottom-0 w-full">
+        <div className="p-4 border-t border-zinc-800/50 bg-zinc-950 absolute bottom-0 w-full">
           <button
             onClick={() => {
               signOut();
               setOpen(false);
             }}
-            className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-2.5 text-sm font-medium text-slate-300 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20 transition-all"
+            className="flex w-full items-center justify-center gap-2 rounded-none border border-zinc-800 bg-zinc-900/50 px-4 py-2.5 text-[10px] uppercase font-black tracking-widest text-zinc-400 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20 transition-all"
           >
             <LogOut className="h-4 w-4" />
-            Sign Out
+            De-Authorize
           </button>
         </div>
       </SheetContent>
