@@ -23,11 +23,11 @@ const nextConfig: NextConfig = {
     formats: ['image/avif', 'image/webp'],
     qualities: [70, 75, 80, 85, 90, 95, 100],
   },
+  typedRoutes: true,
   experimental: {
     serverActions: {
       bodySizeLimit: '10mb',
     },
-    typedRoutes: true,
     optimizePackageImports: [
       'lucide-react',
       'framer-motion',

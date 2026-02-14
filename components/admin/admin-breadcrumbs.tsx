@@ -46,7 +46,7 @@ export function AdminBreadcrumbs() {
               <span className="font-semibold text-foreground">{label}</span>
             ) : (
               <Link
-                href={href}
+                href={href as any}
                 className="hover:text-primary transition-colors font-medium"
               >
                 {label}

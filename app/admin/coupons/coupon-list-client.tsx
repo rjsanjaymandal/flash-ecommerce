@@ -74,7 +74,7 @@ export function CouponListClient({
       params.delete("search");
     }
     params.set("page", "1"); // Reset to page 1 on search
-    router.push(`${pathname}?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}` as any);
   };
 
   const handleDelete = async (id: string) => {

@@ -28,7 +28,7 @@ export type Product = Tables<'products'> & {
 
 
 
-export type ProductSortOption = 'price_asc' | 'price_desc' | 'newest' | 'trending' | 'waitlist_desc' | 'random'
+export type ProductSortOption = 'price_asc' | 'price_desc' | 'newest' | 'trending' | 'waitlist_desc' | 'random' | 'relevance'
 
 export type ProductFilter = {
   category_id?: string
@@ -125,7 +125,8 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: SupabaseCli
     }
 
     // Base Query
-    // Optimization: Only fetch essential fields for list views unless details are requested
+    // Optimization: Only fetch essential fields for list views. 
+    // We omit 'gallery_image_urls' for performance in grids.
     const selectFields = filter.includeDetails 
         ? '*, categories(name), product_stock(*), reviews(rating)'
         : 'id, name, slug, price, original_price, main_image_url, status, is_active, category_id, created_at, is_carousel_featured, total_stock, categories(name), product_stock(size, quantity), reviews(rating)'
@@ -170,14 +171,13 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: SupabaseCli
                  // Fallback to sale_count if available or reviews?
                 query = query.order('created_at', { ascending: false }).order('id', { ascending: true }) 
                 break
-            case 'waitlist_desc':
-                 // Preorders is a separate table, difficult to sort by without join/view.
-                 // For now, fallback to created_at
-                 query = query.order('created_at', { ascending: false }).order('id', { ascending: true })
-                 break
-
+            case 'relevance':
+                // Smart Relevance: In Stock First, then Newest, then higher price (assumed premium)
+                query = query.order('total_stock', { ascending: false }).order('created_at', { ascending: false })
+                break
              default:
-                query = query.order('created_at', { ascending: false })
+                // Default to trending/newest with availability weighting
+                query = query.order('total_stock', { ascending: false }).order('created_at', { ascending: false })
         }
     }
 
@@ -234,8 +234,8 @@ export async function getProducts(filter: ProductFilter = {}): Promise<Paginated
     
     return unstable_cache(
         async () => fetchProducts(filter),
-        ['products-list-stock-v1', key], // Versioned key to bust old non-stock-sorted cache
-        { tags: ['products'], revalidate: revalidateTime }
+        ['products-list-v2', key], 
+        { tags: ['products', `category-${filter.category_id || 'all'}`], revalidate: revalidateTime }
     )()
 }
 
@@ -582,77 +582,58 @@ export async function getValidProducts(ids: string[]): Promise<Product[]> {
 }
 
 export async function getRelatedProducts(product: Product): Promise<Product[]> {
-    const key = `related-${product.id}`
+    const key = `related-v2-${product.id}`
     return unstable_cache(
         async () => {
             try {
                 const supabase = createStaticClient()
                 
-                // AI-Style Recommendation Logic: "Complete the Look"
-                // 1. Fetch Candidates: Items with overlapping tags OR same category
-                // We fetch more items (12) to allow for in-memory scoring and re-ranking
-                const limit = 12 
-                
+                // Advanced "Complete the Look" Algorithm
+                // 1. Fetch Candidates (Primary: Tags, Secondary: Category)
+                const limit = 20 
                 const tags = product.expression_tags || []
-                let candidates: Product[] = []
+                
+                const { data: candidatesRaw } = await supabase
+                    .from('products')
+                    .select(`
+                        id, name, slug, price, original_price, main_image_url, 
+                        category_id, expression_tags, total_stock, review_count,
+                        categories(name), product_stock(*), reviews(rating)
+                    `)
+                    .neq('id', product.id)
+                    .eq('status', 'active')
+                    .or(`expression_tags.overlaps.{${tags.join(',')}},category_id.eq.${product.category_id}`)
+                    .limit(limit)
 
-                if (tags.length > 0) {
-                     // Try to find items with overlapping tags
-                     const { data } = await supabase
-                        .from('products')
-                        .select(`
-                            id, name, slug, price, original_price, main_image_url, 
-                            category_id, expression_tags, 
-                            categories(name), product_stock(*), reviews(rating)
-                        `)
-                        .overlaps('expression_tags', tags)
-                        .neq('id', product.id)
-                        .eq('status', 'active')
-                        .limit(limit)
-                     
-                     candidates = (data as unknown as Product[]) || []
-                }
+                const candidates = (candidatesRaw as unknown as Product[]) || []
 
-                // If we don't have enough candidates, fill with category matches
-                if (candidates.length < 4 && product.category_id) {
-                    const { data: filler } = await supabase
-                        .from('products')
-                        .select(`
-                            id, name, slug, price, original_price, main_image_url, 
-                            category_id, expression_tags, 
-                            categories(name), product_stock(*), reviews(rating)
-                        `)
-                        .eq('category_id', product.category_id)
-                        .neq('id', product.id)
-                        .eq('status', 'active')
-                        .limit(limit - candidates.length)
-                    
-                    // Merge unique items
-                    const existingIds = new Set(candidates.map(c => c.id))
-                    ;(filler || []).forEach((item: any) => {
-                        if (!existingIds.has(item.id)) {
-                            candidates.push(item as unknown as Product)
-                        }
-                    })
-                }
-
-                // 2. Scoring Algorithm to Rank "Complete the Look"
-                // Score = (Tag Overlap * 2) + (Cross-Category Bonus * 5)
+                // 2. Scoring & Diversity Filtering
+                // Goal: Show variety while maintaining relevance
+                const categoryCounts: Record<string, number> = {}
+                
                 const scored = candidates.map((item) => {
                     let score = 0
                     
-                    // Tag overlap
+                    // Relevance Score (Tags)
                     const itemTags = item.expression_tags || []
-                    const intersection = tags.filter((t: string) => itemTags.includes(t))
-                    score += intersection.length * 2
+                    const overlap = tags.filter(t => itemTags.includes(t)).length
+                    score += overlap * 3
 
-                    // Cross-Category Bonus (Give variety)
-                    if (item.category_id !== product.category_id) {
-                        score += 5
+                    // Popularity & Availability Boost
+                    if ((item.review_count || 0) > 5) score += 2
+                    if ((item.total_stock || 0) > 0) score += 5
+                    if ((item.total_stock || 0) > 20) score += 2 // High availability boost
+
+                    // Variety Adjustment (Penalize same category if we have plenty)
+                    const catId = item.category_id || 'unassigned'
+                    categoryCounts[catId] = (categoryCounts[catId] || 0) + 1
+                    
+                    if (catId === product.category_id) {
+                        score += 2 // Baseline relevance for same category
+                        if (categoryCounts[catId] > 2) score -= 4 // Variety penalty: don't over-show same category
+                    } else {
+                        score += 6 // Variety bonus: "Complete the Look" with different categories
                     }
-
-                    // Base score for simply existing (so we don't get 0s sorted randomly)
-                    score += 1
 
                     return { item, score }
                 })
@@ -660,16 +641,16 @@ export async function getRelatedProducts(product: Product): Promise<Product[]> {
                 // Sort descending by score
                 scored.sort((a, b) => b.score - a.score)
 
-                // Take top 4 for the UI
-                const finalProducts = scored.slice(0, 4).map((s) => s.item as unknown as Product)
+                // Take top 4
+                const finalProducts = scored.slice(0, 4).map(s => s.item)
 
-                return finalProducts.map((p) => {
+                return finalProducts.map(p => {
                     const ratings = p.reviews?.map((r) => r.rating).filter((r): r is number => r !== null) || []
                     const avg = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0
                     return {
                         ...p,
-                        average_rating: avg,
-                        review_count: ratings.length
+                        average_rating: avg || Number(p.average_rating || 0),
+                        review_count: ratings.length || Number(p.review_count || 0)
                     } as Product
                 })
             } catch (error) {
@@ -677,8 +658,8 @@ export async function getRelatedProducts(product: Product): Promise<Product[]> {
                 return []
             }
         },
-        ['related-products', key],
-        { tags: ['products', 'related-products'], revalidate: 3600 } // 1 hour buffer
+        ['related-products-v2', key],
+        { tags: ['products', 'related-products'], revalidate: 3600 }
     )()
 }
 

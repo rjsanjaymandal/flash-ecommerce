@@ -27,7 +27,7 @@ export default function LoginPage() {
         data: { session },
       } = await supabase.auth.getSession();
       if (session) {
-        router.replace(next);
+        router.replace(next as any);
       }
     };
     checkUser();

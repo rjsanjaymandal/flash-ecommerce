@@ -56,6 +56,7 @@ export function StorefrontNavbar() {
   const [mounted, setMounted] = useState(false);
   // Local Search State for Overlay
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isShopTrayOpen, setIsShopTrayOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -128,15 +129,45 @@ export function StorefrontNavbar() {
 
             {/* Desktop Nav */}
             <nav className="hidden lg:flex items-center gap-2">
-              <div className="group relative">
-                <Link
-                  href="/shop"
-                  className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.3em] text-muted-foreground hover:text-foreground transition-all px-4 py-2"
+              <div
+                className="group relative"
+                onMouseEnter={() => setIsShopTrayOpen(true)}
+                onMouseLeave={() => setIsShopTrayOpen(false)}
+              >
+                <div
+                  className={cn(
+                    "flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.3em] transition-all px-4 py-2 cursor-pointer",
+                    isShopTrayOpen
+                      ? "text-primary"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setIsShopTrayOpen(!isShopTrayOpen);
+                  }}
                 >
                   Shop
-                  <ChevronDown className="h-3 w-3 opacity-30 group-hover:opacity-100 transition-opacity" />
-                </Link>
-                <CategoryDropdown categories={categories} />
+                  <ChevronDown
+                    className={cn(
+                      "h-3 w-3 transition-transform duration-300",
+                      isShopTrayOpen ? "rotate-180 text-primary" : "opacity-30",
+                    )}
+                  />
+                </div>
+
+                <AnimatePresence>
+                  {isShopTrayOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute top-0 left-0 w-full"
+                    >
+                      <CategoryDropdown categories={categories} />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
               <Link
                 href="/lab"

@@ -148,7 +148,7 @@ export default function CheckoutPage() {
       // Clear the param
       const url = new URL(window.location.href);
       url.searchParams.delete("error");
-      router.replace(url.pathname + url.search);
+      router.replace((url.pathname + url.search) as any);
     }
   }, [searchParams, router]);
 

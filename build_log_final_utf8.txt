@@ -1,0 +1,51 @@
+﻿
+> flash-ecommerce@0.1.0 build
+> next build
+
+Γû▓ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+- Experiments (use with caution):
+  ┬╖ optimizePackageImports
+  ┬╖ serverActions
+
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 34.3s
+  Running TypeScript ...
+node.exe : Failed to compile.
+At line:1 char:1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Users\rjsan\AppData\Roaming\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpe 
+   cified: (Failed to compile.:Stri  
+  ng) [], RemoteException
+    + FullyQualifiedErrorId : Native 
+   CommandError
+ 
+
+./app/(storefront)/login/page.tsx:30:
+24
+Type error: Argument of type 
+'string' is not assignable to 
+parameter of type 
+'RouteImpl<string>'.
+
+[0m [90m 28 |[39m       } 
+[33m=[39m [36mawait[39m supabase
+[33m.[39mauth[33m.[39mgetSession()
+[33m;[39m
+ [90m 29 |[39m       [36mif[39m 
+(session) {
+[31m[1m>[22m[39m[90m 30 |[39m  
+       router[33m.[39mreplace(next)
+[33m;[39m
+ [90m    |[39m                     
+   [31m[1m^[22m[39m
+ [90m 31 |[39m       }
+ [90m 32 |[39m     }[33m;[39m
+ [90m 33 |[39m     
+checkUser()[33m;[39m[0m
+Next.js build worker exited with 
+code: 1 and signal: null

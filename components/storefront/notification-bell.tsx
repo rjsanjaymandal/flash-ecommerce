@@ -60,7 +60,7 @@ export function NotificationBell() {
             action: payload.new.action_url
               ? {
                   label: "View",
-                  onClick: () => router.push(payload.new.action_url),
+                  onClick: () => router.push(payload.new.action_url as any),
                 }
               : undefined,
           });
@@ -172,7 +172,7 @@ export function NotificationBell() {
             <div className="flex flex-col">
               {notifications.map((n) => (
                 <Link
-                  href={n.action_url || "#"}
+                  href={(n.action_url || "#") as any}
                   key={n.id}
                   onClick={() => {
                     markAsRead(n.id);

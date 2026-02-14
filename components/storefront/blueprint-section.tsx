@@ -57,7 +57,7 @@ export function BlueprintSection({ product }: BlueprintSectionProps) {
 
         {/* MAIN BLUEPRINT UI - NOW CLICKABLE */}
         <Link
-          href={productUrl}
+          href={productUrl as any}
           className="block group cursor-pointer relative max-w-5xl mx-auto md:aspect-[16/9] bg-white/5 rounded-none border border-white/10 backdrop-blur-sm overflow-hidden flex flex-col md:block hover:border-white/20 transition-colors duration-500"
         >
           {/* CROSSHAIRS (Desktop Only) */}

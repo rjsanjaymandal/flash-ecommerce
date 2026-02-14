@@ -48,6 +48,7 @@ export async function ProductGrid({ params }: { params: ShopParams }) {
           </span>
           <div className="flex bg-muted/30 p-1 rounded-full border border-border/40 backdrop-blur-sm">
             {[
+              { id: "relevance", label: "Relevance" },
               { id: "trending", label: "Trending" },
               { id: undefined, label: "Newest" },
               { id: "price_asc", label: "Price Low" },

@@ -10,7 +10,7 @@ interface AnnouncementSettings {
 
 export async function AnnouncementBar() {
   const settings = (await getGlobalSettings(
-    "announcement_bar"
+    "announcement_bar",
   )) as AnnouncementSettings | null;
 
   if (!settings || !settings.enabled) return null;
@@ -36,7 +36,7 @@ export async function AnnouncementBar() {
               {settings.text}
               {settings.href && (
                 <Link
-                  href={settings.href}
+                  href={settings.href as any}
                   className="inline-flex items-center gap-1 hover:underline underline-offset-4 decoration-1 font-black text-primary"
                 >
                   SHOP NOW <ArrowRight className="h-3 w-3" />
@@ -60,7 +60,7 @@ export async function AnnouncementBar() {
               {settings.text}
               {settings.href && (
                 <Link
-                  href={settings.href}
+                  href={settings.href as any}
                   className="inline-flex items-center gap-1 hover:underline underline-offset-4 decoration-1 font-black text-primary"
                 >
                   SHOP NOW <ArrowRight className="h-3 w-3" />

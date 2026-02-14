@@ -126,6 +126,8 @@ export default function FlashImage({
       alt={alt}
       className={cn("bg-zinc-900/10", objectFitClass, className)}
       {...props}
+      priority={props.priority}
+      fetchPriority={props.priority ? "high" : "auto"}
     />
   );
 }

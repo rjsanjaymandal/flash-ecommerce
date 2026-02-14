@@ -21,19 +21,21 @@ G:\flash-ecommerce\app\(storefront)\checkout\page.tsx
     7:20  warning  'useTransition' is defined but never used  @typescript-eslint/no-unused-vars
    46:29  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
    46:37  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  151:53  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
   232:14  warning  'err' is defined but never used            @typescript-eslint/no-unused-vars
-  404:19  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  405:19  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
 
 G:\flash-ecommerce\app\(storefront)\contact\page.tsx
   2:31  warning  'Clock' is defined but never used  @typescript-eslint/no-unused-vars
 
-G:\flash-ecommerce\app\(storefront)\error.tsx
-  36:25  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+G:\flash-ecommerce\app\(storefront)\cookies\page.tsx
+  39:17  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
 
 G:\flash-ecommerce\app\(storefront)\faq\page.tsx
   8:10  warning  'motion' is defined but never used  @typescript-eslint/no-unused-vars
 
 G:\flash-ecommerce\app\(storefront)\login\page.tsx
+  30:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   53:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
 G:\flash-ecommerce\app\(storefront)\order\confirmation\[id]\page.tsx
@@ -41,36 +43,32 @@ G:\flash-ecommerce\app\(storefront)\order\confirmation\[id]\page.tsx
   279:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
 G:\flash-ecommerce\app\(storefront)\page.tsx
-  60:3  warning  'getFeaturedProducts' is defined but never used  @typescript-eslint/no-unused-vars
-  61:3  warning  'getProducts' is defined but never used          @typescript-eslint/no-unused-vars
-  62:8  warning  'Product' is defined but never used              @typescript-eslint/no-unused-vars
+  60:3   warning  'getFeaturedProducts' is defined but never used  @typescript-eslint/no-unused-vars
+  61:3   warning  'getProducts' is defined but never used          @typescript-eslint/no-unused-vars
+  62:8   warning  'Product' is defined but never used              @typescript-eslint/no-unused-vars
+  74:19  warning  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
 
 G:\flash-ecommerce\app\(storefront)\product\[slug]\page.tsx
-   64:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   81:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   91:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   95:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  104:67  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   92:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  101:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  111:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  115:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  123:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  134:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  138:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
 G:\flash-ecommerce\app\(storefront)\product\[slug]\product-detail.tsx
-    3:8   warning  'FlashImage' is defined but never used                    @typescript-eslint/no-unused-vars
-   12:30  warning  'calculateDiscount' is defined but never used             @typescript-eslint/no-unused-vars
-   13:17  warning  'MapPin' is defined but never used                        @typescript-eslint/no-unused-vars
-   13:25  warning  'Package' is defined but never used                       @typescript-eslint/no-unused-vars
-   13:34  warning  'RefreshCcw' is defined but never used                    @typescript-eslint/no-unused-vars
-   49:10  warning  'motion' is defined but never used                        @typescript-eslint/no-unused-vars
-   86:3   warning  'initialReviews' is defined but never used                @typescript-eslint/no-unused-vars
-   90:9   warning  'addItem' is assigned a value but never used              @typescript-eslint/no-unused-vars
-   91:9   warning  'removeItem' is assigned a value but never used           @typescript-eslint/no-unused-vars
-   92:9   warning  'isWishlisted' is assigned a value but never used         @typescript-eslint/no-unused-vars
-   98:20  warning  'setQuantity' is assigned a value but never used          @typescript-eslint/no-unused-vars
-  104:27  warning  '_setSavedGuestEmail' is assigned a value but never used  @typescript-eslint/no-unused-vars
-  124:10  warning  'showStickyBar' is assigned a value but never used        @typescript-eslint/no-unused-vars
-  124:25  warning  '_setShowStickyBar' is assigned a value but never used    @typescript-eslint/no-unused-vars
-  250:14  warning  '_error' is defined but never used                        @typescript-eslint/no-unused-vars
-  270:14  warning  '_error' is defined but never used                        @typescript-eslint/no-unused-vars
-  295:14  warning  '_error' is defined but never used                        @typescript-eslint/no-unused-vars
-  329:14  warning  '_err' is defined but never used                          @typescript-eslint/no-unused-vars
+   11:37  warning  'Check' is defined but never used                  @typescript-eslint/no-unused-vars
+   92:9   warning  'addItem' is assigned a value but never used       @typescript-eslint/no-unused-vars
+   93:9   warning  'removeItem' is assigned a value but never used    @typescript-eslint/no-unused-vars
+   94:9   warning  'isWishlisted' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  101:20  warning  'setQuantity' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  216:41  warning  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  257:34  warning  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  324:14  warning  'error' is defined but never used                  @typescript-eslint/no-unused-vars
+  344:14  warning  'error' is defined but never used                  @typescript-eslint/no-unused-vars
+  369:14  warning  'error' is defined but never used                  @typescript-eslint/no-unused-vars
+  408:14  warning  'error' is defined but never used                  @typescript-eslint/no-unused-vars
 
 G:\flash-ecommerce\app\(storefront)\shipping\page.tsx
   1:17  warning  'Globe' is defined but never used        @typescript-eslint/no-unused-vars
@@ -194,6 +192,7 @@ G:\flash-ecommerce\app\admin\coupons\coupon-list-client.tsx
    54:3   warning  'totalPages' is defined but never used          @typescript-eslint/no-unused-vars
    55:3   warning  'totalCount' is defined but never used          @typescript-eslint/no-unused-vars
    60:10  warning  'isLoading' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   77:55  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
    92:14  warning  'error' is defined but never used               @typescript-eslint/no-unused-vars
   122:14  warning  'error' is defined but never used               @typescript-eslint/no-unused-vars
 
@@ -261,19 +260,23 @@ G:\flash-ecommerce\app\admin\orders\orders-client.tsx
   43:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   49:3   warning  'status' is defined but never used        @typescript-eslint/no-unused-vars
 
-G:\flash-ecommerce\app\admin\products\[id]\page.tsx
-  4:15  warning  'Category' is defined but never used  @typescript-eslint/no-unused-vars
+G:\flash-ecommerce\app\admin\products\colors\colors-client.tsx
+    4:32  warning  'Palette' is defined but never used        @typescript-eslint/no-unused-vars
+   21:3   warning  'DialogTrigger' is defined but never used  @typescript-eslint/no-unused-vars
+   94:14  warning  'error' is defined but never used          @typescript-eslint/no-unused-vars
+  112:14  warning  'error' is defined but never used          @typescript-eslint/no-unused-vars
 
 G:\flash-ecommerce\app\admin\products\create-product-page.tsx
-  33:18  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
-  33:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  41:16  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  41:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
 G:\flash-ecommerce\app\admin\products\edit-product-page.tsx
-  66:16  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
-  66:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-G:\flash-ecommerce\app\admin\products\new\page.tsx
-  3:15  warning  'Category' is defined but never used  @typescript-eslint/no-unused-vars
+  62:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  63:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  64:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  66:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  86:16  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  86:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
 G:\flash-ecommerce\app\admin\products\products-client.tsx
   125:9   warning  'searchParams' is assigned a value but never used    @typescript-eslint/no-unused-vars
@@ -281,7 +284,7 @@ G:\flash-ecommerce\app\admin\products\products-client.tsx
   225:14  warning  '_err' is defined but never used                     @typescript-eslint/no-unused-vars
   244:14  warning  'error' is defined but never used                    @typescript-eslint/no-unused-vars
   260:14  warning  '_error' is defined but never used                   @typescript-eslint/no-unused-vars
-  609:23  warning  'stockBreakdown' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  615:23  warning  'stockBreakdown' is assigned a value but never used  @typescript-eslint/no-unused-vars
 
 G:\flash-ecommerce\app\admin\reviews\reviews-client.tsx
    49:3   warning  'MessageSquare' is defined but never used  @typescript-eslint/no-unused-vars
@@ -327,9 +330,11 @@ G:\flash-ecommerce\app\api\admin\health-check\route.ts
   74:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
 
 G:\flash-ecommerce\app\api\admin\optimize-legacy\route.ts
-   14:28  warning  'req' is defined but never used           @typescript-eslint/no-unused-vars
-   41:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  108:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+    2:10  warning  'createAdminClient' is defined but never used  @typescript-eslint/no-unused-vars
+   16:28  warning  'req' is defined but never used                @typescript-eslint/no-unused-vars
+   36:26  warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  103:19  warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  114:17  warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
 
 G:\flash-ecommerce\app\api\cron\reconcile-payments\route.ts
   58:59  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
@@ -372,9 +377,6 @@ G:\flash-ecommerce\app\auth\callback\route.ts
 G:\flash-ecommerce\app\icon.tsx
   53:12  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
 
-G:\flash-ecommerce\app\not-found.tsx
-  24:25  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
-
 G:\flash-ecommerce\app\offline.tsx
   2:8  warning  'Link' is defined but never used  @typescript-eslint/no-unused-vars
 
@@ -410,6 +412,13 @@ G:\flash-ecommerce\components\account\waitlist-tab.tsx
 G:\flash-ecommerce\components\account\wishlist-tab.tsx
   50:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
+G:\flash-ecommerce\components\admin\admin-breadcrumbs.tsx
+  49:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+G:\flash-ecommerce\components\admin\admin-sidebar.tsx
+   91:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  125:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
 G:\flash-ecommerce\components\admin\categories\category-form.tsx
   36:15  warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
   51:9   warning  'supabase' is assigned a value but never used  @typescript-eslint/no-unused-vars
@@ -431,8 +440,10 @@ G:\flash-ecommerce\components\admin\concepts\concepts-client.tsx
   62:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
 G:\flash-ecommerce\components\admin\mobile-admin-sidebar.tsx
-  14:24  warning  'ExternalLink' is defined but never used   @typescript-eslint/no-unused-vars
-  21:20  warning  'user' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   14:24  warning  'ExternalLink' is defined but never used   @typescript-eslint/no-unused-vars
+   21:20  warning  'user' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   80:40  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  115:40  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
 
 G:\flash-ecommerce\components\admin\notifications-dropdown.tsx
    53:6   warning  React Hook useEffect has missing dependencies: 'fetchNotifications', 'setupRealtime', and 'supabase'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
@@ -440,11 +451,46 @@ G:\flash-ecommerce\components\admin\notifications-dropdown.tsx
    74:11  warning  'channel' is assigned a value but never used                                                                                                              @typescript-eslint/no-unused-vars
   102:44  warning  Unexpected any. Specify a different type                                                                                                                  @typescript-eslint/no-explicit-any
   123:24  warning  Unexpected any. Specify a different type                                                                                                                  @typescript-eslint/no-explicit-any
+  132:46  warning  Unexpected any. Specify a different type                                                                                                                  @typescript-eslint/no-explicit-any
 
 G:\flash-ecommerce\components\admin\order-payment-logs.tsx
   25:36  warning  Unexpected any. Specify a different type                                                                      @typescript-eslint/no-explicit-any
   35:6   warning  React Hook useEffect has a missing dependency: 'fetchLogs'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
   48:14  warning  'e' is defined but never used                                                                                 @typescript-eslint/no-unused-vars
+
+G:\flash-ecommerce\components\admin\products\form\bulk-variant-actions.tsx
+  5:13  warning  'Check' is defined but never used  @typescript-eslint/no-unused-vars
+
+G:\flash-ecommerce\components\admin\products\form\contextual-save-bar.tsx
+  5:10  warning  'Save' is defined but never used  @typescript-eslint/no-unused-vars
+
+G:\flash-ecommerce\components\admin\products\form\draggable-media-grid.tsx
+  66:7  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+G:\flash-ecommerce\components\admin\products\form\product-basic-info.tsx
+  33:9  warning  'slug' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+G:\flash-ecommerce\components\admin\products\form\product-header.tsx
+  8:10  warning  'cn' is defined but never used  @typescript-eslint/no-unused-vars
+
+G:\flash-ecommerce\components\admin\products\form\product-media.tsx
+   6:10  warning  'ProductImageUpload' is defined but never used  @typescript-eslint/no-unused-vars
+  44:14  warning  'error' is defined but never used               @typescript-eslint/no-unused-vars
+
+G:\flash-ecommerce\components\admin\products\form\product-pricing.tsx
+  117:22  warning  'field' is defined but never used  @typescript-eslint/no-unused-vars
+
+G:\flash-ecommerce\components\admin\products\form\product-seo.tsx
+  10:3  warning  'FormDescription' is defined but never used  @typescript-eslint/no-unused-vars
+
+G:\flash-ecommerce\components\admin\products\form\product-variants.tsx
+    5:3   warning  'FormControl' is defined but never used   @typescript-eslint/no-unused-vars
+    6:3   warning  'FormField' is defined but never used     @typescript-eslint/no-unused-vars
+    7:3   warning  'FormItem' is defined but never used      @typescript-eslint/no-unused-vars
+    9:3   warning  'FormMessage' is defined but never used   @typescript-eslint/no-unused-vars
+   29:18  warning  'Plus' is defined but never used          @typescript-eslint/no-unused-vars
+   33:10  warning  'cn' is defined but never used            @typescript-eslint/no-unused-vars
+  110:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
 G:\flash-ecommerce\components\admin\products\product-filters.tsx
    8:3   warning  'SheetClose' is defined but never used  @typescript-eslint/no-unused-vars
@@ -455,15 +501,24 @@ G:\flash-ecommerce\components\admin\products\product-form-new.tsx
   160:68  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
 G:\flash-ecommerce\components\admin\products\product-form.tsx
-    8:10  warning  'Textarea' is defined but never used                                                                     @typescript-eslint/no-unused-vars
-   38:3   warning  'ArrowLeft' is defined but never used                                                                    @typescript-eslint/no-unused-vars
-   44:8   warning  'NextImage' is defined but never used                                                                    @typescript-eslint/no-unused-vars
-   45:8   warning  'imageLoader' is defined but never used                                                                  @typescript-eslint/no-unused-vars
-   50:3   warning  'UseFormReturn' is defined but never used                                                                @typescript-eslint/no-unused-vars
-   65:10  warning  'cn' is defined but never used                                                                           @typescript-eslint/no-unused-vars
-  140:15  warning  'id' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
-  159:9   warning  'slug' is assigned a value but never used                                                                @typescript-eslint/no-unused-vars
-  172:6   warning  React Hook useEffect has a missing dependency: 'form'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+    8:10  warning  'toast' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+    9:10  warning  'ContextualSaveBar' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+   33:3   warning  'colorMap' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+   67:23  warning  'setIsUploading' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+   91:26  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+G:\flash-ecommerce\components\admin\products\product-form.tsx:91:26
+  89 |   // 3. Auto-Save Logic (Basic Implementation)
+  90 |   useEffect(() => {
+> 91 |     const subscription = watch((value) => {
+     |                          ^^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  92 |       if (!initialData) {
+  93 |         // Only auto-save drafts for new products to avoid overwriting live data accidentally
+  94 |         localStorage.setItem("product-form-draft", JSON.stringify(value));  react-hooks/incompatible-library
+  106:17  warning  'parsed' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-unused-vars
+  110:18  warning  'e' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
 
 G:\flash-ecommerce\components\admin\products\rich-text-editor.tsx
    6:70  warning  'Redo' is defined but never used         @typescript-eslint/no-unused-vars
@@ -482,6 +537,12 @@ G:\flash-ecommerce\components\admin\products\stock-manager.tsx
   54:36  warning  Unexpected any. Specify a different type                                                                       @typescript-eslint/no-explicit-any
   65:33  warning  Unexpected any. Specify a different type                                                                       @typescript-eslint/no-explicit-any
 
+G:\flash-ecommerce\components\admin\products\variant-generator.tsx
+  13:17  warning  'Plus' is defined but never used          @typescript-eslint/no-unused-vars
+  13:23  warning  'Check' is defined but never used         @typescript-eslint/no-unused-vars
+  13:30  warning  'X' is defined but never used             @typescript-eslint/no-unused-vars
+  99:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
 G:\flash-ecommerce\components\admin\waitlist-table.tsx
    4:21  warning  'useSearchParams' is defined but never used  @typescript-eslint/no-unused-vars
   36:50  warning  'productName' is defined but never used      @typescript-eslint/no-unused-vars
@@ -490,8 +551,8 @@ G:\flash-ecommerce\components\cart\cart-upsell.tsx
     9:10  warning  'Button' is defined but never used        @typescript-eslint/no-unused-vars
    44:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
    44:48  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   79:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  132:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   80:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  133:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
 G:\flash-ecommerce\components\cart\free-shipping-bar.tsx
   3:10  warning  'Progress' is defined but never used  @typescript-eslint/no-unused-vars
@@ -526,11 +587,11 @@ G:\flash-ecommerce\components\products\product-carousel.tsx
   11:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
 G:\flash-ecommerce\components\products\product-selectors.tsx
-    2:10  warning  'Flame' is defined but never used        @typescript-eslint/no-unused-vars
-    3:10  warning  'useState' is defined but never used     @typescript-eslint/no-unused-vars
-    4:8   warning  'dynamic' is defined but never used      @typescript-eslint/no-unused-vars
-  138:3   warning  'isAvailable' is defined but never used  @typescript-eslint/no-unused-vars
-  151:25  warning  'c' is defined but never used            @typescript-eslint/no-unused-vars
+    2:10  warning  'Plus' is defined but never used         @typescript-eslint/no-unused-vars
+    4:10  warning  'motion' is defined but never used       @typescript-eslint/no-unused-vars
+  210:3   warning  'isAvailable' is defined but never used  @typescript-eslint/no-unused-vars
+  224:25  warning  'c' is defined but never used            @typescript-eslint/no-unused-vars
+  234:46  warning  'f' is defined but never used            @typescript-eslint/no-unused-vars
 
 G:\flash-ecommerce\components\products\quick-add-dialog.tsx
    16:10  warning  'Check' is defined but never used                    @typescript-eslint/no-unused-vars
@@ -541,15 +602,17 @@ G:\flash-ecommerce\components\products\quick-add-dialog.tsx
    39:62  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
    53:15  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
    56:18  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
-   82:14  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
-  143:23  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
-  195:27  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+   68:15  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+   73:18  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+   98:14  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  164:23  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  223:29  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
 
 G:\flash-ecommerce\components\products\quick-view.tsx
    21:12  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
    31:25  warning  'setSelectedColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
-   37:14  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-  144:28  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+   40:14  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  184:28  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
 
 G:\flash-ecommerce\components\products\recently-viewed.tsx
    11:71  warning  Unexpected any. Specify a different type                                                                  @typescript-eslint/no-explicit-any
@@ -575,7 +638,8 @@ G:\flash-ecommerce\components\search\command-menu.tsx
   35:52  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
 
 G:\flash-ecommerce\components\seo\breadcrumbs.tsx
-  3:39  warning  'ListItem' is defined but never used  @typescript-eslint/no-unused-vars
+   3:39  warning  'ListItem' is defined but never used      @typescript-eslint/no-unused-vars
+  53:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
 G:\flash-ecommerce\components\seo\product-json-ld.tsx
    4:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
@@ -585,31 +649,39 @@ G:\flash-ecommerce\components\seo\product-json-ld.tsx
 G:\flash-ecommerce\components\seo\website-json-ld.tsx
   17:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
+G:\flash-ecommerce\components\shared\pagination.tsx
+  34:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
 G:\flash-ecommerce\components\site\search-bar.tsx
   19:10  warning  'useDebounce' is defined but never used   @typescript-eslint/no-unused-vars
   31:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
 G:\flash-ecommerce\components\store-sync.tsx
    11:11  warning  'CartDbItem' is defined but never used          @typescript-eslint/no-unused-vars
-   43:9   warning  'cartItems' is assigned a value but never used  @typescript-eslint/no-unused-vars
-   73:41  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
-  224:72  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+   44:9   warning  'cartItems' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   76:41  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  229:77  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+
+G:\flash-ecommerce\components\storefront\announcement-bar.tsx
+  39:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  63:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
 G:\flash-ecommerce\components\storefront\blueprint-section.tsx
     3:17  warning  'useEffect' is defined but never used     @typescript-eslint/no-unused-vars
     3:28  warning  'useState' is defined but never used      @typescript-eslint/no-unused-vars
     7:10  warning  'ShieldCheck' is defined but never used   @typescript-eslint/no-unused-vars
-  160:4   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   60:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  157:4   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
 G:\flash-ecommerce\components\storefront\cart-drawer.tsx
   34:9   warning  'isHydrated' is assigned a value but never used      @typescript-eslint/no-unused-vars
   35:9   warning  'setHasHydrated' is assigned a value but never used  @typescript-eslint/no-unused-vars
-  57:14  warning  'error' is defined but never used                    @typescript-eslint/no-unused-vars
+  58:14  warning  'error' is defined but never used                    @typescript-eslint/no-unused-vars
 
 G:\flash-ecommerce\components\storefront\category-dropdown.tsx
-  5:8   warning  'FlashImage' is defined but never used    @typescript-eslint/no-unused-vars
-  6:10  warning  'cn' is defined but never used            @typescript-eslint/no-unused-vars
-  7:10  warning  'ChevronRight' is defined but never used  @typescript-eslint/no-unused-vars
+   6:10  warning  'cn' is defined but never used               @typescript-eslint/no-unused-vars
+  13:10  warning  'motion' is defined but never used           @typescript-eslint/no-unused-vars
+  13:18  warning  'AnimatePresence' is defined but never used  @typescript-eslint/no-unused-vars
 
 G:\flash-ecommerce\components\storefront\category-vibes.tsx
   26:9  warning  'getGridClass' is assigned a value but never used  @typescript-eslint/no-unused-vars
@@ -622,19 +694,22 @@ G:\flash-ecommerce\components\storefront\footer.tsx
   8:3  warning  'Mail' is defined but never used  @typescript-eslint/no-unused-vars
 
 G:\flash-ecommerce\components\storefront\hamburger-menu.tsx
-  19:3   warning  'User' is defined but never used             @typescript-eslint/no-unused-vars
-  20:3   warning  'LogOut' is defined but never used           @typescript-eslint/no-unused-vars
-  22:3   warning  'Zap' is defined but never used              @typescript-eslint/no-unused-vars
-  25:3   warning  'ArrowRight' is defined but never used       @typescript-eslint/no-unused-vars
-  31:10  warning  'cn' is defined but never used               @typescript-eslint/no-unused-vars
-  34:18  warning  'AnimatePresence' is defined but never used  @typescript-eslint/no-unused-vars
+   19:3   warning  'User' is defined but never used             @typescript-eslint/no-unused-vars
+   20:3   warning  'LogOut' is defined but never used           @typescript-eslint/no-unused-vars
+   22:3   warning  'Zap' is defined but never used              @typescript-eslint/no-unused-vars
+   25:3   warning  'ArrowRight' is defined but never used       @typescript-eslint/no-unused-vars
+   32:10  warning  'cn' is defined but never used               @typescript-eslint/no-unused-vars
+   35:18  warning  'AnimatePresence' is defined but never used  @typescript-eslint/no-unused-vars
+  133:57  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  157:40  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  182:57  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
 
 G:\flash-ecommerce\components\storefront\hero-carousel.tsx
     6:8   warning  'Link' is defined but never used                       @typescript-eslint/no-unused-vars
     9:10  warning  'cn' is defined but never used                         @typescript-eslint/no-unused-vars
-   22:19  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-  145:33  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-  178:9   warning  'cleanDescription' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   30:19  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  153:33  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  186:9   warning  'cleanDescription' is assigned a value but never used  @typescript-eslint/no-unused-vars
 
 G:\flash-ecommerce\components\storefront\hero.tsx
   6:10  warning  'ArrowRight' is defined but never used  @typescript-eslint/no-unused-vars
@@ -647,20 +722,22 @@ G:\flash-ecommerce\components\storefront\lab-client.tsx
 
 G:\flash-ecommerce\components\storefront\mobile-nav.tsx
   18:10  warning  'useScrollDirection' is defined but never used  @typescript-eslint/no-unused-vars
+  51:34  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
 
 G:\flash-ecommerce\components\storefront\navbar.tsx
    7:3   warning  'Menu' is defined but never used                @typescript-eslint/no-unused-vars
   11:3   warning  'LogOut' is defined but never used              @typescript-eslint/no-unused-vars
   23:10  warning  'useSearchStore' is defined but never used      @typescript-eslint/no-unused-vars
-  31:10  warning  'motion' is defined but never used              @typescript-eslint/no-unused-vars
   32:10  warning  'useScrollDirection' is defined but never used  @typescript-eslint/no-unused-vars
   54:35  warning  'signOut' is assigned a value but never used    @typescript-eslint/no-unused-vars
-  84:21  warning  'error' is assigned a value but never used      @typescript-eslint/no-unused-vars
-  95:9   warning  'navLinks' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  78:21  warning  'error' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  89:9   warning  'navLinks' is assigned a value but never used   @typescript-eslint/no-unused-vars
 
 G:\flash-ecommerce\components\storefront\notification-bell.tsx
-   4:31  warning  'X' is defined but never used             @typescript-eslint/no-unused-vars
-  52:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+    4:31  warning  'X' is defined but never used             @typescript-eslint/no-unused-vars
+   52:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   63:72  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  175:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
 G:\flash-ecommerce\components\storefront\order-timeline.tsx
   18:3  warning  'created_at' is defined but never used  @typescript-eslint/no-unused-vars
@@ -676,17 +753,20 @@ G:\flash-ecommerce\components\storefront\product-card.tsx
     6:17  warning  'Star' is defined but never used                  @typescript-eslint/no-unused-vars
     6:23  warning  'ShoppingBag' is defined but never used           @typescript-eslint/no-unused-vars
    65:3   warning  'showRating' is assigned a value but never used   @typescript-eslint/no-unused-vars
-  129:9   warning  'rating' is assigned a value but never used       @typescript-eslint/no-unused-vars
-  130:9   warning  'reviewCount' is assigned a value but never used  @typescript-eslint/no-unused-vars
-  194:14  warning  'error' is defined but never used                 @typescript-eslint/no-unused-vars
-  237:14  warning  'error' is defined but never used                 @typescript-eslint/no-unused-vars
-  314:16  warning  'error' is defined but never used                 @typescript-eslint/no-unused-vars
-  347:14  warning  'error' is defined but never used                 @typescript-eslint/no-unused-vars
-  372:14  warning  'error' is defined but never used                 @typescript-eslint/no-unused-vars
-  405:14  warning  'error' is defined but never used                 @typescript-eslint/no-unused-vars
+   72:10  warning  'isHovered' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  124:9   warning  'rating' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  125:9   warning  'reviewCount' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  160:33  warning  Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  160:44  warning  Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  208:14  warning  'error' is defined but never used                 @typescript-eslint/no-unused-vars
+  252:14  warning  'error' is defined but never used                 @typescript-eslint/no-unused-vars
+  329:16  warning  'error' is defined but never used                 @typescript-eslint/no-unused-vars
+  362:14  warning  'error' is defined but never used                 @typescript-eslint/no-unused-vars
+  387:14  warning  'error' is defined but never used                 @typescript-eslint/no-unused-vars
+  420:14  warning  'error' is defined but never used                 @typescript-eslint/no-unused-vars
 
 G:\flash-ecommerce\components\storefront\product-grid.tsx
-  23:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  24:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
 G:\flash-ecommerce\components\storefront\product-list.tsx
    7:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
@@ -708,10 +788,6 @@ G:\flash-ecommerce\components\storefront\search-overlay.tsx
    19:10  warning  'useRouter' is defined but never used                                                                        @typescript-eslint/no-unused-vars
    84:6   warning  React Hook useEffect has a missing dependency: 'supabase'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
   116:6   warning  React Hook useEffect has a missing dependency: 'supabase'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
-
-G:\flash-ecommerce\components\storefront\seo-content.tsx
-  28:21  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
-  44:39  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
 
 G:\flash-ecommerce\components\storefront\shop-filters.tsx
   21:18  warning  'X' is defined but never used  @typescript-eslint/no-unused-vars
@@ -738,6 +814,9 @@ G:\flash-ecommerce\components\ui\mode-toggle.tsx
    4:31  warning  'Monitor' is defined but never used                 @typescript-eslint/no-unused-vars
    6:18  warning  'AnimatePresence' is defined but never used         @typescript-eslint/no-unused-vars
   10:28  warning  'resolvedTheme' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+G:\flash-ecommerce\components\ui\search-input.tsx
+  24:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
 G:\flash-ecommerce\components\ui\snowfall.tsx
   3:17  warning  'useMemo' is defined but never used       @typescript-eslint/no-unused-vars
@@ -770,7 +849,7 @@ G:\flash-ecommerce\lib\category-utils.ts
   15:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
 G:\flash-ecommerce\lib\data\get-product.ts
-  27:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  32:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
 G:\flash-ecommerce\lib\data\get-smart-carousel.ts
   32:73  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
@@ -843,13 +922,12 @@ G:\flash-ecommerce\lib\services\payment-processor.ts
   248:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
 G:\flash-ecommerce\lib\services\product-service.ts
-    9:47  warning  'TablesUpdate' is defined but never used  @typescript-eslint/no-unused-vars
-   59:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  263:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  264:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  264:69  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  271:88  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  592:48  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+    9:47  warning  'TablesUpdate' is defined but never used               @typescript-eslint/no-unused-vars
+   61:37  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  204:40  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  296:27  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  304:88  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  608:21  error    'candidates' is never reassigned. Use 'const' instead  prefer-const
 
 G:\flash-ecommerce\lib\services\review-service.ts
   61:96  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
@@ -888,6 +966,12 @@ G:\flash-ecommerce\lib\workers\email-worker.ts
   65:110  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   92:77   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
+G:\flash-ecommerce\scripts\apply-fit-migration.mjs
+  4:8  warning  'path' is defined but never used  @typescript-eslint/no-unused-vars
+
+G:\flash-ecommerce\scripts\apply-remove-price-addon.mjs
+  4:8  warning  'path' is defined but never used  @typescript-eslint/no-unused-vars
+
 G:\flash-ecommerce\scripts\apply-search-migration.js
   14:7   warning  'supabase' is assigned a value but never used      @typescript-eslint/no-unused-vars
   16:16  warning  'runMigration' is defined but never used           @typescript-eslint/no-unused-vars
@@ -895,6 +979,10 @@ G:\flash-ecommerce\scripts\apply-search-migration.js
 
 G:\flash-ecommerce\scripts\audit-rls.ts
   12:16  warning  'auditRLS' is defined but never used  @typescript-eslint/no-unused-vars
+
+G:\flash-ecommerce\scripts\db\verify_schema.ts
+  25:19  warning  'prodData' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  39:19  warning  'stockData' is assigned a value but never used  @typescript-eslint/no-unused-vars
 
 G:\flash-ecommerce\scripts\debug-env.js
   1:7  warning  'fs' is assigned a value but never used    @typescript-eslint/no-unused-vars
@@ -927,16 +1015,26 @@ G:\flash-ecommerce\scripts\verify-migration.ts
    88:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   106:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
+G:\flash-ecommerce\scripts\verify-schema-columns.mjs
+  27:17  warning  'productsData' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  44:17  warning  'stockData' is assigned a value but never used     @typescript-eslint/no-unused-vars
+
 G:\flash-ecommerce\scripts\verify-stock-sort.ts
   34:30  warning  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
   44:69  warning  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
   46:15  warning  'stockLabel' is assigned a value but never used  @typescript-eslint/no-unused-vars
 
-G:\flash-ecommerce\store\use-cart-store.ts
-   40:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   41:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  316:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  317:64  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+G:\flash-ecommerce\scripts\verify_auth_endpoints.ts
+  11:12  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
 
-Γ£û 550 problems (4 errors, 546 warnings)
+G:\flash-ecommerce\store\use-cart-store.ts
+   41:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   42:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  320:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  321:64  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  357:51  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  358:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+Γ£û 602 problems (2 errors, 600 warnings)
+  1 error and 0 warnings potentially fixable with the `--fix` option.
 

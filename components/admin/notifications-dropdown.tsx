@@ -129,7 +129,7 @@ export function NotificationsDropdown() {
   const handleValidation = (notification: Notification) => {
     markOneRead(notification.id, notification.is_read);
     if (notification.action_url) {
-      router.push(notification.action_url);
+      router.push(notification.action_url as any);
     }
   };
 

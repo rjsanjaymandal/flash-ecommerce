@@ -24,6 +24,7 @@ import {
   BookOpen,
   ArrowRight,
   Tag,
+  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import FlashImage from "@/components/ui/flash-image";
@@ -38,6 +39,7 @@ interface NavCategory {
   id: string;
   name: string;
   slug: string;
+  image_url?: string | null;
   children?: NavCategory[];
 }
 
@@ -128,7 +130,7 @@ export function HamburgerMenu({ categories }: HamburgerMenuProps) {
                   variants={menuVariants}
                 >
                   <Link
-                    href={`/shop?category=${cat.id}`}
+                    href={`/shop?category=${cat.id}` as any}
                     onClick={() => setOpen(false)}
                     className="flex items-center gap-4 py-3 group hover:pl-2 transition-all duration-300"
                   >
@@ -152,7 +154,7 @@ export function HamburgerMenu({ categories }: HamburgerMenuProps) {
                   variants={menuVariants}
                 >
                   <Link
-                    href={link.href}
+                    href={link.href as any}
                     onClick={() => setOpen(false)}
                     className="flex items-center gap-4 py-3 group hover:pl-2 transition-all duration-300"
                   >
@@ -163,6 +165,43 @@ export function HamburgerMenu({ categories }: HamburgerMenuProps) {
                   </Link>
                 </motion.div>
               ))}
+            </div>
+
+            {/* Featured Drops Carousel (New) */}
+            <div className="mt-10 mb-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Sparkles className="h-4 w-4 text-primary" />
+                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">
+                  Featured Drops
+                </h3>
+              </div>
+              <div className="flex gap-4 overflow-x-auto pb-4 -mx-2 px-2 scrollbar-hide snap-x snap-mandatory">
+                {categories.map((cat) => (
+                  <Link
+                    key={cat.id}
+                    href={`/shop?category=${cat.id}` as any}
+                    onClick={() => setOpen(false)}
+                    className="relative flex-none w-[160px] aspect-4/5 rounded-2xl overflow-hidden group/item snap-start"
+                  >
+                    {cat.image_url ? (
+                      <FlashImage
+                        src={cat.image_url}
+                        alt={cat.name}
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover/item:scale-110"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-zinc-100 dark:bg-zinc-900" />
+                    )}
+                    <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
+                    <div className="absolute inset-0 p-4 flex flex-col justify-end">
+                      <span className="text-[10px] font-black text-white leading-tight uppercase tracking-widest italic drop-shadow-md">
+                        {cat.name}
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
             </div>
           </div>
 

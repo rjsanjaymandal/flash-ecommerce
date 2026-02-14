@@ -57,8 +57,8 @@ async function fetchCategoriesTree(): Promise<Category[]> {
 export async function getCategoriesTree(): Promise<Category[]> {
     return unstable_cache(
         async () => fetchCategoriesTree(),
-        ['categories-tree'],
-        { tags: ['categories'], revalidate: 3600 } // 1 hour buffer
+        ['categories-tree-v2'], 
+        { tags: ['categories', 'categories-tree'], revalidate: 3600 } 
     )()
 }
 
@@ -103,7 +103,7 @@ export async function getRootCategories(limit?: number): Promise<Tables<'categor
               const supabase = createStaticClient()
               let query = supabase
                 .from('categories')
-                .select('*')
+                .select('id, name, slug, parent_id, is_active, description, image_url, created_at, updated_at')
                 .is('parent_id', null)
                 .eq('is_active', true)
                 .order('name')
@@ -123,8 +123,8 @@ export async function getRootCategories(limit?: number): Promise<Tables<'categor
               return []
           }
       },
-      ['root-categories', key],
-      { tags: ['categories'], revalidate: 3600 }
+      ['root-categories-v2', key],
+      { tags: ['categories', 'root-categories'], revalidate: 3600 }
   )()
 }
 
