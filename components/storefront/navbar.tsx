@@ -21,13 +21,25 @@ import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useSearchStore } from "@/store/use-search-store";
-import { CategoryDropdown } from "./category-dropdown";
+const CategoryDropdown = dynamic(
+  () => import("./category-dropdown").then((mod) => mod.CategoryDropdown),
+  { ssr: false },
+);
 const HamburgerMenu = dynamic(
   () => import("./hamburger-menu").then((mod) => mod.HamburgerMenu),
   { ssr: false },
 );
-import { SearchOverlay } from "@/components/storefront/search-overlay";
-import { NotificationBell } from "./notification-bell";
+const SearchOverlay = dynamic(
+  () =>
+    import("@/components/storefront/search-overlay").then(
+      (mod) => mod.SearchOverlay,
+    ),
+  { ssr: false },
+);
+const NotificationBell = dynamic(
+  () => import("./notification-bell").then((mod) => mod.NotificationBell),
+  { ssr: false },
+);
 import { motion, AnimatePresence } from "framer-motion";
 import { useScrollDirection } from "@/hooks/use-scroll-direction";
 import { Skeleton } from "@/components/ui/skeleton";

@@ -974,7 +974,12 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      products_with_stats: {
+        Row: any
+        Insert: never
+        Update: never
+        Relationships: []
+      }
     }
     Functions: {
       is_admin: { Args: never; Returns: boolean }
@@ -1216,4 +1221,4 @@ export const Constants = {
       discount_type: ["percentage", "fixed"],
     },
   },
-} as const
+} as const

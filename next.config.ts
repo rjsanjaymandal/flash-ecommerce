@@ -61,6 +61,10 @@ const nextConfig: NextConfig = {
             value: 'on',
           },
           {
+            key: 'Link',
+            value: '<https://res.cloudinary.com>; rel=dns-prefetch, <https://www.googletagmanager.com>; rel=dns-prefetch',
+          },
+          {
             key: 'Strict-Transport-Security',
             value: 'max-age=63072000; includeSubDomains; preload',
           },

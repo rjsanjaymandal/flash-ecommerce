@@ -37,7 +37,7 @@ export default function ReturnPolicyPage() {
           <div>
             <h3 className="font-semibold text-lg">Easy Exchanges</h3>
             <p className="text-muted-foreground text-sm">
-              Swap for a different size or color easily. We'll handle the
+              Swap for a different size or color easily. We&apos;ll handle the
               logistics.
             </p>
           </div>
@@ -75,7 +75,8 @@ export default function ReturnPolicyPage() {
               odors.
             </li>
             <li>
-              Discounted or "Final Sale" items are not eligible for returns.
+              Discounted or &quot;Final Sale&quot; items are not eligible for
+              returns.
             </li>
           </ul>
         </section>
@@ -87,9 +88,9 @@ export default function ReturnPolicyPage() {
           </h2>
           <ol className="list-decimal pl-6 space-y-4">
             <li>
-              <strong>Initiate:</strong> Log in to your account and go to "My
-              Orders" to select the items you wish to return. Alternatively,
-              contact our support team with your order number.
+              <strong>Initiate:</strong> Log in to your account and go to
+              &quot;My Orders&quot; to select the items you wish to return.
+              Alternatively, contact our support team with your order number.
             </li>
             <li>
               <strong>Pack:</strong> Securely pack the items in their original

@@ -64,7 +64,7 @@ export default function ShippingPage() {
         <p>
           If you are not satisfied with your purchase, you can return it within
           14 days for a full refund or exchange. For more details on our return
-          conditions and process, please visit nuestro{" "}
+          conditions and process, please visit our{" "}
           <a
             href="/returns"
             className="text-primary hover:underline underline-offset-4"

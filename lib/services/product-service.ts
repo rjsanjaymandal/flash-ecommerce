@@ -125,14 +125,14 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: SupabaseCli
     }
 
     // Base Query
-    // Optimization: Only fetch essential fields for list views. 
-    // We omit 'gallery_image_urls' for performance in grids.
+    // Optimization: Use products_with_stats view for pre-calculated ratings and review counts.
+    // This avoids JS-side O(N) calculations and enables DB-level sorting by rating.
     const selectFields = filter.includeDetails 
-        ? '*, categories(name), product_stock(*), reviews(rating)'
-        : 'id, name, slug, price, original_price, main_image_url, status, is_active, category_id, created_at, is_carousel_featured, total_stock, categories(name), product_stock(size, quantity), reviews(rating)'
+        ? '*, categories(name), product_stock(*)'
+        : 'id, name, slug, price, original_price, main_image_url, status, is_active, category_id, created_at, is_carousel_featured, total_stock, size_options, color_options, categories(name), average_rating:average_rating_calculated, review_count:review_count_calculated'
 
     let query = supabase
-        .from('products')
+        .from('products_with_stats')
         .select(selectFields, { count: 'exact' })
     
     // Apply Filters
@@ -250,8 +250,8 @@ export async function getFeaturedProducts(): Promise<Product[]> {
              try {
                  const supabase = createStaticClient()
                   const { data } = await supabase
-                    .from('products')
-                    .select('id, name, slug, price, original_price, main_image_url, gallery_image_urls, status, is_active, category_id, created_at, is_carousel_featured, total_stock, categories(name), product_stock(*), reviews(rating)')
+                    .from('products_with_stats')
+                    .select('id, name, slug, price, original_price, main_image_url, status, is_active, category_id, created_at, is_carousel_featured, total_stock, size_options, color_options, categories(name), average_rating:average_rating_calculated, review_count:review_count_calculated')
                     .eq('status', 'active')
                     .order('created_at', { ascending: false })
                     .limit(8)
@@ -262,8 +262,8 @@ export async function getFeaturedProducts(): Promise<Product[]> {
                  return []
              }
         },
-        ['featured-products'],
-        { tags: ['featured-products'], revalidate: 3600 } 
+        ['featured-products-v2'],
+        { tags: ['featured-products-v2'], revalidate: 3600 } 
     )()
 }
 
@@ -274,12 +274,12 @@ async function fetchProductBySlug(slug: string): Promise<Product | null> {
     
     try {
         if (isUuid) {
-            const { data: idData } = await supabase.from('products').select('*, categories(name), product_stock(*)').eq('id', slug).single()
+            const { data: idData } = await supabase.from('products_with_stats').select('*, categories(name), product_stock(*)').eq('id', slug).single()
             if (idData) return formatProduct(idData)
         }
 
         const { data, error } = await supabase
-          .from('products')
+          .from('products_with_stats')
           .select('*, categories(name), product_stock(*)')
           .eq('slug', slug)
           .single()
@@ -294,13 +294,10 @@ async function fetchProductBySlug(slug: string): Promise<Product | null> {
 }
 
 function formatProduct(p: any): Product {
-    const ratings = (p.reviews as { rating: number | null }[] | undefined)?.map((r) => r.rating).filter((r): r is number => r !== null) || []
-    const avg = ratings.length > 0 ? ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length : 0
-    
     return {
         ...p,
-        average_rating: avg || Number(p.average_rating || 0),
-        review_count: ratings.length || Number(p.review_count || 0),
+        average_rating: p.average_rating || 0,
+        review_count: p.review_count || 0,
         preorder_count: p.preorders && Array.isArray(p.preorders) ? (p.preorders[0] as any)?.count || 0 : 0
     } as Product
 }

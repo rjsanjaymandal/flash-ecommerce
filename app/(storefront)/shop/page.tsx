@@ -7,8 +7,8 @@ import { CategoryDiscoveryBar } from "@/components/storefront/category-discovery
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-json-ld";
 import { Suspense } from "react";
 
-// Force dynamic to ensure stock status is always fresh for the user
-export const dynamic = "force-dynamic";
+// Use ISR to balance performance and freshness
+export const revalidate = 60;
 
 export const metadata = {
   title:

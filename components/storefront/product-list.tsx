@@ -1,13 +1,25 @@
-"use client";
-
 import { motion } from "framer-motion";
 import { ProductCard } from "@/components/storefront/product-card";
+import { useRealTimeGrid } from "@/hooks/use-real-time-grid";
+import { useMemo } from "react";
 
 interface ProductListProps {
   products: any[];
 }
 
 export function ProductList({ products }: ProductListProps) {
+  const productIds = useMemo(() => products.map((p) => p.id), [products]);
+  const initialStocks = useMemo(() => {
+    const stocks: Record<string, any[]> = {};
+    products.forEach((p) => {
+      stocks[p.id] = p.product_stock || [];
+    });
+    return stocks;
+  }, [products]);
+
+  // Unified subscription for all products in this list
+  useRealTimeGrid(productIds, initialStocks);
+
   return (
     <motion.div
       initial="hidden"

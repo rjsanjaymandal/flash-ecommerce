@@ -26,4 +26,4 @@ CREATE INDEX IF NOT EXISTS idx_products_slug ON products (slug);
 -- 8. GIN index for text search optimization on name and tags
 -- This helps with the .or() query used in applyProductFilters
 CREATE INDEX IF NOT EXISTS idx_products_name_trgm ON products USING gin (name gin_trgm_ops);
-CREATE INDEX IF NOT EXISTS idx_products_tags_trgm ON products USING gin (expression_tags gin_trgm_ops);
+-- CREATE INDEX IF NOT EXISTS idx_products_tags_trgm ON products USING gin (expression_tags gin_trgm_ops);

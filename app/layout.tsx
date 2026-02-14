@@ -120,7 +120,9 @@ export default async function RootLayout({
         <OrganizationJsonLd />
         <WebSiteJsonLd />
         <Analytics />
-        <GoogleAnalytics gaId="G-2DR5KWRR1R" />
+        <GoogleAnalytics
+          gaId={process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID || "G-2DR5KWRR1R"}
+        />
         <PWARegister />
       </body>
     </html>

@@ -9,10 +9,11 @@ import {
   selectIsInWishlist,
 } from "@/store/use-wishlist-store";
 import { useCartStore } from "@/store/use-cart-store";
+import { useStockStore } from "@/store/use-stock-store";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/context/auth-context";
 import { motion } from "framer-motion";
 import {
@@ -71,19 +72,22 @@ export function ProductCard({
   const [isNew, setIsNew] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
-  // Real-time Stock
-  // Type sanitation: DB types map product_id as string | null, but we need string for strict state
-  const initialStock = (product.product_stock || [])
-    .filter((item): item is typeof item & { product_id: string } =>
-      Boolean(item.product_id),
-    )
-    .map((item) => ({
-      ...item,
-      product_id: item.product_id,
-      quantity: item.quantity ?? 0, // Ensure number
-    }));
+  // Memoize initial stock to prevent unnecessary re-renders
+  const initialStock = useMemo(() => {
+    return (product.product_stock || [])
+      .filter((item): item is typeof item & { product_id: string } =>
+        Boolean(item.product_id),
+      )
+      .map((item) => ({
+        ...item,
+        product_id: item.product_id,
+        quantity: item.quantity ?? 0,
+      }));
+  }, [product.product_stock]);
 
-  const { stock: realTimeStock } = useRealTimeHype(product.id, initialStock);
+  // Read from centralized stock store (managed by ProductList for grids)
+  const productStocks = useStockStore((state) => state.stocks[product.id]);
+  const realTimeStock = productStocks || initialStock;
 
   // Pre-order state
   const [isOnWaitlist, setIsOnWaitlist] = useState(false);
@@ -114,10 +118,14 @@ export function ProductCard({
       stock[0].size !== "One Size");
 
   // Calculate total stock
-  const totalStock = stock.reduce(
-    (acc: number, item: { quantity: number }) => acc + (item.quantity || 0),
-    0,
-  );
+  const totalStock =
+    stock.length > 0
+      ? stock.reduce(
+          (acc: number, item: { quantity: number }) =>
+            acc + (item.quantity || 0),
+          0,
+        )
+      : product.total_stock || 0;
   const isOutOfStock = totalStock === 0;
 
   // Optional: Get rating from product if passed (e.g. from a joined aggregate)

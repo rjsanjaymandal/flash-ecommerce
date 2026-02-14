@@ -1,11 +1,13 @@
 import { createClient } from './server'
+import { cache } from 'react'
 
 /**
  * Unified Auth Fetcher
  * Optimized to fetch User, Session, and Profile in a single parallel flow
  * to minimize sequential waterfall requests.
+ * Memoized via React cache() for per-request deduplication.
  */
-export async function getUnifiedAuth() {
+export const getUnifiedAuth = cache(async () => {
   // 1. Environment Check for Hostinger Debugging
   const hasUrl = !!process.env.NEXT_PUBLIC_SUPABASE_URL;
   const hasKey = !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -49,4 +51,4 @@ export async function getUnifiedAuth() {
     console.error('[getUnifiedAuth] Critical error:', error)
     return { user: null, session: null, profile: null }
   }
-}
+})
