@@ -46,8 +46,11 @@ export default function FlashImage({
   const isSupabase =
     typeof src === "string" &&
     src.includes("supabase.co/storage/v1/object/public");
+  const isCloudinary =
+    typeof src === "string" && src.includes("res.cloudinary.com");
+
   const finalUnoptimized =
-    unoptimized || (isExternal && !isUnsplash && !isSupabase);
+    unoptimized || (isExternal && !isUnsplash && !isSupabase && !isCloudinary);
 
   // Manual URL encoding for spaces and special characters to prevent browser parsing errors
   let safeSrc = src;
@@ -90,7 +93,7 @@ export default function FlashImage({
   }
 
   // Determine if we should use the custom loader
-  const shouldUseLoader = isUnsplash || isSupabase;
+  const shouldUseLoader = isUnsplash || isSupabase || isCloudinary;
 
   // Inject transformation hints into the src URL for the loader to pick up
   let finalSrc = safeSrc;

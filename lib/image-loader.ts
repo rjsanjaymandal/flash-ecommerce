@@ -32,6 +32,31 @@ export default function myImageLoader({ src, width, quality }: ImageLoaderProps)
 
     return url.toString()
   }
+
+  // Handle Cloudinary images
+  if (src.includes("res.cloudinary.com")) {
+    const url = new URL(src);
+    const cloudName = url.pathname.split("/")[1];
+    const publicId = url.pathname.split("/").slice(4).join("/"); // Everything after /upload/
+
+    // Build transformation string
+    const params = [
+      `w_${width}`,
+      `q_${quality || 75}`,
+      "c_limit", // Maintain aspect ratio, don't enlarge
+      "f_auto",  // Auto format (WebP/AVIF)
+    ];
+
+    // Map internal resize hint to Cloudinary
+    const internalResize = url.searchParams.get("resize");
+    if (internalResize === "cover") {
+      params.push("c_fill", "g_auto");
+    } else if (internalResize === "contain") {
+      params.push("c_pad", "b_auto");
+    }
+
+    return `https://res.cloudinary.com/${cloudName}/image/upload/${params.join(",")}/${publicId}`;
+  }
   
   return src
 }
