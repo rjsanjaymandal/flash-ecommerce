@@ -1,12 +1,12 @@
 "use client";
 
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { SystemCard } from "@/components/admin/system-card";
 import {
   IndianRupee,
@@ -19,6 +19,8 @@ import {
   Clock,
   Loader2,
   TrendingUp,
+  Calendar,
+  Users,
 } from "lucide-react";
 import {
   Table,
@@ -33,7 +35,7 @@ import { Button } from "@/components/ui/button";
 import { RevenueChart } from "@/components/admin/analytics/revenue-chart";
 import { CategoryPieChart } from "@/components/admin/analytics/category-pie";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
@@ -51,6 +53,8 @@ interface DashboardStats {
   totalOrders: number;
   orderGrowth: number;
   totalProducts: number;
+  returningRate?: number;
+  returningGrowth?: number;
 }
 
 type DashboardOrder = Order;
@@ -71,6 +75,8 @@ interface DashboardProduct {
   categories?: {
     name: string;
   };
+  revenue?: number;
+  units_sold?: number;
 }
 
 interface DashboardClientProps {
@@ -83,25 +89,35 @@ interface DashboardClientProps {
   waitlistStats?: { count: number; potentialRevenue: number };
   auditLogs?: AuditLog[];
   systemHealth?: { database: string; latency: string; status: string };
+  initialPipelineData?: { status: string; count: number }[];
 }
 
 export function DashboardClient({
   stats: initialStats,
   recentOrders: initialOrders,
-  chartData,
-  categoryData,
+  chartData: initialChartData,
+  categoryData: initialCategoryData,
   activity: initialActivity = [],
-  topProducts = [],
+  topProducts: initialTopProducts = [],
   waitlistStats,
   auditLogs: initialAuditLogs = [],
   systemHealth,
+  initialPipelineData = [],
 }: DashboardClientProps) {
   const [mounted, setMounted] = useState(false);
+  const [range, setRange] = useState("30");
+  const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState(initialStats);
   const [recentOrders, setRecentOrders] = useState(initialOrders);
+  const [chartData, setChartData] = useState(initialChartData);
+  const [categoryData, setCategoryData] = useState(initialCategoryData);
+  const [pipelineData, setPipelineData] = useState(initialPipelineData);
+  const [topProducts, setTopProducts] = useState(initialTopProducts);
   const [activity, setActivity] = useState(initialActivity);
   const [auditLogs, setAuditLogs] = useState(initialAuditLogs);
   const [isRecovering, setIsRecovering] = useState(false);
+
+  const supabase = createClient();
 
   const handleRecovery = async () => {
     setIsRecovering(true);
@@ -119,8 +135,111 @@ export function DashboardClient({
     }
   };
 
-  // Real-time Sound Effect (optional)
-  // const playNotification = () => new Audio('/sounds/ping.mp3').play().catch(() => {})
+  // 0. RANGE-BASED FETCHING (Analytics Merger)
+  useEffect(() => {
+    if (!mounted) return;
+
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - parseInt(range));
+
+        const [summaryRes, salesRes, categoriesRes, topRes, pipelineRes] =
+          await Promise.all([
+            (supabase.rpc as any)("get_analytics_summary", {
+              start_date: startDate.toISOString(),
+              end_date: endDate.toISOString(),
+            }),
+            (supabase.rpc as any)("get_sales_over_time", {
+              start_date: startDate.toISOString(),
+              end_date: endDate.toISOString(),
+              interval_val: parseInt(range) <= 2 ? "hour" : "day",
+            }),
+            (supabase.rpc as any)("get_sales_by_category", {
+              start_date: startDate.toISOString(),
+              end_date: endDate.toISOString(),
+            }),
+            (supabase.rpc as any)("get_top_products_by_revenue", {
+              start_date: startDate.toISOString(),
+              end_date: endDate.toISOString(),
+              limit_val: 5,
+            }),
+            (supabase.rpc as any)("get_order_status_distribution", {
+              start_date: startDate.toISOString(),
+              end_date: endDate.toISOString(),
+            }),
+          ]);
+
+        if (summaryRes.error) throw summaryRes.error;
+        if (salesRes.error) throw salesRes.error;
+        if (categoriesRes.error) throw categoriesRes.error;
+        if (topRes.error) throw topRes.error;
+        if (pipelineRes.error) throw pipelineRes.error;
+
+        const metrics = summaryRes.data?.[0] || {};
+
+        // Dynamic Growth Calculation
+        const calculateGrowth = (current: number, previous: number) => {
+          if (!previous || previous === 0) return current > 0 ? 100 : 0;
+          return ((current - previous) / previous) * 100;
+        };
+
+        setStats((prev) => ({
+          ...prev,
+          totalRevenue: metrics.total_revenue || 0,
+          totalOrders: metrics.total_orders || 0,
+          averageOrderValue: metrics.average_order_value || 0,
+          returningRate: metrics.returning_customer_percentage || 0,
+          revenueGrowth: calculateGrowth(
+            metrics.total_revenue,
+            metrics.prev_revenue,
+          ),
+          orderGrowth: calculateGrowth(
+            metrics.total_orders,
+            metrics.prev_orders,
+          ),
+          returningGrowth: calculateGrowth(
+            metrics.returning_customer_percentage,
+            metrics.prev_returning_percentage,
+          ),
+        }));
+
+        setChartData(
+          (salesRes.data || []).map((s: any) => ({
+            name: new Date(s.date_bucket).toLocaleDateString(undefined, {
+              month: "short",
+              day: "numeric",
+              hour: parseInt(range) <= 2 ? "numeric" : undefined,
+            }),
+            total: s.total_sales,
+          })),
+        );
+
+        setCategoryData(categoriesRes.data || []);
+        setPipelineData(pipelineRes.data || []);
+
+        setTopProducts(
+          (topRes.data || []).map((p: any) => ({
+            id: p.product_id,
+            name: p.name,
+            sale_count: p.units_sold,
+            revenue: p.revenue,
+            main_image_url: p.main_image_url,
+            categories: { name: p.category_name || "Hot Period" },
+          })),
+        );
+      } catch (error) {
+        console.error("Dashboard Dynamic Sync Error:", error);
+        toast.error("Failed to sync some data points");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [range, mounted]);
 
   useEffect(() => {
     setMounted(true);
@@ -274,6 +393,40 @@ export function DashboardClient({
             )}
             {isRecovering ? "Syncing..." : "Recover Carts"}
           </Button>
+          <div className="flex items-center gap-2 bg-zinc-900/50 border border-zinc-800 px-3 h-10 group hover:border-zinc-700 transition-colors">
+            <Calendar className="h-3 w-3 text-zinc-500 group-hover:text-brand-rust" />
+            <Select value={range} onValueChange={setRange}>
+              <SelectTrigger className="w-[120px] bg-transparent border-0 text-[9px] font-black uppercase tracking-widest focus:ring-0">
+                <SelectValue placeholder="Range" />
+              </SelectTrigger>
+              <SelectContent className="bg-zinc-950 border-zinc-800 rounded-none">
+                <SelectItem
+                  value="7"
+                  className="text-[9px] font-bold uppercase hover:bg-zinc-900 focus:bg-zinc-900"
+                >
+                  Last 7 Days
+                </SelectItem>
+                <SelectItem
+                  value="30"
+                  className="text-[9px] font-bold uppercase hover:bg-zinc-900 focus:bg-zinc-900"
+                >
+                  Last 30 Days
+                </SelectItem>
+                <SelectItem
+                  value="90"
+                  className="text-[9px] font-bold uppercase hover:bg-zinc-900 focus:bg-zinc-900"
+                >
+                  Last 90 Days
+                </SelectItem>
+                <SelectItem
+                  value="365"
+                  className="text-[9px] font-bold uppercase hover:bg-zinc-900 focus:bg-zinc-900"
+                >
+                  Last Year
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <Button
             variant="outline"
             size="sm"
@@ -295,15 +448,15 @@ export function DashboardClient({
         {[
           {
             title: "Revenue",
-            value: `₹${stats.totalRevenue.toLocaleString()}`,
+            value: formatCurrency(stats.totalRevenue),
             growth: stats.revenueGrowth,
             icon: <IndianRupee className="h-4 w-4" />,
             color: "emerald",
-            sub: "Total Earnings",
+            sub: `Total for ${range}d`,
           },
           {
             title: "Avg. Order",
-            value: `₹${Math.round(stats.averageOrderValue || 0).toLocaleString()}`,
+            value: formatCurrency(stats.averageOrderValue),
             icon: <TrendingUp className="h-4 w-4" />,
             color: "blue",
             sub: "Ticket Size",
@@ -314,14 +467,15 @@ export function DashboardClient({
             growth: stats.orderGrowth,
             icon: <ShoppingCart className="h-4 w-4" />,
             color: "violet",
-            sub: "Total Processed",
+            sub: `Count in ${range}d`,
           },
           {
-            title: "Catalog",
-            value: stats.totalProducts,
-            icon: <Package className="h-4 w-4" />,
+            title: "Retention",
+            value: `${Math.round(stats.returningRate || 0)}%`,
+            growth: stats.returningGrowth,
+            icon: <Users className="h-4 w-4" />,
             color: "amber",
-            sub: "Active SKUs",
+            sub: "Repeat Rate",
           },
         ].map((item, _i) => (
           <motion.div
@@ -329,12 +483,16 @@ export function DashboardClient({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: _i * 0.1 }}
+            className="relative"
           >
+            {loading && (
+              <div className="absolute inset-0 bg-zinc-950/20 z-10 animate-pulse" />
+            )}
             <SystemCard
               title={item.title}
               subtitle={item.sub}
               icon={item.icon}
-              className="h-full"
+              className={cn("h-full", loading && "opacity-50")}
             >
               <div className="flex items-end justify-between">
                 <div className="text-3xl font-black tracking-tighter text-white">
@@ -581,8 +739,11 @@ export function DashboardClient({
                         <p className="text-xs font-black uppercase truncate italic group-hover:text-primary transition-colors">
                           {product.name}
                         </p>
-                        <span className="text-[9px] font-black text-zinc-500 uppercase">
-                          {product.sale_count} Units
+                        <span className="text-[9px] font-black text-zinc-500 uppercase flex flex-col items-end">
+                          <span className="text-white">
+                            {formatCurrency(product.revenue || 0)}
+                          </span>
+                          <span>{product.sale_count} Units</span>
                         </span>
                       </div>
                       <div className="flex items-center gap-2 mt-2">
@@ -596,7 +757,7 @@ export function DashboardClient({
                           <div
                             className="h-full bg-primary transition-all duration-1000 ease-out"
                             style={{
-                              width: `${Math.min((product.sale_count / (topProducts[0]?.sale_count || 1)) * 100, 100)}%`,
+                              width: `${Math.min(((product.revenue || product.sale_count) / (topProducts[0]?.revenue || topProducts[0]?.sale_count || 1)) * 100, 100)}%`,
                             }}
                           />
                         </div>
@@ -615,6 +776,48 @@ export function DashboardClient({
           >
             <div className="flex justify-center -my-4">
               <CategoryPieChart data={categoryData} />
+            </div>
+          </SystemCard>
+
+          <SystemCard
+            title="Order Pipeline"
+            subtitle="Status distribution"
+            icon={<Activity className="h-4 w-4 text-emerald-500" />}
+          >
+            <div className="space-y-3 mt-2">
+              {pipelineData.length === 0 ? (
+                <p className="text-center text-zinc-600 py-4 text-[9px] font-black uppercase tracking-widest italic">
+                  No Pipeline Data
+                </p>
+              ) : (
+                pipelineData.map((p) => (
+                  <div
+                    key={p.status}
+                    className="flex items-center justify-between group"
+                  >
+                    <div className="flex items-center gap-2">
+                      <div
+                        className={cn(
+                          "h-1.5 w-1.5 rounded-full",
+                          p.status === "delivered"
+                            ? "bg-emerald-500"
+                            : p.status === "shipped"
+                              ? "bg-blue-500"
+                              : p.status === "paid"
+                                ? "bg-amber-500"
+                                : "bg-zinc-500",
+                        )}
+                      />
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 group-hover:text-white transition-colors">
+                        {p.status}
+                      </span>
+                    </div>
+                    <span className="text-xs font-black tabular-nums">
+                      {p.count}
+                    </span>
+                  </div>
+                ))
+              )}
             </div>
           </SystemCard>
         </div>

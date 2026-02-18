@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
-  BarChart3,
   ShoppingBag,
   Layers,
   ShoppingCart,
@@ -27,7 +26,6 @@ import { useAuth } from "@/context/auth-context";
 
 export const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
   { href: "/admin/products", label: "Products", icon: ShoppingBag },
   { href: "/admin/blog", label: "Blog", icon: FileText },

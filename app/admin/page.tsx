@@ -5,6 +5,7 @@ import {
   getSalesByCategory,
   getRecentActivity,
   getTopProducts,
+  getOrderStatusDistribution,
 } from "@/lib/services/order-service";
 import { getWaitlistStats } from "@/app/actions/admin-preorder";
 import { DashboardClient } from "./dashboard-client";
@@ -25,6 +26,7 @@ export default async function AdminDashboard() {
     waitlistStats,
     auditLogs,
     systemHealth,
+    pipelineData,
   ] = await Promise.all([
     getStats(),
     getMonthlyRevenue(),
@@ -37,6 +39,7 @@ export default async function AdminDashboard() {
       mod.getRecentAuditLogs(6),
     ),
     import("@/lib/services/audit-service").then((mod) => mod.getSystemHealth()),
+    getOrderStatusDistribution(30),
   ]);
 
   return (
@@ -57,6 +60,7 @@ export default async function AdminDashboard() {
       waitlistStats={waitlistStats}
       auditLogs={auditLogs}
       systemHealth={systemHealth}
+      initialPipelineData={(pipelineData as any[]) || []}
     />
   );
 }

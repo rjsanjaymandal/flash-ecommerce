@@ -69,7 +69,7 @@ export function StoreSync() {
 
         if (!stocks) return;
 
-        let changed = false;
+        let changedCount = 0;
         const changes: string[] = [];
 
         const newItems = items.map((item) => {
@@ -87,10 +87,10 @@ export function StoreSync() {
 
           // 1. Stock Check
           if (item.quantity > available) {
-            changed = true;
+            changedCount++;
             if (available === 0) {
               changes.push(`Marked ${item.name} as Sold Out`);
-              updatedItem = { ...updatedItem, maxQuantity: 0 };
+              updatedItem = { ...updatedItem, quantity: 0, maxQuantity: 0 };
             } else {
               changes.push(`Adjusted ${item.name} quantity to ${available}`);
               updatedItem = {
@@ -99,40 +99,66 @@ export function StoreSync() {
                 maxQuantity: available,
               };
             }
+          } else if (item.maxQuantity !== available) {
+            // Update maxQuantity silently if it changed but quantity is still valid
+            updatedItem = { ...updatedItem, maxQuantity: available };
           }
 
           // 2. Price Check
-          if (productEntry && productEntry.price !== item.price) {
-            changed = true;
+          if (
+            productEntry &&
+            Number(productEntry.price) !== Number(item.price)
+          ) {
+            changedCount++;
             changes.push(
-              `Price for ${item.name} updated to ${productEntry.price}`,
+              `Price for ${item.name} updated to ₹${productEntry.price}`,
             );
-            updatedItem = { ...updatedItem, price: productEntry.price };
+            updatedItem = { ...updatedItem, price: Number(productEntry.price) };
           }
 
           return updatedItem;
         });
 
-        if (changed) {
+        const hasRealChanges =
+          JSON.stringify(items) !== JSON.stringify(newItems);
+
+        if (hasRealChanges) {
           if (changes.length > 0) {
-            toast.info("Your bag was updated with latest prices and stock.");
+            toast.info("Your bag was updated with latest prices and stock.", {
+              description: changes.join(", "),
+              duration: 5000,
+            });
           }
           setCartItems(newItems);
 
           if (user) {
             // Sync adjustments back to DB
             for (const updated of newItems) {
-              await supabase.from("cart_items").upsert(
-                {
-                  user_id: user.id,
-                  product_id: updated.productId,
-                  size: updated.size,
-                  color: updated.color,
-                  fit: updated.fit,
-                  quantity: updated.quantity,
-                },
-                { onConflict: "user_id, product_id, size, color, fit" },
+              // Only sync if the specific item was among those that changed
+              const original = items.find(
+                (i) =>
+                  i.productId === updated.productId &&
+                  i.size === updated.size &&
+                  i.color === updated.color &&
+                  i.fit === updated.fit,
               );
+
+              if (
+                original &&
+                JSON.stringify(original) !== JSON.stringify(updated)
+              ) {
+                await supabase.from("cart_items").upsert(
+                  {
+                    user_id: user.id,
+                    product_id: updated.productId,
+                    size: updated.size,
+                    color: updated.color,
+                    fit: updated.fit,
+                    quantity: updated.quantity,
+                  },
+                  { onConflict: "user_id, product_id, size, color, fit" },
+                );
+              }
             }
           }
         }

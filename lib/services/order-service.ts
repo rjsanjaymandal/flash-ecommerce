@@ -66,14 +66,14 @@ export async function getStats() {
   const lastDayLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59).toISOString()
 
   // 1. Fetch current totals
-  const totalOrdersPromise = supabase.from('orders').select('id', { count: 'exact', head: true })
-  const totalRevenuePromise = supabase.from('orders').select('total').in('status', ['paid', 'confirmed_partial'])
+  const totalOrdersPromise = supabase.from('orders').select('id', { count: 'exact', head: true }).neq('status', 'cancelled')
+  const totalRevenuePromise = supabase.from('orders').select('total').neq('status', 'cancelled')
   const totalProductsPromise = supabase.from('products').select('id', { count: 'exact', head: true }).eq('is_active', true)
   const totalCustomersPromise = supabase.from('profiles').select('id', { count: 'exact', head: true })
 
   // 2. Fetch last month's comparisons
-  const lastMonthOrdersPromise = supabase.from('orders').select('id', { count: 'exact', head: true }).gte('created_at', firstDayLastMonth).lte('created_at', lastDayLastMonth)
-  const lastMonthRevenuePromise = supabase.from('orders').select('total').in('status', ['paid', 'confirmed_partial']).gte('created_at', firstDayLastMonth).lte('created_at', lastDayLastMonth)
+  const lastMonthOrdersPromise = supabase.from('orders').select('id', { count: 'exact', head: true }).neq('status', 'cancelled').gte('created_at', firstDayLastMonth).lte('created_at', lastDayLastMonth)
+  const lastMonthRevenuePromise = supabase.from('orders').select('total').neq('status', 'cancelled').gte('created_at', firstDayLastMonth).lte('created_at', lastDayLastMonth)
 
   const [ordersRes, revenueRes, productsRes, customersRes, lastOrdersRes, lastRevRes] = await Promise.allSettled([
       totalOrdersPromise,
@@ -248,4 +248,31 @@ export async function getSalesByCategory() {
     return Object.entries(categoryRevenue)
         .map(([name, value]) => ({ name, value }))
         .sort((a, b) => b.value - a.value) // Highest revenue first
+}
+
+/**
+ * Advanced: Fetch order status distribution for pipeline visualization
+ */
+export async function getOrderStatusDistribution(rangeDays: number = 30) {
+    const supabase = await createClient()
+    const endDate = new Date()
+    const startDate = new Date()
+    startDate.setDate(startDate.getDate() - rangeDays)
+
+    const { data, error } = await (supabase.rpc as any)('get_order_status_distribution', {
+        start_date: startDate.toISOString(),
+        end_date: endDate.toISOString()
+    })
+
+    if (error) {
+        console.error('Error fetching status distribution:', {
+            message: error.message,
+            code: error.code,
+            hint: error.hint,
+            details: error.details
+        })
+        return []
+    }
+
+    return data || []
 }
