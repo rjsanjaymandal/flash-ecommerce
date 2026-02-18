@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useStockStore, StockItem } from '@/store/use-stock-store'
 import { createClient } from '@/lib/supabase/client'
 
@@ -9,7 +9,7 @@ import { createClient } from '@/lib/supabase/client'
  */
 export function useRealTimeGrid(productIds: string[], initialStocks: Record<string, StockItem[]>) {
     const { stocks, setProductStock, updateStock } = useStockStore()
-    const supabase = createClient()
+    const supabase = useMemo(() => createClient(), [])
     
     // 1. Bulk Initialize store
     useEffect(() => {
@@ -43,8 +43,16 @@ export function useRealTimeGrid(productIds: string[], initialStocks: Record<stri
                     filter: productFilter,
                 },
                 (payload) => {
-                    const newItem = payload.new as StockItem
-                    if (newItem) {
+                    const candidate = payload.new as Partial<StockItem> | null
+                    if (
+                        candidate &&
+                        typeof candidate.product_id === 'string' &&
+                        typeof candidate.size === 'string' &&
+                        typeof candidate.color === 'string' &&
+                        typeof candidate.fit === 'string' &&
+                        typeof candidate.quantity === 'number'
+                    ) {
+                        const newItem = candidate as StockItem
                         updateStock(newItem.product_id, newItem.size, newItem.color, newItem.fit, newItem.quantity)
                     }
                 }

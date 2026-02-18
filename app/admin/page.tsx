@@ -46,9 +46,12 @@ export default async function AdminDashboard() {
       categoryData={categoryData}
       recentOrders={recentOrders}
       activity={activity}
-      topProducts={topProducts.map((product) => ({
-        ...product,
-        sale_count: (product as any).sale_count || 0,
+      topProducts={(topProducts as any[]).map((product) => ({
+        id: product.id,
+        name: product.name,
+        slug: product.slug,
+        main_image_url: product.main_image_url,
+        sale_count: product.sale_count || 0,
         categories: product.categories || undefined,
       }))}
       waitlistStats={waitlistStats}

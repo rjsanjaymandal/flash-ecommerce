@@ -47,7 +47,7 @@ export const getStaticBlogPosts = async (): Promise<BlogPostMeta[]> => {
     // Note: Type assertion used until types are regenerated
     const { data, error } = await (supabase as any)
       .from('blog_posts')
-      .select('*')
+      .select('slug, title, excerpt, cover_image, author, published_at, created_at, is_featured')
       .eq('is_published', true)
       .order('published_at', { ascending: false })
     
@@ -81,7 +81,7 @@ export const getBlogPosts = cache(async (): Promise<BlogPostMeta[]> => {
     
     const { data, error } = await (supabase as any)
       .from('blog_posts')
-      .select('*')
+      .select('slug, title, excerpt, cover_image, author, published_at, created_at, is_featured')
       .eq('is_published', true)
       .order('published_at', { ascending: false })
     
@@ -124,7 +124,7 @@ export const getBlogPost = cache(async (slug: string): Promise<BlogPostMeta | nu
     
     const { data: post, error } = await (supabase as any)
       .from('blog_posts')
-      .select('*')
+      .select('slug, title, excerpt, cover_image, author, published_at, created_at, is_featured, content, meta_title, meta_description')
       .eq('slug', slug)
       .eq('is_published', true)
       .single()

@@ -3,6 +3,10 @@
 import { getFeaturedProducts, Product } from "@/lib/services/product-service"
 import { createStaticClient } from "@/lib/supabase/server"
 
+function normalizeProduct(product: Product): Product {
+  return { ...product, total_stock: product.total_stock ?? 0 };
+}
+
 export async function getUpsellProducts(
   categoryIds: string[] = [],
   inCartIds: string[] = [],
@@ -22,9 +26,9 @@ export async function getUpsellProducts(
       .limit(20);
 
     if (categoryProducts) {
-      products = categoryProducts.filter((p) =>
-        p.product_stock?.some((s: any) => s.quantity > 0),
-      );
+      products = (categoryProducts as Product[])
+        .map(normalizeProduct)
+        .filter((p) => p.product_stock?.some((s) => (s.quantity ?? 0) > 0));
     }
   }
 
@@ -50,8 +54,8 @@ export async function getUpsellProducts(
         .limit(10);
 
       if (complementary) {
-        products = [...products, ...complementary].filter((p) =>
-          p.product_stock?.some((s: any) => s.quantity > 0),
+        products = [...products, ...(complementary as Product[]).map(normalizeProduct)].filter(
+          (p) => p.product_stock?.some((s) => (s.quantity ?? 0) > 0),
         );
       }
     }
@@ -63,7 +67,7 @@ export async function getUpsellProducts(
     const additional = featured.filter((p) => {
       const isInCart = inCartIds.includes(p.id);
       const isAlreadySuggested = products.some((prev) => prev.id === p.id);
-      const hasStock = p.product_stock?.some((s: any) => s.quantity > 0);
+      const hasStock = p.product_stock?.some((s) => (s.quantity ?? 0) > 0);
       return !isInCart && !isAlreadySuggested && hasStock;
     });
     products = [...products, ...additional];

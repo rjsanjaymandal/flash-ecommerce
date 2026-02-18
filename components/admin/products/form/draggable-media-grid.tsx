@@ -21,6 +21,8 @@ import { Trash2, GripVertical, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
+import Image from "next/image";
+
 interface SortableMediaItemProps {
   id: string;
   url: string;
@@ -63,10 +65,12 @@ function SortableMediaItem({
           : "border-foreground/10",
       )}
     >
-      <img
+      <Image
         src={url}
         alt="Product gallery"
-        className="object-cover w-full h-full"
+        fill
+        sizes="(max-width: 768px) 50vw, 25vw"
+        className="object-cover"
       />
 
       {/* Drag Handle */}

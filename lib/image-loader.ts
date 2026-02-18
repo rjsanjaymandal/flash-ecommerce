@@ -42,10 +42,20 @@ export default function myImageLoader({ src, width, quality }: ImageLoaderProps)
     // Build transformation string
     const params = [
       `w_${width}`,
-      `q_${quality || 75}`,
-      "c_limit", // Maintain aspect ratio, don't enlarge
+      "q_auto",  // Automatic quality optimization
       "f_auto",  // Auto format (WebP/AVIF)
+      "dpr_auto", // High-density display support
+      "c_limit",  // Maintain aspect ratio, don't enlarge
     ];
+
+    // Defensive parsing for Cloudinary URL
+    const pathSegments = url.pathname.split("/");
+    const uploadIndex = pathSegments.indexOf("upload");
+    
+    // If we can't find 'upload', fallback to basic src or attempt to find publicId
+    if (uploadIndex === -1) return src;
+
+    const publicIdWithVersion = pathSegments.slice(uploadIndex + 1).join("/");
 
     // Map internal resize hint to Cloudinary
     const internalResize = url.searchParams.get("resize");
@@ -55,7 +65,7 @@ export default function myImageLoader({ src, width, quality }: ImageLoaderProps)
       params.push("c_pad", "b_auto");
     }
 
-    return `https://res.cloudinary.com/${cloudName}/image/upload/${params.join(",")}/${publicId}`;
+    return `https://res.cloudinary.com/${cloudName}/image/upload/${params.join(",")}/${publicIdWithVersion}`;
   }
   
   return src

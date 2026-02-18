@@ -1,5 +1,5 @@
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createStaticClient } from "@/lib/supabase/server";
 
 export interface ProductColor {
   id: string;
@@ -10,7 +10,7 @@ export interface ProductColor {
 
 export async function getProductColors(): Promise<ProductColor[]> {
   try {
-    const supabase = (await createClient());
+    const supabase = createStaticClient();
     const { data, error } = await supabase
       .from("product_colors")
       .select("*")

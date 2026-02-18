@@ -5,9 +5,14 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import type { Tables } from "@/types/supabase";
+import type { Product } from "@/lib/services/product-service";
 
 type Category = Tables<"categories">;
-type Product = Tables<"products">;
+
+const CATEGORY_FIELDS =
+  "id, name, slug, parent_id, is_active, description, image_url, created_at, updated_at";
+const PRODUCT_CARD_FIELDS =
+  "id, name, slug, price, original_price, main_image_url, gallery_image_urls, status, is_active, category_id, created_at, is_carousel_featured, size_options, color_options, fit_options, expression_tags, categories(name), product_stock(*)";
 
 export const revalidate = 900;
 // export const dynamic = "auto";
@@ -69,7 +74,7 @@ export default async function ShopPage(props: {
   // 1. Fetch ALL categories to build the tree/lookup
   const { data: allCategories } = await supabase
     .from("categories")
-    .select("*")
+    .select(CATEGORY_FIELDS)
     .eq("is_active", true);
 
   if (!allCategories) {
@@ -90,10 +95,10 @@ export default async function ShopPage(props: {
     };
     const { data } = await supabase
       .from("products")
-      .select("*, product_stock(*), categories(name)")
+      .select(PRODUCT_CARD_FIELDS)
       .eq("is_active", true)
       .order("created_at", { ascending: false });
-    products = data || [];
+    products = (data as Product[]) || [];
   } else if (slug === "new-arrivals") {
     categoryData = {
       name: "New Arrivals",
@@ -101,11 +106,11 @@ export default async function ShopPage(props: {
     };
     const { data } = await supabase
       .from("products")
-      .select("*, product_stock(*), categories(name)")
+      .select(PRODUCT_CARD_FIELDS)
       .eq("is_active", true)
       .order("created_at", { ascending: false })
       .limit(20);
-    products = data || [];
+    products = (data as Product[]) || [];
   } else {
     // Find the specific category
     const cat = allCategories.find((c) => c.slug === slug);
@@ -132,12 +137,12 @@ export default async function ShopPage(props: {
     // Fetch Products matching ANY of these IDs
     const { data: prods } = await supabase
       .from("products")
-      .select("*, product_stock(*), categories(name)")
+      .select(PRODUCT_CARD_FIELDS)
       .in("category_id", targetCategoryIds)
       .eq("is_active", true)
       .order("created_at", { ascending: false });
 
-    products = prods || [];
+    products = (prods as Product[]) || [];
   }
 
   return (

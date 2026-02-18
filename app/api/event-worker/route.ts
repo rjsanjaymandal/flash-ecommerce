@@ -4,6 +4,16 @@ import { EmailWorker } from '@/lib/workers/email-worker'
 import { AppEventPayload } from '@/lib/services/event-bus'
 
 export const dynamic = 'force-dynamic' // Ensure no caching for worker
+const MAX_RETRIES = 3
+
+type EventStatus = 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED'
+type WorkerEvent = {
+    id: string
+    event_type: keyof AppEventPayload | string
+    payload: unknown
+    status: EventStatus
+    retry_count: number | null
+}
 
 export async function GET(req: Request) {
     // 1. Security Check (Verify a cron secret header)
@@ -24,7 +34,7 @@ export async function GET(req: Request) {
             .select('*')
             .eq('status', 'PENDING')
             .order('created_at', { ascending: true })
-            .limit(10) as { data: any[] | null, error: any }
+            .limit(10) as { data: WorkerEvent[] | null, error: Error | null }
 
         if (error) throw error
 
@@ -38,8 +48,17 @@ export async function GET(req: Request) {
         for (const event of events) {
             console.log(`[EventWorker] Processing event ${event.id} (${event.event_type})`)
             
-            // Mark as PROCESSING
-            await supabase.from('app_events' as any).update({ status: 'PROCESSING' }).eq('id', event.id)
+            // Claim event atomically. If already claimed by another worker, skip.
+            const { data: claimed } = await supabase
+                .from('app_events' as any)
+                .update({ status: 'PROCESSING' })
+                .eq('id', event.id)
+                .eq('status', 'PENDING')
+                .select('id')
+                .maybeSingle()
+            if (!claimed) {
+                continue
+            }
 
             let success = false
             let errorMsg: string | null = null
@@ -47,7 +66,11 @@ export async function GET(req: Request) {
             try {
                 switch (event.event_type) {
                     case 'ORDER_PAID':
-                        const payload = event.payload as AppEventPayload['ORDER_PAID']
+                        const payload = event.payload as AppEventPayload['ORDER_PAID'] | null
+                        if (!payload || typeof payload.orderId !== 'string') {
+                            errorMsg = 'Invalid ORDER_PAID payload'
+                            break
+                        }
                         const result = await EmailWorker.handleOrderPaid(payload.orderId)
                         if (result.success) {
                             success = true
@@ -71,7 +94,7 @@ export async function GET(req: Request) {
                 }).eq('id', event.id)
             } else {
                 const retryCount = (event.retry_count || 0) + 1
-                const shouldRetry = retryCount < 3 // Max 3 retries
+                const shouldRetry = retryCount < MAX_RETRIES
                 
                 await supabase.from('app_events' as any).update({ 
                     status: shouldRetry ? 'PENDING' : 'FAILED', 

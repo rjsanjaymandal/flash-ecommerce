@@ -7,6 +7,11 @@ import type { Tables, TablesInsert, TablesUpdate } from '@/types/supabase'
 import type { Category } from '@/types/store-types'
 
 // export type { Category } // Remove re-export to avoid circular/bundling issues
+const CACHE_PROFILE = 'max'
+type CategoryRow = Pick<
+    Tables<'categories'>,
+    'id' | 'name' | 'slug' | 'parent_id' | 'is_active' | 'description' | 'image_url' | 'created_at' | 'updated_at'
+>
 
 /**
  * Robust Tree Builder
@@ -19,7 +24,7 @@ async function fetchCategoriesTree(): Promise<Category[]> {
         
         const { data: allCategories, error } = await supabase
           .from('categories')
-          .select('*')
+          .select('id, name, slug, parent_id, is_active, description, image_url, created_at, updated_at')
           .eq('is_active', true)
           .order('name')
         
@@ -32,11 +37,11 @@ async function fetchCategoriesTree(): Promise<Category[]> {
         const categoryMap = new Map<string, Category>()
         const rootCategories: Category[] = []
 
-        allCategories.forEach((cat) => {
+        allCategories.forEach((cat: CategoryRow) => {
           categoryMap.set(cat.id, { ...cat, children: [] })
         })
 
-        allCategories.forEach((cat) => {
+        allCategories.forEach((cat: CategoryRow) => {
           const node = categoryMap.get(cat.id)!
           // If parent exists and is also in the map (meaning it is active), link it.
           if (cat.parent_id && categoryMap.has(cat.parent_id)) {
@@ -71,7 +76,7 @@ export async function getLinearCategories(activeOnly = false): Promise<Category[
         async () => {
             try {
                 const supabase = createStaticClient()
-                let query = supabase.from('categories').select('*').order('name')
+                let query = supabase.from('categories').select('id, name, slug, parent_id, is_active, description, image_url, created_at, updated_at').order('name')
                 if (activeOnly) {
                     query = query.eq('is_active', true)
                 }
@@ -162,8 +167,7 @@ export async function createCategory(data: TablesInsert<'categories'>) {
     const { logAdminAction } = await import('@/lib/admin-logger')
     await logAdminAction('categories', (data as any).id || 'new', 'CREATE', data)
 
-    // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
-    revalidateTag('categories')
+    revalidateTag('categories', CACHE_PROFILE)
     revalidatePath('/admin/categories')
     revalidatePath('/shop')
 }
@@ -184,8 +188,7 @@ export async function updateCategory(id: string, data: TablesUpdate<'categories'
     const { logAdminAction } = await import('@/lib/admin-logger')
     await logAdminAction('categories', id, 'UPDATE', data)
 
-    // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
-    revalidateTag('categories')
+    revalidateTag('categories', CACHE_PROFILE)
     revalidatePath('/admin/categories')
     revalidatePath('/shop')
 }
@@ -211,8 +214,7 @@ export async function deleteCategory(id: string) {
     const { logAdminAction } = await import('@/lib/admin-logger')
     await logAdminAction('categories', id, 'DELETE')
 
-    // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
-    revalidateTag('categories')
+    revalidateTag('categories', CACHE_PROFILE)
     revalidatePath('/admin/categories')
     revalidatePath('/shop')
 }

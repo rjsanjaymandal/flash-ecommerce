@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
+import type { Tables } from '@/types/supabase'
 
 export interface CartItem {
   id?: string // UUID for DB items
@@ -38,11 +39,34 @@ interface CartState {
   loadingStates: Record<string, boolean>
   setLoadingState: (key: string, isLoading: boolean) => void
   // Enterprise Sync Logic
-  syncQueue: Promise<any>
-  addToSyncQueue: (fn: () => Promise<any>) => void
+  syncQueue: Promise<void>
+  addToSyncQueue: (fn: () => Promise<void>) => void
 }
 
 const supabase = createClient()
+type ProductStockRow = Pick<Tables<'product_stock'>, 'size' | 'color' | 'fit' | 'quantity'>
+type CartSyncProduct = {
+  name: string
+  price: number
+  main_image_url: string | null
+  slug: string
+  category_id: string | null
+  product_stock: ProductStockRow[] | null
+}
+type CartSyncRow = {
+  id: string
+  product_id: string
+  quantity: number
+  size: string
+  color: string
+  fit: string
+  product: CartSyncProduct | null
+}
+type SavedSyncRow = {
+  id: string
+  product_id: string
+  product: CartSyncProduct | null
+}
 
 export const useCartStore = create<CartState>()(
   persist(
@@ -235,6 +259,7 @@ export const useCartStore = create<CartState>()(
         const { items, savedItems } = get()
         const itemInCart = items.find(i => i.productId === productId && i.size === size && i.color === color && i.fit === fit)
         const itemInSaved = savedItems.find(i => i.productId === productId && i.size === size && i.color === color && i.fit === fit)
+        const previousState = { items, savedItems }
 
         if (itemInCart) {
           // Move from Cart to Saved
@@ -250,10 +275,18 @@ export const useCartStore = create<CartState>()(
             if (!user) return
             
             // 1. Delete from cart
-            await supabase.from('cart_items').delete().match({ user_id: user.id, product_id: productId, size, color, fit })
+            const { error: deleteError } = await supabase.from('cart_items').delete().match({ user_id: user.id, product_id: productId, size, color, fit })
+            if (deleteError) {
+              set(previousState)
+              throw deleteError
+            }
             
             // 2. Add to wishlist
-            await supabase.from('wishlist_items').upsert({ user_id: user.id, product_id: productId }, { onConflict: 'user_id, product_id' })
+            const { error: upsertError } = await supabase.from('wishlist_items').upsert({ user_id: user.id, product_id: productId }, { onConflict: 'user_id, product_id' })
+            if (upsertError) {
+              set(previousState)
+              throw upsertError
+            }
           })
         } else if (itemInSaved) {
           // Move from Saved to Cart
@@ -270,10 +303,14 @@ export const useCartStore = create<CartState>()(
             if (!user) return
             
             // 1. Delete from wishlist
-            await supabase.from('wishlist_items').delete().match({ user_id: user.id, product_id: productId })
+            const { error: deleteError } = await supabase.from('wishlist_items').delete().match({ user_id: user.id, product_id: productId })
+            if (deleteError) {
+              set(previousState)
+              throw deleteError
+            }
             
             // 2. Add to cart
-            await supabase.from('cart_items').upsert({ 
+            const { error: upsertError } = await supabase.from('cart_items').upsert({ 
                 user_id: user.id, 
                 product_id: productId, 
                 size, 
@@ -281,6 +318,10 @@ export const useCartStore = create<CartState>()(
                 fit: itemInSaved.fit,
                 quantity: itemInSaved.quantity 
             }, { onConflict: 'user_id, product_id, size, color, fit' })
+            if (upsertError) {
+              set(previousState)
+              throw upsertError
+            }
           })
         }
       },
@@ -317,47 +358,17 @@ export const useCartStore = create<CartState>()(
             }
 
             // Helper to find stock & price addons
-            const getVariantInfo = (product: any, size: string, color: string, fit: string) => {
-                const stock = product?.product_stock?.find((s: any) => s.size === size && s.color === color && s.fit === fit)
+            const getVariantInfo = (product: CartSyncProduct | null, size: string, color: string, fit: string) => {
+                const stock = product?.product_stock?.find((s) => s.size === size && s.color === color && s.fit === fit)
                 return {
                     quantity: stock?.quantity ?? 10
                 }
             }
 
-            interface CartDBItem {
-                id: string
-                product_id: string
-                quantity: number
-                size: string
-                color: string
-                fit: string
-                product: {
-                    name: string
-                    price: number
-                    main_image_url: string
-                    slug: string
-                    category_id: string
-                    product_stock: { size: string, color: string, fit: string, quantity: number, price_addon?: number }[]
-                } | null
-            }
+            const serverCartRaw = (cartRes.data || []) as CartSyncRow[]
+            const serverSavedRaw = (savedRes.data || []) as SavedSyncRow[]
 
-            interface SavedDBItem {
-                id: string
-                product_id: string
-                product: {
-                    name: string
-                    price: number
-                    main_image_url: string
-                    slug: string
-                    category_id: string
-                    product_stock: { size: string, color: string, fit: string, quantity: number, price_addon?: number }[]
-                } | null
-            }
-
-            const serverCartRaw = cartRes.data as any[] || []
-            const serverSavedRaw = savedRes.data as any[] || []
-
-            const serverItems: CartItem[] = serverCartRaw.map((dbItem: CartDBItem) => {
+            const serverItems: CartItem[] = serverCartRaw.map((dbItem) => {
                 const info = getVariantInfo(dbItem.product, dbItem.size, dbItem.color, dbItem.fit)
                 return {
                     id: dbItem.id,
@@ -375,7 +386,7 @@ export const useCartStore = create<CartState>()(
                 }
             }).filter(i => i.price > 0 && i.slug && i.categoryId)
 
-            const serverSavedItems: CartItem[] = serverSavedRaw.map((dbItem: SavedDBItem) => {
+            const serverSavedItems: CartItem[] = serverSavedRaw.map((dbItem) => {
                 const stock = dbItem.product?.product_stock || []
                 // If single variant, use it. Otherwise, default to Universal.
                 const singleVariant = stock.length === 1 ? stock[0] : null
@@ -390,7 +401,7 @@ export const useCartStore = create<CartState>()(
                     color: singleVariant ? singleVariant.color : 'N/A',
                     fit: singleVariant ? singleVariant.fit : 'Regular',
                     quantity: 1,
-                    maxQuantity: singleVariant ? singleVariant.quantity : 10,
+                    maxQuantity: singleVariant ? (singleVariant.quantity ?? 10) : 10,
                     slug: dbItem.product?.slug || '',
                     categoryId: dbItem.product?.category_id || ''
                 }

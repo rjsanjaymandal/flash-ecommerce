@@ -18,7 +18,6 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { slugify } from "@/lib/slugify";
 import { Image as ImageIcon, Loader2, X } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import FlashImage from "@/components/ui/flash-image";
 import {
@@ -48,7 +47,6 @@ export function CategoryForm({
   onSubmit,
   onCancel,
 }: CategoryFormProps) {
-  const supabase = createClient();
   const [isUploading, setIsUploading] = useState(false);
 
   const form = useForm<CategoryData>({

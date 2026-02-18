@@ -14,7 +14,6 @@ import {
   ShoppingCart,
   ArrowUpRight,
   Activity,
-  MessageSquare,
   Mail,
   Zap,
   Clock,
@@ -43,6 +42,7 @@ import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { type Order } from "@/lib/services/order-service";
 import { findAndRecoverAbandonedCarts } from "@/app/actions/recovery-actions";
+import { type AuditLog } from "@/lib/services/audit-service";
 
 interface DashboardStats {
   totalRevenue: number;
@@ -81,7 +81,7 @@ interface DashboardClientProps {
   activity?: DashboardActivity[];
   topProducts?: DashboardProduct[];
   waitlistStats?: { count: number; potentialRevenue: number };
-  auditLogs?: any[];
+  auditLogs?: AuditLog[];
   systemHealth?: { database: string; latency: string; status: string };
 }
 
@@ -201,7 +201,10 @@ export function DashboardClient({
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "admin_audit_logs" },
         (_payload) => {
-          setAuditLogs((prev: any[]) => [_payload.new, ...prev.slice(0, 5)]);
+          setAuditLogs((prev: AuditLog[]) => [
+            _payload.new as AuditLog,
+            ...prev.slice(0, 5),
+          ]);
         },
       )
       .subscribe();

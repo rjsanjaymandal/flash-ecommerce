@@ -3,6 +3,7 @@
 import { createClient, createStaticClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath, revalidateTag } from 'next/cache'
+const CACHE_PROFILE = 'max'
 
 export type DeleteProductResult = {
     success?: boolean
@@ -107,10 +108,8 @@ export async function deleteProductAction(productId: string): Promise<DeleteProd
             revalidatePath('/admin/products')
             revalidatePath('/shop')
             revalidatePath('/')
-            // @ts-expect-error: Next.js types correctly require a second argument
-            revalidateTag('products')
-            // @ts-expect-error: Next.js types incorrectly require a second argument
-            revalidateTag('featured-products')
+            revalidateTag('products', CACHE_PROFILE)
+            revalidateTag('featured-products', CACHE_PROFILE)
             
             // Revalidate specifically for the shop page which might be heavily cached
             revalidatePath('/shop', 'page')

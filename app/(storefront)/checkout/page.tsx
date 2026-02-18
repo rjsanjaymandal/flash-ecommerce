@@ -4,7 +4,7 @@ import { useCartStore, selectCartTotal } from "@/store/use-cart-store";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/auth-context";
-import { useState, useTransition, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Loader2,
@@ -38,12 +38,36 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import Link from "next/link";
+import type { Route } from "next";
 import NextImage from "next/image";
 import imageLoader from "@/lib/image-loader";
 
 declare global {
+  interface RazorpayInstance {
+    open: () => void;
+  }
+  interface RazorpayOptions {
+    key: string;
+    amount: number;
+    currency: string;
+    name: string;
+    description: string;
+    order_id: string;
+    handler: (response: RazorpayResponse) => Promise<void>;
+    prefill: {
+      name: string;
+      email: string;
+      contact: string;
+    };
+    theme: {
+      color: string;
+    };
+    modal: {
+      ondismiss: () => void;
+    };
+  }
   interface Window {
-    Razorpay: new (options: any) => any;
+    Razorpay: new (options: RazorpayOptions) => RazorpayInstance;
   }
 }
 
@@ -148,7 +172,7 @@ export default function CheckoutPage() {
       // Clear the param
       const url = new URL(window.location.href);
       url.searchParams.delete("error");
-      router.replace((url.pathname + url.search) as any);
+      router.replace(`${url.pathname}${url.search}` as Route);
     }
   }, [searchParams, router]);
 
@@ -307,7 +331,7 @@ export default function CheckoutPage() {
         throw new Error("Razorpay Key ID is missing. Please contact support.");
       }
 
-      const options = {
+      const options: RazorpayOptions = {
         key: keyId,
         amount: rzpOrder.amount,
         currency: rzpOrder.currency,
@@ -402,15 +426,20 @@ export default function CheckoutPage() {
 
       const rzp1 = new window.Razorpay(options);
       rzp1.open();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("FATAL Checkout Error:", err);
       console.error("Error Object Type:", typeof err);
+      const normalizedMessage =
+        err instanceof Error ? err.message : String(err);
 
       const detailedError = {
-        message: err?.message || String(err),
-        stack: err?.stack,
-        name: err?.name,
-        digest: err?.digest, // Next.js server action error digest
+        message: normalizedMessage,
+        stack: err instanceof Error ? err.stack : undefined,
+        name: err instanceof Error ? err.name : undefined,
+        digest:
+          typeof err === "object" && err !== null && "digest" in err
+            ? String((err as { digest?: string }).digest || "")
+            : undefined, // Next.js server action error digest
         raw: err,
       };
 

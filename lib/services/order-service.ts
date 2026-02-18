@@ -23,7 +23,7 @@ export async function getOrders(filter: OrderFilter = {}): Promise<PaginatedResu
 
   let query = supabase
     .from('orders')
-    .select('*, profiles:profiles(name)', { count: 'exact' })
+    .select('id, created_at, total, status, shipping_name, profiles:profiles(name)', { count: 'exact' })
     .order('created_at', { ascending: false }) as any
 
   if (filter.status && filter.status !== 'all') {
@@ -66,10 +66,10 @@ export async function getStats() {
   const lastDayLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59).toISOString()
 
   // 1. Fetch current totals
-  const totalOrdersPromise = supabase.from('orders').select('*', { count: 'exact', head: true })
+  const totalOrdersPromise = supabase.from('orders').select('id', { count: 'exact', head: true })
   const totalRevenuePromise = supabase.from('orders').select('total').in('status', ['paid', 'confirmed_partial'])
-  const totalProductsPromise = supabase.from('products').select('*', { count: 'exact', head: true }).eq('is_active', true)
-  const totalCustomersPromise = supabase.from('profiles').select('*', { count: 'exact', head: true })
+  const totalProductsPromise = supabase.from('products').select('id', { count: 'exact', head: true }).eq('is_active', true)
+  const totalCustomersPromise = supabase.from('profiles').select('id', { count: 'exact', head: true })
 
   // 2. Fetch last month's comparisons
   const lastMonthOrdersPromise = supabase.from('orders').select('id', { count: 'exact', head: true }).gte('created_at', firstDayLastMonth).lte('created_at', lastDayLastMonth)
@@ -113,7 +113,7 @@ export async function getTopProducts(limit: number = 5) {
     const supabase = await createClient()
     const { data, error } = await supabase
         .from('products')
-        .select('*, categories(name)')
+        .select('id, name, slug, main_image_url, sale_count, categories(name)')
         .order('sale_count', { ascending: false })
         .limit(limit)
 

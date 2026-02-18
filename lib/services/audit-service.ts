@@ -29,8 +29,7 @@ export async function getRecentAuditLogs(limit = 10) {
       .limit(limit)
 
     if (error) throw error
-    // @ts-ignore: Complex Supabase type mismatch due to dynamic table name
-    return (data || []) as AuditLog[]
+    return (data || []) as unknown as AuditLog[]
   } catch (error) {
     console.error('Failed to fetch audit logs:', error)
     return []

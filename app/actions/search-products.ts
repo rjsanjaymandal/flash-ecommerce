@@ -38,12 +38,13 @@ export async function getSearchIndex() {
 }
 
 export async function searchProducts(query: string) {
-    if (!query) return []
+    const normalizedQuery = query.trim()
+    if (normalizedQuery.length < 2) return []
      const supabase = await createClient()
      
      // Use Enterprise Search RPC (Full Text Search + Ranking)
      const { data, error } = await supabase.rpc('search_products_v2', {
-        query_text: query,
+        query_text: normalizedQuery,
         limit_val: 5
      })
 

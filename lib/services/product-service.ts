@@ -26,6 +26,20 @@ export type Product = Tables<'products'> & {
     total_stock?: number
 }
 
+type ProductWithStatsRow = Tables<'products_with_stats'> & {
+    categories?: { name: string } | null
+    product_stock?: Tables<'product_stock'>[] | null
+    reviews?: { rating: number | null }[] | null
+    preorders?: { count: number }[] | null
+}
+type ProductRowInput = Partial<ProductWithStatsRow> & Pick<Tables<'products'>, 'id' | 'name' | 'slug' | 'price'>
+type ProductRowWithComputed = ProductRowInput & {
+    average_rating?: number | null
+    review_count?: number | null
+}
+
+const CACHE_PROFILE = 'max'
+
 
 
 export type ProductSortOption = 'price_asc' | 'price_desc' | 'newest' | 'trending' | 'waitlist_desc' | 'random' | 'relevance'
@@ -201,7 +215,8 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: SupabaseCli
         }
 
         // Client-side mapping for computed fields
-        const processedData = (data as any[] || []).map(formatProduct)
+        const rawRows = ((data as unknown) as ProductWithStatsRow[] | null) ?? []
+        const processedData = rawRows.map(formatProduct)
 
         return {
             data: processedData,
@@ -256,7 +271,8 @@ export async function getFeaturedProducts(): Promise<Product[]> {
                     .order('created_at', { ascending: false })
                     .limit(8)
                 
-                 return (data || []).map(formatProduct)
+                 const featuredRows = ((data as unknown) as ProductRowInput[] | null) ?? []
+                 return featuredRows.map(formatProduct)
              } catch (error) {
                  console.error('getFeaturedProducts failed:', error)
                  return []
@@ -275,7 +291,7 @@ async function fetchProductBySlug(slug: string): Promise<Product | null> {
     try {
         if (isUuid) {
             const { data: idData } = await supabase.from('products_with_stats').select('*, categories(name), product_stock(*)').eq('id', slug).single()
-            if (idData) return formatProduct(idData)
+            if (idData) return formatProduct(idData as unknown as ProductRowInput)
         }
 
         const { data, error } = await supabase
@@ -286,19 +302,21 @@ async function fetchProductBySlug(slug: string): Promise<Product | null> {
         
         if (error) return null
 
-        return formatProduct(data)
+        return formatProduct(data as unknown as ProductRowInput)
     } catch (error) {
         console.error('fetchProductBySlug failed:', error)
         return null
     }
 }
 
-function formatProduct(p: any): Product {
+function formatProduct(p: ProductRowWithComputed): Product {
+    const preorderCount = Array.isArray(p.preorders) ? (p.preorders[0]?.count ?? 0) : 0
     return {
         ...p,
         average_rating: p.average_rating || 0,
         review_count: p.review_count || 0,
-        preorder_count: p.preorders && Array.isArray(p.preorders) ? (p.preorders[0] as any)?.count || 0 : 0
+        preorder_count: preorderCount,
+        total_stock: p.total_stock ?? 0
     } as Product
 }
 
@@ -403,10 +421,8 @@ export async function createProduct(productData: unknown) {
         try {
             revalidatePath('/admin/products')
             revalidatePath('/shop')
-            // @ts-expect-error: Next.js types incorrectly require a second 'profile' argument
-            revalidateTag('products')
-            // @ts-expect-error: Next.js types incorrectly require a second 'profile' argument
-            revalidateTag('featured-products')
+            revalidateTag('products', CACHE_PROFILE)
+            revalidateTag('featured-products', CACHE_PROFILE)
         } catch (revErr) {
             console.warn('[createProduct] Revalidation skipped:', revErr)
         }
@@ -480,14 +496,12 @@ export async function updateProduct(id: string, productData: unknown) {
             revalidatePath('/admin/products')
             revalidatePath('/shop')
             revalidatePath(`/product/${updateData.slug || existing.slug}`)
-            // @ts-expect-error: Next.js types incorrectly require a second 'profile' argument
-            revalidateTag('products')
-            // @ts-expect-error: Next.js types incorrectly require a second 'profile' argument
-            revalidateTag('featured-products')
-            // @ts-expect-error: Next.js types incorrectly require a second 'profile' argument
-            if (updateData.slug) revalidateTag(`product-${updateData.slug}`)
-            // @ts-expect-error: Next.js types incorrectly require a second 'profile' argument
-            if (existing.slug && existing.slug !== updateData.slug) revalidateTag(`product-${existing.slug}`)
+            revalidateTag('products', CACHE_PROFILE)
+            revalidateTag('featured-products', CACHE_PROFILE)
+            if (updateData.slug) revalidateTag(`product-${updateData.slug}`, CACHE_PROFILE)
+            if (existing.slug && existing.slug !== updateData.slug) {
+                revalidateTag(`product-${existing.slug}`, CACHE_PROFILE)
+            }
         } catch (revErr) {
             console.warn('[updateProduct] Revalidation skipped:', revErr)
         }
@@ -511,10 +525,8 @@ export async function deleteProduct(id: string) {
     
     // Defensive Revalidation
     try {
-        // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument
-        revalidateTag('products')
-        // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument
-        revalidateTag('featured-products')
+        revalidateTag('products', CACHE_PROFILE)
+        revalidateTag('featured-products', CACHE_PROFILE)
         revalidatePath('/admin/products')
         revalidatePath('/shop')
     } catch (e) {
@@ -543,7 +555,8 @@ export async function getProductsByIds(ids: string[]): Promise<Product[]> {
         return {
             ...product,
             average_rating: avg,
-            review_count: ratings.length
+            review_count: ratings.length,
+            total_stock: product.total_stock ?? 0
         } as Product
     })
 }
@@ -573,7 +586,8 @@ export async function getValidProducts(ids: string[]): Promise<Product[]> {
         return {
             ...product,
             average_rating: avg,
-            review_count: ratings.length
+            review_count: ratings.length,
+            total_stock: product.total_stock ?? 0
         } as Product
     })
 }
@@ -647,7 +661,8 @@ export async function getRelatedProducts(product: Product): Promise<Product[]> {
                     return {
                         ...p,
                         average_rating: avg || Number(p.average_rating || 0),
-                        review_count: ratings.length || Number(p.review_count || 0)
+                        review_count: ratings.length || Number(p.review_count || 0),
+                        total_stock: p.total_stock ?? 0
                     } as Product
                 })
             } catch (error) {
@@ -673,10 +688,8 @@ export async function bulkDeleteProducts(ids: string[]) {
         logAdminAction('products', id, 'DELETE')
     })
 
-    // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
-    revalidateTag('products')
-    // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
-    revalidateTag('featured-products')
+    revalidateTag('products', CACHE_PROFILE)
+    revalidateTag('featured-products', CACHE_PROFILE)
     revalidatePath('/admin/products')
     revalidatePath('/shop')
 }
@@ -697,10 +710,8 @@ export async function bulkUpdateProductStatus(ids: string[], isActive: boolean) 
         logAdminAction('products', id, 'UPDATE', { is_active: isActive })
     })
 
-    // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
-    revalidateTag('products')
-    // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
-    revalidateTag('featured-products')
+    revalidateTag('products', CACHE_PROFILE)
+    revalidateTag('featured-products', CACHE_PROFILE)
     revalidatePath('/admin/products')
     revalidatePath('/shop')
 }
@@ -721,8 +732,7 @@ export async function bulkUpdateProductCategory(ids: string[], categoryId: strin
         logAdminAction('products', id, 'UPDATE', { category_id: categoryId })
     })
 
-    // @ts-expect-error: Next.js 16 types incorrectly require a second 'profile' argument that is optional at runtime for tag-based invalidation
-    revalidateTag('products')
+    revalidateTag('products', CACHE_PROFILE)
     revalidatePath('/admin/products')
     revalidatePath('/shop')
 }
@@ -741,10 +751,8 @@ export async function toggleProductCarousel(id: string, isFeatured: boolean) {
     try {
         revalidatePath('/')
         revalidatePath('/admin/products')
-        // @ts-expect-error: Next.js types incorrectly require a second 'profile' argument
-        revalidateTag('featured-products')
-        // @ts-expect-error: Next.js types incorrectly require a second 'profile' argument
-        revalidateTag('products')
+        revalidateTag('featured-products', CACHE_PROFILE)
+        revalidateTag('products', CACHE_PROFILE)
     } catch (e) {
         console.warn('[toggleProductCarousel] Revalidation failed:', e)
     }

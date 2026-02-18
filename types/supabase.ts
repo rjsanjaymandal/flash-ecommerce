@@ -545,6 +545,7 @@ export type Database = {
           main_image_url: string | null
           name: string
           price: number
+          total_stock: number | null
           original_price: number | null
           size_options: string[] | null
           fit_options: string[] | null
@@ -569,6 +570,7 @@ export type Database = {
           main_image_url?: string | null
           name: string
           price: number
+          total_stock?: number | null
           original_price?: number | null
           size_options?: string[] | null
           fit_options?: string[] | null
@@ -593,6 +595,7 @@ export type Database = {
           main_image_url?: string | null
           name?: string
           price?: number
+          total_stock?: number | null
           original_price?: number | null
           size_options?: string[] | null
           slug?: string
@@ -975,7 +978,10 @@ export type Database = {
     }
     Views: {
       products_with_stats: {
-        Row: any
+        Row: Database["public"]["Tables"]["products"]["Row"] & {
+          average_rating_calculated: number | null
+          review_count_calculated: number | null
+        }
         Insert: never
         Update: never
         Relationships: []
@@ -1221,4 +1227,4 @@ export const Constants = {
       discount_type: ["percentage", "fixed"],
     },
   },
-} as const
+} as const

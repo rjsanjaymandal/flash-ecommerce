@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { requireAdmin } from '@/lib/auth/utils'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
+const CACHE_PROFILE = 'max'
 
 // Types
 export interface BlogPost {
@@ -114,8 +115,7 @@ export async function createBlogPost(formData: BlogPostFormValues) {
     
     revalidatePath('/admin/blog')
     revalidatePath('/blog')
-    // @ts-expect-error: Next.js types incorrectly require a second argument
-    revalidateTag('blog-posts')
+    revalidateTag('blog-posts', CACHE_PROFILE)
     
     return { success: true, id: data.id }
   } catch (err: any) {
@@ -167,8 +167,7 @@ export async function updateBlogPost(id: string, formData: BlogPostFormValues) {
     revalidatePath('/admin/blog')
     revalidatePath('/blog')
     revalidatePath(`/blog/${validated.data.slug}`)
-    // @ts-expect-error: Next.js types incorrectly require a second argument
-    revalidateTag('blog-posts')
+    revalidateTag('blog-posts', CACHE_PROFILE)
     
     return { success: true }
   } catch (err: any) {
@@ -195,8 +194,7 @@ export async function deleteBlogPost(id: string) {
     
     revalidatePath('/admin/blog')
     revalidatePath('/blog')
-    // @ts-expect-error: Next.js types incorrectly require a second argument
-    revalidateTag('blog-posts')
+    revalidateTag('blog-posts', CACHE_PROFILE)
     
     return { success: true }
   } catch (err: any) {
@@ -236,8 +234,7 @@ export async function toggleBlogPostPublish(id: string, publish: boolean) {
     
     revalidatePath('/admin/blog')
     revalidatePath('/blog')
-    // @ts-expect-error: Next.js types incorrectly require a second argument
-    revalidateTag('blog-posts')
+    revalidateTag('blog-posts', CACHE_PROFILE)
     
     return { success: true }
   } catch (err: any) {

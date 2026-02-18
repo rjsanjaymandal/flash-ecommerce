@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createStaticClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { uploadOptimizedImage } from './upload-images'
 
@@ -107,7 +107,7 @@ export async function submitReview(formData: FormData) {
 
 export async function getReviews(productId: string) {
   try {
-    const supabase = await createClient()
+    const supabase = createStaticClient()
 
     const { data: reviews } = await supabase
       .from('reviews')

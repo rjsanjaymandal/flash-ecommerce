@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useStockStore, StockItem } from '@/store/use-stock-store'
 import { createClient } from '@/lib/supabase/client'
 
@@ -7,7 +7,7 @@ export type { StockItem }
 export function useRealTimeHype(productId: string, initialStock: StockItem[] = []) {
     const { stocks, setProductStock, updateStock } = useStockStore()
     const [viewerCount, setViewerCount] = useState(1) // Always at least 1 (me)
-    const supabase = createClient()
+    const supabase = useMemo(() => createClient(), [])
     
     // 1. Initialize store with initial data on mount
     useEffect(() => {
@@ -41,8 +41,16 @@ export function useRealTimeHype(productId: string, initialStock: StockItem[] = [
                     filter: `product_id=eq.${productId}`,
                 },
                 (payload) => {
-                    const newItem = payload.new as StockItem
-                    if (newItem) {
+                    const candidate = payload.new as Partial<StockItem> | null
+                    if (
+                        candidate &&
+                        typeof candidate.product_id === 'string' &&
+                        typeof candidate.size === 'string' &&
+                        typeof candidate.color === 'string' &&
+                        typeof candidate.fit === 'string' &&
+                        typeof candidate.quantity === 'number'
+                    ) {
+                        const newItem = candidate as StockItem
                         updateStock(newItem.product_id, newItem.size, newItem.color, newItem.fit, newItem.quantity)
                     }
                 }

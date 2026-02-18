@@ -1,43 +1,37 @@
 'use server'
 
-import { createAdminClient } from '@/lib/supabase/admin'
+import cloudinary from '@/lib/cloudinary'
 
 export async function uploadImage(formData: FormData) {
   try {
     const file = formData.get('file') as File
-    const bucket = 'products'
+    if (!file) throw new Error('No file provided')
 
-    if (!file) {
-        throw new Error('No file provided')
-    }
+    // Convert File to Buffer
+    const arrayBuffer = await file.arrayBuffer()
+    const buffer = Buffer.from(arrayBuffer)
 
-    const supabase = createAdminClient()
-  const fileExt = file.name.split('.').pop()
-  const fileName = `prod_${Date.now()}_${Math.random()}.${fileExt}`
+    // Upload to Cloudinary using a Promise-wrapped stream
+    const result = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: 'products',
+          resource_type: 'auto',
+          // Optional: Add auto-optimization or transformations on upload if needed
+          // quality: 'auto',
+          // fetch_format: 'auto'
+        },
+        (error, result) => {
+          if (error) reject(error)
+          else resolve(result)
+        }
+      )
+      uploadStream.end(buffer)
+    }) as any
 
-  // Convert File to ArrayBuffer for upload
-  const arrayBuffer = await file.arrayBuffer()
-  const buffer = Buffer.from(arrayBuffer)
-
-  const { error } = await supabase.storage
-      .from(bucket)
-      .upload(fileName, buffer, {
-          contentType: file.type,
-          upsert: false
-      })
-
-  if (error) {
-      console.error('Upload Error:', error)
-      throw new Error('Upload failed: ' + error.message)
-  }
-
-  const { data: { publicUrl } } = supabase.storage
-      .from(bucket)
-      .getPublicUrl(fileName)
-
-  return publicUrl
+    return result.secure_url
   } catch (err) {
-      console.error('[uploadImage] Failed:', err)
-      throw new Error('Image upload service is currently unavailable. Please try again later.')
+    console.error('[uploadImage] Cloudinary Upload Failed:', err)
+    throw new Error('Image upload service failed. Please check Cloudinary configuration.')
   }
 }

@@ -2,9 +2,14 @@
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createStaticClient } from '@/lib/supabase/server'
-import { Database } from '@/types/supabase'
 import { CartItem } from '@/store/use-cart-store'
 import { checkRateLimit } from '@/lib/rate-limit'
+
+function normalizeErrorMessage(error: unknown): string {
+    if (error instanceof Error && error.message) return error.message
+    if (typeof error === 'string' && error.trim()) return error
+    return 'Unknown checkout failure'
+}
 
 export async function createOrder(data: {
     user_id: string | null,
@@ -134,18 +139,21 @@ export async function createOrder(data: {
         // Fast fail if stock is already zero before proceeding to payment
         const { data: stockItems, error: stockCheckError } = await supabase
             .from('product_stock')
-            .select('product_id, size, color, quantity')
+            .select('product_id, size, color, fit, quantity')
             .in('product_id', productIds)
 
         if (stockCheckError) throw new Error("Inventory check failed. Please try again.")
 
         const stockMap = new Map<string, number>()
         stockItems?.forEach(item => {
-            stockMap.set(`${item.product_id}-${item.size}-${item.color}`, item.quantity || 0)
+            stockMap.set(
+                `${item.product_id}-${item.size || ''}-${item.color || ''}-${item.fit || 'Regular'}`,
+                item.quantity || 0
+            )
         })
 
         for (const item of data.items) {
-            const key = `${item.productId}-${item.size}-${item.color}`
+            const key = `${item.productId}-${item.size || ''}-${item.color || ''}-${item.fit || 'Regular'}`
             const available = stockMap.get(key) || 0
             if (available < item.quantity) {
                  throw new Error(`Sold Out: ${item.name} (${item.size}/${item.color}) is no longer available.`)
@@ -165,26 +173,27 @@ export async function createOrder(data: {
                  console.error("Stock Reservation RPC Error:", reservationError)
                  throw new Error(reservationError.message)
             }
-        } catch (e: any) {
+        } catch (e: unknown) {
             // Rollback: Delete the failed order
+            const message = normalizeErrorMessage(e)
             console.error("Stock Reservation Failed [Fatal]:", {
                 orderId: order.id,
-                error: e.message,
+                error: message,
                 details: e
             })
             await adminSupabase.from('orders').delete().eq('id', order.id)
             
             // Show friendly error
             // Show friendly error
-            if (e.message?.includes('Insufficient stock')) {
+            if (message.includes('Insufficient stock')) {
                  throw new Error("We're sorry, one or more items in your cart just sold out!")
             }
-            if (e.message?.includes('function') && e.message?.includes('does not exist')) {
+            if (message.includes('function') && message.includes('does not exist')) {
                  throw new Error("System Error: Database migration missing (reserve_stock). Please contact support.")
             }
             // Retain original error for debugging if it's safe-ish, or just log it. 
             // Better to show the actual error during dev phase:
-            throw new Error(`Checkout Failed: ${e.message}`)
+            throw new Error(`Checkout Failed: ${message}`)
         }
 
         // Stock is now reserved. Proceed.
@@ -206,9 +215,9 @@ export async function createOrder(data: {
         // once the payment is verified (via Verify API, Callback, or Webhook).
         
         return order
-    } catch (e: any) {
+    } catch (e: unknown) {
         console.error("[createOrder] FATAL ERROR:", e)
-        throw e
+        throw new Error(normalizeErrorMessage(e))
     }
 }
 
