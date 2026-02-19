@@ -43,7 +43,7 @@ export function ConceptsClient({
   const filteredConcepts = concepts.filter(
     (c) =>
       c.title.toLowerCase().includes(search.toLowerCase()) ||
-      c.description?.toLowerCase().includes(search.toLowerCase())
+      c.description?.toLowerCase().includes(search.toLowerCase()),
   );
 
   const handleDelete = async () => {
@@ -52,7 +52,7 @@ export function ConceptsClient({
       await deleteConcept(deletingId);
       setConcepts(concepts.filter((c) => c.id !== deletingId));
       toast.success("Concept deleted");
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete concept");
     } finally {
       setDeletingId(null);
@@ -132,9 +132,9 @@ export function ConceptsClient({
               </p>
             </CardHeader>
             <CardContent className="pb-2">
-              <p className="text-sm text-muted-foreground line-clamp-2 min-h-[2.5rem]">
+              <div className="flex-1 space-y-1 p-2 rounded-lg bg-muted/30 min-h-10">
                 {concept.description || "No description provided."}
-              </p>
+              </div>
               <div className="mt-4 flex items-center gap-2">
                 <div className="h-2 flex-1 bg-secondary rounded-full overflow-hidden">
                   <div

@@ -34,8 +34,8 @@ export default function HealthPage() {
       const res = await fetch("/api/admin/health-check");
       const data = await res.json();
       setResults(data);
-    } catch (error) {
-      toast.error("Failed to run health check");
+    } catch {
+      toast.error("Failed to refresh health status");
     } finally {
       setLoading(false);
     }
@@ -45,7 +45,7 @@ export default function HealthPage() {
     checkHealth();
   }, []);
 
-  const StatusItem = ({ title, status, desc, icon: Icon, color }: any) => (
+  const StatusItem = ({ title, status, desc, icon: Icon }: any) => (
     <Card className="border-2">
       <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
         <CardTitle className="text-sm font-black uppercase tracking-widest">

@@ -16,23 +16,18 @@ import {
   Instagram,
   Twitter,
   Youtube,
-  User,
-  LogOut,
   LayoutGrid,
-  Zap,
   Phone,
   BookOpen,
-  ArrowRight,
   Tag,
   Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import FlashImage from "@/components/ui/flash-image";
 import { useState } from "react";
-import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/auth-context";
 import { ModeToggle } from "@/components/ui/mode-toggle";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import type { Variants } from "framer-motion";
 
 interface NavCategory {
@@ -130,7 +125,7 @@ export function HamburgerMenu({ categories }: HamburgerMenuProps) {
                   variants={menuVariants}
                 >
                   <Link
-                    href={`/shop?category=${cat.id}` as any}
+                    href={`/shop?category=${cat.id}`}
                     onClick={() => setOpen(false)}
                     className="flex items-center gap-4 py-3 group hover:pl-2 transition-all duration-300"
                   >
@@ -179,7 +174,7 @@ export function HamburgerMenu({ categories }: HamburgerMenuProps) {
                 {categories.map((cat) => (
                   <Link
                     key={cat.id}
-                    href={`/shop?category=${cat.id}` as any}
+                    href={`/shop?category=${cat.id}`}
                     onClick={() => setOpen(false)}
                     className="relative flex-none w-[160px] aspect-4/5 rounded-2xl overflow-hidden group/item snap-start"
                   >

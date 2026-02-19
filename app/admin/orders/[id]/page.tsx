@@ -142,10 +142,6 @@ export default function OrderDetailsPage() {
     }
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
-
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-20 print:p-0 print:pb-0 print:max-w-none">
       {/* Header */}
@@ -292,7 +288,7 @@ export default function OrderDetailsPage() {
                 <span className="text-muted-foreground">Subtotal</span>
                 <span>
                   {formatCurrency(
-                    order.subtotal || order.total - (order.shipping_fee || 0)
+                    order.subtotal || order.total - (order.shipping_fee || 0),
                   )}
                 </span>
               </div>
@@ -379,7 +375,7 @@ export default function OrderDetailsPage() {
                     onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                       if (e.key === "Enter") {
                         trackingMutation.mutate(
-                          (e.target as HTMLInputElement).value
+                          (e.target as HTMLInputElement).value,
                         );
                       }
                     }}
@@ -390,7 +386,7 @@ export default function OrderDetailsPage() {
                     className="h-9 px-3"
                     onClick={() => {
                       const input = document.getElementById(
-                        "tracking-number-input"
+                        "tracking-number-input",
                       ) as HTMLInputElement;
                       trackingMutation.mutate(input.value);
                     }}

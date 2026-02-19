@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { BrandGlow } from "@/components/storefront/brand-glow";
-import { motion } from "framer-motion";
 
 export const revalidate = 0;
 

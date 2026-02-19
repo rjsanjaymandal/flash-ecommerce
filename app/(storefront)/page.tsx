@@ -56,11 +56,6 @@ function GridSkeleton() {
   );
 }
 
-import {
-  getFeaturedProducts,
-  getProducts,
-  type Product,
-} from "@/lib/services/product-service";
 import { getSmartCarouselData } from "@/lib/data/get-smart-carousel";
 import {
   HeroCarousel,
@@ -71,7 +66,12 @@ import {
 export const revalidate = 900;
 
 export default async function Home() {
-  let categories: any[] = [];
+  let categories: {
+    id: string;
+    name: string;
+    slug: string;
+    image_url: string | null;
+  }[] = [];
   try {
     // Fetch more categories to ensure we find the target ones
     const allCategories = await getRootCategories(10);

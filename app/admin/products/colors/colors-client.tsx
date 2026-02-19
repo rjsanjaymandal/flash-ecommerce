@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Pencil, Trash2, Palette } from "lucide-react";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -18,7 +18,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -91,7 +90,7 @@ export default function ColorsClient({ initialColors }: ColorsClientProps) {
           setIsOpen(false);
         }
       }
-    } catch (error) {
+    } catch {
       toast.error("Something went wrong");
     } finally {
       setIsLoading(false);
@@ -109,8 +108,8 @@ export default function ColorsClient({ initialColors }: ColorsClientProps) {
         setColors(colors.filter((c) => c.id !== id));
         toast.success("Color deleted successfully");
       }
-    } catch (error) {
-      toast.error("Error deleting color");
+    } catch {
+      toast.error("Failed to delete color");
     }
   };
 

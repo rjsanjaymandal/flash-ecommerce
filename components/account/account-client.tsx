@@ -10,13 +10,11 @@ import {
   ArrowRight,
   Zap,
   ShoppingBag,
-  Heart,
   Award,
   MapPin,
   Clock,
 } from "lucide-react";
 import { SignOutButton } from "@/components/account/sign-out-button";
-import { FeaturedGrid } from "@/components/storefront/featured-grid";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -210,13 +208,13 @@ export function AccountClient({
                 {defaultAddress ? (
                   <div className="text-sm font-medium text-muted-foreground space-y-1">
                     <p className="font-bold text-foreground">
-                      {defaultAddress!.name}
+                      {defaultAddress.name}
                     </p>
                     <p>
-                      {defaultAddress!.city}, {defaultAddress!.state}
+                      {defaultAddress.city}, {defaultAddress.state}
                     </p>
                     <p className="text-xs font-mono bg-muted px-2 py-1 rounded-md w-fit mt-2">
-                      {defaultAddress!.pincode}
+                      {defaultAddress.pincode}
                     </p>
                   </div>
                 ) : (
@@ -231,7 +229,7 @@ export function AccountClient({
                       onClick={() =>
                         (
                           document.querySelector(
-                            '[value="addresses"]'
+                            '[value="addresses"]',
                           ) as HTMLElement
                         )?.click()
                       }

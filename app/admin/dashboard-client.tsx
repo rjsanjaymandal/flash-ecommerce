@@ -84,7 +84,6 @@ interface DashboardClientProps {
   recentOrders: DashboardOrder[];
   chartData: { name: string; total: number }[];
   categoryData: { name: string; value: number }[];
-  activity?: DashboardActivity[];
   topProducts?: DashboardProduct[];
   waitlistStats?: { count: number; potentialRevenue: number };
   auditLogs?: AuditLog[];
@@ -97,13 +96,13 @@ export function DashboardClient({
   recentOrders: initialOrders,
   chartData: initialChartData,
   categoryData: initialCategoryData,
-  activity: initialActivity = [],
   topProducts: initialTopProducts = [],
-  waitlistStats,
+  // waitlistStats, // Removed as per instruction
   auditLogs: initialAuditLogs = [],
   systemHealth,
   initialPipelineData = [],
 }: DashboardClientProps) {
+  const supabase = createClient();
   const [mounted, setMounted] = useState(false);
   const [range, setRange] = useState("30");
   const [loading, setLoading] = useState(false);
@@ -113,11 +112,8 @@ export function DashboardClient({
   const [categoryData, setCategoryData] = useState(initialCategoryData);
   const [pipelineData, setPipelineData] = useState(initialPipelineData);
   const [topProducts, setTopProducts] = useState(initialTopProducts);
-  const [activity, setActivity] = useState(initialActivity);
   const [auditLogs, setAuditLogs] = useState(initialAuditLogs);
   const [isRecovering, setIsRecovering] = useState(false);
-
-  const supabase = createClient();
 
   const handleRecovery = async () => {
     setIsRecovering(true);
@@ -128,7 +124,7 @@ export function DashboardClient({
       } else {
         toast.success(result.message);
       }
-    } catch (err) {
+    } catch {
       toast.error("Failed to run recovery");
     } finally {
       setIsRecovering(false);
@@ -309,6 +305,7 @@ export function DashboardClient({
     };
 
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [range, mounted]);
 
   useEffect(() => {
@@ -345,18 +342,6 @@ export function DashboardClient({
               created_at: newOrder.created_at || new Date().toISOString(),
             } as DashboardOrder,
             ...prev.slice(0, 4),
-          ]);
-
-          // Add to Activity Feed
-          setActivity((prev: DashboardActivity[]) => [
-            {
-              id: `act-${Date.now()}`,
-              type: "order",
-              title: `New Order: ₹${newOrder.total}`,
-              description: `Order #${newOrder.id.slice(0, 8)} received.`,
-              time: new Date().toISOString(),
-            },
-            ...prev.slice(0, 9),
           ]);
 
           toast.success(`New Order: ₹${newOrder.total}`);
@@ -784,7 +769,7 @@ export function DashboardClient({
                   Awaiting Data...
                 </p>
               ) : (
-                topProducts.map((product, _i) => (
+                topProducts.map((product) => (
                   <div
                     key={product.id}
                     className="flex items-center gap-3 group"

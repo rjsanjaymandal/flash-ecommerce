@@ -45,7 +45,6 @@ import {
   MoreHorizontal,
   Trash2,
   FlaskConical,
-  ChevronRight,
   CheckCircle2,
   Clock,
   Rocket,
@@ -88,8 +87,8 @@ export function ConceptsClient({ concepts }: { concepts: Concept[] }) {
       } else {
         toast.error(result.error || "Failed to delete concept");
       }
-    } catch (error) {
-      toast.error("An unexpected error occurred");
+    } catch {
+      toast.error("Failed to fetch concepts");
     } finally {
       setIsDeleting(false);
       setDeleteId(null);
@@ -109,7 +108,7 @@ export function ConceptsClient({ concepts }: { concepts: Concept[] }) {
       } else {
         toast.error(result.error || "Failed to update status", { id: toastId });
       }
-    } catch (error) {
+    } catch {
       toast.error("An unexpected error occurred", { id: toastId });
     }
   };

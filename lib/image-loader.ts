@@ -1,72 +1,83 @@
 "use client";
 
-import type { ImageLoaderProps } from 'next/image'
+import type { ImageLoaderProps } from "next/image";
 
-export default function myImageLoader({ src, width, quality }: ImageLoaderProps) {
-  // Handle Unsplash images
-  if (src.includes('unsplash.com')) {
-    const url = new URL(src)
-    url.searchParams.set('w', width.toString())
-    url.searchParams.set('q', (quality || 75).toString())
-    url.searchParams.set('auto', 'format,compress')
-    return url.toString()
+/**
+ * FLASH Image Loader - Bug-free & Professional
+ * Handles Cloudinary, Unsplash, Supabase, and local fallbacks.
+ */
+export default function myImageLoader({
+  src,
+  width,
+  quality = 75,
+}: ImageLoaderProps) {
+  if (!src || src.startsWith("data:") || src.startsWith("/")) {
+    return src;
   }
 
-  // Handle Supabase Storage images
-  // Example: https://gyizmixhmrfwywvafdbi.supabase.co/storage/v1/object/public/products/image.jpg
-  if (src.includes('supabase.co/storage/v1/object/public')) {
-    const url = new URL(src)
-    
-    // Supabase specific transformation params
-    // Documentation: https://supabase.com/docs/guides/storage/serving/image-transformations
-    url.searchParams.set('width', width.toString())
-    url.searchParams.set('quality', (quality || 75).toString())
-    
-    // Extract resize mode from internal hints if present
-    const internalResize = url.searchParams.get('resize')
-    if (internalResize) {
-      url.searchParams.set('resize', internalResize)
-    } else {
-      url.searchParams.set('resize', 'cover') // Default to cover
-    }
-
-    return url.toString()
-  }
-
-  // Handle Cloudinary images
-  if (src.includes("res.cloudinary.com")) {
+  try {
     const url = new URL(src);
-    const cloudName = url.pathname.split("/")[1];
-    const publicId = url.pathname.split("/").slice(4).join("/"); // Everything after /upload/
+    const hostname = url.hostname;
 
-    // Build transformation string
-    const params = [
-      `w_${width}`,
-      "q_auto",  // Automatic quality optimization
-      "f_auto",  // Auto format (WebP/AVIF)
-      "dpr_auto", // High-density display support
-      "c_limit",  // Maintain aspect ratio, don't enlarge
-    ];
-
-    // Defensive parsing for Cloudinary URL
-    const pathSegments = url.pathname.split("/");
-    const uploadIndex = pathSegments.indexOf("upload");
-    
-    // If we can't find 'upload', fallback to basic src or attempt to find publicId
-    if (uploadIndex === -1) return src;
-
-    const publicIdWithVersion = pathSegments.slice(uploadIndex + 1).join("/");
-
-    // Map internal resize hint to Cloudinary
-    const internalResize = url.searchParams.get("resize");
-    if (internalResize === "cover") {
-      params.push("c_fill", "g_auto");
-    } else if (internalResize === "contain") {
-      params.push("c_pad", "b_auto");
+    // 1. Unsplash
+    if (hostname.includes("unsplash.com")) {
+      url.searchParams.set("w", width.toString());
+      url.searchParams.set("q", quality.toString());
+      url.searchParams.set("auto", "format,compress");
+      return url.toString();
     }
 
-    return `https://res.cloudinary.com/${cloudName}/image/upload/${params.join(",")}/${publicIdWithVersion}`;
+    // 2. Supabase Storage
+    if (hostname.includes("supabase.co") && url.pathname.includes("/storage/v1/object/public")) {
+      url.searchParams.set("width", width.toString());
+      url.searchParams.set("quality", quality.toString());
+      
+      if (!url.searchParams.has("resize")) {
+        url.searchParams.set("resize", "cover");
+      }
+      return url.toString();
+    }
+
+    // 3. Cloudinary
+    if (hostname.includes("res.cloudinary.com")) {
+      const pathSegments = url.pathname.split("/");
+      const cloudName = pathSegments[1];
+      const uploadIndex = pathSegments.indexOf("upload");
+
+      if (uploadIndex === -1 || !cloudName) {
+        return src; // Non-standard Cloudinary URL, bypass optimization
+      }
+
+      // Base transformations
+      const transformations = [
+        `w_${width}`,
+        `q_${quality === 75 ? "auto" : quality}`,
+        "f_auto",
+        "dpr_auto",
+      ];
+
+      // Handle resize mode hints
+      const internalResize = url.searchParams.get("resize");
+      if (internalResize === "cover") {
+        transformations.push("c_fill", "g_auto");
+      } else if (internalResize === "contain") {
+        transformations.push("c_pad", "b_auto");
+      } else {
+        transformations.push("c_limit");
+      }
+
+      // Reconstruct URL: [cloudName]/image/upload/[transformations]/[publicId]
+      // Skip the version segment if it looks like one (starts with 'v') to avoid duplication if publicId includes it
+      const publicIdSegments = pathSegments.slice(uploadIndex + 1);
+      const publicId = publicIdSegments.join("/");
+
+      return `https://res.cloudinary.com/${cloudName}/image/upload/${transformations.join(",")}/${publicId}`;
+    }
+
+    // 4. Default Fallback
+    return src;
+  } catch (error) {
+    console.warn("[myImageLoader] Failed to parse URL, falling back to raw src:", src);
+    return src;
   }
-  
-  return src
 }

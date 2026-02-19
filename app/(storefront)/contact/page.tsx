@@ -1,5 +1,5 @@
 import { ContactForm } from "@/components/storefront/contact-form";
-import { MapPin, Phone, Mail, Clock } from "lucide-react";
+import { Mail, Phone, MapPin } from "lucide-react";
 
 export const metadata = {
   title: "Contact Us | FLASH | Get in Touch with Our Team",

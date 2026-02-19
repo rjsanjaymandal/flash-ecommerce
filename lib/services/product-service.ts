@@ -216,7 +216,16 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: SupabaseCli
 
         // Client-side mapping for computed fields
         const rawRows = ((data as unknown) as ProductWithStatsRow[] | null) ?? []
-        const processedData = rawRows.map(formatProduct)
+        const processedData = rawRows.map(p => {
+            const preorderCount = Array.isArray(p.preorders) ? (p.preorders[0]?.count ?? 0) : 0
+            return {
+                ...p,
+                average_rating: p.average_rating_calculated || 0,
+                review_count: p.review_count_calculated || 0,
+                preorder_count: preorderCount,
+                total_stock: p.total_stock ?? 0
+            } as Product
+        })
 
         return {
             data: processedData,
@@ -254,7 +263,6 @@ export async function getProducts(filter: ProductFilter = {}): Promise<Paginated
     )()
 }
 
-
 export async function getProductsSecure(filter: ProductFilter = {}, client: SupabaseClient<Database>): Promise<PaginatedResult<Product>> {
     return fetchProducts(filter, client)
 }
@@ -266,7 +274,7 @@ export async function getFeaturedProducts(): Promise<Product[]> {
                  const supabase = createStaticClient()
                   const { data } = await supabase
                     .from('products_with_stats')
-                    .select('id, name, slug, price, original_price, main_image_url, status, is_active, category_id, created_at, is_carousel_featured, total_stock, size_options, color_options, categories(name), average_rating:average_rating_calculated, review_count:review_count_calculated')
+                    .select('id, name, slug, price, original_price, main_image_url, gallery_image_urls, status, is_active, category_id, created_at, is_carousel_featured, total_stock, size_options, color_options, categories(name), average_rating:average_rating_calculated, review_count:review_count_calculated')
                     .eq('status', 'active')
                     .order('created_at', { ascending: false })
                     .limit(8)
@@ -338,8 +346,8 @@ function prepareProductData(data: ProductFormValues) {
     price: data.price ? Number(data.price) : 0,
     original_price: data.original_price ? Number(data.original_price) : null,
     category_id: data.category_id || null, // Critical: Prevent "" for UUID
-    main_image_url: data.main_image_url,
-    gallery_image_urls: data.gallery_image_urls || [],
+    main_image_url: Array.isArray(data.main_image_url) ? data.main_image_url[0] : (data.main_image_url || null),
+    gallery_image_urls: Array.isArray(data.gallery_image_urls) ? data.gallery_image_urls.map(url => typeof url === 'string' ? url : String(url)) : [],
     expression_tags: data.expression_tags || [],
     is_active: data.is_active ?? true,
     is_carousel_featured: data.is_carousel_featured ?? false,

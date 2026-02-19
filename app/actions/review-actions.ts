@@ -10,7 +10,6 @@ export async function submitReview(formData: FormData) {
   const productId = formData.get('productId') as string
   const rating = Number(formData.get('rating'))
   const comment = formData.get('comment') as string
-  const userName = formData.get('userName') as string
   const imageFiles = formData.getAll('images') as File[]
 
   // Get current user

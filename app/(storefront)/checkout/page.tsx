@@ -250,10 +250,15 @@ export default function CheckoutPage() {
         });
         toast.success(`Coupon applied: ${result.message}`);
       } else {
+        setAppliedCoupon({
+          code: couponCode.toUpperCase(),
+          type: result.discount_type!,
+          value: result.value!,
+        });
         setAppliedCoupon(null);
         toast.error(result.message);
       }
-    } catch (err) {
+    } catch {
       toast.error("Failed to validate coupon");
     } finally {
       setIsCheckingCoupon(false);

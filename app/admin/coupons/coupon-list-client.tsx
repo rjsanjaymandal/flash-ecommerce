@@ -20,15 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
-  MoreHorizontal,
-  Plus,
-  Search,
-  Loader2,
-  Ticket,
-  Calendar,
-  AlertCircle,
-} from "lucide-react";
+import { MoreHorizontal, Plus, Search, Ticket, Calendar } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { Coupon } from "@/lib/services/admin-coupon-service";
 import { deleteCoupon, updateCoupon } from "@/app/actions/coupon-actions";
@@ -40,7 +32,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 
 interface CouponListClientProps {
@@ -57,7 +48,6 @@ export function CouponListClient({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState(
     searchParams.get("search") || "",
   );
@@ -80,7 +70,6 @@ export function CouponListClient({
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this coupon?")) return;
 
-    setIsLoading(true);
     try {
       const res = await deleteCoupon(id);
       if (res.error) {
@@ -89,15 +78,12 @@ export function CouponListClient({
         toast.success("Coupon deleted successfully");
         router.refresh();
       }
-    } catch (error) {
+    } catch {
       toast.error("An error occurred");
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const handleToggleActive = async (coupon: Coupon) => {
-    setIsLoading(true);
     try {
       // We only need to send the fields required by UpdateCoupon,
       // but the service takes the FormValues.
@@ -119,10 +105,8 @@ export function CouponListClient({
         toast.success(`Coupon ${!coupon.active ? "activated" : "deactivated"}`);
         router.refresh();
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to toggle status");
-    } finally {
-      setIsLoading(false);
     }
   };
 

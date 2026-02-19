@@ -83,7 +83,7 @@ export default function EditProductPageClient({
         } else {
           toast.error("Failed to update product: " + result.error);
         }
-      } catch (error: any) {
+      } catch {
         toast.error("System error occurred. Please check logs.");
       }
     });

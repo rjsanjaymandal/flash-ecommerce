@@ -12,11 +12,10 @@ import {
 import { Button } from "@/components/ui/button";
 import {
   Search,
-  Filter,
-  MoreHorizontal,
-  Loader2,
-  Mail,
   User,
+  Mail,
+  MoreHorizontal,
+  Filter,
   ShoppingBag,
 } from "lucide-react";
 import Link from "next/link";

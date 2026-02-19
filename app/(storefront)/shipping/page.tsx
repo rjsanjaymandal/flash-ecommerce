@@ -1,4 +1,4 @@
-import { Truck, Globe, Clock, ShieldCheck } from "lucide-react";
+import { Truck, ShieldCheck } from "lucide-react";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -31,7 +31,7 @@ export default function ShippingPage() {
         </div>
         <div className="p-6 rounded-2xl border bg-muted/20 flex flex-col items-start gap-4">
           <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-            <Clock className="h-5 w-5" />
+            <ShieldCheck className="h-5 w-5" />
           </div>
           <div>
             <h3 className="font-semibold text-lg">Same-Day Processing</h3>

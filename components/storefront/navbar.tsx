@@ -2,14 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  ShoppingBag,
-  Menu,
-  Heart,
-  ChevronDown,
-  Search,
-  LogOut,
-} from "lucide-react";
+import { ShoppingBag, Heart, ChevronDown, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import FlashImage from "@/components/ui/flash-image";
@@ -20,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
-import { useSearchStore } from "@/store/use-search-store";
 const CategoryDropdown = dynamic(
   () => import("./category-dropdown").then((mod) => mod.CategoryDropdown),
   { ssr: false },
@@ -41,7 +33,6 @@ const NotificationBell = dynamic(
   { ssr: false },
 );
 import { motion, AnimatePresence } from "framer-motion";
-import { useScrollDirection } from "@/hooks/use-scroll-direction";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ModeToggle } from "@/components/ui/mode-toggle";
 
@@ -63,7 +54,7 @@ export function StorefrontNavbar() {
   const cartCount = useCartStore(selectCartCount);
   const setIsCartOpen = useCartStore((state) => state.setIsCartOpen);
   const wishlistCount = useWishlistStore((state) => state.items.length);
-  const { user, profile, isAdmin, signOut } = useAuth();
+  const { user, profile, isAdmin } = useAuth();
 
   const [mounted, setMounted] = useState(false);
   // Local Search State for Overlay
@@ -97,13 +88,8 @@ export function StorefrontNavbar() {
     },
   });
 
-  // Dynamic Nav Links
-  const navLinks: NavLink[] = categories.map((cat: NavCategory) => ({
-    href: `/shop?category=${cat.id}`,
-    label: cat.name,
-    children: cat.children,
-    category: cat,
-  }));
+  // Dynamic Nav Links (kept for logic reference if needed later, but commented out if truly unused,
+  // however the lint says it is assigned but never used. I will remove it.)
 
   return (
     <>

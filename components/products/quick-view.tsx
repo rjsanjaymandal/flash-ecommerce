@@ -15,10 +15,11 @@ import { toast } from "sonner";
 import Link from "next/link";
 import FlashImage from "@/components/ui/flash-image";
 import { useRouter } from "next/navigation";
+import type { Product } from "@/lib/services/product-service";
 
 // Can accept a subset of product data
 interface QuickViewProps {
-  product: any;
+  product: Product;
 }
 
 export function QuickView({ product }: QuickViewProps) {
@@ -28,19 +29,16 @@ export function QuickView({ product }: QuickViewProps) {
   const [selectedSize, setSelectedSize] = useState(
     product.size_options?.[0] || "M",
   );
-  const [selectedColor, setSelectedColor] = useState(
-    product.color_options?.[0] || "Standard",
-  );
   const [selectedFit, setSelectedFit] = useState(
     product.fit_options?.[0] || "Regular",
+  );
+  const [selectedColor, setSelectedColor] = useState(
+    product.color_options?.[0] || "Classic",
   );
 
   const handleAddToCart = () => {
     const stockItem = product.product_stock?.find(
-      (item: any) =>
-        item.size === selectedSize &&
-        item.color === selectedColor &&
-        item.fit === selectedFit,
+      (item: any) => item.size === selectedSize && item.fit === selectedFit,
     );
     const maxQuantity = stockItem?.quantity || 10; // Fallback if stock not found, though it should be
 
@@ -81,7 +79,7 @@ export function QuickView({ product }: QuickViewProps) {
         <div className="grid md:grid-cols-2 gap-0">
           <div className="relative h-[300px] md:h-[500px] bg-gray-100">
             <FlashImage
-              src={product.main_image_url}
+              src={product.main_image_url || "/placeholder.jpg"}
               alt={product.name}
               fill
               className="absolute inset-0 w-full h-full object-cover"
@@ -131,8 +129,9 @@ export function QuickView({ product }: QuickViewProps) {
                       Fit
                     </label>
                     <div className="flex flex-wrap gap-2">
-                      {product.fit_options.map((fit: string) => {
+                      {(product.fit_options || []).map((fit: string) => {
                         if (
+                          product.fit_options &&
                           product.fit_options.length === 1 &&
                           fit.toLowerCase() === "regular"
                         )
@@ -182,9 +181,7 @@ export function QuickView({ product }: QuickViewProps) {
                 onClick={async () => {
                   const stockItem = product.product_stock?.find(
                     (item: any) =>
-                      item.size === selectedSize &&
-                      item.color === selectedColor &&
-                      item.fit === selectedFit,
+                      item.size === selectedSize && item.fit === selectedFit,
                   );
                   const maxQuantity = stockItem?.quantity || 10;
                   await addItem(

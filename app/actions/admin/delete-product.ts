@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient, createStaticClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath, revalidateTag } from 'next/cache'
 const CACHE_PROFILE = 'max'
@@ -22,7 +22,7 @@ function extractStoragePath(url: string | null): string | null {
             return pathParts[1] // Return everything after bucket name
         }
         return null
-    } catch (e) {
+    } catch {
         // If it's relative or invalid
         return null
     }

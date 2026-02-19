@@ -5,14 +5,14 @@ import { createClient } from '@/lib/supabase/server'
 import type { Tables } from '@/types/supabase'
 import { PaginatedResult } from './product-service'
 
-export type Order = Tables<'orders'> & { profiles?: { name: string } | null }
+export type Order = Tables<"orders"> & { profiles?: { name: string } | null };
 
 export type OrderFilter = {
-  status?: string
-  limit?: number
-  page?: number
-  search?: string
-}
+  status?: string;
+  limit?: number;
+  page?: number;
+  search?: string;
+};
 
 export async function getOrders(filter: OrderFilter = {}): Promise<PaginatedResult<Order>> {
   const supabase = await createClient()

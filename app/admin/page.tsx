@@ -21,7 +21,6 @@ export default async function AdminDashboard() {
     chartData,
     categoryData,
     { data: recentOrders },
-    activity,
     topProducts,
     waitlistStats,
     auditLogs,
@@ -32,7 +31,6 @@ export default async function AdminDashboard() {
     getMonthlyRevenue(),
     getSalesByCategory(),
     getOrders({ limit: 5 }),
-    getRecentActivity(8),
     getTopProducts(5),
     getWaitlistStats(),
     import("@/lib/services/audit-service").then((mod) =>
@@ -48,7 +46,6 @@ export default async function AdminDashboard() {
       chartData={chartData}
       categoryData={categoryData}
       recentOrders={recentOrders}
-      activity={activity}
       topProducts={(topProducts as any[]).map((product) => ({
         id: product.id,
         name: product.name,

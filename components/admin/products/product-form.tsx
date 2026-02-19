@@ -5,8 +5,6 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { productSchema, ProductFormValues } from "@/lib/validations/product";
 import { Category } from "@/types/store-types";
-import { toast } from "sonner";
-import { ContextualSaveBar } from "./form/contextual-save-bar";
 import { ProductHeader } from "./form/product-header";
 import { ProductBasicInfo } from "./form/product-basic-info";
 import { ProductMedia } from "./form/product-media";
@@ -30,7 +28,6 @@ export function ProductForm({
   initialData,
   categories,
   colorOptions,
-  colorMap,
   isLoading,
   onSubmit,
   onCancel,
@@ -64,7 +61,7 @@ export function ProductForm({
   });
 
   const { reset, watch, handleSubmit } = form;
-  const [isUploading, setIsUploading] = useState(false);
+  const isUploading = false; // Kept as constant if needed for sub-components, but logic to set it removed as it was unused
 
   // 2. Handle Initial Data Updates
   useEffect(() => {
@@ -103,11 +100,11 @@ export function ProductForm({
       const draft = localStorage.getItem("product-form-draft");
       if (draft) {
         try {
-          const parsed = JSON.parse(draft);
+          JSON.parse(draft);
           // confirm before restoring? or just silent restore?
           // Silent restore is risky if schema changed. Let's just log for now or simple toast.
           // For now, let's skip auto-restore to avoid conflicts during this migration phase.
-        } catch (e) {}
+        } catch (_) {}
       }
     }
   }, [initialData]);

@@ -57,7 +57,7 @@ export async function subscribeToNewsletter(formData: FormData) {
       revalidatePath('/')
       return { message: 'Thanks for subscribing! Check your inbox ⚡' }
 
-  } catch (err) {
+  } catch {
       return { error: 'Something went wrong.' }
   }
 }

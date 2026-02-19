@@ -51,11 +51,9 @@ const WaitlistDialog = dynamic(
 import type { Product } from "@/lib/services/product-service";
 import { checkPreorderStatus, togglePreorder } from "@/app/actions/preorder";
 import { prefetchProductAction } from "@/app/actions/prefetch-product";
-import { useRealTimeHype } from "@/hooks/use-real-time-stock";
 
 interface ProductCardProps {
   product: Product;
-  showRating?: boolean;
   priority?: boolean;
   onWaitlistChange?: (isJoined: boolean) => void;
 }
@@ -63,14 +61,13 @@ interface ProductCardProps {
 
 export function ProductCard({
   product,
-  showRating = true,
   priority = false,
   onWaitlistChange,
 }: ProductCardProps) {
   // Use optimized images if available, starting with thumbnail for grid, or mobile for slightly larger cards
   // Fallback to main_image_url
   const [isNew, setIsNew] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
+  // isHovered was unused
 
   // Memoize initial stock to prevent unnecessary re-renders
   const initialStock = useMemo(() => {
@@ -129,8 +126,7 @@ export function ProductCard({
   const isOutOfStock = totalStock === 0;
 
   // Optional: Get rating from product if passed (e.g. from a joined aggregate)
-  const rating = product.average_rating || 0;
-  const reviewCount = product.review_count || 0;
+  // rating and reviewCount were unused in this layout
 
   // Check waitlist status on mount if OOS
   const handleWishlistClick = (e: React.MouseEvent) => {
@@ -213,7 +209,7 @@ export function ProductCard({
       );
 
       router.push("/checkout");
-    } catch (error) {
+    } catch {
       toast.error("Failed to proceed to checkout");
     } finally {
       setIsAddingToCart(false);
@@ -257,7 +253,7 @@ export function ProductCard({
       });
       toast.success("Added to Cart");
       setIsCartOpen(true);
-    } catch (error) {
+    } catch {
       // Error handled by store
     } finally {
       setIsAddingToCart(false);
@@ -334,7 +330,7 @@ export function ProductCard({
           // Success confirmed
           localStorage.removeItem(`waitlist_${product.id}`);
         }
-      } catch (error) {
+      } catch {
         setIsOnWaitlist(previousState);
         toast.dismiss();
         toast.error("Something went wrong.");
@@ -367,7 +363,7 @@ export function ProductCard({
         if (result.status === "added")
           localStorage.setItem(`waitlist_${product.id}`, "true");
       }
-    } catch (error) {
+    } catch {
       toast.error("Something went wrong.");
     } finally {
       setIsLoadingWaitlist(false);
@@ -392,7 +388,7 @@ export function ProductCard({
         localStorage.setItem(`waitlist_${product.id}`, "true");
         if (email) localStorage.setItem("user_email_preference", email);
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to join waitlist.");
     } finally {
       setIsLoadingWaitlist(false);
@@ -442,7 +438,6 @@ export function ProductCard({
   }, [product.created_at]);
 
   const handleMouseEnter = () => {
-    setIsHovered(true);
     if (product.slug) {
       // Predictively warm the cache
       prefetchProductAction(product.slug);
@@ -455,7 +450,6 @@ export function ProductCard({
         whileHover={{ y: -4 }}
         className="group relative flex flex-col gap-2"
         onMouseEnter={handleMouseEnter}
-        onMouseLeave={() => setIsHovered(false)}
       >
         {/* Image Container */}
         <Link

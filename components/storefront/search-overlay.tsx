@@ -12,11 +12,10 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import FlashImage from "@/components/ui/flash-image";
-import { formatCurrency, cn } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
 
 // Inline Debounce Hook
 function useDebounce<T>(value: T, delay: number): T {
@@ -81,7 +80,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
     return () => {
       document.body.style.overflow = "unset";
     };
-  }, [isOpen]);
+  }, [isOpen, supabase]);
 
   // Execute Search
   useEffect(() => {
@@ -113,16 +112,15 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
     };
 
     search();
-  }, [debouncedQuery]);
+  }, [debouncedQuery, supabase]);
 
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-3xl flex flex-col cursor-pointer"
+          className="fixed inset-0 z-100 bg-background/95 backdrop-blur-3xl flex flex-col cursor-pointer"
           onClick={onClose}
         >
           {/* Header */}
@@ -188,7 +186,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                               className="object-cover transition-transform duration-500 group-hover:scale-110"
                             />
                           )}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
+                          <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
                           <div className="absolute bottom-0 left-0 p-3 w-full">
                             <p className="text-white font-bold text-sm truncate">
                               {product.name}

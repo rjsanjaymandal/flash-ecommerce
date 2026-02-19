@@ -32,7 +32,7 @@ export function OrderPaymentLogs({ orderId }: { orderId: string }) {
 
   useEffect(() => {
     fetchLogs();
-  }, [orderId]);
+  }, [orderId, fetchLogs]);
 
   const handleSync = async () => {
     setIsSyncing(true);
@@ -45,8 +45,8 @@ export function OrderPaymentLogs({ orderId }: { orderId: string }) {
       } else {
         toast.error(result.message);
       }
-    } catch (e) {
-      toast.error("Sync failed");
+    } catch {
+      toast.error("Failed to fetch payment logs");
     } finally {
       setIsSyncing(false);
     }
@@ -108,7 +108,7 @@ export function OrderPaymentLogs({ orderId }: { orderId: string }) {
                           "font-medium",
                           log.severity === "ERROR"
                             ? "text-red-700 dark:text-red-400"
-                            : "text-foreground"
+                            : "text-foreground",
                         )}
                       >
                         {log.message}

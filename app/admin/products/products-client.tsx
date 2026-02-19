@@ -73,7 +73,6 @@ import { formatCurrency, calculateDiscount, cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
-import { useSearchParams } from "next/navigation";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ProductFilters } from "@/components/admin/products/product-filters";
 import { Download } from "lucide-react";
@@ -83,6 +82,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useProductSearch } from "@/hooks/use-product-search";
+import { useProductSelection } from "@/hooks/use-product-selection";
 
 interface AdminProduct {
   id: string;
@@ -125,7 +125,8 @@ export function ProductsClient({
   meta: { total: number; page: number; limit: number; totalPages: number };
 }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const { selectedIds, toggleSelect, toggleSelectAll, setSelectedIds } =
+    useProductSelection();
   const [searchQuery, setSearchQuery] = useState("");
   // Use hook for client-side fuzzy search on the INITIAL products (current page)
   const { search } = useProductSearch({ products: initialProducts });
@@ -134,7 +135,7 @@ export function ProductsClient({
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   // Bulk Selection State
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  // const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set()); // Replaced by useProductSelection
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
 
   // Waitlist Modal State
@@ -147,7 +148,7 @@ export function ProductsClient({
   // Clear selection on page change or search
   useEffect(() => {
     setSelectedIds(new Set());
-  }, [meta.page, searchQuery]);
+  }, [meta.page, searchQuery, setSelectedIds]);
 
   // NOTE: Server-side search logic removed/disabled in favor of client-side fuzzy search request.
   // If you wanted HYBRID (Client first, then Server), we'd keep this.
@@ -189,20 +190,14 @@ export function ProductsClient({
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
       const allIds = initialProducts.map((p) => p.id);
-      setSelectedIds(new Set(allIds));
+      toggleSelectAll(allIds);
     } else {
       setSelectedIds(new Set());
     }
   };
 
   const handleSelectOne = (id: string, checked: boolean) => {
-    const newSelected = new Set(selectedIds);
-    if (checked) {
-      newSelected.add(id);
-    } else {
-      newSelected.delete(id);
-    }
-    setSelectedIds(newSelected);
+    toggleSelect(id, checked);
   };
 
   const handleBulkDelete = async () => {
@@ -212,7 +207,7 @@ export function ProductsClient({
       toast.success(`${selectedIds.size} products deleted`);
       setSelectedIds(new Set());
       router.refresh();
-    } catch (_err) {
+    } catch {
       toast.error("Bulk deletion failed");
     } finally {
       setIsBulkDeleting(false);
@@ -225,7 +220,7 @@ export function ProductsClient({
       toast.success(`${selectedIds.size} products updated`);
       setSelectedIds(new Set());
       router.refresh();
-    } catch (_err) {
+    } catch {
       toast.error("Bulk update failed");
     }
   };
@@ -236,7 +231,7 @@ export function ProductsClient({
       toast.success(`${selectedIds.size} products re-categorized`);
       setSelectedIds(new Set());
       router.refresh();
-    } catch (_err) {
+    } catch {
       toast.error("Bulk category update failed");
     }
   };
@@ -255,8 +250,8 @@ export function ProductsClient({
         { id: toastId },
       );
       router.refresh();
-    } catch (error) {
-      toast.error("Failed to update Carousel status", { id: toastId });
+    } catch {
+      toast.error("An error occurred");
     }
   };
 
@@ -271,7 +266,7 @@ export function ProductsClient({
       } else {
         setWaitlistUsers(res.data || []);
       }
-    } catch (_error) {
+    } catch {
       toast.error("Failed to load waitlist");
     } finally {
       setIsWaitlistLoading(false);
@@ -663,16 +658,6 @@ export function ProductsClient({
                 const stockStatus = getStockStatus(product);
                 const isSelected = selectedIds.has(product.id);
                 const preorderCount = product.preorder_count || 0;
-
-                // Stock Breakdown String
-                const stockBreakdown = product.product_stock?.length
-                  ? product.product_stock
-                      .map(
-                        (s: { size: string | null; quantity: number }) =>
-                          `${s.size || "N/A"}: ${s.quantity}`,
-                      )
-                      .join(", ")
-                  : "No stock records";
 
                 return (
                   <TableRow

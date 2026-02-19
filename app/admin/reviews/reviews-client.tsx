@@ -46,10 +46,8 @@ import {
   MoreHorizontal,
   Trash2,
   Star,
-  MessageSquare,
   BadgeCheck,
   Reply,
-  ZoomIn,
   CheckCircle,
   XCircle,
 } from "lucide-react";
@@ -132,7 +130,7 @@ export function ReviewsClient({
       await replyToReview(selectedReview.id, replyText);
       toast.success("Reply saved");
       router.refresh();
-    } catch (err: any) {
+    } catch {
       toast.error("Failed to save reply");
       router.refresh(); // Revert on failure
     }
@@ -150,7 +148,7 @@ export function ReviewsClient({
       await toggleReviewFeature(review.id, newState);
       toast.success(newState ? "Marked as Featured" : "Removed from Featured");
       router.refresh();
-    } catch (err: any) {
+    } catch {
       toast.error("Failed to update");
       router.refresh();
     }
@@ -168,7 +166,7 @@ export function ReviewsClient({
       await approveReview(review.id, newState);
       toast.success(newState ? "Review approved" : "Review unapproved");
       router.refresh();
-    } catch (err: any) {
+    } catch {
       toast.error("Failed to update");
       router.refresh();
     }
@@ -417,7 +415,7 @@ export function ReviewsClient({
       {/* Lightbox */}
       {lightboxOpen && (
         <div
-          className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 animate-in fade-in"
+          className="fixed inset-0 z-100 bg-black/90 flex items-center justify-center p-4 animate-in fade-in"
           onClick={() => setLightboxOpen(false)}
         >
           <div className="relative w-full h-[90vh]">

@@ -10,14 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatCurrency, cn } from "@/lib/utils";
-import {
-  Plus,
-  Search,
-  Filter,
-  ArrowUpDown,
-  FileSpreadsheet,
-  ChevronDown,
-} from "lucide-react";
+import { Search, FileSpreadsheet, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -40,17 +33,15 @@ interface OrderMeta {
   total: number;
   page: number;
   limit: number;
-  [key: string]: any;
 }
 
 export function OrdersClient({
   initialOrders,
   meta,
-  status,
 }: {
   initialOrders: Order[];
   meta: OrderMeta;
-  status: string;
+  status?: string;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -126,9 +117,9 @@ export function OrdersClient({
           order.status,
           order.total,
           new Date(
-            order.created_at || new Date().toISOString()
+            order.created_at || new Date().toISOString(),
           ).toLocaleDateString("en-US"),
-        ].join(",")
+        ].join(","),
       ),
     ].join("\n");
 
@@ -138,7 +129,7 @@ export function OrdersClient({
     link.setAttribute("href", url);
     link.setAttribute(
       "download",
-      `orders_export_${new Date().toISOString().split("T")[0]}.csv`
+      `orders_export_${new Date().toISOString().split("T")[0]}.csv`,
     ); // Updated filename
     link.style.visibility = "hidden";
     document.body.appendChild(link);
@@ -182,7 +173,7 @@ export function OrdersClient({
             "cancelled",
           ].map(
             (
-              tab // Added 'cancelled' to tabs
+              tab, // Added 'cancelled' to tabs
             ) => (
               <button
                 key={tab}
@@ -197,12 +188,12 @@ export function OrdersClient({
                   "px-4 py-1.5 rounded-md text-sm font-medium transition-all",
                   currentStatus === tab || (tab === "all" && !currentStatus)
                     ? "bg-white text-foreground shadow-sm ring-1 ring-border"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
                 )}
               >
                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
               </button>
-            )
+            ),
           )}
         </div>
 
@@ -271,7 +262,7 @@ export function OrdersClient({
                   <TableCell className="text-muted-foreground">
                     {mounted
                       ? new Date(
-                          order.created_at || new Date().toISOString()
+                          order.created_at || new Date().toISOString(),
                         ).toLocaleDateString("en-US")
                       : "-"}
                   </TableCell>
@@ -285,7 +276,7 @@ export function OrdersClient({
                           <div className="cursor-pointer hover:opacity-80 transition-opacity inline-flex">
                             <Badge
                               variant={getStatusColor(
-                                order.status || "pending"
+                                order.status || "pending",
                               )}
                               className={cn(
                                 "rounded-md px-2 py-0.5 font-medium text-[10px] uppercase tracking-wider border",
@@ -300,7 +291,7 @@ export function OrdersClient({
                                 order.status === "confirmed_partial" &&
                                   "bg-orange-50 text-orange-700 border-orange-200", // Partial = Orange
                                 order.status === "cancelled" &&
-                                  "bg-red-50 text-red-700 border-red-200" // Cancelled = Red
+                                  "bg-red-50 text-red-700 border-red-200", // Cancelled = Red
                               )}
                             >
                               {order.status}
@@ -326,7 +317,7 @@ export function OrdersClient({
                               onClick={() => handleStatusUpdate(order.id, s)}
                               className={cn(
                                 "text-xs cursor-pointer",
-                                order.status === s && "bg-accent"
+                                order.status === s && "bg-accent",
                               )}
                             >
                               {s.charAt(0).toUpperCase() + s.slice(1)}

@@ -14,7 +14,6 @@ import { Button } from "@/components/ui/button";
 import {
   Trash2,
   Search,
-  ArrowUpDown,
   Clock,
   ExternalLink,
   Mail,
@@ -29,10 +28,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { toast } from "sonner";
-import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { cn, formatCurrency } from "@/lib/utils";
-import { notifyWaitlistUser, notifyAllWaitlist } from "@/app/actions/notify";
+import { notifyWaitlistUser } from "@/app/actions/notify";
 import FlashImage from "@/components/ui/flash-image";
 
 export function WaitlistClient({
@@ -50,7 +48,6 @@ export function WaitlistClient({
   const [isMounted, setIsMounted] = useState(false);
   const [origin, setOrigin] = useState("");
   const router = useRouter();
-  const supabase = createClient();
 
   useEffect(() => {
     setIsMounted(true);
@@ -139,8 +136,8 @@ export function WaitlistClient({
       setPreorders(preorders.filter((p) => p.id !== id));
       toast.success("Removed from waitlist");
       router.refresh();
-    } catch (error: any) {
-      toast.error(error.message || "Failed to delete");
+    } catch (error: unknown) {
+      toast.error((error as Error).message || "Failed to delete");
     } finally {
       setIsDeleting(null);
     }
@@ -158,8 +155,8 @@ export function WaitlistClient({
         toast.success("Email sent successfully");
         router.refresh();
       }
-    } catch (error) {
-      toast.error("Failed to notify");
+    } catch {
+      toast.error("An error occurred");
     } finally {
       setIsNotifying(null);
     }

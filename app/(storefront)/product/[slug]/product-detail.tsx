@@ -3,12 +3,8 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/store/use-cart-store";
-import {
-  useWishlistStore,
-  selectIsInWishlist,
-} from "@/store/use-wishlist-store";
 import { cn, formatCurrency, calculateDiscount } from "@/lib/utils";
-import { Phone, Plus, Share2, Star, Check } from "lucide-react"; // Icons for services
+import { Phone, Plus, Share2, Star } from "lucide-react"; // Icons for services
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
@@ -89,16 +85,11 @@ export function ProductDetailClient({
 }: ProductDetailProps) {
   const router = useRouter();
   const addToCart = useCartStore((state) => state.addItem);
-  const addItem = useWishlistStore((state) => state.addItem);
-  const removeItem = useWishlistStore((state) => state.removeItem);
-  const isWishlisted = useWishlistStore((state) =>
-    selectIsInWishlist(state, product.id),
-  );
 
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [selectedColor, setSelectedColor] = useState<string>("");
   const [selectedFit, setSelectedFit] = useState<string>("Regular");
-  const [quantity, setQuantity] = useState(1);
+  const [quantity] = useState(1);
 
   // Waitlist State
   const [isOnWaitlist, setIsOnWaitlist] = useState(false);
@@ -212,8 +203,7 @@ export function ProductDetailClient({
       return product.fit_options;
     }
 
-    // Derived from stock
-    const fits = realTimeStock?.map((s: any) => s.fit).filter(Boolean) || [];
+    const fits = realTimeStock?.map((s) => s.fit).filter(Boolean) || [];
     const uniqueFits = Array.from(new Set(fits));
 
     // If the only available fit is "Regular" (and it wasn't explicit), hide it.
@@ -253,8 +243,7 @@ export function ProductDetailClient({
   // Stock Logic (Normalized)
   const stockMap = useMemo(() => {
     const map: Record<string, number> = {};
-    if (!realTimeStock) return map;
-    realTimeStock.forEach((item: any) => {
+    realTimeStock.forEach((item) => {
       // Use normalized color for the key to merge duplicates
       const key = `${item.size}-${normalizeColor(item.color || "")}-${item.fit || "Regular"}`;
       map[key] = (map[key] || 0) + item.quantity;
@@ -321,7 +310,7 @@ export function ProductDetailClient({
         if (result.status === "added")
           localStorage.setItem(`waitlist_${product.id}`, "true");
       }
-    } catch (error) {
+    } catch {
       toast.error("Something went wrong.");
     } finally {
       setIsLoadingWaitlist(false);
@@ -341,7 +330,7 @@ export function ProductDetailClient({
       } else {
         localStorage.removeItem(`waitlist_${product.id}`);
       }
-    } catch (error) {
+    } catch {
       setIsOnWaitlist(previousState);
       toast.dismiss();
       toast.error("Something went wrong.");
@@ -366,7 +355,7 @@ export function ProductDetailClient({
         localStorage.setItem(`waitlist_${product.id}`, "true");
         if (email) localStorage.setItem("user_email_preference", email);
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to join waitlist.");
     } finally {
       setIsLoadingWaitlist(false);
@@ -405,8 +394,8 @@ export function ProductDetailClient({
         options,
       );
       return true;
-    } catch (error) {
-      toast.error("Failed to add");
+    } catch {
+      toast.error("Failed to update cart");
       return false;
     }
   };

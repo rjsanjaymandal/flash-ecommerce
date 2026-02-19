@@ -5,7 +5,6 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { BrandGlow } from "@/components/storefront/brand-glow";
-import { motion } from "framer-motion";
 
 const faqData = [
   {

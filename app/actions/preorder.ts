@@ -11,7 +11,7 @@ export async function togglePreorder(productId: string, email?: string, guestId?
   const supabase = await createClient()
 
   // 1. Get current user
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser();
 
   // 2. Determine Identifier & Validate
   const normalizedEmail = email?.trim().toLowerCase()

@@ -65,8 +65,8 @@ export function ConceptForm({ onSuccess }: ConceptFormProps) {
       } else {
         toast.error(result.error || "Failed to create concept");
       }
-    } catch (error) {
-      toast.error("An unexpected error occurred");
+    } catch {
+      toast.error("Failed to save concept");
     } finally {
       setIsSubmitting(false);
     }

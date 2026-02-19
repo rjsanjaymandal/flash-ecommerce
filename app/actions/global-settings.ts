@@ -25,7 +25,7 @@ export async function getGlobalSettings(key: string) {
     }
 
     return data?.value
-  } catch (err) {
+  } catch {
       // Network fetch errors (timeouts) end up here
       console.warn(`[getGlobalSettings] Network error fetching ${key} (Timeout/Offline)`)
       
