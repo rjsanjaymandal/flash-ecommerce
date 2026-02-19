@@ -151,32 +151,102 @@ export function DashboardClient({
             (supabase.rpc as any)("get_analytics_summary", {
               start_date: startDate.toISOString(),
               end_date: endDate.toISOString(),
+            }).then((res: any) => {
+              if (res.error)
+                console.error("Error in get_analytics_summary:", res.error);
+              return res;
             }),
             (supabase.rpc as any)("get_sales_over_time", {
               start_date: startDate.toISOString(),
               end_date: endDate.toISOString(),
-              interval_val: parseInt(range) <= 2 ? "hour" : "day",
+              interval: parseInt(range) <= 2 ? "hour" : "day",
+            }).then((res: any) => {
+              if (res.error)
+                console.error("Error in get_sales_over_time:", res.error);
+              return res;
             }),
             (supabase.rpc as any)("get_sales_by_category", {
               start_date: startDate.toISOString(),
               end_date: endDate.toISOString(),
+            }).then((res: any) => {
+              if (res.error)
+                console.error("Error in get_sales_by_category:", res.error);
+              return res;
             }),
             (supabase.rpc as any)("get_top_products_by_revenue", {
               start_date: startDate.toISOString(),
               end_date: endDate.toISOString(),
               limit_val: 5,
+            }).then((res: any) => {
+              if (res.error)
+                console.error(
+                  "Error in get_top_products_by_revenue:",
+                  res.error,
+                );
+              return res;
             }),
             (supabase.rpc as any)("get_order_status_distribution", {
               start_date: startDate.toISOString(),
               end_date: endDate.toISOString(),
+            }).then((res: any) => {
+              if (res.error)
+                console.error(
+                  "Error in get_order_status_distribution:",
+                  res.error,
+                );
+              return res;
             }),
           ]);
 
-        if (summaryRes.error) throw summaryRes.error;
-        if (salesRes.error) throw salesRes.error;
-        if (categoriesRes.error) throw categoriesRes.error;
-        if (topRes.error) throw topRes.error;
-        if (pipelineRes.error) throw pipelineRes.error;
+        if (summaryRes.error)
+          throw new Error(
+            `Summary RPC failed: ${JSON.stringify(summaryRes.error)}`,
+          );
+        if (salesRes.error) {
+          console.warn("Sales data sync failed, using empty set");
+          setChartData([]);
+        } else {
+          setChartData(
+            (salesRes.data || []).map((s: any) => ({
+              name: new Date(s.date_bucket).toLocaleDateString(undefined, {
+                month: "short",
+                day: "numeric",
+                hour: parseInt(range) <= 2 ? "numeric" : undefined,
+              }),
+              total: s.total_sales || 0,
+            })),
+          );
+        }
+
+        if (categoriesRes.error) {
+          console.warn("Category data sync failed");
+          setCategoryData([]);
+        } else {
+          setCategoryData(categoriesRes.data || []);
+        }
+
+        if (pipelineRes.error) {
+          console.warn("Pipeline data sync failed");
+          setPipelineData([]);
+        } else {
+          setPipelineData(pipelineRes.data || []);
+        }
+
+        if (topRes.error) {
+          console.warn("Top products sync failed");
+          setTopProducts([]);
+        } else {
+          setTopProducts(
+            (topRes.data || []).map((p: any) => ({
+              id: p.product_id,
+              name: p.name,
+              sale_count: p.units_sold || 0,
+              revenue: p.revenue || 0,
+              main_image_url: p.main_image_url,
+              categories: { name: p.category_name || "Uncategorized" },
+            })),
+          );
+        }
 
         const metrics = summaryRes.data?.[0] || {};
 

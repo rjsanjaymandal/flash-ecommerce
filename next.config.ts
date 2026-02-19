@@ -30,6 +30,14 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'images.remote.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'photos.google.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
       }
     ],
     dangerouslyAllowSVG: true,

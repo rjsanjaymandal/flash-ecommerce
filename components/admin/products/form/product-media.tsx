@@ -50,6 +50,16 @@ export function ProductMedia() {
 
   const handleAddUrl = () => {
     if (!urlInput) return;
+
+    // Basic URL Validation
+    try {
+      if (!urlInput.startsWith("http")) throw new Error("Invalid protocol");
+      new URL(urlInput);
+    } catch (_) {
+      toast.error("Invalid URL format. Please provide a full HTTP/HTTPS link.");
+      return;
+    }
+
     const currentGallery = getValues("gallery_image_urls") || [];
     const newGallery = [...currentGallery, urlInput];
     setValue("gallery_image_urls", newGallery, { shouldDirty: true });

@@ -65,13 +65,23 @@ function SortableMediaItem({
           : "border-foreground/10",
       )}
     >
-      <Image
-        src={url}
-        alt="Product gallery"
-        fill
-        sizes="(max-width: 768px) 50vw, 25vw"
-        className="object-cover"
-      />
+      {url.startsWith("http") ||
+      url.startsWith("/") ||
+      url.startsWith("data:") ? (
+        <Image
+          src={url}
+          alt="Product gallery"
+          fill
+          sizes="(max-width: 768px) 50vw, 25vw"
+          className="object-cover"
+        />
+      ) : (
+        <div className="absolute inset-0 flex items-center justify-center bg-zinc-900 p-4 text-center">
+          <span className="text-[10px] font-mono text-zinc-500 uppercase leading-relaxed">
+            Invalid Source Path
+          </span>
+        </div>
+      )}
 
       {/* Drag Handle */}
       <div
