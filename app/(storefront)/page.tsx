@@ -79,15 +79,31 @@ export default async function Home() {
     // Sort "T-Shirt" / "Oversized Tees" to the front
     categories = allCategories
       .sort((a, b) => {
-        const aIsTarget =
-          a.slug === "oversized-tees" ||
-          a.name.toLowerCase().includes("t-shirt");
-        const bIsTarget =
-          b.slug === "oversized-tees" ||
-          b.name.toLowerCase().includes("t-shirt");
+        const aName = a.name.toLowerCase();
+        const bName = b.name.toLowerCase();
 
-        if (aIsTarget && !bIsTarget) return -1;
-        if (!aIsTarget && bIsTarget) return 1;
+        // Priority 1: Exact or close match for "T-Shirt"
+        const aIsTShirt =
+          aName.includes("t-shirt") ||
+          aName.includes("t shirt") ||
+          a.slug.includes("t-shirt");
+        const bIsTShirt =
+          bName.includes("t-shirt") ||
+          bName.includes("t shirt") ||
+          b.slug.includes("t-shirt");
+
+        // Priority 2: Oversized Tees
+        const aIsOversized =
+          a.slug === "oversized-tees" || aName.includes("oversized");
+        const bIsOversized =
+          b.slug === "oversized-tees" || bName.includes("oversized");
+
+        if (aIsTShirt && !bIsTShirt) return -1;
+        if (!aIsTShirt && bIsTShirt) return 1;
+
+        if (aIsOversized && !bIsOversized) return -1;
+        if (!aIsOversized && bIsOversized) return 1;
+
         return 0;
       })
       .slice(0, 4);
