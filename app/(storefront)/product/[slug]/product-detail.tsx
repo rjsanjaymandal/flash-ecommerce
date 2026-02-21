@@ -222,6 +222,8 @@ export function ProductDetailClient({
   // Stock Logic (Normalized)
   const stockMap = useMemo(() => {
     const map: Record<string, number> = {};
+    if (!realTimeStock) return map;
+
     realTimeStock.forEach((item) => {
       // Use normalized color for the key to merge duplicates
       const key = `${item.size}-${normalizeColor(item.color || "")}-${item.fit || "Regular"}`;

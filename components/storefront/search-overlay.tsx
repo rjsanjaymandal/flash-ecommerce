@@ -65,7 +65,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
         const { data } = await supabase
           .from("products")
           .select("id, name, slug, price, main_image_url")
-          .eq("is_active", true)
+          .eq("status", "active")
           .order("price", { ascending: false }) // Show expensive/premium as trending
           .limit(4);
 

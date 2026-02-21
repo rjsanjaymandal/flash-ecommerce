@@ -21,8 +21,8 @@ export async function getUpsellProducts(
       .from("products")
       .select("*, categories(name), product_stock(*)")
       .in("category_id", categoryIds)
-      .eq("is_active", true)
-      .not("id", "in", `(${inCartIds.length > 0 ? inCartIds.join(",") : "00000000-0000-0000-0000-000000000000"})`)
+      .eq("status", "active")
+      .not("id", "in", `(${(inCartIds.length > 0 ? inCartIds : ["00000000-0000-0000-0000-000000000000"]).join(",")})`)
       .limit(20);
 
     if (categoryProducts) {
@@ -49,7 +49,7 @@ export async function getUpsellProducts(
         .from("products")
         .select("*, categories(name), product_stock(*)")
         .contains("expression_tags", allTags)
-        .eq("is_active", true)
+        .eq("status", "active")
         .not("id", "in", `(${(inCartIds.concat(products.map((p) => p.id))).join(",")})`)
         .limit(10);
 

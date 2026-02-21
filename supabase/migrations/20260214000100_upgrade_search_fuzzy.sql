@@ -55,7 +55,7 @@ BEGIN
         product_id
   ) r ON p.id = r.product_id
   WHERE
-    p.is_active = true
+    p.status = 'active'
     AND (
       similarity(p.name, query_text) > 0.2
       OR

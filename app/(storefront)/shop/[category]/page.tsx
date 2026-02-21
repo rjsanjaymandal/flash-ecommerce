@@ -97,7 +97,7 @@ export default async function ShopPage(props: {
     const { data } = await supabase
       .from("products")
       .select(PRODUCT_CARD_FIELDS)
-      .eq("is_active", true)
+      .eq("status", "active")
       .order("created_at", { ascending: false });
     products = (data as Product[]) || [];
   } else if (slug === "new-arrivals") {
@@ -108,7 +108,7 @@ export default async function ShopPage(props: {
     const { data } = await supabase
       .from("products")
       .select(PRODUCT_CARD_FIELDS)
-      .eq("is_active", true)
+      .eq("status", "active")
       .order("created_at", { ascending: false })
       .limit(20);
     products = (data as Product[]) || [];
@@ -140,7 +140,7 @@ export default async function ShopPage(props: {
       .from("products")
       .select(PRODUCT_CARD_FIELDS)
       .in("category_id", targetCategoryIds)
-      .eq("is_active", true)
+      .eq("status", "active")
       .order("created_at", { ascending: false });
 
     products = (prods as Product[]) || [];

@@ -92,6 +92,7 @@ interface AdminProduct {
   main_image_url: string | null;
   slug: string | null;
   is_active: boolean;
+  status?: "active" | "draft" | "archived" | null;
   created_at: string;
   category_id?: string;
   categories?: {
@@ -214,10 +215,10 @@ export function ProductsClient({
     }
   };
 
-  const handleBulkStatus = async (isActive: boolean) => {
+  const handleBulkStatus = async (status: "active" | "draft" | "archived") => {
     try {
-      await bulkUpdateProductStatus(Array.from(selectedIds), isActive);
-      toast.success(`${selectedIds.size} products updated`);
+      await bulkUpdateProductStatus(Array.from(selectedIds), status);
+      toast.success(`${selectedIds.size} products updated to ${status}`);
       setSelectedIds(new Set());
       router.refresh();
     } catch {
@@ -338,7 +339,7 @@ export function ProductsClient({
       p.price,
       p.total_stock ??
         (p.product_stock?.reduce((acc, s) => acc + s.quantity, 0) || 0),
-      p.is_active ? "Active" : "Draft",
+      p.status || (p.is_active ? "active" : "draft"),
       p.preorder_count || 0,
     ]);
 
@@ -520,7 +521,7 @@ export function ProductsClient({
               size="sm"
               variant="outline"
               className="h-8 text-xs border-dashed gap-1 hover:border-primary/50"
-              onClick={() => handleBulkStatus(true)}
+              onClick={() => handleBulkStatus("active")}
             >
               <div className="h-2 w-2 rounded-full bg-emerald-500" />
               Active
@@ -529,10 +530,19 @@ export function ProductsClient({
               size="sm"
               variant="outline"
               className="h-8 text-xs border-dashed gap-1 hover:border-primary/50"
-              onClick={() => handleBulkStatus(false)}
+              onClick={() => handleBulkStatus("draft")}
             >
               <div className="h-2 w-2 rounded-full bg-slate-400" />
               Draft
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8 text-xs border-dashed gap-1 hover:border-primary/50 text-amber-600 hover:text-amber-700"
+              onClick={() => handleBulkStatus("archived")}
+            >
+              <div className="h-2 w-2 rounded-full bg-amber-500" />
+              Archive
             </Button>
             <div className="w-px h-4 bg-border mx-1" />
             <DropdownMenu>
@@ -830,20 +840,25 @@ export function ProductsClient({
                           <span
                             className={cn(
                               "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75",
-                              product.is_active ? "bg-emerald-400" : "hidden",
+                              product.status === "active"
+                                ? "bg-emerald-400"
+                                : "hidden",
                             )}
                           ></span>
                           <span
                             className={cn(
                               "relative inline-flex rounded-full h-2 w-2",
-                              product.is_active
+                              product.status === "active"
                                 ? "bg-emerald-500"
-                                : "bg-slate-300",
+                                : product.status === "archived"
+                                  ? "bg-amber-500"
+                                  : "bg-slate-300",
                             )}
                           ></span>
                         </span>
-                        <span className="text-xs text-muted-foreground font-medium">
-                          {product.is_active ? "Active" : "Draft"}
+                        <span className="text-xs text-muted-foreground font-medium capitalize">
+                          {product.status ||
+                            (product.is_active ? "active" : "draft")}
                         </span>
                       </div>
                     </TableCell>

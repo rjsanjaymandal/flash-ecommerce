@@ -77,7 +77,7 @@ const applyProductFilters = (query: any, filter: ProductFilter) => {
       if (filter.is_active) {
           query = query.eq('status', 'active')
       } else {
-          // If asking for inactive, we might mean draft/archived, but usually filter is for 'active' only
+          // Admin override: filter for non-active (draft/archived)
           query = query.neq('status', 'active')
       }
     }
@@ -143,7 +143,7 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: SupabaseCli
     // This avoids JS-side O(N) calculations and enables DB-level sorting by rating.
     const selectFields = filter.includeDetails 
         ? '*, categories(name), product_stock(*)'
-        : 'id, name, slug, price, original_price, main_image_url, status, category_id, created_at, is_carousel_featured, total_stock, size_options, color_options, categories(name), average_rating:average_rating_calculated, review_count:review_count_calculated'
+        : 'id, name, slug, price, original_price, main_image_url, status, is_active, category_id, created_at, is_carousel_featured, total_stock, size_options, color_options, categories(name), average_rating:average_rating_calculated, review_count:review_count_calculated'
 
     let query = supabase
         .from('products_with_stats')
@@ -252,12 +252,13 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: SupabaseCli
 
 // Public Cached Methods
 export async function getProducts(filter: ProductFilter = {}): Promise<PaginatedResult<Product>> {
-    const key = JSON.stringify(filter)
+    const finalFilter = { is_active: true, ...filter }
+    const key = JSON.stringify(finalFilter)
     // Lower cache time for random sort to 60s, otherwise 1 hour
     const revalidateTime = filter.sort === 'random' ? 60 : 3600
     
     return unstable_cache(
-        async () => fetchProducts(filter),
+        async () => fetchProducts(finalFilter),
         ['products-list-v2', key], 
         { tags: ['products', `category-${filter.category_id || 'all'}`], revalidate: revalidateTime }
     )()
@@ -298,7 +299,12 @@ async function fetchProductBySlug(slug: string): Promise<Product | null> {
     
     try {
         if (isUuid) {
-            const { data: idData } = await supabase.from('products_with_stats').select('*, categories(name), product_stock(*)').eq('id', slug).single()
+            const { data: idData } = await supabase
+                .from('products_with_stats')
+                .select('*, categories(name), product_stock(*)')
+                .eq('id', slug)
+                .eq('status', 'active') // Visibility Protection
+                .single()
             if (idData) return formatProduct(idData as unknown as ProductRowInput)
         }
 
@@ -306,6 +312,7 @@ async function fetchProductBySlug(slug: string): Promise<Product | null> {
           .from('products_with_stats')
           .select('*, categories(name), product_stock(*)')
           .eq('slug', slug)
+          .eq('status', 'active') // Visibility Protection
           .single()
         
         if (error) return null
@@ -602,6 +609,7 @@ export async function getProductsByIds(ids: string[]): Promise<Product[]> {
       .from('products_with_stats')
       .select('id, name, slug, price, original_price, main_image_url, status, category_id, created_at, is_carousel_featured, total_stock, size_options, color_options, categories(name), average_rating:average_rating_calculated, review_count:review_count_calculated')
       .in('id', ids)
+      .eq('status', 'active') // Visibility Protection
     
     if (error) throw error
 
@@ -783,20 +791,26 @@ export async function bulkDeleteProducts(ids: string[]) {
     }
 }
 
-export async function bulkUpdateProductStatus(ids: string[], isActive: boolean) {
+export async function bulkUpdateProductStatus(ids: string[], status: 'active' | 'draft' | 'archived') {
     await requireAdmin()
     if (!ids || ids.length === 0) return
     const supabase = createAdminClient()
+    
+    const isActive = status === 'active'
+
     const { error } = await supabase
         .from('products')
-        .update({ is_active: isActive })
+        .update({ 
+            is_active: isActive,
+            status: status
+        })
         .in('id', ids)
     if (error) throw error
 
     // Audit Logging
     const { logAdminAction } = await import('@/lib/admin-logger')
     ids.forEach(id => {
-        logAdminAction('products', id, 'UPDATE', { is_active: isActive })
+        logAdminAction('products', id, 'UPDATE', { status })
     })
 
     revalidateTag('products', CACHE_PROFILE)
@@ -867,7 +881,7 @@ export async function getWaitlistedProducts(userId: string): Promise<Product[]> 
         .from('products')
         .select('*, categories(name), product_stock(*)')
         .in('id', productIds)
-        .eq('is_active', true)
+        .eq('status', 'active')
     
     return (products || []).map((p) => ({
         ...p,

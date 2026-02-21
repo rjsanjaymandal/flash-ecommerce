@@ -19,7 +19,7 @@ export async function getSmartCarouselData() {
             size_options,
             product_stock(quantity)
         `)
-        .eq('is_active', true)
+        .eq('status', 'active')
         .eq('is_carousel_featured', true)
         .order('created_at', { ascending: false })
         .limit(40) // Increased buffer to ensure 15 in-stock items are available
