@@ -198,11 +198,21 @@ export function DraggableMediaGrid({
                     onSetMain(targetUrl);
                   }
                 }}
-                onRemove={(removedUrl) => {
+                onRemove={async (removedUrl) => {
                   const newUrls = urls.filter((u) => u !== removedUrl);
                   onUpdate(newUrls);
                   if (removedUrl === mainImageUrl && newUrls.length > 0) {
                     onSetMain(newUrls[0]);
+                  }
+
+                  // Enterprise Cleanup: Delete from storage
+                  if (removedUrl.includes("cloudinary.com")) {
+                    const { deleteImage } =
+                      await import("@/lib/services/upload-service");
+                    const result = await deleteImage(removedUrl);
+                    if (result.success) {
+                      console.log("Storage cleaned up successfully");
+                    }
                   }
                 }}
               />

@@ -338,6 +338,23 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
 
 // Helper to clean up product data and sync options
 function prepareProductData(data: ProductFormValues) {
+  const galleryUrls = Array.isArray(data.gallery_image_urls) 
+    ? data.gallery_image_urls.map(url => typeof url === 'string' ? url : String(url)) 
+    : [];
+    
+  const main = Array.isArray(data.main_image_url) ? data.main_image_url[0] : (data.main_image_url || null);
+  
+  // Enterprise Enforcement: Ensure the main image is always valid and part of the gallery.
+  // This prevents "ghost" images that were deleted from the gallery but remain as main.
+  let finalMain = main;
+  if (galleryUrls.length > 0) {
+    if (!main || !galleryUrls.includes(main)) {
+      finalMain = galleryUrls[0]; // Fallback to first gallery image
+    }
+  } else {
+    finalMain = null;
+  }
+
   // STRICT WHITELIST of database columns
   const cleanData: TablesInsert<'products'> = {
     name: data.name,
@@ -346,8 +363,8 @@ function prepareProductData(data: ProductFormValues) {
     price: data.price ? Number(data.price) : 0,
     original_price: data.original_price ? Number(data.original_price) : null,
     category_id: data.category_id || null, // Critical: Prevent "" for UUID
-    main_image_url: Array.isArray(data.main_image_url) ? data.main_image_url[0] : (data.main_image_url || null),
-    gallery_image_urls: Array.isArray(data.gallery_image_urls) ? data.gallery_image_urls.map(url => typeof url === 'string' ? url : String(url)) : [],
+    main_image_url: finalMain,
+    gallery_image_urls: galleryUrls,
     expression_tags: data.expression_tags || [],
     is_active: data.status === "active",
     is_carousel_featured: data.is_carousel_featured ?? false,
@@ -530,17 +547,48 @@ export async function updateProduct(id: string, productData: unknown) {
 export async function deleteProduct(id: string) {
     await requireAdmin()
     const supabase = createAdminClient()
+
+    // 1. Fetch metadata & assets before deletion
+    const { data: product } = await supabase
+        .from('products')
+        .select('slug, main_image_url, gallery_image_urls')
+        .eq('id', id)
+        .single()
+
+    if (!product) return
+
+    // 2. Perform DB Deletion
     const { error } = await supabase.from('products').delete().eq('id', id)
     if (error) throw error
     
     await logAdminAction('products', id, 'DELETE')
     
-    // Defensive Revalidation
+    // 3. Enterprise Cleanup: Remove assets from Cloudinary
+    // We do this AFTER DB deletion so a failed image delete doesn't block the product removal, 
+    // but the system still attempts cleanup.
+    try {
+        const { deleteImage } = await import('@/lib/services/upload-service')
+        const allUrls = Array.from(new Set([
+            product.main_image_url,
+            ...(product.gallery_image_urls || [])
+        ])).filter(Boolean) as string[]
+
+        await Promise.all(allUrls.map(url => deleteImage(url)))
+    } catch (cleanErr) {
+        console.warn('[deleteProduct] Asset cleanup failed:', cleanErr)
+    }
+
+    // 4. Defensive Revalidation
     try {
         revalidateTag('products', CACHE_PROFILE)
         revalidateTag('featured-products', CACHE_PROFILE)
+        if (product.slug) {
+            revalidateTag(`product-${product.slug}`, CACHE_PROFILE)
+            revalidatePath(`/product/${product.slug}`)
+        }
         revalidatePath('/admin/products')
         revalidatePath('/shop')
+        revalidatePath('/')
     } catch (e) {
         console.warn('[deleteProduct] Revalidation failed:', e)
     }
@@ -678,19 +726,61 @@ export async function bulkDeleteProducts(ids: string[]) {
     await requireAdmin()
     if (!ids || ids.length === 0) return
     const supabase = createAdminClient()
+
+    // 1. Fetch metadata & assets before deletion
+    const { data: products } = await supabase
+        .from('products')
+        .select('slug, main_image_url, gallery_image_urls')
+        .in('id', ids)
+
+    if (!products || products.length === 0) return
+
+    // 2. Perform DB Deletion
     const { error } = await supabase.from('products').delete().in('id', ids)
     if (error) throw error
 
-    // Audit Logging
+    // 3. Audit Logging
     const { logAdminAction } = await import('@/lib/admin-logger')
     ids.forEach(id => {
         logAdminAction('products', id, 'DELETE')
     })
 
-    revalidateTag('products', CACHE_PROFILE)
-    revalidateTag('featured-products', CACHE_PROFILE)
-    revalidatePath('/admin/products')
-    revalidatePath('/shop')
+    // 4. Enterprise Cleanup: Multi-Asset Sweep
+    try {
+        const { deleteImage } = await import('@/lib/services/upload-service')
+        const allUrls = new Set<string>()
+        products.forEach(p => {
+            if (p.main_image_url) allUrls.add(p.main_image_url)
+            if (p.gallery_image_urls) {
+                p.gallery_image_urls.forEach((u: string) => allUrls.add(u))
+            }
+        })
+
+        const urlList = Array.from(allUrls).filter(Boolean)
+        // High-concurrency sweep
+        await Promise.all(urlList.map(url => deleteImage(url)))
+    } catch (cleanErr) {
+        console.warn('[bulkDeleteProducts] Asset cleanup failed:', cleanErr)
+    }
+
+    // 5. Defensive Revalidation
+    try {
+        revalidateTag('products', CACHE_PROFILE)
+        revalidateTag('featured-products', CACHE_PROFILE)
+        
+        products.forEach(p => {
+            if (p.slug) {
+                revalidateTag(`product-${p.slug}`, CACHE_PROFILE)
+                revalidatePath(`/product/${p.slug}`)
+            }
+        })
+
+        revalidatePath('/admin/products')
+        revalidatePath('/shop')
+        revalidatePath('/')
+    } catch (e) {
+        console.warn('[bulkDeleteProducts] Revalidation failed:', e)
+    }
 }
 
 export async function bulkUpdateProductStatus(ids: string[], isActive: boolean) {
@@ -784,6 +874,26 @@ export async function getWaitlistedProducts(userId: string): Promise<Product[]> 
         average_rating: 0, 
         review_count: 0
     })) as Product[]
+}
+
+/**
+ * Enterprise Utility: Force purge all storefront caches
+ * Useful for resolving synchronization issues like "ghost products"
+ */
+export async function purgeStorefrontCache() {
+    try {
+        await requireAdmin()
+        
+        revalidateTag('products', CACHE_PROFILE)
+        revalidateTag('featured-products', CACHE_PROFILE)
+        revalidatePath('/', 'layout') // Purges entire site layout/path cache
+        
+        await logAdminAction('system', 'all', 'PURGE_CACHE', { scope: 'storefront' })
+        return { success: true }
+    } catch (error) {
+        console.error('[purgeStorefrontCache] Failed:', error)
+        return { success: false, error: (error as Error).message }
+    }
 }
 
 

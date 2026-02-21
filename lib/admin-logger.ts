@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { headers } from "next/headers"
 
-type ActionType = 'CREATE' | 'UPDATE' | 'DELETE' | 'LOGIN' | 'EXPORT'
+type ActionType = 'CREATE' | 'UPDATE' | 'DELETE' | 'LOGIN' | 'EXPORT' | 'PURGE_CACHE'
 
 export async function logAdminAction(
   tableName: string,

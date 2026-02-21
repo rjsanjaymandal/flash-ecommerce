@@ -88,7 +88,7 @@ export function CartUpsell() {
               animate={{ opacity: 1, x: 0 }}
               className="snap-start shrink-0 w-32 group relative"
             >
-              <div className="aspect-3/4 bg-muted/20 rounded-lg overflow-hidden border border-border/40 relative mb-2 group/img">
+              <div className="aspect-[2/3] bg-muted/20 rounded-lg overflow-hidden border border-border/40 relative mb-2 group/img">
                 {product.main_image_url ? (
                   <FlashImage
                     src={product.main_image_url}

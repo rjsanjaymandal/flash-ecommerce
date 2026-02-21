@@ -15,7 +15,7 @@ export function ProductGridSkeleton() {
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-10 md:gap-x-6 md:gap-y-12">
         {Array.from({ length: 8 }).map((_, i) => (
           <div key={i} className="flex flex-col gap-3">
-            <Skeleton className="aspect-3/4 rounded-none" />
+            <Skeleton className="aspect-2/3 rounded-none" />
             <div className="space-y-1.5 px-0.5">
               <Skeleton className="h-4 w-3/4" />
               <Skeleton className="h-4 w-1/4" />

@@ -460,7 +460,7 @@ export function ProductCard({
         {/* Image Container */}
         <Link
           href={`/product/${product.slug || product.id}`}
-          className="block relative aspect-3/4 overflow-hidden rounded-none bg-zinc-50 border border-foreground/5 transition-all duration-300"
+          className="block relative aspect-2/3 overflow-hidden rounded-none bg-zinc-50 border border-foreground/5 transition-all duration-300"
         >
           {/* Badges */}
           <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
@@ -520,9 +520,9 @@ export function ProductCard({
                     src={src}
                     alt={`${product.name} - ${idx + 1}`}
                     fill
-                    resizeMode="contain"
+                    resizeMode="cover"
                     className={cn(
-                      "object-contain transition-all duration-500",
+                      "object-cover transition-all duration-500",
                       mounted ? "opacity-100" : "opacity-0",
                     )}
                     sizes="(max-width: 768px) 50vw, (max-width: 1210px) 33vw, 25vw"

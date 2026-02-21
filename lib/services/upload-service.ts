@@ -35,3 +35,23 @@ export async function uploadImage(formData: FormData) {
     throw new Error('Image upload service failed. Please check Cloudinary configuration.')
   }
 }
+
+export async function deleteImage(url: string) {
+  try {
+    if (!url.includes('cloudinary.com')) return { success: false, error: 'Not a Cloudinary URL' }
+
+    // Extract public_id from Cloudinary URL
+    // Format: https://res.cloudinary.com/cloud_name/image/upload/v12345/folder/id.jpg
+    const parts = url.split('/')
+    const lastPart = parts[parts.length - 1]
+    const folder = parts[parts.length - 2]
+    const publicIdWithExtension = `${folder}/${lastPart}`
+    const publicId = publicIdWithExtension.split('.')[0]
+
+    const result = await cloudinary.uploader.destroy(publicId)
+    return { success: result.result === 'ok' }
+  } catch (err) {
+    console.error('[deleteImage] Cloudinary Deletion Failed:', err)
+    return { success: false, error: (err as Error).message }
+  }
+}

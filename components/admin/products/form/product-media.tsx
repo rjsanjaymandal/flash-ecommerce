@@ -201,6 +201,10 @@ export function ProductMedia() {
                       setValue("main_image_url", newUrls[0], {
                         shouldDirty: true,
                       });
+                    } else {
+                      setValue("main_image_url", "", {
+                        shouldDirty: true,
+                      });
                     }
                   }}
                   onSetMain={(url) => {

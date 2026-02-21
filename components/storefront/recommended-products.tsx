@@ -59,7 +59,7 @@ export function RecommendedProducts({
           {loading
             ? Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="space-y-4">
-                  <Skeleton className="aspect-[3/4] w-full rounded-2xl" />
+                  <Skeleton className="aspect-2/3 w-full rounded-2xl" />
                   <div className="space-y-2">
                     <Skeleton className="h-4 w-3/4" />
                     <Skeleton className="h-3 w-1/2" />
