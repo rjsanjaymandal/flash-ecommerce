@@ -23,26 +23,46 @@ export function ProductMedia() {
   const [urlInput, setUrlInput] = useState("");
   const [isAddingUrl, setIsAddingUrl] = useState(false);
 
-  const handleImageUpload = async (file: File) => {
+  const handleMultipleUploads = async (files: File[]) => {
     try {
       setIsUploading(true);
-      const formData = new FormData();
-      formData.append("file", file);
+      const uploadPromises = files.map(async (file) => {
+        const formData = new FormData();
+        formData.append("file", file);
+        try {
+          return await uploadImage(formData);
+        } catch (err) {
+          console.error("Upload failed for file:", file.name, err);
+          return null;
+        }
+      });
 
-      const url = await uploadImage(formData);
-      const currentGallery = getValues("gallery_image_urls") || [];
-      const newGallery = [...currentGallery, url];
+      const results = await Promise.all(uploadPromises);
+      const successfulUrls = results.filter((url): url is string => !!url);
 
-      setValue("gallery_image_urls", newGallery, { shouldDirty: true });
-
-      // Separate bucket for main image logic if needed, but for now assuming first is main if not set
-      if (!getValues("main_image_url")) {
-        setValue("main_image_url", url);
+      if (successfulUrls.length === 0) {
+        toast.error("All uploads failed");
+        return;
       }
 
-      toast.success("Image uploaded");
+      const currentGallery = getValues("gallery_image_urls") || [];
+      const updatedGallery = [...currentGallery, ...successfulUrls];
+
+      setValue("gallery_image_urls", updatedGallery, { shouldDirty: true });
+
+      if (!getValues("main_image_url") && updatedGallery.length > 0) {
+        setValue("main_image_url", updatedGallery[0], { shouldDirty: true });
+      }
+
+      if (successfulUrls.length < files.length) {
+        toast.warning(
+          `Uploaded ${successfulUrls.length} of ${files.length} images.`,
+        );
+      } else {
+        toast.success(`${successfulUrls.length} images uploaded`);
+      }
     } catch (error) {
-      toast.error("Failed to upload image");
+      toast.error("Failed to process uploads");
     } finally {
       setIsUploading(false);
     }
@@ -161,9 +181,7 @@ export function ProductMedia() {
                         multiple
                         onChange={(e) => {
                           if (e.target.files) {
-                            Array.from(e.target.files).forEach(
-                              handleImageUpload,
-                            );
+                            handleMultipleUploads(Array.from(e.target.files));
                           }
                         }}
                       />

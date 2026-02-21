@@ -54,7 +54,15 @@ export function ProductForm({
       color_options: [],
       size_options: [],
       fit_options: [],
-      variants: [],
+      variants: [
+        {
+          size: "Standard",
+          color: "Standard",
+          fit: "Regular",
+          quantity: 0,
+          cost_price: 0,
+        },
+      ],
       seo_title: "",
       seo_description: "",
     },

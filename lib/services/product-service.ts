@@ -349,7 +349,7 @@ function prepareProductData(data: ProductFormValues) {
     main_image_url: Array.isArray(data.main_image_url) ? data.main_image_url[0] : (data.main_image_url || null),
     gallery_image_urls: Array.isArray(data.gallery_image_urls) ? data.gallery_image_urls.map(url => typeof url === 'string' ? url : String(url)) : [],
     expression_tags: data.expression_tags || [],
-    is_active: data.is_active ?? true,
+    is_active: data.status === "active",
     is_carousel_featured: data.is_carousel_featured ?? false,
     status: data.status || "draft",
     cost_price: data.cost_price ? Number(data.cost_price) : 0,
@@ -410,7 +410,9 @@ export async function createProduct(productData: unknown) {
                 size: v.size,
                 color: v.color,
                 fit: v.fit || "Regular",
-                quantity: Number(v.quantity) || 0
+                quantity: Number(v.quantity) || 0,
+                cost_price: Number(v.cost_price) || 0,
+                sku: v.sku || null,
             }))
 
             const { error: stockErr } = await supabase
@@ -492,7 +494,9 @@ export async function updateProduct(id: string, productData: unknown) {
                     size: v.size,
                     color: v.color,
                     fit: v.fit || "Regular",
-                    quantity: Number(v.quantity) || 0
+                    quantity: Number(v.quantity) || 0,
+                    cost_price: Number(v.cost_price) || 0,
+                    sku: v.sku || null,
                 }))
                 const { error: stockErr } = await supabase.from('product_stock').insert(stockData)
                 if (stockErr) return { success: false, error: `Stock Sync Failed: ${stockErr.message}` }

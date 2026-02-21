@@ -130,6 +130,23 @@ const nextConfig: NextConfig = {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
           },
+          {
+            key: 'Content-Security-Policy',
+            value: `
+              default-src 'self';
+              script-src 'self' 'unsafe-eval' 'unsafe-inline' https://checkout.razorpay.com https://va.vercel-scripts.com https://cdn.jsdelivr.net;
+              style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+              img-src 'self' blob: data: https://res.cloudinary.com https://images.unsplash.com https://gyizmixhmrfwywvafdbi.supabase.co https://plus.unsplash.com https://images.pexels.com https://images.remote.com https://photos.google.com https://lh3.googleusercontent.com https://*.googleusercontent.com;
+              font-src 'self' data: https://fonts.gstatic.com;
+              connect-src 'self' https://gyizmixhmrfwywvafdbi.supabase.co https://checkout.razorpay.com wss://gyizmixhmrfwywvafdbi.supabase.co https://vitals.vercel-insights.com;
+              frame-src 'self' https://checkout.razorpay.com;
+              media-src 'self' https://res.cloudinary.com;
+              object-src 'none';
+              base-uri 'self';
+              form-action 'self';
+              upgrade-insecure-requests;
+            `.replace(/\s{2,}/g, ' ').trim()
+          }
         ],
       },
     ];

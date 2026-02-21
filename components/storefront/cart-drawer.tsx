@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import FlashImage from "@/components/ui/flash-image";
 import { cn, formatCurrency } from "@/lib/utils";
+import { useDebouncedCallback } from "use-debounce";
 import { FreeShippingBar } from "@/components/cart/free-shipping-bar";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
@@ -44,22 +45,36 @@ export function CartDrawer() {
     setMounted(true);
   }, []);
 
-  const handleUpdateQuantity = async (
+  const debouncedUpdateQuantity = useDebouncedCallback(
+    async (
+      productId: string,
+      size: string,
+      color: string,
+      fit: string,
+      newQty: number,
+    ) => {
+      const key = `${productId}-${size}-${color}-${fit}`;
+      setLoadingState(key, true);
+      try {
+        await updateQuantity(productId, size, color, fit, newQty);
+      } catch (error) {
+        toast.error("Failed to update quantity");
+      } finally {
+        setLoadingState(key, false);
+      }
+    },
+    400, // 400ms debounce window
+  );
+
+  const handleUpdateQuantity = (
     productId: string,
     size: string,
     color: string,
     newQty: number,
     fit: string,
   ) => {
-    const key = `${productId}-${size}-${color}-${fit}`;
-    setLoadingState(key, true);
-    try {
-      await updateQuantity(productId, size, color, fit, newQty);
-    } catch (error) {
-      toast.error("Failed to update quantity");
-    } finally {
-      setLoadingState(key, false);
-    }
+    // Immediately trigger the optimistic update visually via debounce wrapper
+    debouncedUpdateQuantity(productId, size, color, fit, newQty);
   };
 
   const hasOutOfStockItems = items.some(

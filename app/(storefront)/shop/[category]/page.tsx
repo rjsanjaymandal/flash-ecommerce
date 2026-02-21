@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { CollectionJsonLd } from "@/components/seo/collection-json-ld";
 import type { Tables } from "@/types/supabase";
 import type { Product } from "@/lib/services/product-service";
 
@@ -147,6 +148,21 @@ export default async function ShopPage(props: {
 
   return (
     <div className="min-h-screen bg-background pt-24 pb-20">
+      <CollectionJsonLd
+        name={
+          categoryData && "name" in categoryData
+            ? categoryData.name
+            : slug.replace("-", " ")
+        }
+        description={
+          categoryData &&
+          "description" in categoryData &&
+          categoryData.description
+            ? categoryData.description
+            : ""
+        }
+        url={`${process.env.NEXT_PUBLIC_SITE_URL || "https://flashhfashion.in"}/shop/${slug}`}
+      />
       <div className="container mx-auto px-4 lg:px-8">
         {/* Breadcrumb / Back */}
         <div className="mb-8">

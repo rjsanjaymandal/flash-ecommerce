@@ -94,7 +94,6 @@ export async function notifyWaitlistUser(preorderId: string) {
         }
     } else {
         // Simulation
-        console.log(`[SIMULATION] Enterprise Waitlist Email sent to ${preorder.email}`)
         // Simulate network delay
         await new Promise(resolve => setTimeout(resolve, 300))
         success = true

@@ -21,7 +21,26 @@ export function Providers({
   initialSession?: Session | null;
   initialProfile?: any; // Profile type can be complex, keeping any for now or defining it if needed
 }) {
-  const [queryClient] = useState(() => new QueryClient());
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            // Enterprise Defaults: Data is considered fresh for 1 minute
+            staleTime: 60 * 1000,
+            // Keep unused data in cache for 5 minutes
+            gcTime: 5 * 60 * 1000,
+            // Prevent aggressive refetches on window focus in production
+            refetchOnWindowFocus: false,
+            // Smart retries for failed network requests
+            retry: (failureCount, error: any) => {
+              if (error?.status === 404 || error?.status === 401) return false;
+              return failureCount < 2;
+            },
+          },
+        },
+      }),
+  );
 
   return (
     <QueryClientProvider client={queryClient}>
