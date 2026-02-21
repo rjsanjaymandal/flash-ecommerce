@@ -50,18 +50,25 @@ export function Footer() {
                 {
                   Icon: Instagram,
                   href: "https://www.instagram.com/flashhfashion/",
+                  label: "Instagram",
                 },
-                { Icon: Twitter, href: "https://twitter.com/flashhfashion" },
+                {
+                  Icon: Twitter,
+                  href: "https://twitter.com/flashhfashion",
+                  label: "Twitter",
+                },
                 {
                   Icon: Facebook,
                   href: "https://www.facebook.com/share/1Ec2dVLnh4/",
+                  label: "Facebook",
                 },
-              ].map(({ Icon, href }, i) => (
+              ].map(({ Icon, href, label }, i) => (
                 <a
                   key={i}
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label={label}
                   className="h-10 w-10 rounded-full border border-input flex items-center justify-center hover:bg-foreground hover:text-background hover:border-foreground transition-all duration-300 cursor-pointer group"
                 >
                   <Icon className="h-5 w-5 group-hover:scale-110 transition-transform" />
@@ -95,6 +102,7 @@ export function Footer() {
               <Button
                 type="submit"
                 size="icon"
+                aria-label="Subscribe"
                 className="h-12 w-12 shrink-0 rounded-lg bg-primary hover:bg-primary/90 text-white"
               >
                 <ArrowRight className="h-5 w-5" />

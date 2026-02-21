@@ -72,16 +72,13 @@ export const getStaticBlogPosts = async (): Promise<BlogPostMeta[]> => {
   }
 }
 
-/**
- * Get all published blog posts
- */
-export const getBlogPosts = cache(async (): Promise<BlogPostMeta[]> => {
-  try {
+import { unstable_cache } from 'next/cache'
+
+async function fetchBlogPosts(): Promise<BlogPost[]> {
     const supabase = createAdminClient()
-    
     const { data, error } = await (supabase as any)
       .from('blog_posts')
-      .select('slug, title, excerpt, cover_image, author, published_at, created_at, is_featured')
+      .select('slug, title, excerpt, cover_image, author, published_at, created_at, is_featured, is_published, tags')
       .eq('is_published', true)
       .order('published_at', { ascending: false })
     
@@ -89,9 +86,20 @@ export const getBlogPosts = cache(async (): Promise<BlogPostMeta[]> => {
       console.error('Error fetching blog posts:', JSON.stringify(error, null, 2))
       return []
     }
-    
-    // Transform to the simpler format used by frontend
-    return (data || []).map((post: BlogPost) => ({
+    return data || []
+}
+
+/**
+ * Get all published blog posts
+ */
+export const getBlogPosts = async (): Promise<BlogPostMeta[]> => {
+    const posts = await unstable_cache(
+        async () => fetchBlogPosts(),
+        ['blog-posts-list'],
+        { tags: ['blog-posts'], revalidate: 3600 }
+    )()
+
+    return posts.map((post: BlogPost) => ({
       slug: post.slug,
       title: post.title,
       excerpt: post.excerpt || '',
@@ -101,11 +109,7 @@ export const getBlogPosts = cache(async (): Promise<BlogPostMeta[]> => {
       tags: post.tags || [],
       featured: post.is_featured,
     }))
-  } catch (error) {
-    console.error('Error reading blog posts:', error)
-    return []
-  }
-})
+}
 
 /**
  * Get featured blog posts

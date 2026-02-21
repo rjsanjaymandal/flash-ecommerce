@@ -106,21 +106,8 @@ export async function deleteConcept(id: string) {
     .eq('id', id)
     .single()
     
-  if (concept?.image_url && concept.image_url.includes('supabase.co')) {
-    // Extract file name from URL for Supabase storage cleanup
-    const parts = concept.image_url.split('/')
-    const fileName = parts[parts.length - 1]
-    
-    // Attempt to delete variants if they exist (backward compatibility)
-    const baseName = fileName.replace('-desktop.webp', '').replace('-mobile.webp', '').replace('-thumbnail.webp', '').replace('.webp', '')
-    
-    await supabase.storage.from('concepts').remove([
-      `${baseName}-desktop.webp`,
-      `${baseName}-mobile.webp`,
-      `${baseName}-thumbnail.webp`,
-      `${baseName}.webp`
-    ])
-  }
+  // Supabase Storage cleanup is no longer needed as we've migrated to Cloudinary
+  // and emptied the legacy buckets.
   // Cloudinary deletion is usually handled via API if needed, 
   // but for now we focus on not crashing the build and handling existing DB paths.
   

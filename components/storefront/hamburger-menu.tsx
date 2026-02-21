@@ -72,6 +72,7 @@ export function HamburgerMenu({ categories }: HamburgerMenuProps) {
           variant="ghost"
           size="icon"
           className="lg:hidden -ml-2 text-foreground active:scale-90 transition-transform rounded-full h-10 w-10 hover:bg-zinc-100 dark:hover:bg-zinc-900"
+          aria-label="Toggle Menu"
           suppressHydrationWarning
         >
           <Menu className="h-6 w-6 stroke-[1.5px]" />
@@ -275,19 +276,26 @@ export function HamburgerMenu({ categories }: HamburgerMenuProps) {
                 {
                   Icon: Instagram,
                   href: "https://www.instagram.com/flashhfashion/",
+                  label: "Instagram",
                 },
-                { Icon: Twitter, href: "https://twitter.com/flashhfashion" },
-                { Icon: Youtube, href: "#" }, // Keeping Youtube as # since we don't have a URL for it yet
+                {
+                  Icon: Twitter,
+                  href: "https://twitter.com/flashhfashion",
+                  label: "Twitter",
+                },
+                { Icon: Youtube, href: "#", label: "Youtube" },
                 {
                   Icon: Facebook,
                   href: "https://www.facebook.com/share/1Ec2dVLnh4/",
+                  label: "Facebook",
                 },
-              ].map(({ Icon, href }, i) => (
+              ].map(({ Icon, href, label }, i) => (
                 <a
                   key={i}
                   href={href}
                   target={href !== "#" ? "_blank" : undefined}
                   rel={href !== "#" ? "noopener noreferrer" : undefined}
+                  aria-label={label}
                   className="text-muted-foreground/40 hover:text-foreground transition-colors p-1"
                 >
                   <Icon className="h-5 w-5 stroke-[1.5px]" />

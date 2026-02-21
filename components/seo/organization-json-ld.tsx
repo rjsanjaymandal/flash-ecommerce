@@ -14,11 +14,12 @@ export function OrganizationJsonLd() {
     logo: "https://flashhfashion.in/icon.png",
     sameAs: [
       "https://instagram.com/flashhfashion",
-      "https://twitter.com/flashhfashion",
+      "https://x.com/flashhfashion",
+      "https://facebook.com/flashhfashion",
     ],
     description:
-      "Flash Fashion is India's premium streetwear brand offering best quality printed t-shirts, Japanese anime aesthetic, and intelligent nano-fabric engineering.",
-    slogan: "Unapologetic Style. Intelligent Fabric. Fashion for All.",
+      "FLASH is India's premier minimalist luxury label. Discover premium streetwear, heavyweight essentials, and Japanese anime-inspired aesthetic crafted with high-performance fabrics.",
+    slogan: "Unapologetic Style. Intelligent Fabric. Cinematic Aesthetic.",
     keywords:
       "clothing brand, printed tshirts, best quality clothing, anime streetwear, queer fashion, nano fabric",
     priceRange: "₹500 - ₹5000",

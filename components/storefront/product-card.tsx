@@ -67,7 +67,11 @@ export function ProductCard({
   // Use optimized images if available, starting with thumbnail for grid, or mobile for slightly larger cards
   // Fallback to main_image_url
   const [isNew, setIsNew] = useState(false);
-  // isHovered was unused
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Memoize initial stock to prevent unnecessary re-renders
   const initialStock = useMemo(() => {
@@ -517,7 +521,10 @@ export function ProductCard({
                     alt={`${product.name} - ${idx + 1}`}
                     fill
                     resizeMode="cover"
-                    className="object-cover"
+                    className={cn(
+                      "object-cover transition-all duration-500",
+                      mounted ? "opacity-100" : "opacity-0",
+                    )}
                     sizes="(max-width: 768px) 50vw, (max-width: 1210px) 33vw, 25vw"
                     priority={priority && idx === 0}
                   />

@@ -11,73 +11,57 @@ export default function myImageLoader({
   width,
   quality = 75,
 }: ImageLoaderProps) {
+  // 1. Skip optimization for local assets, data URLs, or empty strings
   if (!src || src.startsWith("data:") || src.startsWith("/")) {
     return src;
   }
+
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  
+  // Use professional quality/format defaults
+  const transformations = [
+    `w_${width}`,
+    `q_${quality === 75 ? "auto" : quality}`,
+    "f_auto",
+    "dpr_auto",
+  ].join(",");
 
   try {
     const url = new URL(src);
     const hostname = url.hostname;
 
-    // 1. Unsplash
-    if (hostname.includes("unsplash.com")) {
-      url.searchParams.set("w", width.toString());
-      url.searchParams.set("q", quality.toString());
-      url.searchParams.set("auto", "format,compress");
-      return url.toString();
-    }
-
-    // 2. Supabase Storage
-    if (hostname.includes("supabase.co") && url.pathname.includes("/storage/v1/object/public")) {
-      url.searchParams.set("width", width.toString());
-      url.searchParams.set("quality", quality.toString());
-      
-      if (!url.searchParams.has("resize")) {
-        url.searchParams.set("resize", "cover");
-      }
-      return url.toString();
-    }
-
-    // 3. Cloudinary
-    if (hostname.includes("res.cloudinary.com")) {
+    // 2. Optimized Cloudinary Native Handling
+    if (hostname.includes("res.cloudinary.com") && cloudName) {
       const pathSegments = url.pathname.split("/");
-      const cloudName = pathSegments[1];
       const uploadIndex = pathSegments.indexOf("upload");
 
-      if (uploadIndex === -1 || !cloudName) {
-        return src; // Non-standard Cloudinary URL, bypass optimization
+      if (uploadIndex !== -1) {
+        const publicId = pathSegments.slice(uploadIndex + 1).join("/");
+        
+        // Handle resize mode hints from URL search params
+        let resizeTransform = "c_limit";
+        const internalResize = url.searchParams.get("resize");
+        if (internalResize === "cover") {
+          resizeTransform = "c_fill,g_auto";
+        } else if (internalResize === "contain") {
+          resizeTransform = "c_pad,b_auto";
+        }
+
+        return `https://res.cloudinary.com/${cloudName}/image/upload/${transformations},${resizeTransform}/${publicId}`;
       }
-
-      // Base transformations
-      const transformations = [
-        `w_${width}`,
-        `q_${quality === 75 ? "auto" : quality}`,
-        "f_auto",
-        "dpr_auto",
-      ];
-
-      // Handle resize mode hints
-      const internalResize = url.searchParams.get("resize");
-      if (internalResize === "cover") {
-        transformations.push("c_fill", "g_auto");
-      } else if (internalResize === "contain") {
-        transformations.push("c_pad", "b_auto");
-      } else {
-        transformations.push("c_limit");
-      }
-
-      // Reconstruct URL: [cloudName]/image/upload/[transformations]/[publicId]
-      // Skip the version segment if it looks like one (starts with 'v') to avoid duplication if publicId includes it
-      const publicIdSegments = pathSegments.slice(uploadIndex + 1);
-      const publicId = publicIdSegments.join("/");
-
-      return `https://res.cloudinary.com/${cloudName}/image/upload/${transformations.join(",")}/${publicId}`;
     }
 
-    // 4. Default Fallback
+    // 3. Fallback: Proxy everything else through Cloudinary 'fetch'
+    // This allows us to optimize Unsplash, Supabase, and other external sources for free
+    if (cloudName) {
+      const encodedUrl = encodeURIComponent(src);
+      return `https://res.cloudinary.com/${cloudName}/image/fetch/${transformations},c_limit/${encodedUrl}`;
+    }
+
+    // 4. Ultimate Fallback (if cloudName missing)
     return src;
   } catch (error) {
-    console.warn("[myImageLoader] Failed to parse URL, falling back to raw src:", src);
+    // If URL parsing fails, return original src
     return src;
   }
 }

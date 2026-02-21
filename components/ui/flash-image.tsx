@@ -123,13 +123,16 @@ export default function FlashImage({
     }
   }
 
+  const [isLoaded, setIsLoaded] = useState(false);
+
   return (
     <Image
       loader={shouldUseLoader ? imageLoader : undefined}
       src={loaderSrc}
       alt={alt || "Product Image"}
-      className={baseClass}
+      className={cn(baseClass, isLoaded ? "opacity-100" : "opacity-0")}
       unoptimized={finalUnoptimized}
+      onLoad={() => setIsLoaded(true)}
       onError={() => {
         console.warn(
           `[FlashImage] Failed to load optimized image: ${src}. Falling back.`,

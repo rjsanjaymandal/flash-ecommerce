@@ -20,17 +20,19 @@ export async function getConcepts() {
   return data
 }
 
+async function fetchActiveConcepts(): Promise<Concept[]> {
+    const supabase = createStaticClient()
+    const { data } = await supabase
+        .from('concepts')
+        .select('id, title, description, image_url, vote_count, vote_goal, status, created_at')
+        .eq('status', 'voting')
+        .order('created_at', { ascending: false })
+    return data || []
+}
+
 export async function getActiveConcepts() {
     return unstable_cache(
-        async () => {
-            const supabase = createStaticClient()
-            const { data } = await supabase
-                .from('concepts')
-                .select('*')
-                .eq('status', 'voting')
-                .order('created_at', { ascending: false })
-            return data || []
-        },
+        async () => fetchActiveConcepts(),
         ['active-concepts'],
         { tags: ['concepts'], revalidate: 3600 }
     )()

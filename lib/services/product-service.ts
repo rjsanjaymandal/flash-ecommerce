@@ -143,7 +143,7 @@ async function fetchProducts(filter: ProductFilter, supabaseClient?: SupabaseCli
     // This avoids JS-side O(N) calculations and enables DB-level sorting by rating.
     const selectFields = filter.includeDetails 
         ? '*, categories(name), product_stock(*)'
-        : 'id, name, slug, price, original_price, main_image_url, status, is_active, category_id, created_at, is_carousel_featured, total_stock, size_options, color_options, categories(name), average_rating:average_rating_calculated, review_count:review_count_calculated'
+        : 'id, name, slug, price, original_price, main_image_url, status, category_id, created_at, is_carousel_featured, total_stock, size_options, color_options, categories(name), average_rating:average_rating_calculated, review_count:review_count_calculated'
 
     let query = supabase
         .from('products_with_stats')
@@ -551,26 +551,19 @@ export async function getProductsByIds(ids: string[]): Promise<Product[]> {
     const supabase = createStaticClient()
     
     const { data, error } = await supabase
-      .from('products')
-      .select('id, name, slug, price, original_price, main_image_url, gallery_image_urls, status, is_active, category_id, created_at, is_carousel_featured, total_stock, categories(name), product_stock(*), reviews(rating)')
+      .from('products_with_stats')
+      .select('id, name, slug, price, original_price, main_image_url, status, category_id, created_at, is_carousel_featured, total_stock, size_options, color_options, categories(name), average_rating:average_rating_calculated, review_count:review_count_calculated')
       .in('id', ids)
     
     if (error) throw error
 
-    // Define a join type locally or infer
-    type ProductWithRatings = Product & { reviews: { rating: number | null }[] }
-
-    return (data || []).map((p) => {
-        const product = p as unknown as ProductWithRatings
-        const ratings = product.reviews?.map((r) => r.rating).filter((r): r is number => r !== null) || []
-        const avg = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0
-        return {
-            ...product,
-            average_rating: avg,
-            review_count: ratings.length,
-            total_stock: product.total_stock ?? 0
-        } as Product
-    })
+    const rawRows = ((data as unknown) as ProductWithStatsRow[] | null) ?? []
+    return rawRows.map(p => ({
+        ...p,
+        average_rating: p.average_rating_calculated || 0,
+        review_count: p.review_count_calculated || 0,
+        total_stock: p.total_stock ?? 0
+    } as Product))
 }
 
 export async function getValidProducts(ids: string[]): Promise<Product[]> {
@@ -579,8 +572,8 @@ export async function getValidProducts(ids: string[]): Promise<Product[]> {
     
     // Only fetch ACTIVE products
     const { data, error } = await supabase
-      .from('products')
-      .select('id, name, slug, price, original_price, main_image_url, gallery_image_urls, status, is_active, category_id, created_at, is_carousel_featured, total_stock, categories(name), product_stock(*), reviews(rating)')
+      .from('products_with_stats')
+      .select('id, name, slug, price, original_price, main_image_url, status, category_id, created_at, is_carousel_featured, total_stock, size_options, color_options, categories(name), average_rating:average_rating_calculated, review_count:review_count_calculated')
       .in('id', ids)
       .eq('status', 'active')
     
@@ -589,19 +582,13 @@ export async function getValidProducts(ids: string[]): Promise<Product[]> {
         return []
     }
 
-    type ProductWithRatings = Product & { reviews: { rating: number | null }[] }
-
-    return (data || []).map((p) => {
-        const product = p as unknown as ProductWithRatings
-        const ratings = product.reviews?.map((r) => r.rating).filter((r): r is number => r !== null) || []
-        const avg = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0
-        return {
-            ...product,
-            average_rating: avg,
-            review_count: ratings.length,
-            total_stock: product.total_stock ?? 0
-        } as Product
-    })
+    const rawRows = ((data as unknown) as ProductWithStatsRow[] | null) ?? []
+    return rawRows.map(p => ({
+        ...p,
+        average_rating: p.average_rating_calculated || 0,
+        review_count: p.review_count_calculated || 0,
+        total_stock: p.total_stock ?? 0
+    } as Product))
 }
 
 export async function getRelatedProducts(product: Product): Promise<Product[]> {

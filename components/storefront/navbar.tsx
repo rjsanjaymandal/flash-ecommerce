@@ -262,7 +262,11 @@ export function StorefrontNavbar() {
                 <>
                   {user ? (
                     <div className="flex items-center gap-2">
-                      <Link href="/account" className="hidden sm:block">
+                      <Link
+                        href="/account"
+                        className="hidden sm:block"
+                        aria-label="Account"
+                      >
                         <Button
                           variant="ghost"
                           size="sm"

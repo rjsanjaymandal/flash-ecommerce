@@ -32,7 +32,9 @@ export async function uploadOptimizedImage(
       {
         folder: folder,
         resource_type: "auto",
-        // Cloudinary handles optimization by default if we use f_auto later
+        tags: [folder, 'flash-ecommerce'],
+        unique_filename: true,
+        use_filename: true,
       },
       (error, result) => {
         if (error) reject(error);
