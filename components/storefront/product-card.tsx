@@ -104,15 +104,17 @@ export function ProductCard({
   // Dynamic stock calculation
   const stock = realTimeStock || [];
 
-  // Determine if product has multiple options.
-  // We check metadata AND actual stock variations to be safe.
+  // Define helper to clear default single entries
+  const hasMultipleChoices = (opts: string[] | undefined | null) => {
+    if (!opts || opts.length <= 1) return false;
+    return true;
+  };
+
   const hasMultipleOptions =
-    (product.size_options && product.size_options.length > 0) ||
-    (product.color_options && product.color_options.length > 0) ||
-    stock.length > 1 ||
-    (stock.length === 1 &&
-      stock[0].size !== "Standard" &&
-      stock[0].size !== "One Size");
+    hasMultipleChoices(product.size_options) ||
+    hasMultipleChoices(product.color_options) ||
+    hasMultipleChoices(product.fit_options as string[]) ||
+    stock.length > 1;
 
   // Calculate total stock
   const totalStock =
@@ -199,7 +201,7 @@ export function ProductCard({
           image: product.main_image_url || "",
           size: firstStock.size || "Standard",
           color: firstStock.color || "Standard",
-          fit: firstStock.fit || "Regular",
+          fit: product.fit_options?.[0] || firstStock.fit || "Regular",
           quantity: 1,
           maxQuantity: firstStock.quantity,
           slug: product.slug || "",
@@ -245,7 +247,7 @@ export function ProductCard({
         image: product.main_image_url || "",
         size: firstStock.size || "Standard",
         color: firstStock.color || "Standard",
-        fit: firstStock.fit || "Regular",
+        fit: product.fit_options?.[0] || firstStock.fit || "Regular",
         quantity: 1,
         maxQuantity: firstStock.quantity,
         slug: product.slug || "",

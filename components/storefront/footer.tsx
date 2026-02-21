@@ -12,10 +12,24 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 export function Footer() {
+  const [email, setEmail] = useState("");
+
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) {
+      toast.error("Please enter an email address.");
+      return;
+    }
+    // Simulate API call
+    toast.success("Subscribed! Check your email for your 10% off code.");
+    setEmail("");
+  };
+
   return (
     <footer className="border-t border-border bg-background pt-16 pb-8">
       <div className="container mx-auto px-4 md:px-6">
@@ -37,7 +51,7 @@ export function Footer() {
                   Icon: Instagram,
                   href: "https://www.instagram.com/flashhfashion/",
                 },
-                { Icon: Twitter, href: "#" },
+                { Icon: Twitter, href: "https://twitter.com/flashhfashion" },
                 {
                   Icon: Facebook,
                   href: "https://www.facebook.com/share/1Ec2dVLnh4/",
@@ -70,12 +84,16 @@ export function Footer() {
               </span>
               .
             </p>
-            <form className="flex gap-2" onSubmit={(e) => e.preventDefault()}>
+            <form className="flex gap-2" onSubmit={handleSubscribe}>
               <Input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
                 className="bg-background border-border/50 h-12 focus-visible:ring-primary"
               />
               <Button
+                type="submit"
                 size="icon"
                 className="h-12 w-12 shrink-0 rounded-lg bg-primary hover:bg-primary/90 text-white"
               >
@@ -91,17 +109,9 @@ export function Footer() {
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li>
                 <Link
-                  href="/shop"
-                  className="hover:text-primary transition-colors block py-1"
-                >
-                  {/* All Products
-                </Link>
-              </li>
-              <li>
-                <Link
                   href="/shop?sort=newest"
                   className="hover:text-primary transition-colors block py-1"
-                > */}
+                >
                   New Arrivals
                 </Link>
               </li>
@@ -195,14 +205,6 @@ export function Footer() {
                   Returns & Exchanges
                 </Link>
               </li>
-              {/* <li>
-                <Link
-                  href="/size-guide"
-                  className="hover:text-primary transition-colors block py-1"
-                >
-                  Size Guide
-                </Link>
-              </li> */}
             </ul>
           </FooterSection>
 
@@ -232,14 +234,6 @@ export function Footer() {
                   Cookie Policy
                 </Link>
               </li>
-              {/* <li>
-                <Link
-                  href="/accessibility"
-                  className="hover:text-primary transition-colors block py-1"
-                >
-                  Accessibility
-                </Link>
-              </li> */}
             </ul>
           </FooterSection>
         </div>

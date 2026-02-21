@@ -20,7 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Trash2 } from "lucide-react";
+import { Trash2, Plus } from "lucide-react";
 import { VariantGenerator } from "@/components/admin/products/variant-generator";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
@@ -183,11 +183,31 @@ export function ProductVariants({ colorOptions }: ProductVariantsProps) {
           <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
             <div className="flex justify-between items-center">
               <div className="text-sm font-medium">Variant Options</div>
-              <VariantGenerator
-                onGenerate={handleGenerate}
-                existingVariants={variants}
-                colorOptions={colorOptions}
-              />
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                  onClick={() =>
+                    append({
+                      size: "Standard",
+                      color: "Standard",
+                      fit: "Regular",
+                      quantity: 0,
+                      cost_price: 0,
+                    })
+                  }
+                  type="button"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Variant
+                </Button>
+                <VariantGenerator
+                  onGenerate={handleGenerate}
+                  existingVariants={variants}
+                  colorOptions={colorOptions}
+                />
+              </div>
             </div>
 
             <BulkVariantActions

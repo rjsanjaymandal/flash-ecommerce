@@ -86,9 +86,27 @@ export function ProductDetailClient({
   const router = useRouter();
   const addToCart = useCartStore((state) => state.addItem);
 
-  const [selectedSize, setSelectedSize] = useState<string>("");
-  const [selectedColor, setSelectedColor] = useState<string>("");
-  const [selectedFit, setSelectedFit] = useState<string>("Regular");
+  // Enterprise Initial State: Find first in-stock variant combo if available.
+  const initialStockItem = useMemo(() => {
+    return product.product_stock?.find((s) => s.quantity > 0);
+  }, [product.product_stock]);
+
+  const [selectedSize, setSelectedSize] = useState<string>(
+    initialStockItem?.size || product.size_options?.[0] || "",
+  );
+
+  const [selectedColor, setSelectedColor] = useState<string>(
+    initialStockItem?.color && initialStockItem.color !== "Standard"
+      ? initialStockItem.color
+      : product.color_options?.length > 0 &&
+          product.color_options[0] !== "Standard"
+        ? product.color_options[0]
+        : "",
+  );
+
+  const [selectedFit, setSelectedFit] = useState<string>(
+    initialStockItem?.fit || product.fit_options?.[0] || "Regular",
+  );
   const [quantity] = useState(1);
 
   // Waitlist State
@@ -192,53 +210,14 @@ export function ProductDetailClient({
 
   const fitOptions = useMemo(() => {
     if (product.fit_options?.length) {
-      // If fits were explicitly defined, filter out "Regular" if it's the ONLY option
-      const explicitUnique = Array.from(new Set(product.fit_options));
-      if (
-        explicitUnique.length === 1 &&
-        explicitUnique[0].toLowerCase() === "regular"
-      ) {
-        return [];
-      }
       return product.fit_options;
     }
 
     const fits = realTimeStock?.map((s) => s.fit).filter(Boolean) || [];
     const uniqueFits = Array.from(new Set(fits));
 
-    // If the only available fit is "Regular" (and it wasn't explicit), hide it.
-    if (
-      uniqueFits.length === 0 ||
-      (uniqueFits.length === 1 && uniqueFits[0].toLowerCase() === "regular")
-    ) {
-      return [];
-    }
-
     return uniqueFits;
   }, [product.fit_options, realTimeStock]);
-
-  // Auto-Select Logic: If there's only 1 option for any attribute, select it automatically.
-  useEffect(() => {
-    // 1. Auto-Select Size
-    if (sizeOptions.length === 1 && !selectedSize) {
-      setSelectedSize(sizeOptions[0]);
-    }
-    // 2. Auto-Select Color
-    if (colorOptions.length === 1 && !selectedColor) {
-      setSelectedColor(colorOptions[0]);
-    }
-    // 3. Auto-Select Fit (Only if options exist)
-    if (fitOptions.length === 1 && !selectedFit) {
-      setSelectedFit(fitOptions[0]);
-    }
-  }, [
-    sizeOptions,
-    colorOptions,
-    fitOptions,
-    selectedSize,
-    selectedColor,
-    selectedFit,
-  ]);
 
   // Stock Logic (Normalized)
   const stockMap = useMemo(() => {
@@ -262,6 +241,80 @@ export function ProductDetailClient({
 
   const getStock = (size: string, color: string, fit: string) =>
     stockMap[`${size}-${normalizeColor(color)}-${fit}`] || 0;
+
+  // Auto-Select Logic: Context Aware Selection
+  useEffect(() => {
+    // Determine available options under current constraints
+    const availableSizes = sizeOptions.filter((s: string) => {
+      // If color and fit are selected, check exact stock. Otherwise it's broadly available.
+      if (selectedColor && selectedFit)
+        return getStock(s, selectedColor, selectedFit) > 0;
+      return true;
+    });
+
+    const availableColors = colorOptions.filter((c: string) => {
+      if (selectedSize && selectedFit)
+        return getStock(selectedSize, c, selectedFit) > 0;
+      return true;
+    });
+
+    const availableFits = fitOptions.filter((f: string) => {
+      if (selectedSize && selectedColor)
+        return getStock(selectedSize, selectedColor, f) > 0;
+      return true;
+    });
+
+    // 1. Auto-Select or Correct Size
+    // If no size is selected, or if the current size is no longer available under the new color/fit constraints BUT other sizes are.
+    if (
+      !selectedSize ||
+      (selectedSize &&
+        !availableSizes.includes(selectedSize) &&
+        availableSizes.length > 0)
+    ) {
+      if (availableSizes.length > 0) {
+        setSelectedSize(availableSizes[0]);
+      } else if (sizeOptions.length > 0 && !selectedSize) {
+        setSelectedSize(sizeOptions[0]); // Global fallback
+      }
+    }
+
+    // 2. Auto-Select or Correct Color
+    if (
+      !selectedColor ||
+      (selectedColor &&
+        !availableColors.includes(selectedColor) &&
+        availableColors.length > 0)
+    ) {
+      if (availableColors.length > 0) {
+        setSelectedColor(availableColors[0]);
+      } else if (colorOptions.length > 0 && !selectedColor) {
+        setSelectedColor(colorOptions[0]); // Global fallback
+      }
+    }
+
+    // 3. Auto-Select or Correct Fit
+    if (
+      !selectedFit ||
+      (selectedFit &&
+        !availableFits.includes(selectedFit) &&
+        availableFits.length > 0)
+    ) {
+      if (availableFits.length > 0) {
+        setSelectedFit(availableFits[0]);
+      } else if (fitOptions.length > 0 && !selectedFit) {
+        setSelectedFit(fitOptions[0]); // Global fallback
+      }
+    }
+  }, [
+    sizeOptions,
+    colorOptions,
+    fitOptions,
+    selectedSize,
+    selectedColor,
+    selectedFit,
+    stockMap, // Dependency on stock map so it respects real-time calculations
+  ]);
   //   const isAvailable = (size: string, color: string) =>
   //     (stockMap[`${size}-${color}`] || 0) > 0;
   const isSizeAvailable = (size: string) => {
@@ -366,7 +419,7 @@ export function ProductDetailClient({
   ) => {
     if (
       !selectedSize ||
-      !selectedColor ||
+      (colorOptions.length > 0 && !selectedColor) ||
       (fitOptions.length > 0 && !selectedFit)
     ) {
       toast.error("Please complete your selection");
@@ -385,7 +438,7 @@ export function ProductDetailClient({
           price: adjustedPrice,
           image: product.main_image_url,
           size: selectedSize,
-          color: selectedColor,
+          color: selectedColor || "Standard", // Fallback for backend if color hidden
           fit: selectedFit || "Regular", // Fallback for backend if fit hidden
           quantity: quantity,
           maxQuantity: maxQty,

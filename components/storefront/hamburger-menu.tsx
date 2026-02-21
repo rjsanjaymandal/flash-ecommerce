@@ -271,10 +271,23 @@ export function HamburgerMenu({ categories }: HamburgerMenuProps) {
 
             {/* Socials */}
             <div className="flex items-center justify-center gap-8">
-              {[Instagram, Twitter, Youtube, Facebook].map((Icon, i) => (
+              {[
+                {
+                  Icon: Instagram,
+                  href: "https://www.instagram.com/flashhfashion/",
+                },
+                { Icon: Twitter, href: "https://twitter.com/flashhfashion" },
+                { Icon: Youtube, href: "#" }, // Keeping Youtube as # since we don't have a URL for it yet
+                {
+                  Icon: Facebook,
+                  href: "https://www.facebook.com/share/1Ec2dVLnh4/",
+                },
+              ].map(({ Icon, href }, i) => (
                 <a
                   key={i}
-                  href="#"
+                  href={href}
+                  target={href !== "#" ? "_blank" : undefined}
+                  rel={href !== "#" ? "noopener noreferrer" : undefined}
                   className="text-muted-foreground/40 hover:text-foreground transition-colors p-1"
                 >
                   <Icon className="h-5 w-5 stroke-[1.5px]" />
