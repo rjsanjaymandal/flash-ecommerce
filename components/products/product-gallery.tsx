@@ -66,6 +66,7 @@ export function ProductGallery({
                   src={img}
                   alt={`${name} view ${i + 1}`}
                   fill
+                  resizeMode="contain"
                   className="object-contain"
                   priority={i < 2} // Prioritize first two
                   sizes="50vw"
@@ -121,7 +122,7 @@ export function ProductGallery({
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
-            <div className="w-[1px] h-6 bg-foreground/10" />
+            <div className="w-px h-6 bg-foreground/10" />
             <button
               onClick={() => scrollContainer("right")}
               className="w-8 h-full flex items-center justify-center hover:bg-black/5 transition-colors outline-none focus:outline-none focus-visible:ring-0"
@@ -154,6 +155,7 @@ export function ProductGallery({
                   src={img}
                   alt={`${name} view ${i + 1}`}
                   fill
+                  resizeMode="contain"
                   className="object-contain"
                   priority={i === 0}
                   sizes="100vw"

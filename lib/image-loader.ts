@@ -52,10 +52,17 @@ export default function myImageLoader({
     }
 
     // 3. Fallback: Proxy everything else through Cloudinary 'fetch'
-    // This allows us to optimize Unsplash, Supabase, and other external sources for free
     if (cloudName) {
-      const encodedUrl = encodeURIComponent(src);
-      return `https://res.cloudinary.com/${cloudName}/image/fetch/${transformations},c_limit/${encodedUrl}`;
+      const internalResize = url.searchParams.get("resize");
+      let resizeTransform = "c_limit";
+      if (internalResize === "cover") {
+        resizeTransform = "c_fill,g_auto";
+      } else if (internalResize === "contain") {
+        resizeTransform = "c_pad,b_auto";
+      }
+
+      const encodedUrl = encodeURIComponent(src.split('?')[0]); // Remove query params from source for cleaner fetch
+      return `https://res.cloudinary.com/${cloudName}/image/fetch/${transformations},${resizeTransform}/${encodedUrl}`;
     }
 
     // 4. Ultimate Fallback (if cloudName missing)

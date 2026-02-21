@@ -95,6 +95,7 @@ export function CartUpsell() {
                     alt={product.name}
                     fill
                     quality={80}
+                    resizeMode="contain"
                     className={cn(
                       "object-contain p-2 transition-all duration-500",
                       isSelecting && "scale-90 opacity-20 blur-[2px]",

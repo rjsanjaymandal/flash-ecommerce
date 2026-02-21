@@ -82,7 +82,8 @@ export function QuickView({ product }: QuickViewProps) {
               src={product.main_image_url || "/placeholder.jpg"}
               alt={product.name}
               fill
-              className="absolute inset-0 w-full h-full object-cover"
+              resizeMode="contain"
+              className="absolute inset-0 w-full h-full object-contain"
             />
           </div>
           <div className="p-8 flex flex-col justify-center space-y-6">

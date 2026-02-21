@@ -97,7 +97,7 @@ export default function FlashImage({
           : "";
 
   const baseClass = cn(
-    "bg-zinc-900/10 transition-opacity duration-300",
+    "bg-transparent transition-opacity duration-300",
     objectFitClass,
     className,
   );

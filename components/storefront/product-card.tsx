@@ -520,9 +520,9 @@ export function ProductCard({
                     src={src}
                     alt={`${product.name} - ${idx + 1}`}
                     fill
-                    resizeMode="cover"
+                    resizeMode="contain"
                     className={cn(
-                      "object-cover transition-all duration-500",
+                      "object-contain transition-all duration-500",
                       mounted ? "opacity-100" : "opacity-0",
                     )}
                     sizes="(max-width: 768px) 50vw, (max-width: 1210px) 33vw, 25vw"
