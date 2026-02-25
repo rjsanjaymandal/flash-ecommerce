@@ -7,7 +7,7 @@ import { OrganizationJsonLd } from "@/components/seo/organization-json-ld";
 import { WebSiteJsonLd } from "@/components/seo/website-json-ld";
 import { getUnifiedAuth } from "@/lib/supabase/auth-helper";
 import { Analytics } from "@vercel/analytics/react";
-import { GoogleAnalytics } from "@next/third-parties/google";
+import { GoogleAnalytics, GoogleTagManager } from "@next/third-parties/google";
 import { PWARegister } from "@/components/pwa-register";
 
 const inter = Inter({
@@ -144,6 +144,9 @@ export default async function RootLayout({
         <OrganizationJsonLd />
         <WebSiteJsonLd />
         <Analytics />
+        <GoogleTagManager
+          gtmId={process.env.NEXT_PUBLIC_GTM_ID || "GTM-PQNXSR7Q"}
+        />
         <GoogleAnalytics
           gaId={process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID || "G-RE5ZNPXZ2E"}
         />
