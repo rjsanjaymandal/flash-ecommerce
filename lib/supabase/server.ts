@@ -9,6 +9,14 @@ export async function createClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder'
 
+  // Detect build phase to avoid network hangs
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    return createServerClient<Database>(supabaseUrl, supabaseKey, {
+      cookies: { getAll() { return [] }, setAll() {} },
+      global: { fetch: async () => new Response(JSON.stringify([]), { status: 200 }) }
+    });
+  }
+
   return createServerClient<Database>(
     supabaseUrl,
     supabaseKey,
@@ -34,6 +42,15 @@ export async function createClient() {
 export function createStaticClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder'
+
+  // Detect build phase to avoid network hangs
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    return createSupabaseClient<Database>(supabaseUrl, supabaseKey, {
+      global: {
+        fetch: async () => new Response(JSON.stringify([]), { status: 200 })
+      }
+    });
+  }
 
   return createSupabaseClient<Database>(
     supabaseUrl,

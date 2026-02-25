@@ -13,6 +13,15 @@ export const createAdminClient = () => {
       return createClient<Database>('https://placeholder.supabase.co', 'placeholder')
     }
 
+    // Detect build phase to avoid network hangs
+    if (process.env.NEXT_PHASE === 'phase-production-build') {
+      return createClient<Database>(supabaseUrl, serviceKey, {
+        global: {
+          fetch: async () => new Response(JSON.stringify([]), { status: 200 })
+        }
+      });
+    }
+
     return createClient<Database>(
       supabaseUrl,
       serviceKey,
@@ -25,7 +34,7 @@ export const createAdminClient = () => {
           fetch: (url, options) => {
             return fetch(url, {
               ...options,
-              signal: options?.signal || AbortSignal.timeout(30000) // 30s timeout
+              signal: options?.signal || AbortSignal.timeout(5000) // 5s timeout
             })
           }
         }

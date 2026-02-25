@@ -75,6 +75,7 @@ export const getStaticBlogPosts = async (): Promise<BlogPostMeta[]> => {
 import { unstable_cache } from 'next/cache'
 
 async function fetchBlogPosts(): Promise<BlogPost[]> {
+  try {
     const supabase = createAdminClient()
     const { data, error } = await (supabase as any)
       .from('blog_posts')
@@ -87,6 +88,10 @@ async function fetchBlogPosts(): Promise<BlogPost[]> {
       return []
     }
     return data || []
+  } catch (error) {
+    console.error('Exception fetching blog posts:', error)
+    return []
+  }
 }
 
 /**

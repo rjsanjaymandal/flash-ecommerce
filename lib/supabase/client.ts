@@ -17,6 +17,16 @@ export function createClient() {
     )
   }
 
+  // Detect build phase to avoid network hangs
+  const isBuild = process.env.NEXT_PHASE === 'phase-production-build';
+  if (isBuild) {
+    return createBrowserClient<Database>(supabaseUrl, supabaseKey, {
+      global: {
+        fetch: async () => new Response(JSON.stringify([]), { status: 200 })
+      }
+    });
+  }
+
   return createBrowserClient<Database>(supabaseUrl, supabaseKey, {
     global: {
       fetch: async (url, options) => {
@@ -27,7 +37,7 @@ export function createClient() {
           try {
             const response = await fetch(url, {
               ...options,
-              signal: options?.signal || AbortSignal.timeout(30000)
+              signal: options?.signal || AbortSignal.timeout(5000)
             })
             
             // Retry on 429 (Rate Limit) or 5xx (Server Error)
