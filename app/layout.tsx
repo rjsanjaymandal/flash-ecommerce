@@ -42,17 +42,22 @@ export const metadata: Metadata = {
     "luxury clothing brand",
     "minimalist luxury india",
     "premium streetwear",
+    "quiet luxury india",
+    "oversized silhouettes",
+    "gender-neutral streetwear",
+    "sustainable luxury fashion",
     "high-end apparel",
     "flash fashion",
     "flashhfashion",
     "minimalist fashion",
     "premium basics india",
     "luxury streetwear delhi",
+    "luxury streetwear mumbai",
     "designer streetwear india",
     "cinematic fashion label",
     "heavyweight cotton quality",
     "luxury essentials",
-    "flashhfashion clothing",
+    "investment pieces luxury",
   ],
   metadataBase: new URL("https://flashhfashion.in"),
   alternates: {
@@ -140,7 +145,7 @@ export default async function RootLayout({
         <WebSiteJsonLd />
         <Analytics />
         <GoogleAnalytics
-          gaId={process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID || "G-2DR5KWRR1R"}
+          gaId={process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID || "G-RE5ZNPXZ2E"}
         />
         <PWARegister />
       </body>
