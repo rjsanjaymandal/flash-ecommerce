@@ -18,7 +18,7 @@ export function createClient() {
   }
 
   // Detect build phase to avoid network hangs
-  const isBuild = process.env.NEXT_PHASE === 'phase-production-build';
+  const isBuild = process.env.NEXT_IS_BUILD === 'true';
   if (isBuild) {
     return createBrowserClient<Database>(supabaseUrl, supabaseKey, {
       global: {
@@ -27,37 +27,5 @@ export function createClient() {
     });
   }
 
-  return createBrowserClient<Database>(supabaseUrl, supabaseKey, {
-    global: {
-      fetch: async (url, options) => {
-        const maxRetries = 3
-        let delay = 1000 // 1s
-        
-        for (let i = 0; i <= maxRetries; i++) {
-          try {
-            const response = await fetch(url, {
-              ...options,
-              signal: options?.signal || AbortSignal.timeout(5000)
-            })
-            
-            // Retry on 429 (Rate Limit) or 5xx (Server Error)
-            if (i < maxRetries && (response.status === 429 || response.status >= 500)) {
-               console.warn(`[Supabase] Retry ${i+1}/${maxRetries} after ${delay}ms (Status: ${response.status})`)
-               await new Promise(res => setTimeout(res, delay))
-               delay *= 2 // Exponential backoff
-               continue
-            }
-            
-            return response
-          } catch (err) {
-            if (i === maxRetries) throw err
-            console.warn(`[Supabase] Network Error - Retry ${i+1}/${maxRetries} after ${delay}ms`)
-            await new Promise(res => setTimeout(res, delay))
-            delay *= 2
-          }
-        }
-        return fetch(url, options) // Final fallback
-      }
-    }
-  })
+  return createBrowserClient<Database>(supabaseUrl, supabaseKey)
 }

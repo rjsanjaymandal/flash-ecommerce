@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
+const nextConfig = (phase: string): NextConfig => ({
+  env: {
+    NEXT_IS_BUILD: phase === 'phase-production-build' ? 'true' : 'false',
+  },
   output: 'standalone',
   images: {
     remotePatterns: [
@@ -52,12 +55,12 @@ const nextConfig: NextConfig = {
               base-uri 'self';
               form-action 'self';
               upgrade-insecure-requests;
-            `.replace(/\\s{2,}/g, ' ').trim()
+            `.replace(/\s{2,}/g, ' ').trim()
           }
         ],
       },
     ];
   },
-};
+});
 
 export default nextConfig;

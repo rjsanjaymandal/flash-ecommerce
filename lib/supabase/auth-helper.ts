@@ -21,16 +21,14 @@ export const getUnifiedAuth = cache(async () => {
     const supabase = await createClient()
 
     // 2. Fast Session Retrieval
-    // getSession() reads from the local cookie/storage. It's fast.
-    const { data: { session } } = await supabase.auth.getSession()
+    const { data } = await supabase.auth.getSession()
+    const session = data?.session
 
     if (!session?.user) {
       return { user: null, session: null, profile: null }
     }
 
     // 3. Parallel Verification & Profile Fetch
-    // We use the ID from the session to fire off the profile query 
-    // while simultaneously verifying the user with getUser()
     const [userResult, profileResult] = await Promise.all([
       supabase.auth.getUser(),
       supabase
@@ -40,8 +38,8 @@ export const getUnifiedAuth = cache(async () => {
         .single()
     ])
 
-    const user = userResult.data.user
-    const profile = profileResult.data
+    const user = userResult.data?.user || null
+    const profile = profileResult.data || null
 
     return { user, session, profile }
   } catch (error: any) {

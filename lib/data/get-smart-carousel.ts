@@ -24,7 +24,10 @@ export async function getSmartCarouselData() {
         .order('created_at', { ascending: false })
         .limit(40) // Increased buffer to ensure 15 in-stock items are available
 
-    if (!data) return []
+    if (!data) {
+        console.warn('[getSmartCarouselData] No data returned from Supabase. Returning empty list.')
+        return []
+    }
 
     // Client-side filtering for stock > 0
     const smartData = data

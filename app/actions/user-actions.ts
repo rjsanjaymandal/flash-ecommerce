@@ -28,7 +28,8 @@ export async function updateProfile(formData: FormData) {
 
   const { name, pronouns, fit_preference } = parsed.data;
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: authData } = await supabase.auth.getUser()
+  const user = authData?.user
 
   if (!user) {
       return { error: 'Not authenticated' }

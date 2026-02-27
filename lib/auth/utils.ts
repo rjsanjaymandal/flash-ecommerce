@@ -9,7 +9,8 @@ export async function requireAdmin() {
     const supabase = await createClient()
     
     // 1. Check Auth (Session)
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const { data, error: authError } = await supabase.auth.getUser()
+    const user = data?.user
     if (authError || !user) {
         throw new Error('Unauthorized: No session found')
     }

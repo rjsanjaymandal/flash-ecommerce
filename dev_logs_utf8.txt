@@ -1,0 +1,27 @@
+﻿node.exe : ΓÜá Port 3000 is in use by 
+process 12612, using available port 3001 
+instead.
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" 
+"C:\Users\rjsan\AppData\Roaming\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecifie 
+   d: (ΓÜá Port 3000 i...t 3001 instead.  
+  :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeComma 
+   ndError
+ 
+Γû▓ Next.js 16.1.6 (Turbopack)
+- Local:         http://localhost:3001
+- Network:       http://10.144.81.92:3001
+- Environments: .env.local
+- Experiments (use with caution):
+  ┬╖ optimizePackageImports
+
+Γ£ô Starting...
+Γ¿» Unable to acquire lock at 
+G:\flash-ecommerce\.next\dev\lock, is 
+another instance of next dev running?
+  Suggestion: If you intended to restart next dev, terminate the other process, and then try again.
+[?25h

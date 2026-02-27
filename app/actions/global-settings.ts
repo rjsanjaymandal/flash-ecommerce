@@ -41,7 +41,8 @@ export async function updateGlobalSettings(key: string, value: any) {
   const supabase = await createClient()
   
   // Check auth
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data } = await supabase.auth.getUser()
+  const user = data?.user
   if (!user) {
     console.error('UpdateGlobalSettings: No user found')
     return { error: 'Unauthorized' }

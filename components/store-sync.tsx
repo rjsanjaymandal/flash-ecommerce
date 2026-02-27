@@ -163,7 +163,7 @@ export function StoreSync() {
           }
         }
       } catch (error) {
-        console.error("[StoreSync] Stock validation failed:", error);
+        console.warn("[StoreSync] Stock validation failed:", error);
       }
     },
     [supabase, user, setCartItems],
@@ -211,7 +211,7 @@ export function StoreSync() {
             .eq("user_id", user.id);
 
           if (wishError) {
-            console.error("[StoreSync] Wishlist fetch error:", wishError);
+            console.warn("[StoreSync] Wishlist fetch error:", wishError);
           } else if (wishlistData) {
             const mappedWishlist: WishlistItem[] = (
               wishlistData as unknown as WishlistDbItem[]
@@ -227,7 +227,7 @@ export function StoreSync() {
           }
         }
       } catch (error) {
-        console.error("[StoreSync] Sync error:", error);
+        console.warn("[StoreSync] Sync error:", error);
       } finally {
         setIsLoading(false);
         isSyncingRef.current = false;

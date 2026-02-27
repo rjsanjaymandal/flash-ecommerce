@@ -14,7 +14,7 @@ export const createAdminClient = () => {
     }
 
     // Detect build phase to avoid network hangs
-    if (process.env.NEXT_PHASE === 'phase-production-build') {
+    if (process.env.NEXT_IS_BUILD === 'true') {
       return createClient<Database>(supabaseUrl, serviceKey, {
         global: {
           fetch: async () => new Response(JSON.stringify([]), { status: 200 })
@@ -29,14 +29,6 @@ export const createAdminClient = () => {
         auth: {
           autoRefreshToken: false,
           persistSession: false
-        },
-        global: {
-          fetch: (url, options) => {
-            return fetch(url, {
-              ...options,
-              signal: options?.signal || AbortSignal.timeout(5000) // 5s timeout
-            })
-          }
         }
       }
     )

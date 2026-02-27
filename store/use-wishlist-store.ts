@@ -44,7 +44,7 @@ export const useWishlistStore = create<WishlistState>()(
                     { user_id: user.id, product_id: item.productId }, 
                     { onConflict: 'user_id, product_id' }
                 )
-            if (error) console.error("Error adding to remote wishlist", error)
+            if (error) console.warn("Error adding to remote wishlist", error)
         }
       },
 

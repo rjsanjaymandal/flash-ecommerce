@@ -1,4 +1,4 @@
-import { createServerClient } from '@supabase/ssr'
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { SITE_URL } from '@/lib/constants'
 
@@ -46,7 +46,8 @@ export async function updateSession(request: NextRequest) {
   )
 
   // 3. Refresh the session
-  const { data: { user }, error } = await supabase.auth.getUser()
+  const { data, error } = await supabase.auth.getUser()
+  const user = data?.user || null
 
 
   // 4. Protected Routes

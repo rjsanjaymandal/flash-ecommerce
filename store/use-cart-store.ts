@@ -90,7 +90,7 @@ export const useCartStore = create<CartState>()(
               try {
                 await fn();
               } catch (err) {
-                console.error("[CartStore] Sync operation failed:", err);
+                console.warn("[CartStore] Sync operation failed:", err);
               }
             })
           };
@@ -353,7 +353,7 @@ export const useCartStore = create<CartState>()(
             ])
 
             if (cartRes.error) {
-                console.error("[CartSync] Failed to fetch server cart:", cartRes.error)
+                console.warn("[CartSync] Failed to fetch server cart:", cartRes.error)
                 return
             }
 
@@ -482,7 +482,7 @@ export const useCartStore = create<CartState>()(
             }
 
         } catch (err) {
-            console.error("[CartSync] Critical failure:", err)
+            console.warn("[CartSync] Critical failure:", err)
         }
       },
 

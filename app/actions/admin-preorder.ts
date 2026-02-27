@@ -7,7 +7,8 @@ export async function getWaitlistUsers(productId: string) {
     const supabase = await createClient()
 
     // Verify Admin
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data } = await supabase.auth.getUser()
+    const user = data?.user
     if (!user) return { error: 'Unauthorized' }
     
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
@@ -40,7 +41,8 @@ export async function getWaitlistUsers(productId: string) {
         let userName = item.profiles?.name
 
         if (item.user_id) {
-            const { data: { user: authUser } } = await adminClient.auth.admin.getUserById(item.user_id)
+            const { data } = await adminClient.auth.admin.getUserById(item.user_id)
+            const authUser = data?.user
             if (authUser?.email) userEmail = authUser.email
         } else {
              userName = 'Guest'
@@ -60,7 +62,8 @@ export async function getAllPreorders() {
     const supabase = await createClient()
 
     // Verify Admin
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data } = await supabase.auth.getUser()
+    const user = data?.user
     if (!user) return { error: 'Unauthorized' }
     
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
@@ -93,7 +96,8 @@ export async function getAllPreorders() {
         let userName = item.profiles?.name
 
         if (item.user_id) {
-            const { data: { user: authUser } } = await adminClient.auth.admin.getUserById(item.user_id)
+            const { data } = await adminClient.auth.admin.getUserById(item.user_id)
+            const authUser = data?.user
             if (authUser?.email) userEmail = authUser.email
             userName = userName || 'Unknown User'
         } else {
@@ -120,8 +124,8 @@ export async function getWaitlistStats() {
         const adminClient = createAdminClient()
         
         // Check auth briefly (optional for stats but good practice)
-        const { data: { user } } = await supabase.auth.getUser()
-        if (!user) return { count: 0, potentialRevenue: 0 }
+        const { data } = await supabase.auth.getUser()
+        if (!data?.user) return { count: 0, potentialRevenue: 0 }
 
         const { data: preorders, error } = await adminClient
             .from('preorders' as any)
@@ -148,8 +152,9 @@ export async function deletePreorder(id: string) {
     const supabase = await createClient()
 
     // Verify Admin
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return { error: 'Unauthorized' }
+    const { data } = await supabase.auth.getUser()
+    if (!data?.user) return { error: 'Unauthorized' }
+    const user = data.user
     
     // Check role from profiles
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
