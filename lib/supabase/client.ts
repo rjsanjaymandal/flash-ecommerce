@@ -9,23 +9,15 @@ export function createClient() {
     console.warn('[Supabase] Missing environment variables. Site may be unstable during render.')
     // Fallback to dummy values to prevent crash, real calls will still fail but render will survive
     return createBrowserClient<Database>(
-      supabaseUrl || 'https://placeholder.supabase.co', 
-      supabaseKey || 'placeholder', 
+      supabaseUrl || 'https://placeholder.supabase.co',
+      supabaseKey || 'placeholder',
       {
         global: { fetch: (...args) => fetch(...args) }
       }
     )
   }
 
-  // Detect build phase to avoid network hangs
-  const isBuild = process.env.NEXT_IS_BUILD === 'true';
-  if (isBuild) {
-    return createBrowserClient<Database>(supabaseUrl, supabaseKey, {
-      global: {
-        fetch: async () => new Response(JSON.stringify([]), { status: 200 })
-      }
-    });
-  }
+  // No more aggressive build-phase mocking. We rely on valid environment variables.
 
   return createBrowserClient<Database>(supabaseUrl, supabaseKey)
 }

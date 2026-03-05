@@ -1,9 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig = (phase: string): NextConfig => ({
-  env: {
-    NEXT_IS_BUILD: phase === 'phase-production-build' ? 'true' : 'false',
-  },
+  // Removal of NEXT_IS_BUILD from runtime env - handled via build-time only detection in clients
   output: 'standalone',
   images: {
     remotePatterns: [
