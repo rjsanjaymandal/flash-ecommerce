@@ -44,12 +44,12 @@ const nextConfig = (phase: string): NextConfig => ({
             key: 'Content-Security-Policy',
             value: `
               default-src 'self';
-              script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://ssl.google-analytics.com https://checkout.razorpay.com https://va.vercel-scripts.com https://cdn.jsdelivr.net;
+              script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://ssl.google-analytics.com https://checkout.razorpay.com https://va.vercel-scripts.com https://cdn.jsdelivr.net https://vercel.live;
               style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
               img-src 'self' blob: data: https://www.googletagmanager.com https://www.google-analytics.com https://ssl.google-analytics.com https://stats.g.doubleclick.net https://res.cloudinary.com https://images.unsplash.com https://gyizmixhmrfwywvafdbi.supabase.co https://plus.unsplash.com https://images.pexels.com https://photos.google.com https://lh3.googleusercontent.com https://*.googleusercontent.com;
               font-src 'self' data: https://fonts.gstatic.com;
-              connect-src 'self' https://www.googletagmanager.com https://www.google-analytics.com https://ssl.google-analytics.com https://stats.g.doubleclick.net https://gyizmixhmrfwywvafdbi.supabase.co https://checkout.razorpay.com wss://gyizmixhmrfwywvafdbi.supabase.co https://vitals.vercel-insights.com;
-              frame-src 'self' https://checkout.razorpay.com;
+              connect-src 'self' https://www.googletagmanager.com https://www.google-analytics.com https://ssl.google-analytics.com https://stats.g.doubleclick.net https://gyizmixhmrfwywvafdbi.supabase.co https://checkout.razorpay.com wss://gyizmixhmrfwywvafdbi.supabase.co https://vitals.vercel-insights.com https://*.vercel.live;
+              frame-src 'self' https://checkout.razorpay.com https://vercel.live;
               media-src 'self' https://res.cloudinary.com;
               object-src 'none';
               base-uri 'self';
